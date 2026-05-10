@@ -61,6 +61,7 @@ router.put('/:id/settings', authMiddleware, roleMiddleware('store'), (req, res) 
   if (!store) return res.status(403).json({ error: 'Não autorizado' });
 
   const { name, logo, lat, lng, address, color_primary, color_secondary } = req.body;
+  const toVal = (v) => (v === '' || v === null || v === undefined || Number.isNaN(v)) ? null : v;
   db.prepare(`
     UPDATE stores SET
       name = COALESCE(?, name),
@@ -71,7 +72,7 @@ router.put('/:id/settings', authMiddleware, roleMiddleware('store'), (req, res) 
       color_primary = COALESCE(?, color_primary),
       color_secondary = COALESCE(?, color_secondary)
     WHERE id = ?
-  `).run(name ?? null, logo ?? null, lat ?? null, lng ?? null, address ?? null, color_primary ?? null, color_secondary ?? null, store.id);
+  `).run(toVal(name), toVal(logo), toVal(lat), toVal(lng), toVal(address), toVal(color_primary), toVal(color_secondary), store.id);
 
   const updated = db.prepare('SELECT * FROM stores WHERE id = ?').get(store.id);
   res.json(updated);
