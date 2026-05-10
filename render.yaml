@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: acai-rapidola
+    env: node
+    buildCommand: npm install && cd server && npm install && cd ../client && npm install && npm run build
+    startCommand: node server/src/index.js
+    envVars:
+      - key: DATA_DIR
+        value: /data
+    disk:
+      name: data
+      mountPath: /data
+      sizeGB: 1

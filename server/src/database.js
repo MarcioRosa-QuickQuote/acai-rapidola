@@ -6,9 +6,8 @@ const fs = require('fs');
 
 const isVercel = !!process.env.VERCEL;
 
-const dataDir = isVercel
-  ? '/tmp/data'
-  : path.join(__dirname, '..', 'data');
+const dataDir = process.env.DATA_DIR
+  || (isVercel ? '/tmp/data' : path.join(__dirname, '..', 'data'));
 
 const DB_PATH = path.join(dataDir, 'acai.db');
 

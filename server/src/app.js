@@ -22,9 +22,9 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-const uploadsPath = isVercel
-  ? path.join('/tmp', 'uploads')
-  : path.join(__dirname, '..', 'uploads');
+const uploadsPath = process.env.DATA_DIR
+  ? path.join(process.env.DATA_DIR, 'uploads')
+  : (isVercel ? path.join('/tmp', 'uploads') : path.join(__dirname, '..', 'uploads'));
 if (!fs.existsSync(uploadsPath)) fs.mkdirSync(uploadsPath, { recursive: true });
 app.use('/uploads', express.static(uploadsPath));
 

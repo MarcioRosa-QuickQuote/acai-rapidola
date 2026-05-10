@@ -8,9 +8,9 @@ const { authMiddleware, roleMiddleware } = require('../auth');
 
 const isVercel = !!process.env.VERCEL;
 
-const uploadsDir = isVercel
-  ? path.join('/tmp', 'uploads')
-  : path.join(__dirname, '..', '..', 'uploads');
+const uploadsDir = process.env.DATA_DIR
+  ? path.join(process.env.DATA_DIR, 'uploads')
+  : (isVercel ? path.join('/tmp', 'uploads') : path.join(__dirname, '..', '..', 'uploads'));
 if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir, { recursive: true });
 
 const storage = multer.diskStorage({
