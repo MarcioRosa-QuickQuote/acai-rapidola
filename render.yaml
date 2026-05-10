@@ -11,6 +11,8 @@ services:
         sync: false
       - key: APP_URL
         sync: false
+      - key: MERCADO_PAGO_PUBLIC_KEY
+        sync: false
     disk:
       name: data
       mountPath: /data

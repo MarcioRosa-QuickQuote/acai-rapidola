@@ -41,6 +41,12 @@ function buildAppUrl(path) {
   return `${base}${path}`;
 }
 
+router.get('/config', (req, res) => {
+  res.json({
+    mp_public_key: process.env.MERCADO_PAGO_PUBLIC_KEY || ''
+  });
+});
+
 router.post('/create-preference', authMiddleware, (req, res) => {
   const { order_id } = req.body;
   if (!order_id) return res.status(400).json({ error: 'ID do pedido é obrigatório' });
@@ -198,6 +204,185 @@ router.patch('/notifications/:id/read', authMiddleware, (req, res) => {
   db.prepare('UPDATE notifications SET read = 1 WHERE id = ? AND user_id = ?')
     .run(req.params.id, req.user.id);
   res.json({ success: true });
+});
+
+function getOrCreateMpCustomer(userId, email) {
+  const mpCustomerId = `user_${userId}`;
+  return mercadopago.customers.search({ email })
+    .then(r => {
+      const found = r.body.results?.find(c => c.email === email);
+      if (found) return found.id;
+      return mercadopago.customers.create({ email, id: mpCustomerId })
+        .then(r => r.body.id)
+        .catch(() => mercadopago.customers.create({ email }).then(r => r.body.id));
+    })
+    .catch(() => mercadopago.customers.create({ email, id: mpCustomerId })
+      .then(r => r.body.id)
+      .catch(() => mercadopago.customers.create({ email }).then(r => r.body.id))
+    );
+}
+
+router.post('/process-card-payment', authMiddleware, (req, res) => {
+  const { order_id, token, payment_method_id, installments, issuer_id, payer_email,
+          identification_type, identification_number, save_card } = req.body;
+
+  if (!order_id || !token || !payment_method_id) {
+    return res.status(400).json({ error: 'Dados do pagamento incompletos' });
+  }
+
+  const order = db.prepare('SELECT * FROM orders WHERE id = ?').get(order_id);
+  if (!order) return res.status(404).json({ error: 'Pedido nao encontrado' });
+  if (order.payment_status === 'paid') return res.status(400).json({ error: 'Pedido ja foi pago' });
+
+  if (!MERCADO_PAGO_TOKEN) {
+    return res.status(500).json({ error: 'Gateway de pagamento nao configurado' });
+  }
+
+  const paymentData = {
+    transaction_amount: parseFloat(order.total.toFixed(2)),
+    token,
+    description: `Pedido Acai Rapidola #${order_id.slice(0, 8)}`,
+    installments: parseInt(installments) || 1,
+    payment_method_id,
+    issuer_id,
+    payer: {
+      email: payer_email || `cliente_${req.user.id}@acairapidola.app`,
+      identification: identification_type && identification_number ? {
+        type: identification_type,
+        number: identification_number
+      } : undefined
+    },
+    external_reference: order_id,
+    notification_url: buildAppUrl('/api/webhook')
+  };
+
+  mercadopago.payment.create(paymentData)
+    .then(async paymentResp => {
+      const payment = paymentResp.body;
+
+      if (payment.status === 'approved') {
+        db.prepare(
+          "UPDATE orders SET payment_status = 'paid', status = 'confirmed', payment_id = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?"
+        ).run(String(payment.id), order_id);
+
+        const store = db.prepare('SELECT * FROM stores WHERE id = ?').get(order.store_id);
+        if (store) {
+          notifyUser(store.owner_id, 'Pagamento Confirmado!', `Pedido #${order_id.slice(0,8)} pago com cartao.`, 'payment');
+        }
+
+        const io = getIO();
+        if (io) {
+          io.to(`order:${order_id}`).emit('payment_confirmed', { orderId: order_id });
+          if (order.store_id) {
+            io.to(`store:${order.store_id}`).emit('order_paid', { orderId: order_id, total: order.total });
+          }
+        }
+      }
+
+      if (save_card && payment.status === 'approved' && payer_email) {
+        try {
+          const customerId = await getOrCreateMpCustomer(req.user.id, payer_email);
+          await mercadopago.card.create({
+            customer_id: customerId,
+            token
+          });
+          console.log(`[MP] Card saved for customer ${customerId}`);
+        } catch (e) {
+          console.error('[MP] Error saving card:', e.message);
+        }
+      }
+
+      res.json({
+        status: payment.status,
+        status_detail: payment.status_detail,
+        payment_id: payment.id
+      });
+    })
+    .catch(err => {
+      console.error('[MP] Card payment error:', err);
+      res.status(500).json({ error: 'Erro ao processar pagamento' });
+    });
+});
+
+router.get('/saved-cards', authMiddleware, (req, res) => {
+  if (!MERCADO_PAGO_TOKEN) return res.json([]);
+
+  const email = `cliente_${req.user.id}@acairapidola.app`;
+  mercadopago.customers.search({ email })
+    .then(r => {
+      const found = r.body.results?.find(c => c.email === email);
+      if (!found) return res.json([]);
+      return mercadopago.card.all(found.id);
+    })
+    .then(result => {
+      if (Array.isArray(result)) return res.json(result);
+      if (result?.body) return res.json(result.body);
+      res.json([]);
+    })
+    .catch(err => {
+      console.error('[MP] Error listing cards:', err);
+      res.json([]);
+    });
+});
+
+router.post('/pay-with-saved-card', authMiddleware, (req, res) => {
+  const { order_id, card_id } = req.body;
+  if (!order_id || !card_id) {
+    return res.status(400).json({ error: 'Dados incompletos' });
+  }
+
+  const order = db.prepare('SELECT * FROM orders WHERE id = ?').get(order_id);
+  if (!order) return res.status(404).json({ error: 'Pedido nao encontrado' });
+  if (order.payment_status === 'paid') return res.status(400).json({ error: 'Pedido ja foi pago' });
+
+  if (!MERCADO_PAGO_TOKEN) {
+    return res.status(500).json({ error: 'Gateway de pagamento nao configurado' });
+  }
+
+  const email = `cliente_${req.user.id}@acairapidola.app`;
+  getOrCreateMpCustomer(req.user.id, email)
+    .then(customerId => {
+      return mercadopago.payment.create({
+        transaction_amount: parseFloat(order.total.toFixed(2)),
+        description: `Pedido Acai Rapidola #${order_id.slice(0, 8)}`,
+        installments: 1,
+        payment_method_id: 'visa',
+        payer: { email, type: 'customer', id: customerId },
+        token: card_id,
+        external_reference: order_id,
+        notification_url: buildAppUrl('/api/webhook')
+      });
+    })
+    .then(paymentResp => {
+      const payment = paymentResp.body;
+      if (payment.status === 'approved') {
+        db.prepare(
+          "UPDATE orders SET payment_status = 'paid', status = 'confirmed', payment_id = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?"
+        ).run(String(payment.id), order_id);
+
+        const store = db.prepare('SELECT * FROM stores WHERE id = ?').get(order.store_id);
+        if (store) {
+          notifyUser(store.owner_id, 'Pagamento Confirmado!', `Pedido #${order_id.slice(0,8)} pago.`, 'payment');
+        }
+
+        const io = getIO();
+        if (io) {
+          io.to(`order:${order_id}`).emit('payment_confirmed', { orderId: order_id });
+          if (order.store_id) {
+            io.to(`store:${order.store_id}`).emit('order_paid', { orderId: order_id, total: order.total });
+          }
+        }
+      }
+      res.json({
+        status: payment.status,
+        status_detail: payment.status_detail,
+        payment_id: payment.id
+      });
+    })
+    .catch(err => {
+      console.error('[MP] Saved card payment error:', err);
+      res.status(500).json({ error: 'Erro ao processar pagamento' });
+    });
 });
 
 module.exports = router;
