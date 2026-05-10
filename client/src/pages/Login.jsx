@@ -39,20 +39,14 @@ export default function Login() {
       minHeight: '100vh'
     }}>
       <div style={{ textAlign: 'center', color: 'white', padding: '40px 20px' }}>
-        {storeLogo ? (
-          <img src={storeLogo} alt="Logo" style={{ width: 80, height: 80, borderRadius: 16, objectFit: 'contain', marginBottom: 12 }} onError={e => { e.target.style.display = 'none'; }} />
-        ) : (
-          <div style={{ fontSize: 48, marginBottom: 8 }}>
-            <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
-              <circle cx="32" cy="28" r="22" fill="white" opacity="0.2"/>
-              <path d="M20 28c0-6.6 5.4-12 12-12s12 5.4 12 12" stroke="white" strokeWidth="3" fill="none" strokeLinecap="round"/>
-              <rect x="24" y="30" width="16" height="20" rx="3" fill="white"/>
-              <rect x="28" y="34" width="8" height="12" rx="1" fill="#6A1B9A"/>
-            </svg>
-          </div>
-        )}
-        <h1 style={{ fontSize: 32, fontWeight: 800, marginBottom: 4 }}>Açaí Rapidola</h1>
-        <p style={{ opacity: 0.9, fontSize: 14 }}>O jeito mais rápido de pedir seu açaí</p>
+        <img
+          src={storeLogo || '/logo.png'}
+          alt="Logo"
+          style={{ width: 90, height: 90, borderRadius: 16, objectFit: 'contain', marginBottom: 12 }}
+          onError={e => { e.target.style.display = 'none'; }}
+        />
+        <h1 style={{ fontSize: 32, fontWeight: 800, marginBottom: 4 }}>Pe de Acai</h1>
+        <p style={{ opacity: 0.9, fontSize: 14 }}>O jeito mais rapido de pedir seu acai</p>
       </div>
 
       <div className="card" style={{ maxWidth: 400, width: '100%', margin: '0 auto' }}>
