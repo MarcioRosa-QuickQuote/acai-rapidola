@@ -9,9 +9,9 @@ export default function CustomerPayment() {
   const { socket, joinOrder } = useSocket();
   const navigate = useNavigate();
   const [order, setOrder] = useState(null);
-  const [pixData, setPixData] = useState(null);
-  const [copied, setCopied] = useState(false);
   const [paying, setPaying] = useState(false);
+  const [error, setError] = useState('');
+  const [useSimulado, setUseSimulado] = useState(false);
 
   useEffect(() => {
     joinOrder(id);
@@ -33,31 +33,42 @@ export default function CustomerPayment() {
     if (data.ok || data.id) setOrder(data);
   }
 
-  async function gerarPix() {
+  async function pagar() {
+    setPaying(true);
+    setError('');
+    try {
+      const data = await apiFetch('/create-preference', {
+        method: 'POST',
+        body: JSON.stringify({ order_id: id })
+      });
+      if (data.init_point) {
+        window.location.href = data.sandbox_init_point || data.init_point;
+      } else if (data.error) {
+        setUseSimulado(true);
+      } else {
+        setError('Erro ao iniciar pagamento. Tente novamente.');
+      }
+    } catch {
+      setUseSimulado(true);
+    } finally {
+      setPaying(false);
+    }
+  }
+
+  async function pagarSimulado() {
+    setPaying(true);
     const data = await apiFetch('/pix/qrcode', {
       method: 'POST',
       body: JSON.stringify({ order_id: id })
     });
-    if (data.ok || data.pix_code) setPixData(data);
-  }
-
-  async function confirmarPagamento() {
-    setPaying(true);
-    const data = await apiFetch('/pix/confirm', {
-      method: 'POST',
-      body: JSON.stringify({ order_id: id })
-    });
-    if (data.ok) {
+    if (data.ok || data.pix_code) {
+      await apiFetch('/pix/confirm', {
+        method: 'POST',
+        body: JSON.stringify({ order_id: id })
+      });
       navigate(`/customer/tracking/${id}`);
     }
-  }
-
-  function copyPix() {
-    if (pixData) {
-      navigator.clipboard.writeText(pixData.pix_code);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    }
+    setPaying(false);
   }
 
   if (!order) return <div className="loading"><div className="spinner" /></div>;
@@ -89,65 +100,51 @@ export default function CustomerPayment() {
           <div style={{ fontSize: 28, fontWeight: 800, color: 'var(--primary)' }}>
             R$ {order.total.toFixed(2)}
           </div>
-          <p className="text-sm text-muted mt-2">Pagamento via PIX</p>
+          <p className="text-sm text-muted mt-2">
+            Pagamento via Mercado Pago
+          </p>
         </div>
 
-        {!pixData ? (
-          <div className="card text-center">
-            <p className="text-sm text-muted mb-4">Gere o código PIX para realizar o pagamento</p>
-            <button className="btn btn-primary" onClick={gerarPix}>
-              Gerar PIX
+        <div className="card text-center">
+          <p className="text-sm text-muted mb-4">
+            Voce sera redirecionado ao Mercado Pago para concluir o pagamento via Pix ou Cartao.
+          </p>
+
+          {error && (
+            <div style={{ background: '#FFEBEE', color: '#C62828', padding: 10, borderRadius: 8, marginBottom: 12, fontSize: 13 }}>
+              {error}
+            </div>
+          )}
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8, padding: '0 20px' }}>
+            <button className="btn btn-primary"
+              onClick={pagar}
+              disabled={paying}
+              style={{ padding: 14, fontSize: 16 }}>
+              {paying ? 'Redirecionando...' : 'Pagar com Mercado Pago'}
             </button>
-          </div>
-        ) : (
-          <>
-            <div className="card text-center">
-              <div style={{
-                background: 'white', padding: 16, display: 'inline-block',
-                border: '3px solid var(--primary)', borderRadius: 12, margin: '8px 0'
-              }}>
-                <svg width="160" height="160" viewBox="0 0 160 160">
-                  <rect width="160" height="160" fill="white"/>
-                  <rect x="4" y="4" width="152" height="152" fill="none" stroke="#6A1B9A" strokeWidth="2"/>
-                  <rect x="24" y="24" width="16" height="16" fill="#6A1B9A"/>
-                  <rect x="24" y="56" width="16" height="16" fill="#6A1B9A"/>
-                  <rect x="24" y="88" width="16" height="16" fill="#6A1B9A"/>
-                  <rect x="56" y="24" width="16" height="16" fill="#6A1B9A"/>
-                  <rect x="88" y="24" width="16" height="16" fill="#6A1B9A"/>
-                  <rect x="120" y="24" width="16" height="16" fill="#6A1B9A"/>
-                  <rect x="56" y="88" width="16" height="16" fill="#6A1B9A"/>
-                  <rect x="88" y="88" width="16" height="16" fill="#6A1B9A"/>
-                  <rect x="120" y="88" width="16" height="16" fill="#6A1B9A"/>
-                  <rect x="24" y="120" width="16" height="16" fill="#6A1B9A"/>
-                  <rect x="56" y="120" width="16" height="16" fill="#6A1B9A"/>
-                  <rect x="88" y="120" width="16" height="16" fill="#6A1B9A"/>
-                  <rect x="120" y="120" width="16" height="16" fill="#6A1B9A"/>
-                </svg>
-              </div>
-              <p className="text-xs text-muted mt-2">Escaneie o QR Code no app do seu banco</p>
 
-              <div className="flex-row" style={{ marginTop: 12, justifyContent: 'center' }}>
-                <button className="btn btn-sm btn-outline" onClick={copyPix}>
-                  {copied ? 'Copiado!' : 'Copiar PIX'}
+            {useSimulado && (
+              <>
+                <div style={{
+                  background: '#FFF3E0', borderRadius: 8, padding: 10,
+                  border: '1px solid #FFE0B2', fontSize: 13, color: '#E65100'
+                }}>
+                  Mercado Pago nao configurado — use o pagamento simulado.
+                </div>
+                <button className="btn btn-secondary"
+                  onClick={pagarSimulado}
+                  style={{ padding: 12 }}>
+                  Pagamento Simulado (PIX)
                 </button>
-              </div>
-            </div>
+              </>
+            )}
+          </div>
 
-            <div style={{ padding: '12px 0', textAlign: 'center' }}>
-              <div style={{
-                background: '#FFF3E0', borderRadius: 8, padding: 12, marginBottom: 12,
-                border: '1px solid #FFE0B2'
-              }}>
-                <span className="text-sm" style={{ color: '#E65100' }}>
-                  Simulação: o pagamento será aprovado automaticamente ao clicar abaixo.
-                </span>
-              </div>
-              <button className="btn btn-secondary" onClick={confirmarPagamento} disabled={paying}>
-                {paying ? 'Confirmando...' : 'Confirmar Pagamento (Simulado)'}
-              </button>
-            </div>
-          </>
-        )}
+          <p className="text-xs text-muted mt-4">
+            Pagamento processado pelo Mercado Pago. Seus dados estao seguros.
+          </p>
+        </div>
       </div>
     </div>
   );

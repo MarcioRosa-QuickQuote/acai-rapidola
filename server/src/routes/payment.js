@@ -2,8 +2,17 @@ const { Router } = require('express');
 const { v4: uuid } = require('uuid');
 const db = require('../database');
 const { authMiddleware } = require('../auth');
+const mercadopago = require('mercadopago');
 
 const router = Router();
+
+const MERCADO_PAGO_TOKEN = process.env.MERCADO_PAGO_ACCESS_TOKEN;
+
+if (MERCADO_PAGO_TOKEN) {
+  mercadopago.configure({
+    access_token: MERCADO_PAGO_TOKEN
+  });
+}
 
 function getIO() {
   const { getIO } = require('../services/socket');
@@ -26,6 +35,107 @@ function notifyUser(userId, title, body, type = 'info') {
     }
   }
 }
+
+function buildAppUrl(path) {
+  const base = process.env.APP_URL || `http://localhost:${process.env.PORT || 3001}`;
+  return `${base}${path}`;
+}
+
+router.post('/create-preference', authMiddleware, (req, res) => {
+  const { order_id } = req.body;
+  if (!order_id) return res.status(400).json({ error: 'ID do pedido é obrigatório' });
+
+  const order = db.prepare('SELECT * FROM orders WHERE id = ?').get(order_id);
+  if (!order) return res.status(404).json({ error: 'Pedido não encontrado' });
+  if (order.payment_status === 'paid') return res.status(400).json({ error: 'Pedido já foi pago' });
+
+  if (!MERCADO_PAGO_TOKEN) {
+    return res.status(500).json({ error: 'Gateway de pagamento não configurado' });
+  }
+
+  const paymentId = uuid();
+  db.prepare('UPDATE orders SET payment_id = ? WHERE id = ?').run(paymentId, order_id);
+
+  const preference = {
+    items: [{
+      id: order_id.slice(0, 8),
+      title: `Pedido Açaí Rapidola #${order_id.slice(0, 8)}`,
+      description: `Açaí delivery`,
+      quantity: 1,
+      unit_price: parseFloat(order.total.toFixed(2)),
+      currency_id: 'BRL'
+    }],
+    external_reference: order_id,
+    notification_url: buildAppUrl('/api/webhook'),
+    back_urls: {
+      success: buildAppUrl(`/customer/tracking/${order_id}`),
+      failure: buildAppUrl(`/customer/payment/${order_id}`),
+      pending: buildAppUrl(`/customer/payment/${order_id}`)
+    },
+    auto_return: 'approved',
+    payment_methods: {
+      installments: 1,
+      default_payment_method_id: 'pix'
+    }
+  };
+
+  mercadopago.preferences.create(preference)
+    .then(response => {
+      res.json({
+        init_point: response.body.init_point,
+        sandbox_init_point: response.body.sandbox_init_point,
+        preference_id: response.body.id
+      });
+    })
+    .catch(err => {
+      console.error('[MP] Erro ao criar preferência:', err);
+      res.status(500).json({ error: 'Erro ao criar pagamento' });
+    });
+});
+
+router.post('/webhook', (req, res) => {
+  const { type, data } = req.body;
+
+  if (type === 'payment' && data?.id) {
+    mercadopago.payment.findById(data.id)
+      .then(paymentResp => {
+        const payment = paymentResp.body;
+        const orderId = payment.external_reference;
+        const status = payment.status;
+
+        if (status === 'approved') {
+          const order = db.prepare('SELECT * FROM orders WHERE id = ?').get(orderId);
+          if (!order) return;
+
+          db.prepare(
+            "UPDATE orders SET payment_status = 'paid', status = 'confirmed', updated_at = CURRENT_TIMESTAMP WHERE id = ? AND payment_status != 'paid'"
+          ).run(orderId);
+
+          db.prepare(
+            "UPDATE orders SET status = 'confirmed' WHERE id = ? AND status = 'pending'"
+          ).run(orderId);
+
+          const store = db.prepare('SELECT * FROM stores WHERE id = ?').get(order.store_id);
+          if (store) {
+            notifyUser(store.owner_id, 'Pagamento Confirmado!', `Pedido #${orderId.slice(0,8)} pago via Mercado Pago.`, 'payment');
+          }
+
+          const io = getIO();
+          if (io) {
+            io.to(`order:${orderId}`).emit('payment_confirmed', { orderId });
+            if (order.store_id) {
+              io.to(`store:${order.store_id}`).emit('order_paid', { orderId, total: order.total });
+            }
+          }
+        }
+
+        console.log(`[MP] Webhook payment ${data.id}: status=${status}, order=${orderId}`);
+      })
+      .catch(err => console.error('[MP] Webhook error:', err));
+  }
+
+  res.sendStatus(200);
+});
 
 router.post('/pix/qrcode', authMiddleware, (req, res) => {
   const { order_id } = req.body;
