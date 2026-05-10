@@ -190,7 +190,7 @@ export default function StoreDashboard() {
       <div className="header">
         <div className="header-left">
           {storeData?.logo && (
-            <img src={storeData.logo} alt="Logo" style={{ width: 36, height: 36, borderRadius: 8, objectFit: 'contain', flexShrink: 0 }} />
+            <img src={storeData.logo} alt="Logo" style={{ width: 36, height: 36, borderRadius: 8, objectFit: 'contain', flexShrink: 0 }} onError={e => { e.target.style.display = 'none'; }} />
           )}
           <div style={{ minWidth: 0 }}>
             <div className="header-title">{storeData?.name || 'Loja'}</div>
