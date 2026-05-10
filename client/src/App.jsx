@@ -1,0 +1,62 @@
+import { Routes, Route, Navigate } from 'react-router-dom';
+import { useAuth } from './contexts/AuthContext';
+import Login from './pages/Login';
+import Register from './pages/Register';
+import CustomerHome from './pages/CustomerHome';
+import CustomerOrder from './pages/CustomerOrder';
+import CustomerPayment from './pages/CustomerPayment';
+import CustomerTracking from './pages/CustomerTracking';
+import StoreDashboard from './pages/StoreDashboard';
+import MotoboyDashboard from './pages/MotoboyDashboard';
+
+function ProtectedRoute({ role, children }) {
+  const { user, loading } = useAuth();
+  if (loading) return <div className="loading"><div className="spinner" /></div>;
+  if (!user) return <Navigate to="/login" />;
+  if (role && user.role !== role) return <Navigate to={`/${user.role}`} />;
+  return children;
+}
+
+export default function App() {
+  const { user, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh' }}>
+        <div className="spinner" />
+      </div>
+    );
+  }
+
+  return (
+    <Routes>
+      <Route path="/login" element={user ? <Navigate to={`/${user.role}`} /> : <Login />} />
+      <Route path="/register" element={user ? <Navigate to={`/${user.role}`} /> : <Register />} />
+
+      <Route path="/customer/*" element={
+        <ProtectedRoute role="customer"><CustomerHome /></ProtectedRoute>
+      } />
+      <Route path="/customer/order" element={
+        <ProtectedRoute role="customer"><CustomerOrder /></ProtectedRoute>
+      } />
+      <Route path="/customer/payment/:id" element={
+        <ProtectedRoute role="customer"><CustomerPayment /></ProtectedRoute>
+      } />
+      <Route path="/customer/tracking/:id" element={
+        <ProtectedRoute role="customer"><CustomerTracking /></ProtectedRoute>
+      } />
+
+      <Route path="/store/*" element={
+        <ProtectedRoute role="store"><StoreDashboard /></ProtectedRoute>
+      } />
+
+      <Route path="/motoboy/*" element={
+        <ProtectedRoute role="motoboy"><MotoboyDashboard /></ProtectedRoute>
+      } />
+
+      <Route path="*" element={
+        user ? <Navigate to={`/${user.role}`} /> : <Navigate to="/login" />
+      } />
+    </Routes>
+  );
+}

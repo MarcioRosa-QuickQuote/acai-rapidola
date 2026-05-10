@@ -1,0 +1,27 @@
+{
+  "project": "Açaí Rapidola",
+  "created": "2026-05-09T00:00:00-03:00",
+  "lastUpdated": "2026-05-09T00:00:00-03:00",
+  "interactions": [
+    {
+      "timestamp": "2026-05-09T00:00:00-03:00",
+      "request": "topbar: troque o nome do btn config por conta, a logomarca da empresa deve ficar no topbar alinhada a esquerda, ,,,,config: a logomarca deve ser inserida por upload. a localizacao/endereço deve ser feita por mapa, e nao escolhere latitude longitude,....tem que ficar mais intuitivo",
+      "summary": "1) Topbar: btn já estava 'Conta' e logo já alinhada à esquerda no header de StoreDashboard. 2) Config: substituído input de URL por upload de arquivo (multer no server, POST /api/stores/:id/logo, FormData no client), preview automático da imagem selecionada. 3) Mapa: removida exibição de lat/lng, adicionada instrução textual mais intuitiva. 4) Vite proxy: adicionado /uploads ao proxy. 5) Server: multer com limite 5MB, filtro de imagem, e static serve em /uploads.",
+      "status": "completed",
+      "filesTouched": [".opencode-context.json", "server/src/routes/stores.js", "server/src/index.js", "client/src/pages/StoreDashboard.jsx", "client/vite.config.js"]
+    },
+    {
+      "timestamp": "2026-05-09T00:00:00-03:00",
+      "request": "quero que o arquivo de contexto seja atualizado assim que eu fizer o pedido, aí entao iniciar a tarefa",
+      "summary": "Fluxo ajustado: daqui pra frente, o .opencode-context.json será atualizado assim que o pedido for recebido (antes de executar a tarefa), com status 'in_progress'. Ao finalizar, status muda para 'completed' com summary do que foi feito.",
+      "status": "completed",
+      "filesTouched": [".opencode-context.json"]
+    },
+    {
+      "timestamp": "2026-05-09T00:00:00-03:00",
+      "request": "apoveite para fazer um arquivo de contexto que vai gravando tudo que a eu peço e o que vc me responde quando finaliza, mas pra nao ficar um arquivo gigante deve guardar apenas as interações das ultimas 24h, mas deve persistir esse arquivo caso de bug no chat pra reabrir e continuar de onde parou",
+      "summary": "Criado arquivo .opencode-context.json para persistir histórico de interações. O arquivo armazena requests/responses com timestamps e mantém apenas interações das últimas 24h. Serve como recovery point caso o chat caia.",
+      "filesTouched": [".opencode-context.json"]
+    }
+  ]
+}

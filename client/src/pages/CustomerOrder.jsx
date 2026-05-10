@@ -1,0 +1,207 @@
+import { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
+import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
+
+delete L.Icon.Default.prototype._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon-2x.png',
+  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
+});
+
+function MapClickHandler({ onClick }) {
+  useMapEvents({
+    click(e) {
+      onClick(e.latlng.lat, e.latlng.lng);
+    }
+  });
+  return null;
+}
+
+export default function CustomerOrder() {
+  const { user, apiFetch } = useAuth();
+  const location = useLocation();
+  const state = location.state || {};
+  const { items, store, product, quantity } = state;
+  const navigate = useNavigate();
+
+  const orderItems = items || (product ? [{ product_id: product.id, name: product.name, price: product.price, quantity: quantity || 1 }] : []);
+  const total = orderItems.reduce((s, i) => s + (i.price || 0) * (i.quantity || 1), 0);
+
+  const [address, setAddress] = useState('');
+  const [notes, setNotes] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [lat, setLat] = useState(null);
+  const [lng, setLng] = useState(null);
+  const [mapCenter, setMapCenter] = useState([-23.5505, -46.6333]);
+  const [geocoding, setGeocoding] = useState(false);
+  const [showMap, setShowMap] = useState(false);
+
+  async function geocodeAddress() {
+    if (!address) return;
+    setGeocoding(true);
+    try {
+      const res = await fetch(
+        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}&limit=1&countrycodes=BR`
+      );
+      const data = await res.json();
+      if (data.length > 0) {
+        const newLat = parseFloat(data[0].lat);
+        const newLng = parseFloat(data[0].lon);
+        setLat(newLat);
+        setLng(newLng);
+        setMapCenter([newLat, newLng]);
+        setShowMap(true);
+      } else {
+        setError('Endereço não encontrado. Tente um endereço mais específico.');
+        setTimeout(() => setError(''), 4000);
+      }
+    } catch {
+      setError('Erro ao buscar endereço.');
+      setTimeout(() => setError(''), 4000);
+    } finally {
+      setGeocoding(false);
+    }
+  }
+
+  function handleMapClick(clickLat, clickLng) {
+    setLat(clickLat);
+    setLng(clickLng);
+  }
+
+  async function handleSubmit(e) {
+    e.preventDefault();
+    if (!address) { setError('Informe o endereço de entrega'); return; }
+    setLoading(true);
+    setError('');
+
+    try {
+      const data = await apiFetch('/orders', {
+        method: 'POST',
+        body: JSON.stringify({
+          store_id: store?.id,
+          items: orderItems.map(i => ({ product_id: i.product_id, quantity: i.quantity })),
+          address,
+          lat: lat,
+          lng: lng,
+          notes
+        })
+      });
+      if (data.ok) {
+        navigate(`/customer/payment/${data.order.id}`);
+      } else {
+        setError(data.error || 'Erro ao criar pedido');
+      }
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <div>
+      <div className="header">
+        <button className="btn btn-sm"
+          style={{ background: 'rgba(255,255,255,0.15)', color: 'white', fontSize: 14 }}
+          onClick={() => navigate('/customer')}>
+          Voltar
+        </button>
+        <div className="header-title">Finalizar Pedido</div>
+        <div style={{ width: 50 }} />
+      </div>
+
+      <div className="container">
+        <div className="card">
+          <h3 style={{ marginBottom: 12, color: 'var(--primary)' }}>Resumo do Pedido</h3>
+          {orderItems.map((item, i) => (
+            <div key={i} className="flex-between" style={{ padding: '8px 0', borderBottom: '1px solid var(--border)' }}>
+              <div>
+                <span style={{ fontWeight: 600 }}>{item.quantity}x </span>
+                {item.name}
+              </div>
+              <span className="font-bold">R$ {((item.price || 0) * (item.quantity || 1)).toFixed(2)}</span>
+            </div>
+          ))}
+          <div className="flex-between font-bold" style={{ marginTop: 12, fontSize: 18, color: 'var(--primary)' }}>
+            <span>Total</span>
+            <span>R$ {total.toFixed(2)}</span>
+          </div>
+        </div>
+
+        <div className="card">
+          <form onSubmit={handleSubmit}>
+            {error && (
+              <div style={{ background: '#FFEBEE', color: '#C62828', padding: 12, borderRadius: 8, marginBottom: 16, fontSize: 14 }}>
+                {error}
+              </div>
+            )}
+
+            <div className="form-group">
+              <label className="label">Endereço de entrega</label>
+              <div className="flex-row" style={{ gap: 8 }}>
+                <input className="input" type="text" value={address} onChange={e => setAddress(e.target.value)}
+                  placeholder="Rua, número, bairro - Cidade" required
+                  style={{ flex: 1 }} />
+                <button type="button" className="btn btn-sm btn-secondary"
+                  onClick={geocodeAddress} disabled={geocoding}
+                  style={{ width: 'auto', whiteSpace: 'nowrap' }}>
+                  {geocoding ? '...' : 'Buscar'}
+                </button>
+              </div>
+            </div>
+
+            {(showMap || lat) && (
+              <div className="form-group">
+                <label className="label">Confirme no mapa (clique para ajustar)</label>
+                <div style={{ height: 250, borderRadius: 8, overflow: 'hidden', border: '1px solid var(--border)' }}>
+                  <MapContainer
+                    center={mapCenter}
+                    zoom={15}
+                    style={{ height: '100%', width: '100%' }}
+                    key={`cust-${mapCenter[0]}-${mapCenter[1]}`}
+                  >
+                    <TileLayer
+                      attribution='&copy; OpenStreetMap'
+                      url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                    />
+                    {lat && lng && (
+                      <Marker
+                        position={[lat, lng]}
+                        draggable={true}
+                        eventHandlers={{
+                          dragend(e) {
+                            const pos = e.target.getLatLng();
+                            setLat(pos.lat);
+                            setLng(pos.lng);
+                          }
+                        }}
+                      />
+                    )}
+                    <MapClickHandler onClick={handleMapClick} />
+                  </MapContainer>
+                </div>
+                <p className="text-xs text-muted mt-2">Arraste o marcador ou clique para posicionar exatamente.</p>
+              </div>
+            )}
+
+            <div className="form-group">
+              <label className="label">Observações (opcional)</label>
+              <textarea className="input" value={notes} onChange={e => setNotes(e.target.value)}
+                placeholder="Ex: Sem granola, troco para R$ 50..."
+                style={{ resize: 'vertical', minHeight: 60 }} />
+            </div>
+
+            <button className="btn btn-primary" type="submit" disabled={loading}>
+              {loading ? <span className="spinner" style={{ width: 20, height: 20 }} /> : 'Ir para Pagamento'}
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  );
+}
