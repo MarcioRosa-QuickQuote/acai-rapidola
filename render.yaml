@@ -2,8 +2,6 @@ services:
   - type: web
     name: acai-rapidola
     env: node
-    runtime: node
-    nodeVersion: 20
     buildCommand: npm install && cd server && npm install && cd ../client && npm install && npm run build
     startCommand: node server/src/index.js
     envVars:

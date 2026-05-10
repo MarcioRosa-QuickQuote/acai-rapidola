@@ -2,11 +2,14 @@
   "name": "acai-rapidola",
   "version": "1.0.0",
   "private": true,
+  "engines": {
+    "node": ">=20.0.0 <25.0.0"
+  },
   "scripts": {
     "dev": "concurrently \"npm run dev:server\" \"npm run dev:client\"",
     "dev:server": "cd server && node src/index.js",
     "dev:client": "cd client && npx vite --host",
-    "build": "cd client && npx vite build",
+    "build": "cd client && npm install && npm run build",
     "start": "node server/src/index.js"
   },
   "devDependencies": {
