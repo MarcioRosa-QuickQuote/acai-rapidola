@@ -9,7 +9,7 @@
     "dev": "concurrently \"npm run dev:server\" \"npm run dev:client\"",
     "dev:server": "cd server && node src/index.js",
     "dev:client": "cd client && npx vite --host",
-    "build": "cd client && npm install && npm run build",
+    "build": "cd server && npm install && cd ../client && npm install && npm run build",
     "start": "node server/src/index.js"
   },
   "devDependencies": {
