@@ -100,6 +100,19 @@ router.post('/create-preference', authMiddleware, (req, res) => {
 });
 
 router.post('/webhook', (req, res) => {
+  const signature = req.headers['x-signature'];
+  const webhookSecret = process.env.MP_WEBHOOK_SECRET;
+
+  if (webhookSecret && signature) {
+    const crypto = require('crypto');
+    const payload = JSON.stringify(req.body);
+    const expected = crypto.createHmac('sha256', webhookSecret).update(payload).digest('hex');
+    if (signature !== expected) {
+      console.warn('[MP] Webhook assinatura invalida');
+      return res.sendStatus(403);
+    }
+  }
+
   const { type, data } = req.body;
 
   if (type === 'payment' && data?.id) {

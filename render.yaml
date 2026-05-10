@@ -13,6 +13,8 @@ services:
         value: https://pedeacai.dream2app.com.br
       - key: MERCADO_PAGO_PUBLIC_KEY
         sync: false
+      - key: MP_WEBHOOK_SECRET
+        sync: false
     disk:
       name: data
       mountPath: /data
