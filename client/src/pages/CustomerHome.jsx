@@ -95,20 +95,20 @@ export default function CustomerHome() {
   return (
     <div>
       <div className="header">
-        <div className="flex-row">
+        <div className="header-left">
           {store?.logo && (
-            <img src={store.logo} alt="Logo" style={{ width: 36, height: 36, borderRadius: 8, objectFit: 'contain' }} />
+            <img src={store.logo} alt="Logo" style={{ width: 36, height: 36, borderRadius: 8, objectFit: 'contain', flexShrink: 0 }} />
           )}
-          <div>
+          <div style={{ minWidth: 0 }}>
             <div style={{ fontSize: 12, opacity: 0.8 }}>Olá, {user?.name?.split(' ')[0]}</div>
             <div className="header-title">Açaí Rapidola</div>
           </div>
         </div>
-        <div className="flex-row">
-          <button className="btn btn-sm btn-outline"
-            style={{ color: 'white', borderColor: 'rgba(255,255,255,0.5)', fontSize: 12 }}
+        <div className="header-right">
+          <button className="btn btn-sm"
+            style={{ color: 'white', borderColor: 'rgba(255,255,255,0.5)', fontSize: 12, background: 'transparent', border: '1px solid rgba(255,255,255,0.4)' }}
             onClick={() => setView(view === 'menu' ? 'orders' : 'menu')}>
-            {view === 'menu' ? 'Meus Pedidos' : 'Cardápio'}
+            {view === 'menu' ? 'Pedidos' : 'Cardápio'}
           </button>
           <button className="btn btn-sm"
             style={{ background: 'rgba(255,255,255,0.15)', color: 'white', fontSize: 12 }}

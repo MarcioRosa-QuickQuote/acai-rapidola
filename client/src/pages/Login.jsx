@@ -40,7 +40,7 @@ export default function Login() {
     }}>
       <div style={{ textAlign: 'center', color: 'white', padding: '40px 20px' }}>
         {storeLogo ? (
-          <img src={storeLogo} alt="Logo" style={{ width: 80, height: 80, borderRadius: 16, objectFit: 'contain', background: 'white', padding: 8, marginBottom: 12 }} />
+          <img src={storeLogo} alt="Logo" style={{ width: 80, height: 80, borderRadius: 16, objectFit: 'contain', marginBottom: 12 }} />
         ) : (
           <div style={{ fontSize: 48, marginBottom: 8 }}>
             <svg width="64" height="64" viewBox="0 0 64 64" fill="none">

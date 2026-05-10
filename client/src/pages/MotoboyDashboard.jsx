@@ -146,16 +146,16 @@ export default function MotoboyDashboard() {
   return (
     <div>
       <div className="header" style={{ background: 'linear-gradient(135deg, #1565C0, #0D47A1)' }}>
-        <div className="flex-row">
+        <div className="header-left">
           {store?.logo && (
-            <img src={store.logo} alt="Logo" style={{ width: 36, height: 36, borderRadius: 8, objectFit: 'contain' }} />
+            <img src={store.logo} alt="Logo" style={{ width: 36, height: 36, borderRadius: 8, objectFit: 'contain', flexShrink: 0 }} />
           )}
-          <div>
+          <div style={{ minWidth: 0 }}>
             <div style={{ fontSize: 12, opacity: 0.8 }}>Olá, {user?.name?.split(' ')[0]}</div>
             <div className="header-title">Entregas</div>
           </div>
         </div>
-        <div className="flex-row">
+        <div className="header-right">
           <div className="toggle-switch" onClick={() => {
             setOnline(!online);
             if (!online) sendLocation();
@@ -163,7 +163,7 @@ export default function MotoboyDashboard() {
             <input type="checkbox" checked={online} readOnly />
             <span className="toggle-slider" />
           </div>
-          <span style={{ fontSize: 12, color: 'white' }}>{online ? 'Online' : 'Offline'}</span>
+          <span className="hide-mobile" style={{ fontSize: 12, color: 'white' }}>{online ? 'Online' : 'Offline'}</span>
           <button className="btn btn-sm"
             style={{ background: 'rgba(255,255,255,0.15)', color: 'white', fontSize: 12 }}
             onClick={logout}>Sair</button>

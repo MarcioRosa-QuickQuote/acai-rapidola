@@ -188,16 +188,16 @@ export default function StoreDashboard() {
   return (
     <div>
       <div className="header">
-        <div className="flex-row">
+        <div className="header-left">
           {storeData?.logo && (
-            <img src={storeData.logo} alt="Logo" style={{ width: 36, height: 36, borderRadius: 8, objectFit: 'contain' }} />
+            <img src={storeData.logo} alt="Logo" style={{ width: 36, height: 36, borderRadius: 8, objectFit: 'contain', flexShrink: 0 }} />
           )}
-          <div>
+          <div style={{ minWidth: 0 }}>
             <div className="header-title">{storeData?.name || 'Loja'}</div>
           </div>
         </div>
-        <div className="flex-row">
-          <span style={{ fontSize: 12, fontWeight: 600, opacity: 0.9 }}>Delivery</span>
+        <div className="header-right">
+          <span className="hide-mobile" style={{ fontSize: 12, fontWeight: 600, opacity: 0.9 }}>Delivery</span>
           <div className="toggle-switch" onClick={toggleOpen} title={open ? 'Fechar loja' : 'Abrir loja'}>
             <input type="checkbox" checked={open} readOnly />
             <span className="toggle-slider" />

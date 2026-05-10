@@ -72,13 +72,15 @@ export default function CustomerTracking() {
   return (
     <div>
       <div className="header">
-        <button className="btn btn-sm"
-          style={{ background: 'rgba(255,255,255,0.15)', color: 'white', fontSize: 14 }}
-          onClick={() => navigate('/customer')}>
-          Voltar
-        </button>
+        <div className="header-left">
+          <button className="btn btn-sm"
+            style={{ background: 'rgba(255,255,255,0.15)', color: 'white', fontSize: 14 }}
+            onClick={() => navigate('/customer')}>
+            Voltar
+          </button>
+        </div>
         <div className="header-title">Acompanhar</div>
-        <div style={{ width: 50 }} />
+        <div className="header-right" />
       </div>
 
       <div className="container">
