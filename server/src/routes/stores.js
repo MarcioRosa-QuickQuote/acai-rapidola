@@ -117,6 +117,66 @@ router.get('/:id/motoboys', authMiddleware, roleMiddleware('store'), (req, res) 
   res.json(motoboys);
 });
 
+router.get('/:id/invites', authMiddleware, roleMiddleware('store'), (req, res) => {
+  const store = db.prepare('SELECT * FROM stores WHERE id = ? AND owner_id = ?')
+    .get(req.params.id, req.user.id);
+  if (!store) return res.status(403).json({ error: 'Não autorizado' });
+
+  const invites = db.prepare(
+    'SELECT * FROM store_invites WHERE store_id = ? ORDER BY created_at DESC'
+  ).all(req.params.id);
+
+  res.json(invites);
+});
+
+router.post('/:id/invite', authMiddleware, roleMiddleware('store'), (req, res) => {
+  const store = db.prepare('SELECT * FROM stores WHERE id = ? AND owner_id = ?')
+    .get(req.params.id, req.user.id);
+  if (!store) return res.status(403).json({ error: 'Não autorizado' });
+
+  const { phone } = req.body;
+  if (!phone) return res.status(400).json({ error: 'Telefone do motoboy é obrigatório' });
+
+  const existingUser = db.prepare('SELECT id FROM users WHERE phone = ?').get(phone);
+  if (existingUser) {
+    const alreadyLinked = db.prepare(
+      'SELECT * FROM store_motoboys WHERE store_id = ? AND motoboy_id = ?'
+    ).get(req.params.id, existingUser.id);
+    if (alreadyLinked) return res.status(409).json({ error: 'Motoboy já vinculado a esta loja' });
+
+    const role = db.prepare('SELECT role FROM users WHERE id = ?').get(existingUser.id);
+    if (role.role !== 'motoboy') return res.status(400).json({ error: 'Este telefone não pertence a um motoboy' });
+
+    db.prepare('INSERT INTO store_motoboys (store_id, motoboy_id, employee) VALUES (?, ?, 1)')
+      .run(req.params.id, existingUser.id);
+
+    const user = db.prepare('SELECT id, name, phone FROM users WHERE id = ?').get(existingUser.id);
+    return res.json({ ...user, employee: 1, direct: true });
+  }
+
+  const { v4: uuid } = require('uuid');
+  const token = uuid().replace(/-/g, '').slice(0, 12);
+  const id = uuid();
+
+  db.prepare(
+    'INSERT INTO store_invites (id, store_id, phone, token) VALUES (?, ?, ?, ?)'
+  ).run(id, req.params.id, phone, token);
+
+  const inviteLink = `${req.protocol}://${req.get('host')}/register?token=${token}`;
+  res.json({ id, phone, token, inviteLink });
+});
+
+router.delete('/:id/invite/:inviteId', authMiddleware, roleMiddleware('store'), (req, res) => {
+  const store = db.prepare('SELECT * FROM stores WHERE id = ? AND owner_id = ?')
+    .get(req.params.id, req.user.id);
+  if (!store) return res.status(403).json({ error: 'Não autorizado' });
+
+  db.prepare('DELETE FROM store_invites WHERE id = ? AND store_id = ?')
+    .run(req.params.inviteId, req.params.id);
+
+  res.json({ success: true });
+});
+
 router.post('/:id/motoboy', authMiddleware, roleMiddleware('store'), (req, res) => {
   const store = db.prepare('SELECT * FROM stores WHERE id = ? AND owner_id = ?')
     .get(req.params.id, req.user.id);

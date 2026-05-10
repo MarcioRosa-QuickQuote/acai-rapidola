@@ -130,6 +130,17 @@ function init() {
       FOREIGN KEY (store_id) REFERENCES stores(id),
       FOREIGN KEY (motoboy_id) REFERENCES users(id)
     );
+
+    CREATE TABLE IF NOT EXISTS store_invites (
+      id TEXT PRIMARY KEY,
+      store_id TEXT NOT NULL,
+      phone TEXT NOT NULL,
+      token TEXT UNIQUE NOT NULL,
+      used INTEGER DEFAULT 0,
+      motoboy_id TEXT,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (store_id) REFERENCES stores(id)
+    );
   `);
 }
 

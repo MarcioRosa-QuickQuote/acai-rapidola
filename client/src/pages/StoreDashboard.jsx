@@ -49,6 +49,8 @@ export default function StoreDashboard() {
   const [motoboys, setMotoboys] = useState([]);
   const [motoboyPhone, setMotoboyPhone] = useState('');
   const [motoboyMsg, setMotoboyMsg] = useState('');
+  const [invites, setInvites] = useState([]);
+  const [inviteLink, setInviteLink] = useState('');
 
   useEffect(() => {
     loadOrders();
@@ -188,26 +190,53 @@ export default function StoreDashboard() {
 
   async function loadMotoboys() {
     if (!storeData) return;
-    const data = await apiFetch(`/stores/${storeData.id}/motoboys`);
-    if (Array.isArray(data)) setMotoboys(data);
+    const [motoboysData, invitesData] = await Promise.all([
+      apiFetch(`/stores/${storeData.id}/motoboys`),
+      apiFetch(`/stores/${storeData.id}/invites`)
+    ]);
+    if (Array.isArray(motoboysData)) setMotoboys(motoboysData);
+    if (Array.isArray(invitesData)) setInvites(invitesData);
   }
 
-  async function addMotoboy() {
+  async function generateInvite() {
     if (!motoboyPhone.trim() || !storeData) return;
     setMotoboyMsg('');
-    const data = await apiFetch(`/stores/${storeData.id}/motoboy`, {
+    setInviteLink('');
+    const data = await apiFetch(`/stores/${storeData.id}/invite`, {
       method: 'POST',
       body: JSON.stringify({ phone: motoboyPhone.trim() })
     });
     if (data.error) {
       setMotoboyMsg(data.error);
       setTimeout(() => setMotoboyMsg(''), 4000);
-    } else {
+    } else if (data.direct) {
       setMotoboyPhone('');
-      setMotoboyMsg('Motoboy adicionado como parceiro da loja!');
+      setMotoboyMsg(`Motoboy ${data.name} vinculado diretamente como parceiro!`);
       setTimeout(() => setMotoboyMsg(''), 3000);
       loadMotoboys();
+    } else if (data.inviteLink) {
+      setInviteLink(data.inviteLink);
+      setMotoboyMsg('Convite gerado! Compartilhe o link com o motoboy.');
+      setTimeout(() => setMotoboyMsg(''), 6000);
+      loadMotoboys();
     }
+  }
+
+  async function copyInviteLink() {
+    try {
+      await navigator.clipboard.writeText(inviteLink);
+      setMotoboyMsg('Link copiado! Envie para o motoboy.');
+      setTimeout(() => setMotoboyMsg(''), 3000);
+    } catch {
+      setMotoboyMsg('Erro ao copiar. Copie o link manualmente.');
+      setTimeout(() => setMotoboyMsg(''), 3000);
+    }
+  }
+
+  async function revokeInvite(inviteId) {
+    if (!storeData || !confirm('Cancelar este convite?')) return;
+    await apiFetch(`/stores/${storeData.id}/invite/${inviteId}`, { method: 'DELETE' });
+    loadMotoboys();
   }
 
   async function toggleEmployee(motoboyId, current) {
@@ -401,42 +430,88 @@ export default function StoreDashboard() {
             </>
             ) : (
             <>
-            <div className="page-title">Motoboys Parceiros</div>
+            <div className="page-title">Motoboys</div>
 
             <div className="card" style={{ background: '#E3F2FD', border: '1px solid #BBDEFB', marginBottom: 16 }}>
-              <p className="text-xs text-muted" style={{ marginBottom: 8 }}>
-                Motoboys parceiros recebem pedidos automaticamente quando ficam prontos.
-                Motoboys independentes (não parceiros) escolhem quais pedidos aceitar — igual ao modelo iFood.
+              <p className="text-xs text-muted" style={{ marginBottom: 4, fontWeight: 600 }}>Como funciona:</p>
+              <p className="text-xs text-muted" style={{ marginBottom: 4 }}>
+                <strong>Parceiro:</strong> voce gera um link de convite, o motoboy se cadastra e recebe pedidos automaticamente (sem aceitar/recusar).
+              </p>
+              <p className="text-xs text-muted">
+                <strong>Independente:</strong> motoboys se cadastram sozinhos e escolhem quais pedidos aceitar (modelo iFood/Uber).
               </p>
             </div>
 
             <div className="card">
               <div className="form-group">
-                <label className="label">Adicionar Motoboy</label>
+                <label className="label">Convidar Motoboy Parceiro</label>
                 <div className="flex-row" style={{ gap: 8 }}>
                   <input className="input" type="text" value={motoboyPhone}
                     onChange={e => setMotoboyPhone(e.target.value)}
-                    placeholder="Telefone do motoboy cadastrado"
+                    placeholder="WhatsApp do motoboy (ex: 11999999999)"
                     style={{ flex: 1 }} />
                   <button className="btn btn-primary btn-sm"
-                    onClick={addMotoboy}
+                    onClick={generateInvite}
                     style={{ width: 'auto', whiteSpace: 'nowrap' }}>
-                    Adicionar
+                    Gerar Convite
                   </button>
                 </div>
-                {motoboyMsg && (
-                  <div style={{
-                    marginTop: 8, fontSize: 13, fontWeight: 600,
-                    color: motoboyMsg.includes('Erro') ? '#C62828' : '#2E7D32'
-                  }}>
-                    {motoboyMsg}
-                  </div>
-                )}
+                <span className="text-xs text-muted">Se o motoboy ja tiver cadastro, sera vinculado direto. Senao, gere o link.</span>
               </div>
 
-              {motoboys.length === 0 ? (
+              {inviteLink && (
+                <div style={{ background: '#E8F5E9', border: '1px solid #C8E6C9', padding: 12, borderRadius: 8, marginBottom: 12 }}>
+                  <div style={{ fontWeight: 600, color: '#2E7D32', marginBottom: 6, fontSize: 13 }}>
+                    Link de convite gerado:
+                  </div>
+                  <div style={{ background: 'white', padding: 8, borderRadius: 4, fontSize: 12, wordBreak: 'break-all', marginBottom: 8, border: '1px solid var(--border)' }}>
+                    {inviteLink}
+                  </div>
+                  <button className="btn btn-primary btn-sm" onClick={copyInviteLink}>
+                    Copiar Link
+                  </button>
+                  <span className="text-xs text-muted" style={{ marginLeft: 8 }}>Envie este link para o motoboy se cadastrar</span>
+                </div>
+              )}
+
+              {motoboyMsg && (
+                <div style={{
+                  marginTop: 8, fontSize: 13, fontWeight: 600,
+                  color: motoboyMsg.includes('Erro') || motoboyMsg.includes('invalido') ? '#C62828' : '#2E7D32'
+                }}>
+                  {motoboyMsg}
+                </div>
+              )}
+
+              <hr style={{ margin: '20px 0', borderTop: '1px solid var(--border)' }} />
+
+              {invites.filter(i => !i.used).length > 0 && (
+                <div style={{ marginBottom: 16 }}>
+                  <label className="label">Convites Pendentes</label>
+                  {invites.filter(i => !i.used).map(inv => (
+                    <div key={inv.id} className="flex-between" style={{ padding: '8px 12px', background: '#FFF8E1', borderRadius: 8, border: '1px solid #FFE082', marginBottom: 6 }}>
+                      <div>
+                        <div className="text-sm font-bold">{inv.phone}</div>
+                        <div className="text-xs text-muted">Aguardando cadastro</div>
+                      </div>
+                      <button className="btn btn-sm"
+                        style={{ color: '#C62828', fontSize: 12, background: 'transparent' }}
+                        onClick={() => revokeInvite(inv.id)}>
+                        Cancelar
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              <label className="label">Motoboys Vinculados</label>
+              {motoboys.length === 0 && invites.filter(i => !i.used).length === 0 ? (
                 <div className="text-center text-muted" style={{ padding: 20 }}>
-                  Nenhum motoboy vinculado. Adicione um pelo telefone.
+                  Nenhum motoboy vinculado. Convide um motoboy parceiro pelo telefone acima.
+                </div>
+              ) : motoboys.length === 0 ? (
+                <div className="text-center text-muted" style={{ padding: 20 }}>
+                  Nenhum motoboy vinculado ainda. Aguardando cadastro dos convidados.
                 </div>
               ) : (
                 motoboys.map(m => (

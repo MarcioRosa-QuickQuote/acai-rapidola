@@ -7,7 +7,7 @@ const { signToken, authMiddleware } = require('../auth');
 const router = Router();
 
 router.post('/register', (req, res) => {
-  const { name, phone, password, role } = req.body;
+  const { name, phone, password, role, inviteToken } = req.body;
   if (!name || !phone || !password || !role) {
     return res.status(400).json({ error: 'Nome, telefone, senha e perfil são obrigatórios' });
   }
@@ -32,7 +32,29 @@ router.post('/register', (req, res) => {
       .run(id, -23.5505, -46.6333, 1);
   }
 
+  if (inviteToken) {
+    const invite = db.prepare("SELECT * FROM store_invites WHERE token = ? AND used = 0").get(inviteToken);
+    if (invite && invite.phone === phone) {
+      db.prepare('UPDATE store_invites SET used = 1, motoboy_id = ? WHERE id = ?').run(id, invite.id);
+      db.prepare('INSERT OR IGNORE INTO store_motoboys (store_id, motoboy_id, employee) VALUES (?, ?, 1)')
+        .run(invite.store_id, id);
+    }
+  }
+
   res.json({ user, token });
+});
+
+router.get('/register/check-invite', (req, res) => {
+  const { token } = req.query;
+  if (!token) return res.json({ valid: false });
+
+  const invite = db.prepare(
+    "SELECT * FROM store_invites WHERE token = ? AND used = 0"
+  ).get(token);
+
+  if (!invite) return res.json({ valid: false });
+
+  res.json({ valid: true, phone: invite.phone });
 });
 
 router.post('/login', (req, res) => {

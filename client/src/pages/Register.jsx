@@ -1,9 +1,11 @@
-import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { Link, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 
 export default function Register() {
-  const { register } = useAuth();
+  const { register, apiFetch } = useAuth();
+  const [searchParams] = useSearchParams();
+  const inviteToken = searchParams.get('token');
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
@@ -11,12 +13,27 @@ export default function Register() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
+  useEffect(() => {
+    if (inviteToken) {
+      setRole('motoboy');
+      fetch(`/api/auth/register/check-invite?token=${inviteToken}`)
+        .then(r => r.json())
+        .then(d => {
+          if (d.valid) {
+            setPhone(d.phone);
+          } else {
+            setError('Convite invalido ou ja utilizado.');
+          }
+        });
+    }
+  }, [inviteToken]);
+
   async function handleSubmit(e) {
     e.preventDefault();
     setError('');
     setLoading(true);
     try {
-      await register(name, phone, password, role);
+      await register(name, phone, password, role, inviteToken);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -33,6 +50,11 @@ export default function Register() {
       <div style={{ textAlign: 'center', color: 'white', padding: '30px 20px' }}>
         <h1 style={{ fontSize: 28, fontWeight: 800 }}>Açaí Rapidola</h1>
         <p style={{ opacity: 0.9, fontSize: 14 }}>Crie sua conta</p>
+        {inviteToken && (
+          <div style={{ background: 'rgba(255,255,255,0.2)', padding: 8, borderRadius: 8, marginTop: 8, fontSize: 12 }}>
+            Convite de loja parceira — voce sera vinculado automaticamente
+          </div>
+        )}
       </div>
 
       <div className="card" style={{ maxWidth: 400, width: '100%', margin: '0 auto' }}>
