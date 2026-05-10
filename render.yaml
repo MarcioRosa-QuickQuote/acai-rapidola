@@ -10,7 +10,7 @@ services:
       - key: MERCADO_PAGO_ACCESS_TOKEN
         sync: false
       - key: APP_URL
-        sync: false
+        value: https://pedeacai.dream2app.com.br
       - key: MERCADO_PAGO_PUBLIC_KEY
         sync: false
     disk:
