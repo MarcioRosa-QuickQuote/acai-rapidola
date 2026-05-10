@@ -44,6 +44,7 @@ export default function StoreDashboard() {
   const [geocoding, setGeocoding] = useState(false);
   const [uploading, setUploading] = useState(false);
   const fileRef = useRef(null);
+  const [logoSaving, setLogoSaving] = useState(false);
 
   useEffect(() => {
     loadOrders();
@@ -102,36 +103,43 @@ export default function StoreDashboard() {
     if (data.ok || data.open !== undefined) setOpen(data.open);
   }
 
+  async function uploadLogo() {
+    const file = fileRef.current?.files?.[0];
+    if (!file || !storeData) return;
+    setLogoSaving(true);
+    const formData = new FormData();
+    formData.append('logo', file);
+    try {
+      const res = await fetch(`/api/stores/${storeData.id}/logo`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+        body: formData
+      });
+      const data = await res.json();
+      if (data.logo) {
+        setSettings(s => ({ ...s, logo: data.logo }));
+        setStore(prev => prev ? { ...prev, logo: data.logo } : prev);
+        setSaveMsg('Logo atualizado!');
+        setTimeout(() => setSaveMsg(''), 2000);
+      }
+    } catch {
+      setSaveMsg('Erro ao enviar logo.');
+      setTimeout(() => setSaveMsg(''), 3000);
+    } finally {
+      setLogoSaving(false);
+    }
+  }
+
   async function saveSettings() {
     if (!storeData) return;
     setSaveMsg('');
     setUploading(true);
 
-    let logoUrl = settings.logo;
-    const file = fileRef.current?.files?.[0];
-    if (file) {
-      const formData = new FormData();
-      formData.append('logo', file);
-      try {
-        const res = await fetch(`/api/stores/${storeData.id}/logo`, {
-          method: 'POST',
-          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
-          body: formData
-        });
-        const data = await res.json();
-        if (data.logo) logoUrl = data.logo;
-      } catch {
-        setSaveMsg('Erro ao enviar logo.');
-        setUploading(false);
-        return;
-      }
-    }
-
     const data = await apiFetch(`/stores/${storeData.id}/settings`, {
       method: 'PUT',
       body: JSON.stringify({
         name: settings.name,
-        logo: logoUrl,
+        logo: settings.logo,
         address: settings.address,
         lat: parseFloat(settings.lat),
         lng: parseFloat(settings.lng)
@@ -190,7 +198,7 @@ export default function StoreDashboard() {
       <div className="header">
         <div className="header-left">
           {storeData?.logo && (
-            <img src={storeData.logo} alt="Logo" style={{ width: 36, height: 36, borderRadius: 8, objectFit: 'contain', flexShrink: 0 }} onError={e => { e.target.style.display = 'none'; }} />
+            <img src={storeData.logo} alt="Logo" style={{ width: 44, height: 44, borderRadius: 8, objectFit: 'contain', flexShrink: 0 }} onError={e => { e.target.style.display = 'none'; }} />
           )}
           <div style={{ minWidth: 0 }}>
             <div className="header-title">{storeData?.name || 'Loja'}</div>
@@ -238,15 +246,16 @@ export default function StoreDashboard() {
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
                   {(settings.logo || fileRef.current?.files?.[0]) && (
                     <img
-                      src={fileRef.current?.files?.[0] ? URL.createObjectURL(fileRef.current.files[0]) : settings.logo}
+                      src={settings.logo || (fileRef.current?.files?.[0] ? URL.createObjectURL(fileRef.current.files[0]) : null)}
                       alt="Logo"
                       style={{ maxWidth: 160, maxHeight: 80, objectFit: 'contain', borderRadius: 8 }}
                       onError={e => { e.target.style.display = 'none'; }}
                     />
                   )}
                   <input type="file" accept="image/*" ref={fileRef}
-                    onChange={() => setSaveMsg('')}
+                    onChange={uploadLogo}
                     style={{ fontSize: 14 }} />
+                  {logoSaving && <span className="text-xs text-muted">Enviando logo...</span>}
                   <span className="text-xs text-muted">Formatos aceitos: PNG, JPG, GIF (máx 5MB)</span>
                 </div>
               </div>

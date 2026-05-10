@@ -97,7 +97,7 @@ export default function CustomerHome() {
       <div className="header">
         <div className="header-left">
           {store?.logo && (
-            <img src={store.logo} alt="Logo" style={{ width: 36, height: 36, borderRadius: 8, objectFit: 'contain', flexShrink: 0 }} onError={e => { e.target.style.display = 'none'; }} />
+            <img src={store.logo} alt="Logo" style={{ width: 44, height: 44, borderRadius: 8, objectFit: 'contain', flexShrink: 0 }} onError={e => { e.target.style.display = 'none'; }} />
           )}
           <div style={{ minWidth: 0 }}>
             <div style={{ fontSize: 12, opacity: 0.8 }}>Olá, {user?.name?.split(' ')[0]}</div>
