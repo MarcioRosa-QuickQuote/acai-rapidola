@@ -48,7 +48,7 @@ export default function Register() {
       minHeight: '100vh'
     }}>
       <div style={{ textAlign: 'center', color: 'white', padding: '30px 20px' }}>
-        <h1 style={{ fontSize: 28, fontWeight: 800 }}>Pe de Acai</h1>
+        <h1 style={{ fontSize: 28, fontWeight: 800 }}>Pé de Açaí</h1>
         <p style={{ opacity: 0.9, fontSize: 14 }}>Crie sua conta</p>
         {inviteToken && (
           <div style={{ background: 'rgba(255,255,255,0.2)', padding: 8, borderRadius: 8, marginTop: 8, fontSize: 12 }}>

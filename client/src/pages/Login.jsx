@@ -42,11 +42,11 @@ export default function Login() {
         <img
           src={storeLogo || '/logo.png'}
           alt="Logo"
-          style={{ width: 90, height: 90, borderRadius: 16, objectFit: 'contain', marginBottom: 12 }}
+          style={{ width: 120, height: 120, borderRadius: 20, objectFit: 'contain', marginBottom: 12 }}
           onError={e => { e.target.style.display = 'none'; }}
         />
-        <h1 style={{ fontSize: 32, fontWeight: 800, marginBottom: 4 }}>Pe de Acai</h1>
-        <p style={{ opacity: 0.9, fontSize: 14 }}>O jeito mais rapido de pedir seu acai</p>
+        <h1 style={{ fontSize: 32, fontWeight: 800, marginBottom: 4 }}>Pé de Açaí</h1>
+        <p style={{ opacity: 0.9, fontSize: 14 }}>O jeito mais rápido de pedir seu açaí</p>
       </div>
 
       <div className="card" style={{ maxWidth: 400, width: '100%', margin: '0 auto' }}>
