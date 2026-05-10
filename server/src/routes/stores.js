@@ -6,7 +6,11 @@ const multer = require('multer');
 const db = require('../database');
 const { authMiddleware, roleMiddleware } = require('../auth');
 
-const uploadsDir = path.join(__dirname, '..', '..', 'uploads');
+const isVercel = !!process.env.VERCEL;
+
+const uploadsDir = isVercel
+  ? path.join('/tmp', 'uploads')
+  : path.join(__dirname, '..', '..', 'uploads');
 if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir, { recursive: true });
 
 const storage = multer.diskStorage({
