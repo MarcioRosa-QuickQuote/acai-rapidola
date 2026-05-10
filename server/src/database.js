@@ -26,6 +26,9 @@ function init() {
       phone TEXT UNIQUE NOT NULL,
       password_hash TEXT NOT NULL,
       role TEXT NOT NULL CHECK(role IN ('customer','store','motoboy')),
+      address TEXT DEFAULT '',
+      lat REAL DEFAULT NULL,
+      lng REAL DEFAULT NULL,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     );
 
@@ -175,7 +178,18 @@ function seed() {
   console.log('  Cliente: cliente / 123456');
 }
 
+function migrate() {
+  const cols = db.prepare("PRAGMA table_info('users')").all().map(c => c.name);
+  if (!cols.includes('address')) {
+    db.exec("ALTER TABLE users ADD COLUMN address TEXT DEFAULT ''");
+    db.exec('ALTER TABLE users ADD COLUMN lat REAL DEFAULT NULL');
+    db.exec('ALTER TABLE users ADD COLUMN lng REAL DEFAULT NULL');
+    console.log('[DB] Migração: colunas address/lat/lng adicionadas à users.');
+  }
+}
+
 init();
+migrate();
 seed();
 
 module.exports = db;

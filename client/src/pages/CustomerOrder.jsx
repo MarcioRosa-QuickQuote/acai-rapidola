@@ -40,6 +40,20 @@ export default function CustomerOrder() {
   const [mapCenter, setMapCenter] = useState([-23.5505, -46.6333]);
   const [geocoding, setGeocoding] = useState(false);
   const [showMap, setShowMap] = useState(false);
+  const [addrSaved, setAddrSaved] = useState(false);
+
+  useEffect(() => {
+    if (user?.address && !address) {
+      setAddress(user.address);
+      if (user.lat && user.lng) {
+        setLat(user.lat);
+        setLng(user.lng);
+        setMapCenter([user.lat, user.lng]);
+        setShowMap(true);
+      }
+      setAddrSaved(true);
+    }
+  }, [user]);
 
   async function geocodeAddress() {
     if (!address) return;
@@ -145,6 +159,11 @@ export default function CustomerOrder() {
 
             <div className="form-group">
               <label className="label">Endereço de entrega</label>
+              {addrSaved && (
+                <div style={{ background: '#E8F5E9', color: '#2E7D32', padding: '8px 12px', borderRadius: 8, marginBottom: 10, fontSize: 13, fontWeight: 600 }}>
+                  Endereço salvo! So precisa cadastrar uma vez.
+                </div>
+              )}
               <div className="flex-row" style={{ gap: 8 }}>
                 <input className="input" type="text" value={address} onChange={e => setAddress(e.target.value)}
                   placeholder="Rua, número, bairro - Cidade" required

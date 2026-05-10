@@ -47,7 +47,7 @@ router.post('/login', (req, res) => {
   const valid = bcrypt.compareSync(password, user.password_hash);
   if (!valid) return res.status(401).json({ error: 'Telefone ou senha inválidos' });
 
-  const payload = { id: user.id, name: user.name, role: user.role, phone: user.phone };
+  const payload = { id: user.id, name: user.name, role: user.role, phone: user.phone, address: user.address || '', lat: user.lat, lng: user.lng };
   const token = signToken(payload);
 
   let store = null;
@@ -59,7 +59,7 @@ router.post('/login', (req, res) => {
 });
 
 router.get('/me', authMiddleware, (req, res) => {
-  const user = db.prepare('SELECT id, name, phone, role, created_at FROM users WHERE id = ?').get(req.user.id);
+  const user = db.prepare('SELECT id, name, phone, role, address, lat, lng, created_at FROM users WHERE id = ?').get(req.user.id);
   if (!user) return res.status(404).json({ error: 'Usuário não encontrado' });
 
   let store = null;

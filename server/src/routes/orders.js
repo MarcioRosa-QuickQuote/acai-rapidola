@@ -69,6 +69,11 @@ router.post('/', authMiddleware, roleMiddleware('customer'), (req, res) => {
 
   const order = db.prepare('SELECT * FROM orders WHERE id = ?').get(orderId);
 
+  if (address) {
+    db.prepare('UPDATE users SET address = ?, lat = ?, lng = ? WHERE id = ?')
+      .run(address, lat || null, lng || null, req.user.id);
+  }
+
   const io = getIO();
   if (io) {
     io.to(`store:${store_id}`).emit('new_order', { orderId, total, customer: req.user.name, address });
