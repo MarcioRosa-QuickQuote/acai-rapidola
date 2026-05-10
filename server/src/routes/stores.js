@@ -60,9 +60,10 @@ router.put('/:id/settings', authMiddleware, roleMiddleware('store'), (req, res) 
     .get(req.params.id, req.user.id);
   if (!store) return res.status(403).json({ error: 'Não autorizado' });
 
-  const { logo, lat, lng, address, color_primary, color_secondary } = req.body;
+  const { name, logo, lat, lng, address, color_primary, color_secondary } = req.body;
   db.prepare(`
     UPDATE stores SET
+      name = COALESCE(?, name),
       logo = COALESCE(?, logo),
       lat = COALESCE(?, lat),
       lng = COALESCE(?, lng),
@@ -70,7 +71,7 @@ router.put('/:id/settings', authMiddleware, roleMiddleware('store'), (req, res) 
       color_primary = COALESCE(?, color_primary),
       color_secondary = COALESCE(?, color_secondary)
     WHERE id = ?
-  `).run(logo ?? null, lat ?? null, lng ?? null, address ?? null, color_primary ?? null, color_secondary ?? null, store.id);
+  `).run(name ?? null, logo ?? null, lat ?? null, lng ?? null, address ?? null, color_primary ?? null, color_secondary ?? null, store.id);
 
   const updated = db.prepare('SELECT * FROM stores WHERE id = ?').get(store.id);
   res.json(updated);

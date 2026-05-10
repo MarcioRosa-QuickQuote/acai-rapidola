@@ -148,7 +148,7 @@ export default function MotoboyDashboard() {
       <div className="header" style={{ background: 'linear-gradient(135deg, #1565C0, #0D47A1)' }}>
         <div className="flex-row">
           {store?.logo && (
-            <img src={store.logo} alt="Logo" style={{ width: 36, height: 36, borderRadius: 8, objectFit: 'contain', background: 'white', padding: 2 }} />
+            <img src={store.logo} alt="Logo" style={{ width: 36, height: 36, borderRadius: 8, objectFit: 'contain' }} />
           )}
           <div>
             <div style={{ fontSize: 12, opacity: 0.8 }}>Olá, {user?.name?.split(' ')[0]}</div>

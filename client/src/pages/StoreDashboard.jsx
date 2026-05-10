@@ -31,14 +31,14 @@ const actionMap = {
 };
 
 export default function StoreDashboard() {
-  const { user, store: storeData, apiFetch, logout } = useAuth();
+  const { user, store: storeData, apiFetch, logout, setStore } = useAuth();
   const { socket, joinStore, toast, setToast } = useSocket();
   const [orders, setOrders] = useState([]);
   const [open, setOpen] = useState(true);
   const [loading, setLoading] = useState(true);
   const [view, setView] = useState('orders');
   const [selectedOrder, setSelectedOrder] = useState(null);
-  const [settings, setSettings] = useState({ logo: '', address: '', lat: '', lng: '' });
+  const [settings, setSettings] = useState({ name: '', logo: '', address: '', lat: '', lng: '' });
   const [saveMsg, setSaveMsg] = useState('');
   const [mapCenter, setMapCenter] = useState([-23.5505, -46.6333]);
   const [geocoding, setGeocoding] = useState(false);
@@ -56,6 +56,7 @@ export default function StoreDashboard() {
   useEffect(() => {
     if (storeData) {
       setSettings({
+        name: storeData.name || '',
         logo: storeData.logo || '',
         address: storeData.address || '',
         lat: String(storeData.lat),
@@ -129,6 +130,7 @@ export default function StoreDashboard() {
     const data = await apiFetch(`/stores/${storeData.id}/settings`, {
       method: 'PUT',
       body: JSON.stringify({
+        name: settings.name,
         logo: logoUrl,
         address: settings.address,
         lat: parseFloat(settings.lat),
@@ -136,6 +138,7 @@ export default function StoreDashboard() {
       })
     });
     if (data.ok) {
+      if (data.name) setStore(data);
       setSaveMsg('Configurações salvas!');
       setTimeout(() => setSaveMsg(''), 3000);
     }
@@ -187,14 +190,14 @@ export default function StoreDashboard() {
       <div className="header">
         <div className="flex-row">
           {storeData?.logo && (
-            <img src={storeData.logo} alt="Logo" style={{ width: 36, height: 36, borderRadius: 8, objectFit: 'contain', background: 'white', padding: 2 }} />
+            <img src={storeData.logo} alt="Logo" style={{ width: 36, height: 36, borderRadius: 8, objectFit: 'contain' }} />
           )}
           <div>
-            <div style={{ fontSize: 12, opacity: 0.8 }}>{storeData?.name || 'Loja'}</div>
-            <div className="header-title">Dashboard</div>
+            <div className="header-title">{storeData?.name || 'Loja'}</div>
           </div>
         </div>
         <div className="flex-row">
+          <span style={{ fontSize: 12, fontWeight: 600, opacity: 0.9 }}>Delivery</span>
           <div className="toggle-switch" onClick={toggleOpen} title={open ? 'Fechar loja' : 'Abrir loja'}>
             <input type="checkbox" checked={open} readOnly />
             <span className="toggle-slider" />
@@ -246,6 +249,13 @@ export default function StoreDashboard() {
                     style={{ fontSize: 14 }} />
                   <span className="text-xs text-muted">Formatos aceitos: PNG, JPG, GIF (máx 5MB)</span>
                 </div>
+              </div>
+
+              <div className="form-group">
+                <label className="label">Nome da Loja</label>
+                <input className="input" type="text" value={settings.name}
+                  onChange={e => setSettings(s => ({ ...s, name: e.target.value }))}
+                  placeholder="Nome que aparece no topo do app" />
               </div>
 
               <div className="form-group">
