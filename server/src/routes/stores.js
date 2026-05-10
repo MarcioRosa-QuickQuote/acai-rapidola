@@ -102,4 +102,73 @@ router.patch('/:id/toggle-open', authMiddleware, roleMiddleware('store'), (req, 
   res.json({ open: !!newStatus, message: newStatus ? 'Loja ABERTA para pedidos' : 'Loja FECHADA - entregas encerradas' });
 });
 
+router.get('/:id/motoboys', authMiddleware, roleMiddleware('store'), (req, res) => {
+  const store = db.prepare('SELECT * FROM stores WHERE id = ? AND owner_id = ?')
+    .get(req.params.id, req.user.id);
+  if (!store) return res.status(403).json({ error: 'Não autorizado' });
+
+  const motoboys = db.prepare(`
+    SELECT u.id, u.name, u.phone, sm.employee, sm.created_at
+    FROM store_motoboys sm
+    JOIN users u ON sm.motoboy_id = u.id
+    WHERE sm.store_id = ?
+  `).all(req.params.id);
+
+  res.json(motoboys);
+});
+
+router.post('/:id/motoboy', authMiddleware, roleMiddleware('store'), (req, res) => {
+  const store = db.prepare('SELECT * FROM stores WHERE id = ? AND owner_id = ?')
+    .get(req.params.id, req.user.id);
+  if (!store) return res.status(403).json({ error: 'Não autorizado' });
+
+  const { phone } = req.body;
+  if (!phone) return res.status(400).json({ error: 'Telefone do motoboy é obrigatório' });
+
+  const motoboy = db.prepare("SELECT * FROM users WHERE phone = ? AND role = 'motoboy'").get(phone);
+  if (!motoboy) return res.status(404).json({ error: 'Motoboy não encontrado. Peça para ele se cadastrar primeiro.' });
+
+  const existing = db.prepare('SELECT * FROM store_motoboys WHERE store_id = ? AND motoboy_id = ?')
+    .get(req.params.id, motoboy.id);
+  if (existing) return res.status(409).json({ error: 'Motoboy já vinculado a esta loja' });
+
+  db.prepare('INSERT INTO store_motoboys (store_id, motoboy_id, employee) VALUES (?, ?, 1)')
+    .run(req.params.id, motoboy.id);
+
+  res.json({ id: motoboy.id, name: motoboy.name, phone: motoboy.phone, employee: 1 });
+});
+
+router.patch('/:id/motoboy/:motoboyId', authMiddleware, roleMiddleware('store'), (req, res) => {
+  const store = db.prepare('SELECT * FROM stores WHERE id = ? AND owner_id = ?')
+    .get(req.params.id, req.user.id);
+  if (!store) return res.status(403).json({ error: 'Não autorizado' });
+
+  const { employee } = req.body;
+  const sm = db.prepare('SELECT * FROM store_motoboys WHERE store_id = ? AND motoboy_id = ?')
+    .get(req.params.id, req.params.motoboyId);
+  if (!sm) return res.status(404).json({ error: 'Motoboy não vinculado a esta loja' });
+
+  db.prepare('UPDATE store_motoboys SET employee = ? WHERE store_id = ? AND motoboy_id = ?')
+    .run(employee ? 1 : 0, req.params.id, req.params.motoboyId);
+
+  const updated = db.prepare(`
+    SELECT u.id, u.name, u.phone, sm.employee
+    FROM store_motoboys sm JOIN users u ON sm.motoboy_id = u.id
+    WHERE sm.store_id = ? AND sm.motoboy_id = ?
+  `).get(req.params.id, req.params.motoboyId);
+
+  res.json(updated);
+});
+
+router.delete('/:id/motoboy/:motoboyId', authMiddleware, roleMiddleware('store'), (req, res) => {
+  const store = db.prepare('SELECT * FROM stores WHERE id = ? AND owner_id = ?')
+    .get(req.params.id, req.user.id);
+  if (!store) return res.status(403).json({ error: 'Não autorizado' });
+
+  db.prepare('DELETE FROM store_motoboys WHERE store_id = ? AND motoboy_id = ?')
+    .run(req.params.id, req.params.motoboyId);
+
+  res.json({ success: true });
+});
+
 module.exports = router;

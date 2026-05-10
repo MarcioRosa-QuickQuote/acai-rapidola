@@ -176,6 +176,22 @@ router.patch('/:id/status', authMiddleware, (req, res) => {
   db.prepare('UPDATE orders SET status = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?')
     .run(status, req.params.id);
 
+  if (status === 'ready') {
+    const employeeMotoboys = db.prepare(`
+      SELECT sm.motoboy_id FROM store_motoboys sm
+      JOIN motoboy_locations ml ON sm.motoboy_id = ml.motoboy_id
+      WHERE sm.store_id = ? AND sm.employee = 1 AND ml.online = 1
+      ORDER BY ml.updated_at DESC
+    `).all(order.store_id);
+
+    if (employeeMotoboys.length > 0) {
+      const motoboyId = employeeMotoboys[0].motoboy_id;
+      db.prepare('UPDATE orders SET motoboy_id = ?, status = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?')
+        .run(motoboyId, 'assigned', req.params.id);
+      notifyUser(motoboyId, 'Nova entrega!', 'Pedido atribuído automaticamente para você', 'delivery');
+    }
+  }
+
   if (io) {
     io.to(`order:${req.params.id}`).emit('order_status', { orderId: req.params.id, status });
     if (order.motoboy_id) {

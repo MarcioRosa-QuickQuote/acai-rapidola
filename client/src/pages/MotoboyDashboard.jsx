@@ -36,11 +36,17 @@ export default function MotoboyDashboard() {
   const [loading, setLoading] = useState(true);
   const [online, setOnline] = useState(true);
   const [selectedTab, setSelectedTab] = useState('available');
+  const [isEmployee, setIsEmployee] = useState(false);
 
   useEffect(() => {
     loadData();
     apiFetch('/stores').then(d => {
       if (d.data && d.data.length > 0) setStore(d.data[0]);
+    });
+    apiFetch('/motoboy/profile').then(d => {
+      if (d.employments && d.employments.some(e => e.employee)) {
+        setIsEmployee(true);
+      }
     });
     const interval = setInterval(loadData, 10000);
     return () => clearInterval(interval);
@@ -171,10 +177,18 @@ export default function MotoboyDashboard() {
       </div>
 
       <div className="container">
+        {isEmployee && (
+          <div className="card" style={{ background: '#E8F5E9', border: '1px solid #C8E6C9', textAlign: 'center', padding: 10, marginBottom: 12 }}>
+            <span style={{ fontWeight: 600, color: '#2E7D32', fontSize: 13 }}>
+              Voce e parceiro da loja — pedidos sao designados automaticamente
+            </span>
+          </div>
+        )}
+
         <div className="flex-row" style={{ marginBottom: 16 }}>
           <button className={`btn btn-sm ${selectedTab === 'available' ? 'btn-primary' : 'btn-outline'}`}
             onClick={() => setSelectedTab('available')}>
-            Disponíveis ({availableOrders.length})
+            {isEmployee ? 'Pedidos da Loja' : 'Disponiveis'} ({availableOrders.length})
           </button>
           <button className={`btn btn-sm ${selectedTab === 'mine' ? 'btn-primary' : 'btn-outline'}`}
             onClick={() => setSelectedTab('mine')}>
@@ -200,7 +214,7 @@ export default function MotoboyDashboard() {
                     <path d="M32 20v8l5 5" stroke="var(--border)" strokeWidth="2" strokeLinecap="round"/>
                   </svg>
                 </div>
-                <p>Nenhum pedido disponível no momento</p>
+                <p>{isEmployee ? 'Nenhum pedido pendente da loja' : 'Nenhum pedido disponivel no momento'}</p>
               </div>
             ) : (
               availableOrders.map(order => (
@@ -224,9 +238,11 @@ export default function MotoboyDashboard() {
                     <span className={`badge ${statusColors[order.status] || 'badge-primary'}`}>
                       {statusLabels[order.status] || order.status}
                     </span>
-                    <button className="btn btn-sm btn-primary" onClick={() => acceptOrder(order.id)}>
-                      Aceitar Entrega
-                    </button>
+                    {!isEmployee && (
+                      <button className="btn btn-sm btn-primary" onClick={() => acceptOrder(order.id)}>
+                        Aceitar Entrega
+                      </button>
+                    )}
                   </div>
                 </div>
               ))

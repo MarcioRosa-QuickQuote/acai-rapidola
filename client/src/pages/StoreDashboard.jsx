@@ -45,6 +45,10 @@ export default function StoreDashboard() {
   const [uploading, setUploading] = useState(false);
   const fileRef = useRef(null);
   const [logoSaving, setLogoSaving] = useState(false);
+  const [settingsTab, setSettingsTab] = useState('conta');
+  const [motoboys, setMotoboys] = useState([]);
+  const [motoboyPhone, setMotoboyPhone] = useState('');
+  const [motoboyMsg, setMotoboyMsg] = useState('');
 
   useEffect(() => {
     loadOrders();
@@ -82,6 +86,10 @@ export default function StoreDashboard() {
       socket.off('notification');
     };
   }, [socket]);
+
+  useEffect(() => {
+    if (view === 'settings' && settingsTab === 'motoboys') loadMotoboys();
+  }, [view, settingsTab, storeData]);
 
   async function loadOrders() {
     const data = await apiFetch('/orders');
@@ -178,6 +186,45 @@ export default function StoreDashboard() {
     }
   }
 
+  async function loadMotoboys() {
+    if (!storeData) return;
+    const data = await apiFetch(`/stores/${storeData.id}/motoboys`);
+    if (Array.isArray(data)) setMotoboys(data);
+  }
+
+  async function addMotoboy() {
+    if (!motoboyPhone.trim() || !storeData) return;
+    setMotoboyMsg('');
+    const data = await apiFetch(`/stores/${storeData.id}/motoboy`, {
+      method: 'POST',
+      body: JSON.stringify({ phone: motoboyPhone.trim() })
+    });
+    if (data.error) {
+      setMotoboyMsg(data.error);
+      setTimeout(() => setMotoboyMsg(''), 4000);
+    } else {
+      setMotoboyPhone('');
+      setMotoboyMsg('Motoboy adicionado como parceiro da loja!');
+      setTimeout(() => setMotoboyMsg(''), 3000);
+      loadMotoboys();
+    }
+  }
+
+  async function toggleEmployee(motoboyId, current) {
+    if (!storeData) return;
+    await apiFetch(`/stores/${storeData.id}/motoboy/${motoboyId}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ employee: current ? 0 : 1 })
+    });
+    loadMotoboys();
+  }
+
+  async function removeMotoboy(motoboyId) {
+    if (!storeData || !confirm('Remover este motoboy da loja?')) return;
+    await apiFetch(`/stores/${storeData.id}/motoboy/${motoboyId}`, { method: 'DELETE' });
+    loadMotoboys();
+  }
+
   function MapClickHandler() {
     useMapEvents({
       click(e) {
@@ -211,9 +258,9 @@ export default function StoreDashboard() {
             <span className="toggle-slider" />
           </div>
           <button className="btn btn-sm"
-            style={{ background: view === 'settings' ? 'rgba(255,255,255,0.3)' : 'rgba(255,255,255,0.15)', color: 'white', fontSize: 12 }}
+            style={{ background: view !== 'orders' ? 'rgba(255,255,255,0.3)' : 'rgba(255,255,255,0.15)', color: 'white', fontSize: 12 }}
             onClick={() => setView(view === 'settings' ? 'orders' : 'settings')}>
-            {view === 'settings' ? 'Pedidos' : 'Conta'}
+            {view === 'orders' ? 'Conta' : 'Pedidos'}
           </button>
           <button className="btn btn-sm"
             style={{ background: 'rgba(255,255,255,0.15)', color: 'white', fontSize: 12 }}
@@ -238,6 +285,17 @@ export default function StoreDashboard() {
 
         {view === 'settings' ? (
           <>
+            <div className="flex-row" style={{ marginBottom: 16 }}>
+              <button className={`btn btn-sm ${settingsTab === 'conta' ? 'btn-primary' : 'btn-outline'}`}
+                onClick={() => setSettingsTab('conta')}>Conta</button>
+              <button className={`btn btn-sm ${settingsTab === 'motoboys' ? 'btn-primary' : 'btn-outline'}`}
+                onClick={() => setSettingsTab('motoboys')}>
+                Motoboys ({motoboys.length})
+              </button>
+            </div>
+
+            {settingsTab === 'conta' ? (
+            <>
             <div className="page-title">Conta da Loja</div>
 
             <div className="card">
@@ -340,6 +398,87 @@ export default function StoreDashboard() {
                 <span className="badge badge-success">R$ 89/mês</span>
               </div>
             </div>
+            </>
+            ) : (
+            <>
+            <div className="page-title">Motoboys Parceiros</div>
+
+            <div className="card" style={{ background: '#E3F2FD', border: '1px solid #BBDEFB', marginBottom: 16 }}>
+              <p className="text-xs text-muted" style={{ marginBottom: 8 }}>
+                Motoboys parceiros recebem pedidos automaticamente quando ficam prontos.
+                Motoboys independentes (não parceiros) escolhem quais pedidos aceitar — igual ao modelo iFood.
+              </p>
+            </div>
+
+            <div className="card">
+              <div className="form-group">
+                <label className="label">Adicionar Motoboy</label>
+                <div className="flex-row" style={{ gap: 8 }}>
+                  <input className="input" type="text" value={motoboyPhone}
+                    onChange={e => setMotoboyPhone(e.target.value)}
+                    placeholder="Telefone do motoboy cadastrado"
+                    style={{ flex: 1 }} />
+                  <button className="btn btn-primary btn-sm"
+                    onClick={addMotoboy}
+                    style={{ width: 'auto', whiteSpace: 'nowrap' }}>
+                    Adicionar
+                  </button>
+                </div>
+                {motoboyMsg && (
+                  <div style={{
+                    marginTop: 8, fontSize: 13, fontWeight: 600,
+                    color: motoboyMsg.includes('Erro') ? '#C62828' : '#2E7D32'
+                  }}>
+                    {motoboyMsg}
+                  </div>
+                )}
+              </div>
+
+              {motoboys.length === 0 ? (
+                <div className="text-center text-muted" style={{ padding: 20 }}>
+                  Nenhum motoboy vinculado. Adicione um pelo telefone.
+                </div>
+              ) : (
+                motoboys.map(m => (
+                  <div key={m.id} className="flex-between card" style={{
+                    padding: '12px 16px',
+                    background: m.employee ? '#F3E5F5' : '#FAFAFA',
+                    border: m.employee ? '1px solid #E1BEE7' : '1px solid var(--border)'
+                  }}>
+                    <div>
+                      <div className="font-bold text-sm">{m.name}</div>
+                      <div className="text-xs text-muted">{m.phone}</div>
+                      <div style={{ marginTop: 4 }}>
+                        <span className="badge" style={{
+                          background: m.employee ? '#E8F5E9' : '#FFF3E0',
+                          color: m.employee ? '#2E7D32' : '#E65100',
+                          fontSize: 11
+                        }}>
+                          {m.employee ? 'Parceiro (auto-designado)' : 'Independente (aceita pedidos)'}
+                        </span>
+                      </div>
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 6, alignItems: 'flex-end' }}>
+                      <div className="toggle-switch" onClick={() => toggleEmployee(m.id, m.employee)}
+                        title={m.employee ? 'Tornar independente' : 'Tornar parceiro da loja'}>
+                        <input type="checkbox" checked={!!m.employee} readOnly />
+                        <span className="toggle-slider" />
+                      </div>
+                      <span style={{ fontSize: 10, color: 'var(--text-muted)' }}>
+                        {m.employee ? 'Parceiro' : 'Independente'}
+                      </span>
+                      <button className="btn btn-sm"
+                        style={{ color: '#C62828', fontSize: 12, padding: '2px 8px', background: 'transparent' }}
+                        onClick={() => removeMotoboy(m.id)}>
+                        Remover
+                      </button>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+            </>
+            )}
           </>
         ) : (
           <>

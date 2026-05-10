@@ -5,19 +5,52 @@ const { authMiddleware, roleMiddleware } = require('../auth');
 const router = Router();
 
 router.get('/available', authMiddleware, roleMiddleware('motoboy'), (req, res) => {
-  const orders = db.prepare(`
-    SELECT o.*, s.name as store_name, s.address as store_address, s.lat as store_lat, s.lng as store_lng,
-           u.name as customer_name
-    FROM orders o
-    JOIN stores s ON o.store_id = s.id
-    JOIN users u ON o.customer_id = u.id
-    WHERE o.payment_status = 'paid'
-      AND o.status IN ('confirmed','preparing','ready')
-      AND (o.motoboy_id IS NULL OR o.motoboy_id = ?)
-    ORDER BY o.created_at ASC
-  `).all(req.user.id);
+  const employeeStores = db.prepare(
+    'SELECT store_id FROM store_motoboys WHERE motoboy_id = ? AND employee = 1'
+  ).all(req.user.id);
+  const employeeStoreIds = employeeStores.map(s => s.store_id);
+
+  let orders;
+  if (employeeStoreIds.length > 0) {
+    const placeholders = employeeStoreIds.map(() => '?').join(',');
+    orders = db.prepare(`
+      SELECT o.*, s.name as store_name, s.address as store_address, s.lat as store_lat, s.lng as store_lng,
+             u.name as customer_name
+      FROM orders o
+      JOIN stores s ON o.store_id = s.id
+      JOIN users u ON o.customer_id = u.id
+      WHERE o.payment_status = 'paid'
+        AND o.status IN ('confirmed','preparing','ready')
+        AND o.motoboy_id IS NULL
+        AND o.store_id IN (${placeholders})
+      ORDER BY o.created_at ASC
+    `).all(...employeeStoreIds);
+  } else {
+    orders = db.prepare(`
+      SELECT o.*, s.name as store_name, s.address as store_address, s.lat as store_lat, s.lng as store_lng,
+             u.name as customer_name
+      FROM orders o
+      JOIN stores s ON o.store_id = s.id
+      JOIN users u ON o.customer_id = u.id
+      WHERE o.payment_status = 'paid'
+        AND o.status IN ('confirmed','preparing','ready')
+        AND (o.motoboy_id IS NULL OR o.motoboy_id = ?)
+      ORDER BY o.created_at ASC
+    `).all(req.user.id);
+  }
 
   res.json(orders);
+});
+
+router.get('/profile', authMiddleware, roleMiddleware('motoboy'), (req, res) => {
+  const employments = db.prepare(`
+    SELECT sm.store_id, sm.employee, s.name as store_name
+    FROM store_motoboys sm
+    JOIN stores s ON sm.store_id = s.id
+    WHERE sm.motoboy_id = ?
+  `).all(req.user.id);
+
+  res.json({ employments });
 });
 
 router.post('/accept/:orderId', authMiddleware, roleMiddleware('motoboy'), (req, res) => {

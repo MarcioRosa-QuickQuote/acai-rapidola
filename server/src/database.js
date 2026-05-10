@@ -120,6 +120,16 @@ function init() {
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       FOREIGN KEY (user_id) REFERENCES users(id)
     );
+
+    CREATE TABLE IF NOT EXISTS store_motoboys (
+      store_id TEXT NOT NULL,
+      motoboy_id TEXT NOT NULL,
+      employee INTEGER DEFAULT 0,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      PRIMARY KEY (store_id, motoboy_id),
+      FOREIGN KEY (store_id) REFERENCES stores(id),
+      FOREIGN KEY (motoboy_id) REFERENCES users(id)
+    );
   `);
 }
 
