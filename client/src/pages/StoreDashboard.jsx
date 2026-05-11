@@ -226,14 +226,15 @@ export default function StoreDashboard() {
     }
   }
 
-  async function copyInviteLink() {
+  async function copyInviteLinkToken(token) {
+    const link = `${window.location.origin}/register?token=${token}`;
     try {
-      await navigator.clipboard.writeText(inviteLink);
-      setMotoboyMsg('Link copiado! Envie para o motoboy.');
-      setTimeout(() => setMotoboyMsg(''), 3000);
+      await navigator.clipboard.writeText(link);
+      setMotoboyMsg('Link copiado!');
+      setTimeout(() => setMotoboyMsg(''), 2000);
     } catch {
-      setMotoboyMsg('Erro ao copiar. Copie o link manualmente.');
-      setTimeout(() => setMotoboyMsg(''), 3000);
+      setMotoboyMsg('Erro ao copiar.');
+      setTimeout(() => setMotoboyMsg(''), 2000);
     }
   }
 
@@ -656,16 +657,25 @@ export default function StoreDashboard() {
                 <div style={{ marginBottom: 16 }}>
                   <label className="label">Convites Pendentes</label>
                   {invites.filter(i => !i.used).map(inv => (
-                    <div key={inv.id} className="flex-between" style={{ padding: '8px 12px', background: '#FFF8E1', borderRadius: 8, border: '1px solid #FFE082', marginBottom: 6 }}>
-                      <div>
+                    <div key={inv.id} style={{ padding: '8px 12px', background: '#FFF8E1', borderRadius: 8, border: '1px solid #FFE082', marginBottom: 6 }}>
+                      <div className="flex-between" style={{ marginBottom: 4 }}>
                         <div className="text-sm font-bold">{inv.phone}</div>
-                        <div className="text-xs text-muted">Aguardando cadastro</div>
+                        <div style={{ display: 'flex', gap: 6 }}>
+                          <button className="btn btn-sm"
+                            style={{ fontSize: 11, padding: '4px 10px', background: '#E8F5E9', color: '#2E7D32', border: 'none' }}
+                            onClick={() => copyInviteLinkToken(inv.token)}>
+                            Copiar Link
+                          </button>
+                          <button className="btn btn-sm"
+                            style={{ color: '#C62828', fontSize: 11, background: 'transparent', border: 'none' }}
+                            onClick={() => revokeInvite(inv.id)}>
+                            Cancelar
+                          </button>
+                        </div>
                       </div>
-                      <button className="btn btn-sm"
-                        style={{ color: '#C62828', fontSize: 12, background: 'transparent' }}
-                        onClick={() => revokeInvite(inv.id)}>
-                        Cancelar
-                      </button>
+                      <div className="text-xs text-muted" style={{ wordBreak: 'break-all' }}>
+                        {window.location.origin}/register?token={inv.token}
+                      </div>
                     </div>
                   ))}
                 </div>
