@@ -2,7 +2,6 @@ const express = require('express');
 const http = require('http');
 const cors = require('cors');
 const path = require('path');
-const fs = require('fs');
 
 const isVercel = !!process.env.VERCEL;
 
@@ -21,12 +20,6 @@ const app = express();
 
 app.use(cors());
 app.use(express.json());
-
-const uploadsPath = process.env.DATA_DIR
-  ? path.join(process.env.DATA_DIR, 'uploads')
-  : (isVercel ? path.join('/tmp', 'uploads') : path.join(__dirname, '..', 'uploads'));
-if (!fs.existsSync(uploadsPath)) fs.mkdirSync(uploadsPath, { recursive: true });
-app.use('/uploads', express.static(uploadsPath));
 
 app.use('/api/auth', authRoutes);
 app.use('/api/products', productRoutes);

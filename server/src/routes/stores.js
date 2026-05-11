@@ -1,232 +1,198 @@
 const { Router } = require('express');
 const { v4: uuid } = require('uuid');
-const path = require('path');
-const fs = require('fs');
-const multer = require('multer');
-const db = require('../database');
+const { supabase } = require('../database');
 const { authMiddleware, roleMiddleware } = require('../auth');
+const multer = require('multer');
 
-const isVercel = !!process.env.VERCEL;
-
-const uploadsDir = process.env.DATA_DIR
-  ? path.join(process.env.DATA_DIR, 'uploads')
-  : (isVercel ? path.join('/tmp', 'uploads') : path.join(__dirname, '..', '..', 'uploads'));
-if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir, { recursive: true });
-
-const storage = multer.diskStorage({
-  destination: uploadsDir,
-  filename: (req, file, cb) => {
-    const ext = path.extname(file.originalname);
-    cb(null, `logo-${req.params.id}${ext}`);
-  }
-});
-const upload = multer({ storage, limits: { fileSize: 5 * 1024 * 1024 }, fileFilter: (req, file, cb) => {
+const router = Router();
+const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 5 * 1024 * 1024 }, fileFilter: (req, file, cb) => {
   if (file.mimetype.startsWith('image/')) cb(null, true);
   else cb(new Error('Apenas imagens são aceitas'));
 }});
 
-const router = Router();
-
-router.post('/', authMiddleware, roleMiddleware('store'), (req, res) => {
+router.post('/', authMiddleware, roleMiddleware('store'), async (req, res) => {
   const { name, address, lat, lng } = req.body;
   if (!name || !address) {
     return res.status(400).json({ error: 'Nome e endereço são obrigatórios' });
   }
 
-  const existing = db.prepare('SELECT * FROM stores WHERE owner_id = ?').get(req.user.id);
+  const { data: existing } = await supabase.from('stores').select('*').eq('owner_id', req.user.id).single();
   if (existing) return res.status(409).json({ error: 'Você já possui uma loja' });
 
   const id = uuid();
-  db.prepare(
-    'INSERT INTO stores (id, name, owner_id, address, lat, lng) VALUES (?,?,?,?,?,?)'
-  ).run(id, name, req.user.id, address, lat || -23.5505, lng || -46.6333);
+  await supabase.from('stores').insert({
+    id, name, owner_id: req.user.id, address, lat: lat || -23.5505, lng: lng || -46.6333
+  });
 
   res.json({ id, name, owner_id: req.user.id, address, lat, lng });
 });
 
-router.get('/', (req, res) => {
-  const stores = db.prepare('SELECT * FROM stores').all();
+router.get('/', async (req, res) => {
+  const { data: stores } = await supabase.from('stores').select('*');
   res.json(stores);
 });
 
-router.get('/:id', (req, res) => {
-  const store = db.prepare('SELECT * FROM stores WHERE id = ?').get(req.params.id);
+router.get('/:id', async (req, res) => {
+  const { data: store } = await supabase.from('stores').select('*').eq('id', req.params.id).single();
   if (!store) return res.status(404).json({ error: 'Loja não encontrada' });
   res.json(store);
 });
 
-router.put('/:id/settings', authMiddleware, roleMiddleware('store'), (req, res) => {
-  const store = db.prepare('SELECT * FROM stores WHERE id = ? AND owner_id = ?')
-    .get(req.params.id, req.user.id);
+router.put('/:id/settings', authMiddleware, roleMiddleware('store'), async (req, res) => {
+  const { data: store } = await supabase.from('stores')
+    .select('*').eq('id', req.params.id).eq('owner_id', req.user.id).single();
   if (!store) return res.status(403).json({ error: 'Não autorizado' });
 
   const { name, logo, lat, lng, address, color_primary, color_secondary } = req.body;
+  const update = {};
   const toVal = (v) => (v === '' || v === null || v === undefined || Number.isNaN(v)) ? null : v;
-  db.prepare(`
-    UPDATE stores SET
-      name = COALESCE(?, name),
-      logo = COALESCE(?, logo),
-      lat = COALESCE(?, lat),
-      lng = COALESCE(?, lng),
-      address = COALESCE(?, address),
-      color_primary = COALESCE(?, color_primary),
-      color_secondary = COALESCE(?, color_secondary)
-    WHERE id = ?
-  `).run(toVal(name), toVal(logo), toVal(lat), toVal(lng), toVal(address), toVal(color_primary), toVal(color_secondary), store.id);
 
-  const updated = db.prepare('SELECT * FROM stores WHERE id = ?').get(store.id);
+  const n = toVal(name); const l = toVal(logo); const la = toVal(lat);
+  const ln = toVal(lng); const ad = toVal(address); const cp = toVal(color_primary); const cs = toVal(color_secondary);
+
+  if (n !== null) update.name = n;
+  if (l !== null) update.logo = l;
+  if (la !== null) update.lat = la;
+  if (ln !== null) update.lng = ln;
+  if (ad !== null) update.address = ad;
+  if (cp !== null) update.color_primary = cp;
+  if (cs !== null) update.color_secondary = cs;
+
+  if (Object.keys(update).length > 0) {
+    await supabase.from('stores').update(update).eq('id', store.id);
+  }
+
+  const { data: updated } = await supabase.from('stores').select('*').eq('id', store.id).single();
   res.json(updated);
 });
 
-router.post('/:id/logo', authMiddleware, roleMiddleware('store'), upload.single('logo'), (req, res) => {
-  const store = db.prepare('SELECT * FROM stores WHERE id = ? AND owner_id = ?')
-    .get(req.params.id, req.user.id);
+router.post('/:id/logo', authMiddleware, roleMiddleware('store'), upload.single('logo'), async (req, res) => {
+  const { data: store } = await supabase.from('stores')
+    .select('*').eq('id', req.params.id).eq('owner_id', req.user.id).single();
   if (!store) return res.status(403).json({ error: 'Não autorizado' });
 
   if (!req.file) return res.status(400).json({ error: 'Nenhuma imagem enviada' });
 
-  const logoUrl = `/uploads/${req.file.filename}`;
-  db.prepare('UPDATE stores SET logo = ? WHERE id = ?').run(logoUrl, store.id);
+  const fileName = `logo-${req.params.id}-${Date.now()}`;
 
-  res.json({ logo: logoUrl });
+  const { error: uploadErr } = await supabase.storage.from('uploads').upload(fileName, req.file.buffer, {
+    contentType: req.file.mimetype,
+    upsert: true
+  });
+
+  if (uploadErr) {
+    console.error('[Upload] Error:', uploadErr);
+    return res.status(500).json({ error: 'Erro ao enviar imagem' });
+  }
+
+  const { data: { publicUrl } } = supabase.storage.from('uploads').getPublicUrl(fileName);
+  await supabase.from('stores').update({ logo: publicUrl }).eq('id', store.id);
+
+  res.json({ logo: publicUrl });
 });
 
-router.patch('/:id/toggle-open', authMiddleware, roleMiddleware('store'), (req, res) => {
-  const store = db.prepare('SELECT * FROM stores WHERE id = ? AND owner_id = ?')
-    .get(req.params.id, req.user.id);
+router.patch('/:id/toggle-open', authMiddleware, roleMiddleware('store'), async (req, res) => {
+  const { data: store } = await supabase.from('stores')
+    .select('*').eq('id', req.params.id).eq('owner_id', req.user.id).single();
   if (!store) return res.status(403).json({ error: 'Não autorizado' });
 
   const newStatus = store.open ? 0 : 1;
-  db.prepare('UPDATE stores SET open = ? WHERE id = ?').run(newStatus, req.params.id);
+  await supabase.from('stores').update({ open: newStatus }).eq('id', req.params.id);
 
-  res.json({ open: !!newStatus, message: newStatus ? 'Loja ABERTA para pedidos' : 'Loja FECHADA - entregas encerradas' });
+  res.json({ open: !!newStatus, message: newStatus ? 'Loja ABERTA' : 'Loja FECHADA' });
 });
 
-router.get('/:id/motoboys', authMiddleware, roleMiddleware('store'), (req, res) => {
-  const store = db.prepare('SELECT * FROM stores WHERE id = ? AND owner_id = ?')
-    .get(req.params.id, req.user.id);
+router.get('/:id/motoboys', authMiddleware, roleMiddleware('store'), async (req, res) => {
+  const { data: store } = await supabase.from('stores')
+    .select('*').eq('id', req.params.id).eq('owner_id', req.user.id).single();
   if (!store) return res.status(403).json({ error: 'Não autorizado' });
 
-  const motoboys = db.prepare(`
-    SELECT u.id, u.name, u.phone, sm.employee, sm.created_at
-    FROM store_motoboys sm
-    JOIN users u ON sm.motoboy_id = u.id
-    WHERE sm.store_id = ?
-  `).all(req.params.id);
+  const { data: motoboys } = await supabase.from('store_motoboys')
+    .select('motoboy_id, employee, created_at, users!inner(id, name, phone)')
+    .eq('store_id', req.params.id);
 
-  res.json(motoboys);
+  res.json(motoboys?.map(m => ({ id: m.users.id, name: m.users.name, phone: m.users.phone, employee: m.employee, created_at: m.created_at })) || []);
 });
 
-router.get('/:id/invites', authMiddleware, roleMiddleware('store'), (req, res) => {
-  const store = db.prepare('SELECT * FROM stores WHERE id = ? AND owner_id = ?')
-    .get(req.params.id, req.user.id);
+router.get('/:id/invites', authMiddleware, roleMiddleware('store'), async (req, res) => {
+  const { data: store } = await supabase.from('stores')
+    .select('*').eq('id', req.params.id).eq('owner_id', req.user.id).single();
   if (!store) return res.status(403).json({ error: 'Não autorizado' });
 
-  const invites = db.prepare(
-    'SELECT * FROM store_invites WHERE store_id = ? ORDER BY created_at DESC'
-  ).all(req.params.id);
-
+  const { data: invites } = await supabase.from('store_invites')
+    .select('*').eq('store_id', req.params.id).order('created_at', { ascending: false });
   res.json(invites);
 });
 
-router.post('/:id/invite', authMiddleware, roleMiddleware('store'), (req, res) => {
-  const store = db.prepare('SELECT * FROM stores WHERE id = ? AND owner_id = ?')
-    .get(req.params.id, req.user.id);
+router.post('/:id/invite', authMiddleware, roleMiddleware('store'), async (req, res) => {
+  const { data: store } = await supabase.from('stores')
+    .select('*').eq('id', req.params.id).eq('owner_id', req.user.id).single();
   if (!store) return res.status(403).json({ error: 'Não autorizado' });
 
   const { phone } = req.body;
   if (!phone) return res.status(400).json({ error: 'Telefone do motoboy é obrigatório' });
 
-  const existingUser = db.prepare('SELECT id FROM users WHERE phone = ?').get(phone);
+  const { data: existingUser } = await supabase.from('users').select('id, role').eq('phone', phone).single();
+
   if (existingUser) {
-    const alreadyLinked = db.prepare(
-      'SELECT * FROM store_motoboys WHERE store_id = ? AND motoboy_id = ?'
-    ).get(req.params.id, existingUser.id);
-    if (alreadyLinked) return res.status(409).json({ error: 'Motoboy já vinculado a esta loja' });
+    if (existingUser.role !== 'motoboy') {
+      return res.status(400).json({ error: 'Este telefone não pertence a um motoboy' });
+    }
 
-    const role = db.prepare('SELECT role FROM users WHERE id = ?').get(existingUser.id);
-    if (role.role !== 'motoboy') return res.status(400).json({ error: 'Este telefone não pertence a um motoboy' });
+    const { data: alreadyLinked } = await supabase.from('store_motoboys')
+      .select('*').eq('store_id', req.params.id).eq('motoboy_id', existingUser.id).single();
+    if (alreadyLinked) return res.status(409).json({ error: 'Motoboy já vinculado' });
 
-    db.prepare('INSERT INTO store_motoboys (store_id, motoboy_id, employee) VALUES (?, ?, 1)')
-      .run(req.params.id, existingUser.id);
+    await supabase.from('store_motoboys').insert({
+      store_id: req.params.id, motoboy_id: existingUser.id, employee: 1
+    });
 
-    const user = db.prepare('SELECT id, name, phone FROM users WHERE id = ?').get(existingUser.id);
-    return res.json({ ...user, employee: 1, direct: true });
+    const { data: userData } = await supabase.from('users').select('id, name, phone').eq('id', existingUser.id).single();
+    return res.json({ ...userData, employee: 1, direct: true });
   }
 
-  const { v4: uuid } = require('uuid');
   const token = uuid().replace(/-/g, '').slice(0, 12);
   const id = uuid();
 
-  db.prepare(
-    'INSERT INTO store_invites (id, store_id, phone, token) VALUES (?, ?, ?, ?)'
-  ).run(id, req.params.id, phone, token);
+  await supabase.from('store_invites').insert({ id, store_id: req.params.id, phone, token });
 
-  const inviteLink = `${req.protocol}://${req.get('host')}/register?token=${token}`;
+  const appUrl = process.env.APP_URL || `http://localhost:${process.env.PORT || 3001}`;
+  const inviteLink = `${appUrl}/register?token=${token}`;
   res.json({ id, phone, token, inviteLink });
 });
 
-router.delete('/:id/invite/:inviteId', authMiddleware, roleMiddleware('store'), (req, res) => {
-  const store = db.prepare('SELECT * FROM stores WHERE id = ? AND owner_id = ?')
-    .get(req.params.id, req.user.id);
+router.delete('/:id/invite/:inviteId', authMiddleware, roleMiddleware('store'), async (req, res) => {
+  const { data: store } = await supabase.from('stores')
+    .select('*').eq('id', req.params.id).eq('owner_id', req.user.id).single();
   if (!store) return res.status(403).json({ error: 'Não autorizado' });
 
-  db.prepare('DELETE FROM store_invites WHERE id = ? AND store_id = ?')
-    .run(req.params.inviteId, req.params.id);
-
+  await supabase.from('store_invites').delete().eq('id', req.params.inviteId).eq('store_id', req.params.id);
   res.json({ success: true });
 });
 
-router.post('/:id/motoboy', authMiddleware, roleMiddleware('store'), (req, res) => {
-  const store = db.prepare('SELECT * FROM stores WHERE id = ? AND owner_id = ?')
-    .get(req.params.id, req.user.id);
-  if (!store) return res.status(403).json({ error: 'Não autorizado' });
-
-  const { phone } = req.body;
-  if (!phone) return res.status(400).json({ error: 'Telefone do motoboy é obrigatório' });
-
-  const motoboy = db.prepare("SELECT * FROM users WHERE phone = ? AND role = 'motoboy'").get(phone);
-  if (!motoboy) return res.status(404).json({ error: 'Motoboy não encontrado. Peça para ele se cadastrar primeiro.' });
-
-  const existing = db.prepare('SELECT * FROM store_motoboys WHERE store_id = ? AND motoboy_id = ?')
-    .get(req.params.id, motoboy.id);
-  if (existing) return res.status(409).json({ error: 'Motoboy já vinculado a esta loja' });
-
-  db.prepare('INSERT INTO store_motoboys (store_id, motoboy_id, employee) VALUES (?, ?, 1)')
-    .run(req.params.id, motoboy.id);
-
-  res.json({ id: motoboy.id, name: motoboy.name, phone: motoboy.phone, employee: 1 });
-});
-
-router.patch('/:id/motoboy/:motoboyId', authMiddleware, roleMiddleware('store'), (req, res) => {
-  const store = db.prepare('SELECT * FROM stores WHERE id = ? AND owner_id = ?')
-    .get(req.params.id, req.user.id);
+router.patch('/:id/motoboy/:motoboyId', authMiddleware, roleMiddleware('store'), async (req, res) => {
+  const { data: store } = await supabase.from('stores')
+    .select('*').eq('id', req.params.id).eq('owner_id', req.user.id).single();
   if (!store) return res.status(403).json({ error: 'Não autorizado' });
 
   const { employee } = req.body;
-  const sm = db.prepare('SELECT * FROM store_motoboys WHERE store_id = ? AND motoboy_id = ?')
-    .get(req.params.id, req.params.motoboyId);
-  if (!sm) return res.status(404).json({ error: 'Motoboy não vinculado a esta loja' });
+  await supabase.from('store_motoboys').update({ employee: employee ? 1 : 0 })
+    .eq('store_id', req.params.id).eq('motoboy_id', req.params.motoboyId);
 
-  db.prepare('UPDATE store_motoboys SET employee = ? WHERE store_id = ? AND motoboy_id = ?')
-    .run(employee ? 1 : 0, req.params.id, req.params.motoboyId);
+  const { data: updated } = await supabase.from('store_motoboys')
+    .select('motoboy_id, employee, users!inner(id, name, phone)')
+    .eq('store_id', req.params.id).eq('motoboy_id', req.params.motoboyId).single();
 
-  const updated = db.prepare(`
-    SELECT u.id, u.name, u.phone, sm.employee
-    FROM store_motoboys sm JOIN users u ON sm.motoboy_id = u.id
-    WHERE sm.store_id = ? AND sm.motoboy_id = ?
-  `).get(req.params.id, req.params.motoboyId);
-
-  res.json(updated);
+  res.json(updated ? { id: updated.users.id, name: updated.users.name, phone: updated.users.phone, employee: updated.employee } : {});
 });
 
-router.delete('/:id/motoboy/:motoboyId', authMiddleware, roleMiddleware('store'), (req, res) => {
-  const store = db.prepare('SELECT * FROM stores WHERE id = ? AND owner_id = ?')
-    .get(req.params.id, req.user.id);
+router.delete('/:id/motoboy/:motoboyId', authMiddleware, roleMiddleware('store'), async (req, res) => {
+  const { data: store } = await supabase.from('stores')
+    .select('*').eq('id', req.params.id).eq('owner_id', req.user.id).single();
   if (!store) return res.status(403).json({ error: 'Não autorizado' });
 
-  db.prepare('DELETE FROM store_motoboys WHERE store_id = ? AND motoboy_id = ?')
-    .run(req.params.id, req.params.motoboyId);
+  await supabase.from('store_motoboys').delete()
+    .eq('store_id', req.params.id).eq('motoboy_id', req.params.motoboyId);
 
   res.json({ success: true });
 });
