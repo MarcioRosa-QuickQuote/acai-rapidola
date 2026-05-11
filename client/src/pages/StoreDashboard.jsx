@@ -305,9 +305,6 @@ export default function StoreDashboard() {
     setProductImg(null);
     loadProducts();
   }
-    setProductForm(null);
-    loadProducts();
-  }
 
   async function toggleProduct(id, active) {
     await apiFetch(`/products/${id}`, {
