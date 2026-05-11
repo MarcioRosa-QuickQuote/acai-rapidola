@@ -167,16 +167,14 @@ function seed() {
   ).run(storeId, 'Açaí Central', adminId, 'Rua do Açaí, 100 - Centro, São Paulo', -23.5505, -46.6333);
 
   const products = [
+    ['Açaí 500ml (Meio Litro)', 'Açaí puro batido com xarope de guaraná', 25.00, 500],
+    ['Açaí 1 Litro', 'Açaí puro batido com xarope de guaraná — pode vir em 2 sacos de 500ml', 45.00, 1000],
     ['Açaí 300ml Tradicional', 'Açaí puro batido com xarope de guaraná', 15.00, 300],
-    ['Açaí 500ml Tradicional', 'Açaí puro batido com xarope de guaraná', 22.00, 500],
-    ['Açaí 700ml Tradicional', 'Açaí puro batido com xarope de guaraná', 28.00, 700],
-    ['Açaí 300ml Premium', 'Açaí com banana, granola e leite condensado', 20.00, 300],
-    ['Açaí 500ml Premium', 'Açaí com banana, granola e leite condensado', 28.00, 500],
     ['Açaí 700ml Premium', 'Açaí com banana, granola e leite condensado', 35.00, 700],
-    ['Copo 400ml Energia', 'Açaí com guaraná em pó, paçoca e mel', 25.00, 400],
-    ['Copo 500ml Proteína', 'Açaí com whey protein, banana e pasta de amendoim', 32.00, 500],
-    ['Açaí na Tigela P', 'Açaí com morango, banana, granola e leite em pó', 18.00, 300],
-    ['Açaí na Tigela G', 'Açaí com morango, banana, granola e leite em pó', 26.00, 500],
+    ['Farinha de Tapioca', 'Acompanhamento tradicional — farinha de tapioca', 5.00, 100],
+    ["Farinha D'água", 'Farinha d\'água típica do Pará', 6.00, 100],
+    ['Copo 500ml Energia', 'Açaí com guaraná em pó, paçoca e mel', 30.00, 500],
+    ['Copo 500ml Proteína', 'Açaí com whey protein, banana e pasta de amendoim', 35.00, 500],
   ];
 
   const insertProduct = db.prepare(

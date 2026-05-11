@@ -45,12 +45,15 @@ export default function StoreDashboard() {
   const [uploading, setUploading] = useState(false);
   const fileRef = useRef(null);
   const [logoSaving, setLogoSaving] = useState(false);
-  const [settingsTab, setSettingsTab] = useState('conta');
+  const [settingsTab, setSettingsTab] = useState('produtos');
   const [motoboys, setMotoboys] = useState([]);
   const [motoboyPhone, setMotoboyPhone] = useState('');
   const [motoboyMsg, setMotoboyMsg] = useState('');
   const [invites, setInvites] = useState([]);
   const [inviteLink, setInviteLink] = useState('');
+  const [products, setProducts] = useState([]);
+  const [productForm, setProductForm] = useState(null);
+  const [productImg, setProductImg] = useState(null);
 
   useEffect(() => {
     loadOrders();
@@ -91,6 +94,7 @@ export default function StoreDashboard() {
 
   useEffect(() => {
     if (view === 'settings' && settingsTab === 'motoboys') loadMotoboys();
+    if (view === 'settings' && settingsTab === 'produtos') loadProducts();
   }, [view, settingsTab, storeData]);
 
   async function loadOrders() {
@@ -254,6 +258,49 @@ export default function StoreDashboard() {
     loadMotoboys();
   }
 
+  async function loadProducts() {
+    if (!storeData) return;
+    const data = await apiFetch(`/products?store_id=${storeData.id}`);
+    if (Array.isArray(data)) setProducts(data);
+  }
+
+  function openNewProduct() {
+    setProductForm({ name: '', description: '', price: '', size_ml: '500' });
+    setProductImg(null);
+  }
+
+  async function saveProduct() {
+    if (!storeData || !productForm) return;
+    const { name, description, price, size_ml, id } = productForm;
+    if (!name || !price || !size_ml) return;
+
+    if (id) {
+      await apiFetch(`/products/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify({ name, description, price: parseFloat(price), size_ml: parseInt(size_ml) })
+      });
+    } else {
+      await apiFetch('/products', {
+        method: 'POST',
+        body: JSON.stringify({ name, description, price: parseFloat(price), size_ml: parseInt(size_ml) })
+      });
+    }
+    setProductForm(null);
+    loadProducts();
+  }
+
+  async function toggleProduct(id, active) {
+    await apiFetch(`/products/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify({ active: active ? 0 : 1 })
+    });
+    loadProducts();
+  }
+
+  function editProduct(p) {
+    setProductForm({ id: p.id, name: p.name, description: p.description || '', price: String(p.price), size_ml: String(p.size_ml) });
+  }
+
   function MapClickHandler() {
     useMapEvents({
       click(e) {
@@ -315,6 +362,10 @@ export default function StoreDashboard() {
         {view === 'settings' ? (
           <>
             <div className="flex-row" style={{ marginBottom: 16 }}>
+              <button className={`btn btn-sm ${settingsTab === 'produtos' ? 'btn-primary' : 'btn-outline'}`}
+                onClick={() => setSettingsTab('produtos')}>
+                Produtos ({products.length})
+              </button>
               <button className={`btn btn-sm ${settingsTab === 'conta' ? 'btn-primary' : 'btn-outline'}`}
                 onClick={() => setSettingsTab('conta')}>Conta</button>
               <button className={`btn btn-sm ${settingsTab === 'motoboys' ? 'btn-primary' : 'btn-outline'}`}
@@ -323,7 +374,114 @@ export default function StoreDashboard() {
               </button>
             </div>
 
-            {settingsTab === 'conta' ? (
+            {settingsTab === 'produtos' ? (
+            <>
+            <div className="page-title">Cardapio</div>
+
+            <div className="card">
+              {!productForm ? (
+                <button className="btn btn-primary" onClick={openNewProduct} style={{ marginBottom: 16 }}>
+                  + Novo Produto
+                </button>
+              ) : (
+                <div style={{ marginBottom: 16, padding: 16, background: '#F3E5F5', borderRadius: 12, border: '1px solid #E1BEE7' }}>
+                  <div className="text-sm font-bold mb-3" style={{ color: '#6A1B9A' }}>
+                    {productForm.id ? 'Editar Produto' : 'Novo Produto'}
+                  </div>
+                  <div className="form-group">
+                    <label className="label">Nome</label>
+                    <input className="input" type="text" value={productForm.name}
+                      onChange={e => setProductForm(p => ({ ...p, name: e.target.value }))}
+                      placeholder="Ex: Acai 500ml" />
+                  </div>
+                  <div className="form-group">
+                    <label className="label">Descricao</label>
+                    <input className="input" type="text" value={productForm.description}
+                      onChange={e => setProductForm(p => ({ ...p, description: e.target.value }))}
+                      placeholder="Acai puro batido com guarana" />
+                  </div>
+                  <div className="flex-row" style={{ gap: 8 }}>
+                    <div className="form-group" style={{ flex: 1 }}>
+                      <label className="label">Preco (R$)</label>
+                      <input className="input" type="number" step="0.01" value={productForm.price}
+                        onChange={e => setProductForm(p => ({ ...p, price: e.target.value }))}
+                        placeholder="25.00" />
+                    </div>
+                    <div className="form-group" style={{ flex: 1 }}>
+                      <label className="label">Tamanho (ml)</label>
+                      <select className="input" value={productForm.size_ml}
+                        onChange={e => setProductForm(p => ({ ...p, size_ml: e.target.value }))}>
+                        <option value="300">300ml</option>
+                        <option value="400">400ml</option>
+                        <option value="500">500ml (meio litro)</option>
+                        <option value="700">700ml</option>
+                        <option value="1000">1 Litro</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div className="flex-row" style={{ gap: 8, marginTop: 8 }}>
+                    <button className="btn btn-primary btn-sm" onClick={saveProduct}>
+                      {productForm.id ? 'Salvar' : 'Criar Produto'}
+                    </button>
+                    <button className="btn btn-outline btn-sm" onClick={() => setProductForm(null)}>
+                      Cancelar
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                {products.length === 0 ? (
+                  <div className="text-center text-muted" style={{ padding: 20 }}>
+                    Nenhum produto cadastrado. Clique em "Novo Produto".
+                  </div>
+                ) : (
+                  products.map(p => (
+                    <div key={p.id} className="flex-between card" style={{
+                      padding: '12px 16px',
+                      opacity: p.active ? 1 : 0.5,
+                      background: p.active ? 'white' : '#F5F5F5'
+                    }}>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div className="flex-row" style={{ gap: 8, alignItems: 'center', marginBottom: 2 }}>
+                          <span className="font-bold text-sm" style={{
+                            textDecoration: p.active ? 'none' : 'line-through'
+                          }}>{p.name}</span>
+                          <span className="badge" style={{
+                            background: '#E8F5E9', color: '#2E7D32', fontSize: 11, whiteSpace: 'nowrap'
+                          }}>{p.size_ml}ml</span>
+                          {!p.active && (
+                            <span className="badge" style={{
+                              background: '#FFEBEE', color: '#C62828', fontSize: 10
+                            }}>Inativo</span>
+                          )}
+                        </div>
+                        {p.description && (
+                          <div className="text-xs text-muted" style={{ marginBottom: 2 }}>{p.description}</div>
+                        )}
+                        <div className="text-sm font-bold" style={{ color: '#6A1B9A' }}>
+                          R$ {p.price.toFixed(2)}
+                        </div>
+                      </div>
+                      <div style={{ display: 'flex', gap: 6, alignItems: 'center', flexShrink: 0 }}>
+                        <button className="btn btn-sm"
+                          style={{ fontSize: 11, padding: '4px 10px', background: '#F3E5F5', color: '#6A1B9A', border: 'none' }}
+                          onClick={() => editProduct(p)}>
+                          Editar
+                        </button>
+                        <button className="btn btn-sm"
+                          style={{ fontSize: 11, padding: '4px 10px', background: p.active ? '#FFF3E0' : '#E8F5E9', color: p.active ? '#E65100' : '#2E7D32', border: 'none' }}
+                          onClick={() => toggleProduct(p.id, p.active)}>
+                          {p.active ? 'Desativar' : 'Ativar'}
+                        </button>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+            </>
+            ) : settingsTab === 'conta' ? (
             <>
             <div className="page-title">Conta da Loja</div>
 
@@ -359,6 +517,7 @@ export default function StoreDashboard() {
                 <div className="flex-row" style={{ gap: 8 }}>
                   <input className="input" type="text" value={settings.address}
                     onChange={e => setSettings(s => ({ ...s, address: e.target.value }))}
+                    onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); geocodeAddress(); } }}
                     placeholder="Rua, numero, bairro - Cidade"
                     style={{ flex: 1 }} />
                   <button className="btn btn-sm btn-secondary"

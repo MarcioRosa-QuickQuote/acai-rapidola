@@ -397,3 +397,7 @@ img { max-width: 100%; height: auto; }
 ::-webkit-scrollbar { width: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+.leaflet-container { z-index: 0 !important; }
+.leaflet-pane { z-index: 1 !important; }
+.leaflet-control { z-index: 2 !important; }

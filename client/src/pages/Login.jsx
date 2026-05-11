@@ -120,11 +120,10 @@ export default function Login() {
         {/* Banner */}
         <div style={{
           background: 'linear-gradient(135deg, #4A148C 0%, #6A1B9A 50%, #9C27B0 100%)',
-          padding: '45px 30px 38px',
+          padding: '28px 30px 22px',
           textAlign: 'center', color: 'white',
           position: 'relative', overflow: 'hidden'
         }}>
-          {/* Banner glow */}
           <div style={{
             position: 'absolute', width: 200, height: 200, borderRadius: '50%',
             background: 'radial-gradient(circle, rgba(255,255,255,0.1), transparent)',
@@ -137,22 +136,23 @@ export default function Login() {
             src={storeLogo || '/logo.png'}
             alt="Logo"
             style={{
-              width: 170, height: 170, borderRadius: 28,
+              width: 160, height: 160, borderRadius: 26,
               objectFit: 'contain',
-              position: 'relative', zIndex: 1
+              position: 'relative', zIndex: 1,
+              marginBottom: 6
             }}
             onError={e => { e.target.style.display = 'none'; }}
           />
           <p style={{
             opacity: 0.75, fontSize: 13, fontWeight: 400,
-            position: 'relative', zIndex: 1, marginTop: 10
+            position: 'relative', zIndex: 1, margin: 0
           }}>
             O jeito mais rápido de pedir seu açaí
           </p>
         </div>
 
         {/* Form */}
-        <div style={{ padding: '32px 30px' }}>
+        <div style={{ padding: '24px 30px 28px' }}>
           <form onSubmit={handleSubmit}>
             {error && (
               <div style={{
