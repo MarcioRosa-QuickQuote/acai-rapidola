@@ -56,12 +56,10 @@ app.get('/api/setup', async (req, res) => {
   );
 
   const products = [
-    ['Açai 500ml (Meio Litro)', 'Açai puro batido com xarope de guaraná', 25.00, 500],
-    ['Açai 1 Litro', 'Açai puro batido com xarope de guaraná — pode vir em 2 sacos de 500ml', 45.00, 1000],
+    ['Açai 500ml (Meio Litro)', 'Açai feito da polpa', 25.00, 500],
+    ['Açai 1 Litro', 'Açai feito da polpa', 45.00, 1000],
     ['Farinha de Tapioca', 'Acompanhamento tradicional — farinha de tapioca', 5.00, 100],
     ["Farinha D'agua", "Farinha d'agua tipica do Para", 6.00, 100],
-    ['Copo 500ml Energia', 'Açai com guaraná em po, pacoca e mel', 30.00, 500],
-    ['Copo 500ml Proteina', 'Açai com whey protein, banana e pasta de amendoim', 35.00, 500],
   ];
 
   await supabase.from('products').insert(

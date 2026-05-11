@@ -58,7 +58,8 @@ router.delete('/:id', authMiddleware, roleMiddleware('store'), async (req, res) 
   const { data: store } = await supabase.from('stores').select('*').eq('owner_id', req.user.id).single();
   if (!store) return res.status(403).json({ error: 'Loja não encontrada' });
 
-  await supabase.from('products').update({ active: 0 }).eq('id', req.params.id).eq('store_id', store.id);
+  await supabase.from('order_items').delete().eq('product_id', req.params.id);
+  await supabase.from('products').delete().eq('id', req.params.id).eq('store_id', store.id);
   res.json({ success: true });
 });
 

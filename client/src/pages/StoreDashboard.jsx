@@ -297,6 +297,12 @@ export default function StoreDashboard() {
     loadProducts();
   }
 
+  async function deleteProduct(id) {
+    if (!confirm('Excluir este produto permanentemente?')) return;
+    await apiFetch(`/products/${id}`, { method: 'DELETE' });
+    loadProducts();
+  }
+
   function editProduct(p) {
     setProductForm({ id: p.id, name: p.name, description: p.description || '', price: String(p.price), size_ml: String(p.size_ml) });
   }
@@ -470,6 +476,11 @@ export default function StoreDashboard() {
                           style={{ fontSize: 11, padding: '4px 10px', background: p.active ? '#FFF3E0' : '#E8F5E9', color: p.active ? '#E65100' : '#2E7D32', border: 'none' }}
                           onClick={() => toggleProduct(p.id, p.active)}>
                           {p.active ? 'Desativar' : 'Ativar'}
+                        </button>
+                        <button className="btn btn-sm"
+                          style={{ fontSize: 11, padding: '4px 10px', background: '#FFEBEE', color: '#C62828', border: 'none' }}
+                          onClick={() => deleteProduct(p.id)}>
+                          Excluir
                         </button>
                       </div>
                     </div>
