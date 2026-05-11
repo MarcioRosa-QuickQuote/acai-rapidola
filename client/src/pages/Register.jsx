@@ -13,7 +13,7 @@ const berries = Array.from({ length: 15 }, (_, i) => ({
 }));
 
 export default function Register() {
-  const { register, apiFetch } = useAuth();
+  const { register, apiFetch, logout } = useAuth();
   const [searchParams] = useSearchParams();
   const inviteToken = searchParams.get('token');
   const [name, setName] = useState('');
@@ -26,6 +26,7 @@ export default function Register() {
 
   useEffect(() => {
     if (inviteToken) {
+      logout();
       setRole('motoboy');
       fetch(`/api/auth/register/check-invite?token=${inviteToken}`)
         .then(r => r.json())
