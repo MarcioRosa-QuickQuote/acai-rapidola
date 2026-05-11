@@ -25,8 +25,17 @@ export default function CustomerOrder() {
   const { user, apiFetch } = useAuth();
   const location = useLocation();
   const state = location.state || {};
-  const { items, store, product, quantity } = state;
+  const { items, store: storeFromState, product, quantity } = state;
+  const [store, setStore] = useState(storeFromState);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!store) {
+      apiFetch('/stores').then(d => {
+        if (d.data?.[0]) setStore(d.data[0]);
+      });
+    }
+  }, []);
 
   const orderItems = items || (product ? [{ product_id: product.id, name: product.name, price: product.price, quantity: quantity || 1 }] : []);
   const subtotal = orderItems.reduce((s, i) => s + (i.price || 0) * (i.quantity || 1), 0);

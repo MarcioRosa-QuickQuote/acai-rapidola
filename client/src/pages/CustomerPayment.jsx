@@ -87,10 +87,6 @@ export default function CustomerPayment() {
         </div>
 
         <div className="card">
-          <p className="text-sm text-muted" style={{ marginBottom: 16 }}>
-            Voce sera redirecionado ao Mercado Pago para escolher como pagar: Pix, cartao de credito, debito ou boleto.
-          </p>
-
           {error && (
             <div style={{
               background: '#FFEBEE', color: '#C62828', padding: 10,
@@ -106,14 +102,8 @@ export default function CustomerPayment() {
             {paying ? 'Redirecionando...' : 'Ir para Pagamento'}
           </button>
 
-          <div style={{ display: 'flex', gap: 12, justifyContent: 'center', marginTop: 16 }}>
-            <span style={{ fontSize: 13, color: '#888' }}>Pix</span>
-            <span style={{ fontSize: 13, color: '#888' }}>Cartao</span>
-            <span style={{ fontSize: 13, color: '#888' }}>Boleto</span>
-          </div>
-
           <p className="text-xs text-muted mt-4">
-            Pagamento seguro processado pelo Mercado Pago
+            Pagamento seguro via Mercado Pago
           </p>
         </div>
       </div>

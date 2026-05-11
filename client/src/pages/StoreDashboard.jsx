@@ -54,6 +54,7 @@ export default function StoreDashboard() {
   const [products, setProducts] = useState([]);
   const [productForm, setProductForm] = useState(null);
   const [productImg, setProductImg] = useState(null);
+  const productImgRef = useRef(null);
 
   useEffect(() => {
     loadOrders();
@@ -275,17 +276,35 @@ export default function StoreDashboard() {
     const { name, description, price, size_ml, id } = productForm;
     if (!name || !price || !size_ml) return;
 
+    let imageUrl = productForm.image || '';
+    const file = productImgRef.current?.files?.[0];
+    if (file) {
+      const formData = new FormData();
+      formData.append('image', file);
+      const res = await fetch('/api/products/upload-image', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+        body: formData
+      });
+      const data = await res.json();
+      if (data.url) imageUrl = data.url;
+    }
+
     if (id) {
       await apiFetch(`/products/${id}`, {
         method: 'PUT',
-        body: JSON.stringify({ name, description, price: parseFloat(price), size_ml: parseInt(size_ml) })
+        body: JSON.stringify({ name, description, price: parseFloat(price), size_ml: parseInt(size_ml), image: imageUrl })
       });
     } else {
       await apiFetch('/products', {
         method: 'POST',
-        body: JSON.stringify({ name, description, price: parseFloat(price), size_ml: parseInt(size_ml) })
+        body: JSON.stringify({ name, description, price: parseFloat(price), size_ml: parseInt(size_ml), image: imageUrl })
       });
     }
+    setProductForm(null);
+    setProductImg(null);
+    loadProducts();
+  }
     setProductForm(null);
     loadProducts();
   }
@@ -422,6 +441,11 @@ export default function StoreDashboard() {
                         <option value="1000">1 Litro</option>
                       </select>
                     </div>
+                  </div>
+                  <div className="form-group">
+                    <label className="label">Imagem do Produto</label>
+                    <input type="file" accept="image/*" ref={productImgRef}
+                      style={{ fontSize: 13 }} />
                   </div>
                   <div className="flex-row" style={{ gap: 8, marginTop: 8 }}>
                     <button className="btn btn-primary btn-sm" onClick={saveProduct}>

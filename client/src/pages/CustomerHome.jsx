@@ -134,12 +134,24 @@ export default function CustomerHome() {
 
             {products.map(p => (
               <div key={p.id} className="card">
-                <div className="flex-between" style={{ marginBottom: 8 }}>
-                  <div>
+                <div className="flex-row" style={{ gap: 12, marginBottom: 8 }}>
+                  {p.image ? (
+                    <img src={p.image} alt={p.name}
+                      style={{ width: 72, height: 72, borderRadius: 12, objectFit: 'cover', flexShrink: 0 }}
+                      onError={e => { e.target.style.display = 'none'; }} />
+                  ) : (
+                    <div style={{
+                      width: 72, height: 72, borderRadius: 12, flexShrink: 0,
+                      background: 'linear-gradient(135deg, #F3E5F5, #E1BEE7)',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      color: '#6A1B9A', fontSize: 28
+                    }}></div>
+                  )}
+                  <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ fontWeight: 700, fontSize: 16 }}>{p.name}</div>
                     <div className="text-sm text-muted" style={{ marginTop: 2 }}>{p.description}</div>
                   </div>
-                  <span className="badge badge-primary">{p.size_ml}ml</span>
+                  <span className="badge badge-primary" style={{ flexShrink: 0 }}>{p.size_ml}ml</span>
                 </div>
                 <div className="flex-between" style={{ marginTop: 8 }}>
                   <span style={{ fontSize: 22, fontWeight: 800, color: 'var(--primary)' }}>
