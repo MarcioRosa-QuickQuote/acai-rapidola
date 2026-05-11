@@ -1,6 +1,16 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+
+const berries = Array.from({ length: 18 }, (_, i) => ({
+  id: i,
+  left: `${5 + Math.random() * 90}%`,
+  top: `${5 + Math.random() * 90}%`,
+  size: 12 + Math.random() * 22,
+  duration: 6 + Math.random() * 10,
+  delay: Math.random() * 5,
+  parallax: 0.02 + Math.random() * 0.04
+}));
 
 export default function Login() {
   const { login } = useAuth();
@@ -10,6 +20,8 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const [storeLogo, setStoreLogo] = useState('');
   const [showTest, setShowTest] = useState(false);
+  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+  const bgRef = useRef(null);
 
   useEffect(() => {
     fetch('/api/stores')
@@ -18,6 +30,19 @@ export default function Login() {
         if (stores.length > 0 && stores[0].logo) setStoreLogo(stores[0].logo);
       })
       .catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    const handleMove = (e) => {
+      const w = window.innerWidth;
+      const h = window.innerHeight;
+      setMousePos({
+        x: (e.clientX - w / 2) / (w / 2),
+        y: (e.clientY - h / 2) / (h / 2)
+      });
+    };
+    window.addEventListener('mousemove', handleMove);
+    return () => window.removeEventListener('mousemove', handleMove);
   }, []);
 
   async function handleSubmit(e) {
@@ -41,45 +66,94 @@ export default function Login() {
   }
 
   return (
-    <div style={{
+    <div ref={bgRef} style={{
       display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center',
       minHeight: '100vh',
       background: 'linear-gradient(160deg, #1a0533 0%, #2d0a4e 30%, #4A148C 60%, #7B1FA2 100%)',
       padding: 20, position: 'relative', overflow: 'hidden'
     }}>
-      {/* Background circles */}
-      <div style={{ position: 'absolute', top: -80, right: -80, width: 300, height: 300, borderRadius: '50%', background: 'rgba(255,255,255,0.03)' }} />
-      <div style={{ position: 'absolute', bottom: -120, left: -60, width: 400, height: 400, borderRadius: '50%', background: 'rgba(255,255,255,0.02)' }} />
+      {/* Floating acai berries */}
+      {berries.map(b => (
+        <div key={b.id} style={{
+          position: 'absolute',
+          left: b.left, top: b.top,
+          width: b.size, height: b.size,
+          borderRadius: '50%',
+          background: `radial-gradient(circle at 35% 35%, #7B1FA2, #1a0533)`,
+          opacity: 0.25 + b.parallax * 2,
+          filter: 'blur(0.5px)',
+          transform: `translate(${mousePos.x * b.size * b.parallax * -1}px, ${mousePos.y * b.size * b.parallax * -1}px)`,
+          transition: 'transform 0.6s ease-out',
+          animation: `floatBerry ${b.duration}s ease-in-out ${b.delay}s infinite`,
+          boxShadow: '0 0 8px rgba(155, 81, 224, 0.2)'
+        }} />
+      ))}
 
+      {/* Glow orbs */}
+      <div style={{
+        position: 'absolute', width: 350, height: 350, borderRadius: '50%',
+        background: 'radial-gradient(circle, rgba(156,39,176,0.15), transparent)',
+        top: '10%', left: '-10%',
+        transform: `translate(${mousePos.x * 20}px, ${mousePos.y * 20}px)`,
+        transition: 'transform 0.8s ease-out'
+      }} />
+      <div style={{
+        position: 'absolute', width: 280, height: 280, borderRadius: '50%',
+        background: 'radial-gradient(circle, rgba(106,27,154,0.12), transparent)',
+        bottom: '5%', right: '-8%',
+        transform: `translate(${mousePos.x * -15}px, ${mousePos.y * -15}px)`,
+        transition: 'transform 0.8s ease-out'
+      }} />
+
+      {/* Card */}
       <div style={{
         width: '100%', maxWidth: 420,
-        background: 'white',
+        background: 'rgba(255,255,255,0.97)',
+        backdropFilter: 'blur(20px)',
         borderRadius: 24,
-        boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
+        boxShadow: '0 20px 60px rgba(0,0,0,0.35), 0 0 0 1px rgba(255,255,255,0.05)',
         overflow: 'hidden',
-        position: 'relative', zIndex: 1
+        position: 'relative', zIndex: 1,
+        transform: `translate(${mousePos.x * -3}px, ${mousePos.y * -3}px)`,
+        transition: 'transform 0.5s ease-out'
       }}>
         {/* Banner */}
         <div style={{
-          background: 'linear-gradient(135deg, #6A1B9A, #9C27B0)',
-          padding: '40px 30px 32px',
-          textAlign: 'center', color: 'white'
+          background: 'linear-gradient(135deg, #4A148C 0%, #6A1B9A 50%, #9C27B0 100%)',
+          padding: '45px 30px 38px',
+          textAlign: 'center', color: 'white',
+          position: 'relative', overflow: 'hidden'
         }}>
+          {/* Banner glow */}
+          <div style={{
+            position: 'absolute', width: 200, height: 200, borderRadius: '50%',
+            background: 'radial-gradient(circle, rgba(255,255,255,0.1), transparent)',
+            top: -60, left: '50%',
+            transform: `translate(-50%, ${mousePos.y * 10}px)`,
+            transition: 'transform 0.8s ease-out'
+          }} />
+
           <img
             src={storeLogo || '/logo.png'}
             alt="Logo"
             style={{
-              width: 80, height: 80, borderRadius: 18,
-              objectFit: 'contain', marginBottom: 16,
-              boxShadow: '0 8px 24px rgba(0,0,0,0.25)',
-              background: 'white', padding: 6
+              width: 130, height: 130, borderRadius: 24,
+              objectFit: 'contain',
+              marginBottom: 18,
+              position: 'relative', zIndex: 1
             }}
             onError={e => { e.target.style.display = 'none'; }}
           />
-          <h1 style={{ fontSize: 28, fontWeight: 800, marginBottom: 4, letterSpacing: -0.5 }}>
+          <h1 style={{
+            fontSize: 32, fontWeight: 800, marginBottom: 4,
+            letterSpacing: -0.5, position: 'relative', zIndex: 1
+          }}>
             Pé de Açaí
           </h1>
-          <p style={{ opacity: 0.85, fontSize: 14, fontWeight: 400 }}>
+          <p style={{
+            opacity: 0.8, fontSize: 14, fontWeight: 400,
+            position: 'relative', zIndex: 1
+          }}>
             O jeito mais rápido de pedir seu açaí
           </p>
         </div>
@@ -99,115 +173,84 @@ export default function Login() {
             )}
 
             <div style={{ marginBottom: 20 }}>
-              <label style={{
-                fontSize: 13, fontWeight: 600, color: '#555',
-                marginBottom: 6, display: 'block', letterSpacing: 0.3
-              }}>
+              <label style={{ fontSize: 13, fontWeight: 600, color: '#555', marginBottom: 6, display: 'block' }}>
                 Telefone
               </label>
               <input
-                type="text"
-                value={phone}
+                type="text" value={phone}
                 onChange={e => setPhone(e.target.value)}
-                placeholder="(11) 99999-9999"
-                required
+                placeholder="(11) 99999-9999" required
                 style={{
-                  width: '100%', padding: '14px 16px',
-                  fontSize: 16, border: '2px solid #E0E0E0',
-                  borderRadius: 12, outline: 'none',
-                  transition: 'border-color 0.2s',
+                  width: '100%', padding: '14px 16px', fontSize: 16,
+                  border: '2px solid #E8E0F0', borderRadius: 12, outline: 'none',
+                  transition: 'border-color 0.2s, box-shadow 0.2s',
                   boxSizing: 'border-box'
                 }}
-                onFocus={e => e.target.style.borderColor = '#6A1B9A'}
-                onBlur={e => e.target.style.borderColor = '#E0E0E0'}
+                onFocus={e => { e.target.style.borderColor = '#9C27B0'; e.target.style.boxShadow = '0 0 0 3px rgba(156,39,176,0.1)'; }}
+                onBlur={e => { e.target.style.borderColor = '#E8E0F0'; e.target.style.boxShadow = 'none'; }}
               />
             </div>
 
             <div style={{ marginBottom: 24 }}>
-              <label style={{
-                fontSize: 13, fontWeight: 600, color: '#555',
-                marginBottom: 6, display: 'block', letterSpacing: 0.3
-              }}>
+              <label style={{ fontSize: 13, fontWeight: 600, color: '#555', marginBottom: 6, display: 'block' }}>
                 Senha
               </label>
               <input
-                type="password"
-                value={password}
+                type="password" value={password}
                 onChange={e => setPassword(e.target.value)}
-                placeholder="Sua senha"
-                required
+                placeholder="Sua senha" required
                 style={{
-                  width: '100%', padding: '14px 16px',
-                  fontSize: 16, border: '2px solid #E0E0E0',
-                  borderRadius: 12, outline: 'none',
-                  transition: 'border-color 0.2s',
+                  width: '100%', padding: '14px 16px', fontSize: 16,
+                  border: '2px solid #E8E0F0', borderRadius: 12, outline: 'none',
+                  transition: 'border-color 0.2s, box-shadow 0.2s',
                   boxSizing: 'border-box'
                 }}
-                onFocus={e => e.target.style.borderColor = '#6A1B9A'}
-                onBlur={e => e.target.style.borderColor = '#E0E0E0'}
+                onFocus={e => { e.target.style.borderColor = '#9C27B0'; e.target.style.boxShadow = '0 0 0 3px rgba(156,39,176,0.1)'; }}
+                onBlur={e => { e.target.style.borderColor = '#E8E0F0'; e.target.style.boxShadow = 'none'; }}
               />
             </div>
 
-            <button
-              type="submit"
-              disabled={loading}
-              style={{
-                width: '100%', padding: '15px',
-                background: 'linear-gradient(135deg, #6A1B9A, #9C27B0)',
-                color: 'white', border: 'none', borderRadius: 12,
-                fontSize: 16, fontWeight: 700,
-                cursor: loading ? 'default' : 'pointer',
-                opacity: loading ? 0.7 : 1,
-                transition: 'box-shadow 0.2s, transform 0.15s',
-                boxShadow: '0 4px 14px rgba(106,27,154,0.35)'
-              }}
-              onMouseOver={e => !loading && (e.target.style.boxShadow = '0 6px 20px rgba(106,27,154,0.5)')}
-              onMouseOut={e => !loading && (e.target.style.boxShadow = '0 4px 14px rgba(106,27,154,0.35)')}
+            <button type="submit" disabled={loading} style={{
+              width: '100%', padding: '15px',
+              background: 'linear-gradient(135deg, #6A1B9A, #9C27B0)',
+              color: 'white', border: 'none', borderRadius: 12,
+              fontSize: 16, fontWeight: 700,
+              cursor: loading ? 'default' : 'pointer',
+              opacity: loading ? 0.7 : 1,
+              transition: 'box-shadow 0.2s, transform 0.15s',
+              boxShadow: '0 4px 14px rgba(106,27,154,0.4)'
+            }}
+              onMouseOver={e => !loading && (e.target.style.boxShadow = '0 6px 22px rgba(106,27,154,0.55)')}
+              onMouseOut={e => !loading && (e.target.style.boxShadow = '0 4px 14px rgba(106,27,154,0.4)')}
             >
               {loading ? 'Entrando...' : 'Entrar'}
             </button>
 
-            <p style={{
-              textAlign: 'center', marginTop: 20, fontSize: 14,
-              color: '#888'
-            }}>
+            <p style={{ textAlign: 'center', marginTop: 20, fontSize: 14, color: '#888' }}>
               Não tem conta?{' '}
-              <Link to="/register" style={{
-                color: '#6A1B9A', fontWeight: 700, textDecoration: 'none'
-              }}>
+              <Link to="/register" style={{ color: '#6A1B9A', fontWeight: 700, textDecoration: 'none' }}>
                 Cadastre-se
               </Link>
             </p>
           </form>
 
-          {/* Test accounts toggle */}
-          <div style={{ marginTop: 24, borderTop: '1px solid #F0F0F0', paddingTop: 16, textAlign: 'center' }}>
-            <button
-              onClick={() => setShowTest(!showTest)}
-              style={{
-                background: 'none', border: 'none', color: '#BBB',
-                fontSize: 12, cursor: 'pointer', padding: 4
-              }}
-            >
+          <div style={{ marginTop: 24, borderTop: '1px solid #F3E5F5', paddingTop: 16, textAlign: 'center' }}>
+            <button onClick={() => setShowTest(!showTest)} style={{
+              background: 'none', border: 'none', color: '#CCC', fontSize: 11, cursor: 'pointer'
+            }}>
               {showTest ? 'Ocultar' : 'Contas de teste'}
             </button>
             {showTest && (
               <div style={{ marginTop: 8, display: 'flex', gap: 6, justifyContent: 'center', flexWrap: 'wrap' }}>
                 {[
-                  { role: 'store', label: 'Loja', bg: '#EDE7F6', color: '#5E35B1' },
+                  { role: 'store', label: 'Loja', bg: '#F3E5F5', color: '#6A1B9A' },
                   { role: 'motoboy', label: 'Motoboy', bg: '#E8F5E9', color: '#2E7D32' },
                   { role: 'customer', label: 'Cliente', bg: '#E3F2FD', color: '#1565C0' }
                 ].map(({ role, label, bg, color }) => (
-                  <button key={role}
-                    onClick={() => fillTest(role)}
-                    style={{
-                      background: bg, color, border: 'none',
-                      padding: '6px 14px', borderRadius: 20,
-                      fontSize: 12, fontWeight: 600,
-                      cursor: 'pointer'
-                    }}>
-                    {label}
-                  </button>
+                  <button key={role} onClick={() => fillTest(role)} style={{
+                    background: bg, color, border: 'none',
+                    padding: '6px 14px', borderRadius: 20, fontSize: 12, fontWeight: 600, cursor: 'pointer'
+                  }}>{label}</button>
                 ))}
               </div>
             )}
@@ -215,11 +258,14 @@ export default function Login() {
         </div>
       </div>
 
-      {/* Footer */}
-      <p style={{
-        marginTop: 24, fontSize: 11, color: 'rgba(255,255,255,0.4)',
-        textAlign: 'center', zIndex: 1
-      }}>
+      <style>{`
+        @keyframes floatBerry {
+          0%, 100% { transform: translateY(0px) scale(1); opacity: 0.25; }
+          50% { transform: translateY(-12px) scale(1.08); opacity: 0.35; }
+        }
+      `}</style>
+
+      <p style={{ marginTop: 24, fontSize: 11, color: 'rgba(255,255,255,0.35)', zIndex: 1 }}>
         Pé de Açaí © 2026 — Delivery de açaí
       </p>
     </div>
