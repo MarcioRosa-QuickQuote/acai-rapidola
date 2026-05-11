@@ -98,8 +98,7 @@ router.post('/create-preference', authMiddleware, async (req, res) => {
           failure: buildAppUrl(req, `/customer/payment/${order_id}`),
           pending: buildAppUrl(req, `/customer/payment/${order_id}`)
         },
-        auto_return: 'approved',
-        payment_methods: { installments: 1, default_payment_method_id: 'pix' }
+        auto_return: 'approved'
       }
     });
     res.json({
