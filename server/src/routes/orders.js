@@ -13,6 +13,34 @@ function getIO() {
 async function notifyUser(userId, title, body, type = 'info') {
   const id = uuid();
   await supabase.from('notifications').insert({ id, user_id: userId, title, body, type });
+  const io = getIO();
+  if (io) {
+    for (const [socketId, socket] of io.sockets.sockets) {
+      if (socket.userId === userId) {
+        socket.emit('notification', { id, title, body, type });
+      }
+    }
+  }
+}
+
+function calcDistance(lat1, lng1, lat2, lng2) {
+  const R = 6371;
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLng = (lng2 - lng1) * Math.PI / 180;
+  const a = Math.sin(dLat / 2) ** 2 + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLng / 2) ** 2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
+function calcDeliveryFee(distanceKm) {
+  const base = 5.00;
+  const perKm = 1.80;
+  const fee = base + distanceKm * perKm;
+  return Math.max(6.00, parseFloat(fee.toFixed(2)));
+}
+
+async function notifyUser(userId, title, body, type = 'info') {
+  const id = uuid();
+  await supabase.from('notifications').insert({ id, user_id: userId, title, body, type });
 
   const io = getIO();
   if (io) {
@@ -51,9 +79,18 @@ router.post('/', authMiddleware, roleMiddleware('customer'), async (req, res) =>
   const orderId = uuid();
   const customerId = req.user.id;
 
+  const { data: storeData } = await supabase.from('stores').select('lat, lng').eq('id', store_id).single();
+  const distanceKm = calcDistance(
+    storeData?.lat || store?.lat, storeData?.lng || store?.lng,
+    lat || -23.55, lng || -46.63
+  );
+  const deliveryFee = calcDeliveryFee(distanceKm);
+
   await supabase.from('orders').insert({
     id: orderId, customer_id: customerId, store_id,
-    total, customer_address: address,
+    total: total + deliveryFee,
+    delivery_fee: deliveryFee,
+    customer_address: address,
     customer_lat: lat || -23.55, customer_lng: lng || -46.63, notes: notes || ''
   });
 
@@ -163,10 +200,9 @@ router.patch('/:id/status', authMiddleware, async (req, res) => {
   await supabase.from('orders').update({ status, updated_at: new Date().toISOString() }).eq('id', req.params.id);
 
   if (status === 'delivered' && order.motoboy_id) {
-    const deliveryFee = parseFloat((order.total * 0.2).toFixed(2));
     await supabase.from('motoboy_earnings').insert({
       id: uuid(), motoboy_id: order.motoboy_id, order_id: req.params.id,
-      amount: deliveryFee, status: 'pending'
+      amount: order.delivery_fee || parseFloat((order.total * 0.2).toFixed(2)), status: 'pending'
     });
   }
 

@@ -29,7 +29,9 @@ export default function CustomerOrder() {
   const navigate = useNavigate();
 
   const orderItems = items || (product ? [{ product_id: product.id, name: product.name, price: product.price, quantity: quantity || 1 }] : []);
-  const total = orderItems.reduce((s, i) => s + (i.price || 0) * (i.quantity || 1), 0);
+  const subtotal = orderItems.reduce((s, i) => s + (i.price || 0) * (i.quantity || 1), 0);
+  const [deliveryFee, setDeliveryFee] = useState(0);
+  const total = subtotal + deliveryFee;
 
   const [address, setAddress] = useState('');
   const [notes, setNotes] = useState('');
@@ -50,6 +52,7 @@ export default function CustomerOrder() {
         setLng(user.lng);
         setMapCenter([user.lat, user.lng]);
         setShowMap(true);
+        updateDeliveryFee(user.lat, user.lng);
       }
       setAddrSaved(true);
     }
@@ -70,6 +73,7 @@ export default function CustomerOrder() {
         setLng(newLng);
         setMapCenter([newLat, newLng]);
         setShowMap(true);
+        updateDeliveryFee(newLat, newLng);
       } else {
         setError('Endereço não encontrado. Tente um endereço mais específico.');
         setTimeout(() => setError(''), 4000);
@@ -82,9 +86,20 @@ export default function CustomerOrder() {
     }
   }
 
-  function handleMapClick(clickLat, clickLng) {
+  function updateDeliveryFee(custLat, custLng) {
+    if (store?.lat && store?.lng && custLat && custLng) {
+      const R = 6371;
+      const dLat = (custLat - store.lat) * Math.PI / 180;
+      const dLng = (custLng - store.lng) * Math.PI / 180;
+      const a = Math.sin(dLat / 2) ** 2 + Math.cos(store.lat * Math.PI / 180) * Math.cos(custLat * Math.PI / 180) * Math.sin(dLng / 2) ** 2;
+      const km = R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+      const fee = Math.max(6.00, parseFloat((5.00 + km * 1.80).toFixed(2)));
+      setDeliveryFee(fee);
+    }
+  }
     setLat(clickLat);
     setLng(clickLng);
+    updateDeliveryFee(clickLat, clickLng);
   }
 
   async function handleSubmit(e) {
@@ -143,6 +158,10 @@ export default function CustomerOrder() {
               <span className="font-bold">R$ {((item.price || 0) * (item.quantity || 1)).toFixed(2)}</span>
             </div>
           ))}
+          <div className="flex-between" style={{ padding: '8px 0', fontSize: 14, color: '#666' }}>
+            <span>Taxa de entrega</span>
+            <span>R$ {deliveryFee.toFixed(2)}</span>
+          </div>
           <div className="flex-between font-bold" style={{ marginTop: 12, fontSize: 18, color: 'var(--primary)' }}>
             <span>Total</span>
             <span>R$ {total.toFixed(2)}</span>
