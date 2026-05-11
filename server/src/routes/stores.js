@@ -156,7 +156,7 @@ router.post('/:id/invite', authMiddleware, roleMiddleware('store'), async (req, 
 
   await supabase.from('store_invites').insert({ id, store_id: req.params.id, phone, token });
 
-  const appUrl = process.env.APP_URL || `http://localhost:${process.env.PORT || 3001}`;
+  const appUrl = process.env.APP_URL || `${req.protocol}://${req.get('host')}`;
   const inviteLink = `${appUrl}/register?token=${token}`;
   res.json({ id, phone, token, inviteLink });
 });

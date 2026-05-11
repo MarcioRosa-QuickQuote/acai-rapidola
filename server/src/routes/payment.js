@@ -27,8 +27,8 @@ async function notifyUser(userId, title, body, type = 'info') {
   }
 }
 
-function buildAppUrl(path) {
-  const base = process.env.APP_URL || `http://localhost:${process.env.PORT || 3001}`;
+function buildAppUrl(req, path) {
+  const base = process.env.APP_URL || `${req.protocol}://${req.get('host')}`;
   return `${base}${path}`;
 }
 
@@ -92,11 +92,11 @@ router.post('/create-preference', authMiddleware, async (req, res) => {
       currency_id: 'BRL'
     }],
     external_reference: order_id,
-    notification_url: buildAppUrl('/api/webhook'),
+    notification_url: buildAppUrl(req, '/api/webhook'),
     back_urls: {
-      success: buildAppUrl(`/customer/tracking/${order_id}`),
-      failure: buildAppUrl(`/customer/payment/${order_id}`),
-      pending: buildAppUrl(`/customer/payment/${order_id}`)
+      success: buildAppUrl(req, `/customer/tracking/${order_id}`),
+      failure: buildAppUrl(req, `/customer/payment/${order_id}`),
+      pending: buildAppUrl(req, `/customer/payment/${order_id}`)
     },
     auto_return: 'approved',
     payment_methods: { installments: 1, default_payment_method_id: 'pix' }
@@ -182,8 +182,10 @@ router.post('/process-card-payment', authMiddleware, async (req, res) => {
         ...(identification_type && identification_number ? { identification: { type: identification_type, number: identification_number } } : {})
       },
       external_reference: order_id,
-      notification_url: buildAppUrl('/api/webhook')
+      notification_url: buildAppUrl(req, '/api/webhook')
     });
+
+
 
     const payment = paymentResp.body;
     if (payment.status === 'approved') {
@@ -241,7 +243,7 @@ router.post('/pay-with-saved-card', authMiddleware, async (req, res) => {
       installments: 1, payment_method_id: 'visa',
       payer: { email, type: 'customer', id: customerId },
       token: card_id, external_reference: order_id,
-      notification_url: buildAppUrl('/api/webhook')
+      notification_url: buildAppUrl(req, '/api/webhook')
     });
 
     const payment = paymentResp.body;
