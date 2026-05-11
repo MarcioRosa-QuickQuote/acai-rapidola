@@ -120,7 +120,7 @@ export default function Login() {
         {/* Banner */}
         <div style={{
           background: 'linear-gradient(135deg, #4A148C 0%, #6A1B9A 50%, #9C27B0 100%)',
-          padding: '28px 30px 22px',
+          padding: '16px 30px 14px',
           textAlign: 'center', color: 'white',
           position: 'relative', overflow: 'hidden'
         }}>
@@ -152,7 +152,7 @@ export default function Login() {
         </div>
 
         {/* Form */}
-        <div style={{ padding: '24px 30px 28px' }}>
+        <div style={{ padding: '20px 30px 24px' }}>
           <form onSubmit={handleSubmit}>
             {error && (
               <div style={{

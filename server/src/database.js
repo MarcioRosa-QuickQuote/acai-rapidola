@@ -146,54 +146,61 @@ function init() {
 
 function seed() {
   const adminExists = db.prepare('SELECT id FROM users WHERE phone = ?').get('admin');
-  if (adminExists) return;
+  if (!adminExists) {
+    const adminId = uuid();
+    const storeId = uuid();
+    const motoboyId = uuid();
+    const customerId = uuid();
+    const hash = bcrypt.hashSync('123456', 10);
 
-  const adminId = uuid();
-  const storeId = uuid();
-  const motoboyId = uuid();
-  const customerId = uuid();
-  const hash = bcrypt.hashSync('123456', 10);
+    const insertUser = db.prepare(
+      'INSERT INTO users (id, name, phone, password_hash, role) VALUES (?, ?, ?, ?, ?)'
+    );
 
-  const insertUser = db.prepare(
-    'INSERT INTO users (id, name, phone, password_hash, role) VALUES (?, ?, ?, ?, ?)'
-  );
+    insertUser.run(adminId, 'Loja Central do Açaí', 'admin', hash, 'store');
+    insertUser.run(motoboyId, 'João Motoboy', 'motoboy', hash, 'motoboy');
+    insertUser.run(customerId, 'Maria Cliente', 'cliente', hash, 'customer');
 
-  insertUser.run(adminId, 'Loja Central do Açaí', 'admin', hash, 'store');
-  insertUser.run(motoboyId, 'João Motoboy', 'motoboy', hash, 'motoboy');
-  insertUser.run(customerId, 'Maria Cliente', 'cliente', hash, 'customer');
+    db.prepare(
+      'INSERT INTO stores (id, name, owner_id, address, lat, lng) VALUES (?, ?, ?, ?, ?, ?)'
+    ).run(storeId, 'Açaí Central', adminId, 'Rua do Açaí, 100 - Centro, São Paulo', -23.5505, -46.6333);
 
-  db.prepare(
-    'INSERT INTO stores (id, name, owner_id, address, lat, lng) VALUES (?, ?, ?, ?, ?, ?)'
-  ).run(storeId, 'Açaí Central', adminId, 'Rua do Açaí, 100 - Centro, São Paulo', -23.5505, -46.6333);
+    db.prepare(
+      'INSERT INTO motoboy_locations (motoboy_id, lat, lng, online) VALUES (?, ?, ?, ?)'
+    ).run(motoboyId, -23.5510, -46.6340, 1);
 
-  const products = [
-    ['Açaí 500ml (Meio Litro)', 'Açaí puro batido com xarope de guaraná', 25.00, 500],
-    ['Açaí 1 Litro', 'Açaí puro batido com xarope de guaraná — pode vir em 2 sacos de 500ml', 45.00, 1000],
-    ['Açaí 300ml Tradicional', 'Açaí puro batido com xarope de guaraná', 15.00, 300],
-    ['Açaí 700ml Premium', 'Açaí com banana, granola e leite condensado', 35.00, 700],
-    ['Farinha de Tapioca', 'Acompanhamento tradicional — farinha de tapioca', 5.00, 100],
-    ["Farinha D'água", 'Farinha d\'água típica do Pará', 6.00, 100],
-    ['Copo 500ml Energia', 'Açaí com guaraná em pó, paçoca e mel', 30.00, 500],
-    ['Copo 500ml Proteína', 'Açaí com whey protein, banana e pasta de amendoim', 35.00, 500],
-  ];
-
-  const insertProduct = db.prepare(
-    'INSERT INTO products (id, store_id, name, description, price, size_ml) VALUES (?, ?, ?, ?, ?, ?)'
-  );
-
-  for (const [name, desc, price, size] of products) {
-    insertProduct.run(uuid(), storeId, name, desc, price, size);
+    console.log('[DB] Dados de exemplo inseridos.');
+    console.log('[DB] Usuários:');
+    console.log('  Loja:  admin / 123456');
+    console.log('  Motoboy: motoboy / 123456');
+    console.log('  Cliente: cliente / 123456');
   }
 
-  db.prepare(
-    'INSERT INTO motoboy_locations (motoboy_id, lat, lng, online) VALUES (?, ?, ?, ?)'
-  ).run(motoboyId, -23.5510, -46.6340, 1);
+  const store = db.prepare("SELECT id FROM stores WHERE name = 'Açaí Central'").get();
+  if (store) {
+    const existingCount = db.prepare('SELECT COUNT(*) as c FROM products WHERE store_id = ?').get(store.id);
+    if (existingCount.c === 0) {
+      const insertProduct = db.prepare(
+        'INSERT INTO products (id, store_id, name, description, price, size_ml) VALUES (?, ?, ?, ?, ?, ?)'
+      );
 
-  console.log('[DB] Dados de exemplo inseridos.');
-  console.log('[DB] Usuários:');
-  console.log('  Loja:  admin / 123456');
-  console.log('  Motoboy: motoboy / 123456');
-  console.log('  Cliente: cliente / 123456');
+      const products = [
+        ['Açaí 500ml (Meio Litro)', 'Açaí puro batido com xarope de guaraná', 25.00, 500],
+        ['Açaí 1 Litro', 'Açaí puro batido com xarope de guaraná — pode vir em 2 sacos de 500ml', 45.00, 1000],
+        ['Açaí 300ml Tradicional', 'Açaí puro batido com xarope de guaraná', 15.00, 300],
+        ['Açaí 700ml Premium', 'Açaí com banana, granola e leite condensado', 35.00, 700],
+        ['Farinha de Tapioca', 'Acompanhamento tradicional — farinha de tapioca', 5.00, 100],
+        ["Farinha D'água", "Farinha d'água típica do Pará", 6.00, 100],
+        ['Copo 500ml Energia', 'Açaí com guaraná em pó, paçoca e mel', 30.00, 500],
+        ['Copo 500ml Proteína', 'Açaí com whey protein, banana e pasta de amendoim', 35.00, 500],
+      ];
+
+      for (const [name, desc, price, size] of products) {
+        insertProduct.run(uuid(), store.id, name, desc, price, size);
+      }
+      console.log('[DB] Produtos padrão inseridos.');
+    }
+  }
 }
 
 function migrate() {
