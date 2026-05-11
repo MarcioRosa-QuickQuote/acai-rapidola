@@ -46,11 +46,11 @@ export function AuthProvider({ children }) {
       });
   }
 
-  function register(name, phone, password, role, inviteToken) {
+  function register(name, phone, password, role, inviteToken, extra) {
     return fetch(`${API}/auth/register`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, phone, password, role, inviteToken })
+      body: JSON.stringify({ name, phone, password, role, inviteToken, extra })
     })
       .then(r => r.json().then(d => ({ ok: r.ok, ...d })))
       .then(data => {

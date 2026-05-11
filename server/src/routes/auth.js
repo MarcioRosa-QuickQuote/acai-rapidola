@@ -7,7 +7,7 @@ const { signToken, authMiddleware } = require('../auth');
 const router = Router();
 
 router.post('/register', async (req, res) => {
-  const { name, phone, password, role, inviteToken } = req.body;
+  const { name, phone, password, role, inviteToken, extra } = req.body;
   if (!name || !phone || !password || !role) {
     return res.status(400).json({ error: 'Nome, telefone, senha e perfil são obrigatórios' });
   }
@@ -21,7 +21,12 @@ router.post('/register', async (req, res) => {
   const id = uuid();
   const hash = bcrypt.hashSync(password, 10);
 
-  await supabase.from('users').insert({ id, name, phone, password_hash: hash, role });
+  await supabase.from('users').insert({
+    id, name, phone, password_hash: hash, role,
+    cpf: (extra?.cpf) || '',
+    vehicle_type: (extra?.vehicle_type) || '',
+    pix_key: (extra?.pix_key) || ''
+  });
 
   const user = { id, name, role, phone };
   const token = signToken(user);

@@ -180,7 +180,7 @@ export default function MotoboyDashboard() {
         {isEmployee && (
           <div className="card" style={{ background: '#E8F5E9', border: '1px solid #C8E6C9', textAlign: 'center', padding: 10, marginBottom: 12 }}>
             <span style={{ fontWeight: 600, color: '#2E7D32', fontSize: 13 }}>
-              Voce e parceiro da loja — pedidos sao designados automaticamente
+              Você é parceiro desta loja — os pedidos chegam automaticamente, sem precisar aceitar
             </span>
           </div>
         )}

@@ -20,6 +20,9 @@ export default function Register() {
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
   const [role, setRole] = useState('customer');
+  const [cpf, setCpf] = useState('');
+  const [vehicleType, setVehicleType] = useState('moto');
+  const [pixKey, setPixKey] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
@@ -55,7 +58,7 @@ export default function Register() {
     setError('');
     setLoading(true);
     try {
-      await register(name, phone, password, role, inviteToken);
+      await register(name, phone, password, role, inviteToken, { cpf, vehicle_type: vehicleType, pix_key: pixKey });
     } catch (err) {
       setError(err.message);
     } finally {
@@ -158,6 +161,31 @@ export default function Register() {
                 onFocus={onFocus} onBlur={onBlur}
               />
             </div>
+
+            {role === 'motoboy' && (
+              <>
+                <div style={{ marginBottom: 16 }}>
+                  <label style={{ fontSize: 13, fontWeight: 600, color: '#555', marginBottom: 6, display: 'block' }}>CPF</label>
+                  <input type="text" value={cpf} onChange={e => setCpf(e.target.value)}
+                    placeholder="000.000.000-00" required
+                    style={inputStyle} onFocus={onFocus} onBlur={onBlur} />
+                </div>
+                <div style={{ marginBottom: 16 }}>
+                  <label style={{ fontSize: 13, fontWeight: 600, color: '#555', marginBottom: 6, display: 'block' }}>Tipo de Veiculo</label>
+                  <select value={vehicleType} onChange={e => setVehicleType(e.target.value)}
+                    style={{ ...inputStyle, background: 'white' }}>
+                    <option value="moto">Moto</option>
+                    <option value="bike">Bicicleta</option>
+                  </select>
+                </div>
+                <div style={{ marginBottom: 20 }}>
+                  <label style={{ fontSize: 13, fontWeight: 600, color: '#555', marginBottom: 6, display: 'block' }}>Chave Pix (para receber)</label>
+                  <input type="text" value={pixKey} onChange={e => setPixKey(e.target.value)}
+                    placeholder="CPF, telefone ou e-mail" required
+                    style={inputStyle} onFocus={onFocus} onBlur={onBlur} />
+                </div>
+              </>
+            )}
 
             <div style={{ marginBottom: 20 }}>
               <label style={{ fontSize: 13, fontWeight: 600, color: '#555', marginBottom: 8, display: 'block' }}>Tipo de conta</label>
