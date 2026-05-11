@@ -24,6 +24,54 @@ app.use(express.json());
 app.use('/api/auth', authRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/stores', storeRoutes);
+
+app.get('/api/setup', async (req, res) => {
+  const bcrypt = require('bcryptjs');
+  const { v4: uuid } = require('uuid');
+
+  const { data: existing } = await supabase.from('users').select('id').eq('phone', 'admin').single();
+  if (existing) return res.json({ ok: true, message: 'Ja configurado' });
+
+  const adminId = uuid();
+  const storeId = uuid();
+  const motoboyId = uuid();
+  const customerId = uuid();
+  const hash = bcrypt.hashSync('123456', 10);
+
+  await supabase.from('users').insert([
+    { id: adminId, name: 'Pe de Acai', phone: 'admin', password_hash: hash, role: 'store' },
+    { id: motoboyId, name: 'Joao Motoboy', phone: 'motoboy', password_hash: hash, role: 'motoboy' },
+    { id: customerId, name: 'Maria Cliente', phone: 'cliente', password_hash: hash, role: 'customer' }
+  ]);
+
+  await supabase.from('stores').insert({
+    id: storeId, name: 'Pe de Acai', owner_id: adminId,
+    address: 'Rua do Acai, 100 - Centro, Sao Paulo',
+    lat: -23.5505, lng: -46.6333
+  });
+
+  await supabase.from('motoboy_locations').upsert(
+    { motoboy_id: motoboyId, lat: -23.5510, lng: -46.6340, online: 1 },
+    { onConflict: 'motoboy_id' }
+  );
+
+  const products = [
+    ['Açai 500ml (Meio Litro)', 'Açai puro batido com xarope de guaraná', 25.00, 500],
+    ['Açai 1 Litro', 'Açai puro batido com xarope de guaraná — pode vir em 2 sacos de 500ml', 45.00, 1000],
+    ['Farinha de Tapioca', 'Acompanhamento tradicional — farinha de tapioca', 5.00, 100],
+    ["Farinha D'agua", "Farinha d'agua tipica do Para", 6.00, 100],
+    ['Copo 500ml Energia', 'Açai com guaraná em po, pacoca e mel', 30.00, 500],
+    ['Copo 500ml Proteina', 'Açai com whey protein, banana e pasta de amendoim', 35.00, 500],
+  ];
+
+  await supabase.from('products').insert(
+    products.map(([name, description, price, size_ml]) => ({
+      id: uuid(), store_id: storeId, name, description, price, size_ml
+    }))
+  );
+
+  res.json({ ok: true, message: 'Configurado! admin/123456, motoboy/123456, cliente/123456' });
+});
 app.use('/api/orders', orderRoutes);
 app.use('/api/motoboy', motoboyRoutes);
 app.use('/api', paymentRoutes);
