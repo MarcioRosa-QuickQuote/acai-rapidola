@@ -92,7 +92,7 @@ export default function CustomerPayment() {
 
   async function loadSavedCards() {
     const data = await apiFetch('/saved-cards');
-    if (Array.isArray(data)) setSavedCards(data);
+    if (data.data) setSavedCards(data.data);
   }
 
   async function handleCardSubmit() {

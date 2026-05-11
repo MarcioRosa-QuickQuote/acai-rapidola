@@ -6,7 +6,7 @@ const { authMiddleware, roleMiddleware } = require('../auth');
 const router = Router();
 
 router.get('/', async (req, res) => {
-  let query = supabase.from('products').select('*, stores!inner(name)').eq('active', 1);
+  let query = supabase.from('products').select('*, stores(name)').eq('active', 1);
   if (req.query.store_id) {
     query = query.eq('store_id', req.query.store_id);
   }

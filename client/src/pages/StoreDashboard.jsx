@@ -198,8 +198,8 @@ export default function StoreDashboard() {
       apiFetch(`/stores/${storeData.id}/motoboys`),
       apiFetch(`/stores/${storeData.id}/invites`)
     ]);
-    if (Array.isArray(motoboysData)) setMotoboys(motoboysData);
-    if (Array.isArray(invitesData)) setInvites(invitesData);
+    if (motoboysData.data) setMotoboys(motoboysData.data);
+    if (invitesData.data) setInvites(invitesData.data);
   }
 
   async function generateInvite() {
@@ -261,7 +261,7 @@ export default function StoreDashboard() {
   async function loadProducts() {
     if (!storeData) return;
     const data = await apiFetch(`/products?store_id=${storeData.id}`);
-    if (Array.isArray(data)) setProducts(data);
+    if (data.data) setProducts(data.data);
   }
 
   function openNewProduct() {
