@@ -2,13 +2,14 @@ const { Router } = require('express');
 const { v4: uuid } = require('uuid');
 const { supabase } = require('../database');
 const { authMiddleware } = require('../auth');
-const mercadopago = require('mercadopago');
+const { MercadoPagoConfig, Preference, Payment, Customer, Card } = require('mercadopago');
 
 const router = Router();
 
 const MERCADO_PAGO_TOKEN = process.env.MERCADO_PAGO_ACCESS_TOKEN;
+let mpClient = null;
 if (MERCADO_PAGO_TOKEN) {
-  mercadopago.configure({ access_token: MERCADO_PAGO_TOKEN });
+  mpClient = new MercadoPagoConfig({ accessToken: MERCADO_PAGO_TOKEN });
 }
 
 function getIO() {
@@ -63,54 +64,51 @@ router.get('/notifications', authMiddleware, async (req, res) => {
 });
 
 router.patch('/notifications/:id/read', authMiddleware, async (req, res) => {
-  await supabase.from('notifications').update({ read: 1 })
-    .eq('id', req.params.id).eq('user_id', req.user.id);
+  await supabase.from('notifications').update({ read: 1 }).eq('id', req.params.id).eq('user_id', req.user.id);
   res.json({ success: true });
 });
 
 router.post('/create-preference', authMiddleware, async (req, res) => {
   const { order_id } = req.body;
-  if (!order_id) return res.status(400).json({ error: 'ID do pedido é obrigatório' });
+  if (!order_id) return res.status(400).json({ error: 'ID do pedido obrigatorio' });
 
   const { data: order } = await supabase.from('orders').select('*').eq('id', order_id).single();
-  if (!order) return res.status(404).json({ error: 'Pedido não encontrado' });
-  if (order.payment_status === 'paid') return res.status(400).json({ error: 'Pedido já foi pago' });
-
-  if (!MERCADO_PAGO_TOKEN) {
-    return res.status(500).json({ error: 'Gateway de pagamento não configurado' });
-  }
+  if (!order) return res.status(404).json({ error: 'Pedido nao encontrado' });
+  if (order.payment_status === 'paid') return res.status(400).json({ error: 'Pedido ja foi pago' });
+  if (!mpClient) return res.status(500).json({ error: 'Gateway nao configurado' });
 
   const paymentId = uuid();
   await supabase.from('orders').update({ payment_id: paymentId }).eq('id', order_id);
 
-  const preference = {
-    items: [{
-      id: order_id.slice(0, 8),
-      title: `Pedido Pé de Açaí #${order_id.slice(0, 8)}`,
-      description: `Açaí delivery`,
-      quantity: 1, unit_price: parseFloat(order.total.toFixed(2)),
-      currency_id: 'BRL'
-    }],
-    external_reference: order_id,
-    notification_url: buildAppUrl(req, '/api/webhook'),
-    back_urls: {
-      success: buildAppUrl(req, `/customer/tracking/${order_id}`),
-      failure: buildAppUrl(req, `/customer/payment/${order_id}`),
-      pending: buildAppUrl(req, `/customer/payment/${order_id}`)
-    },
-    auto_return: 'approved',
-    payment_methods: { installments: 1, default_payment_method_id: 'pix' }
-  };
-
   try {
-    const response = await mercadopago.preferences.create(preference);
+    const preference = new Preference(mpClient);
+    const result = await preference.create({
+      body: {
+        items: [{
+          id: order_id.slice(0, 8),
+          title: `Pedido Pe de Acai #${order_id.slice(0, 8)}`,
+          description: `Acai delivery`,
+          quantity: 1, unit_price: parseFloat(order.total.toFixed(2)),
+          currency_id: 'BRL'
+        }],
+        external_reference: order_id,
+        notification_url: buildAppUrl(req, '/api/webhook'),
+        back_urls: {
+          success: buildAppUrl(req, `/customer/tracking/${order_id}`),
+          failure: buildAppUrl(req, `/customer/payment/${order_id}`),
+          pending: buildAppUrl(req, `/customer/payment/${order_id}`)
+        },
+        auto_return: 'approved',
+        payment_methods: { installments: 1, default_payment_method_id: 'pix' }
+      }
+    });
     res.json({
-      init_point: response.body.init_point,
-      sandbox_init_point: response.body.sandbox_init_point,
-      preference_id: response.body.id
+      init_point: result.init_point,
+      sandbox_init_point: result.sandbox_init_point,
+      preference_id: result.id
     });
   } catch (err) {
-    console.error('[MP] Erro preferência:', err);
+    console.error('[MP] Erro preferencia:', err);
     res.status(500).json({ error: 'Erro ao criar pagamento' });
   }
 });
@@ -126,10 +124,10 @@ router.post('/webhook', async (req, res) => {
   }
 
   const { type, data } = req.body;
-  if (type === 'payment' && data?.id) {
+  if (type === 'payment' && data?.id && mpClient) {
     try {
-      const paymentResp = await mercadopago.payment.findById(data.id);
-      const payment = paymentResp.body;
+      const paymentApi = new Payment(mpClient);
+      const payment = await paymentApi.get({ id: data.id });
       if (payment.status === 'approved') {
         const { data: order } = await supabase.from('orders')
           .select('id, store_id').eq('id', payment.external_reference).single();
@@ -146,48 +144,44 @@ router.post('/webhook', async (req, res) => {
 router.post('/pix/qrcode', authMiddleware, async (req, res) => {
   const { order_id } = req.body;
   const { data: order } = await supabase.from('orders').select('*').eq('id', order_id).single();
-  if (!order) return res.status(404).json({ error: 'Pedido não encontrado' });
-  if (order.payment_status === 'paid') return res.status(400).json({ error: 'Pedido já foi pago' });
-
+  if (!order) return res.status(404).json({ error: 'Pedido nao encontrado' });
+  if (order.payment_status === 'paid') return res.status(400).json({ error: 'Pedido ja foi pago' });
   res.json({ pix_id: uuid(), pix_code: 'SIMULADO', total: order.total, expires_in: 300 });
 });
 
 router.post('/pix/confirm', authMiddleware, async (req, res) => {
   const { order_id } = req.body;
   const { data: order } = await supabase.from('orders').select('*').eq('id', order_id).single();
-  if (!order) return res.status(404).json({ error: 'Pedido não encontrado' });
-
+  if (!order) return res.status(404).json({ error: 'Pedido nao encontrado' });
   await confirmOrderPayment(order_id, order.store_id);
   res.json({ success: true, status: 'paid' });
 });
 
 router.post('/process-card-payment', authMiddleware, async (req, res) => {
   const { order_id, token, payment_method_id, installments, issuer_id, payer_email, identification_type, identification_number, save_card } = req.body;
-  if (!order_id || !token || !payment_method_id) {
-    return res.status(400).json({ error: 'Dados do pagamento incompletos' });
-  }
+  if (!order_id || !token || !payment_method_id) return res.status(400).json({ error: 'Dados incompletos' });
 
   const { data: order } = await supabase.from('orders').select('*').eq('id', order_id).single();
-  if (!order) return res.status(404).json({ error: 'Pedido não encontrado' });
-  if (order.payment_status === 'paid') return res.status(400).json({ error: 'Pedido já foi pago' });
-  if (!MERCADO_PAGO_TOKEN) return res.status(500).json({ error: 'Gateway não configurado' });
+  if (!order) return res.status(404).json({ error: 'Pedido nao encontrado' });
+  if (order.payment_status === 'paid') return res.status(400).json({ error: 'Pedido ja foi pago' });
+  if (!mpClient) return res.status(500).json({ error: 'Gateway nao configurado' });
 
   try {
-    const paymentResp = await mercadopago.payment.create({
-      transaction_amount: parseFloat(order.total.toFixed(2)),
-      token, description: `Pedido Pé de Açaí #${order_id.slice(0, 8)}`,
-      installments: parseInt(installments) || 1, payment_method_id, issuer_id,
-      payer: {
-        email: payer_email || `cliente_${req.user.id}@pedeacai.app`,
-        ...(identification_type && identification_number ? { identification: { type: identification_type, number: identification_number } } : {})
-      },
-      external_reference: order_id,
-      notification_url: buildAppUrl(req, '/api/webhook')
+    const paymentApi = new Payment(mpClient);
+    const payment = await paymentApi.create({
+      body: {
+        transaction_amount: parseFloat(order.total.toFixed(2)),
+        token, description: `Pedido Pe de Acai #${order_id.slice(0, 8)}`,
+        installments: parseInt(installments) || 1, payment_method_id, issuer_id,
+        payer: {
+          email: payer_email || `cliente_${req.user.id}@pedeacai.app`,
+          ...(identification_type && identification_number ? { identification: { type: identification_type, number: identification_number } } : {})
+        },
+        external_reference: order_id,
+        notification_url: buildAppUrl(req, '/api/webhook')
+      }
     });
 
-
-
-    const payment = paymentResp.body;
     if (payment.status === 'approved') {
       await confirmOrderPayment(order_id, order.store_id);
       await supabase.from('orders').update({ payment_id: String(payment.id) }).eq('id', order_id);
@@ -195,11 +189,16 @@ router.post('/process-card-payment', authMiddleware, async (req, res) => {
 
     if (save_card && payment.status === 'approved' && payer_email) {
       try {
+        const customerApi = new Customer(mpClient);
         const mpCustomerId = `user_${req.user.id}`;
-        const custResp = await mercadopago.customers.search({ email: payer_email });
-        const cust = custResp.body.results?.find(c => c.email === payer_email);
-        const customerId = cust?.id || (await mercadopago.customers.create({ email: payer_email, id: mpCustomerId })).body.id;
-        await mercadopago.card.create({ customer_id: customerId, token });
+        const custResult = await customerApi.search({ search: payer_email }).catch(() => ({ total: 0 }));
+        const cust = custResult.total > 0 ? custResult : await customerApi.create({
+          body: { email: payer_email }
+        }).catch(() => null);
+        if (cust) {
+          const cardApi = new Card(mpClient);
+          await cardApi.create({ customer_id: cust.id || cust, body: { token } });
+        }
       } catch (e) { console.error('[MP] Save card error:', e.message); }
     }
 
@@ -211,14 +210,15 @@ router.post('/process-card-payment', authMiddleware, async (req, res) => {
 });
 
 router.get('/saved-cards', authMiddleware, async (req, res) => {
-  if (!MERCADO_PAGO_TOKEN) return res.json([]);
+  if (!mpClient) return res.json([]);
   try {
     const email = `cliente_${req.user.id}@pedeacai.app`;
-    const custResp = await mercadopago.customers.search({ email });
-    const cust = custResp.body.results?.find(c => c.email === email);
-    if (!cust) return res.json([]);
-    const cardResp = await mercadopago.card.all(cust.id);
-    res.json(cardResp.body || []);
+    const customerApi = new Customer(mpClient);
+    const custResult = await customerApi.search({ search: email }).catch(() => ({ total: 0 }));
+    if (custResult.total === 0) return res.json([]);
+    const cardApi = new Card(mpClient);
+    const cards = await cardApi.all({ customer_id: custResult.results?.[0]?.id || custResult.id });
+    res.json(Array.isArray(cards) ? cards : (cards.body || []));
   } catch (e) { res.json([]); }
 });
 
@@ -227,26 +227,29 @@ router.post('/pay-with-saved-card', authMiddleware, async (req, res) => {
   if (!order_id || !card_id) return res.status(400).json({ error: 'Dados incompletos' });
 
   const { data: order } = await supabase.from('orders').select('*').eq('id', order_id).single();
-  if (!order) return res.status(404).json({ error: 'Pedido não encontrado' });
-  if (order.payment_status === 'paid') return res.status(400).json({ error: 'Pedido já foi pago' });
-  if (!MERCADO_PAGO_TOKEN) return res.status(500).json({ error: 'Gateway não configurado' });
+  if (!order) return res.status(404).json({ error: 'Pedido nao encontrado' });
+  if (order.payment_status === 'paid') return res.status(400).json({ error: 'Pedido ja foi pago' });
+  if (!mpClient) return res.status(500).json({ error: 'Gateway nao configurado' });
 
   try {
     const email = `cliente_${req.user.id}@pedeacai.app`;
-    const custResp = await mercadopago.customers.search({ email });
-    const cust = custResp.body.results?.find(c => c.email === email);
-    const customerId = cust?.id || (await mercadopago.customers.create({ email, id: `user_${req.user.id}` })).body.id;
+    const customerApi = new Customer(mpClient);
+    const custResult = await customerApi.search({ search: email }).catch(() => ({ total: 0 }));
+    const customerId = custResult.total > 0 ? (custResult.results?.[0]?.id || custResult.id) : null;
+    if (!customerId) return res.status(500).json({ error: 'Erro ao buscar cliente' });
 
-    const paymentResp = await mercadopago.payment.create({
-      transaction_amount: parseFloat(order.total.toFixed(2)),
-      description: `Pedido Pé de Açaí #${order_id.slice(0, 8)}`,
-      installments: 1, payment_method_id: 'visa',
-      payer: { email, type: 'customer', id: customerId },
-      token: card_id, external_reference: order_id,
-      notification_url: buildAppUrl(req, '/api/webhook')
+    const paymentApi = new Payment(mpClient);
+    const payment = await paymentApi.create({
+      body: {
+        transaction_amount: parseFloat(order.total.toFixed(2)),
+        description: `Pedido Pe de Acai #${order_id.slice(0, 8)}`,
+        installments: 1, payment_method_id: 'visa',
+        payer: { email, type: 'customer', id: customerId },
+        token: card_id, external_reference: order_id,
+        notification_url: buildAppUrl(req, '/api/webhook')
+      }
     });
 
-    const payment = paymentResp.body;
     if (payment.status === 'approved') {
       await confirmOrderPayment(order_id, order.store_id);
       await supabase.from('orders').update({ payment_id: String(payment.id) }).eq('id', order_id);
