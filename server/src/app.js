@@ -39,13 +39,13 @@ app.get('/api/setup', async (req, res) => {
   const hash = bcrypt.hashSync('123456', 10);
 
   await supabase.from('users').insert([
-    { id: adminId, name: 'Pe de Acai', phone: 'admin', password_hash: hash, role: 'store' },
+    { id: adminId, name: 'Pé de Açaí', phone: 'admin', password_hash: hash, role: 'store' },
     { id: motoboyId, name: 'Joao Motoboy', phone: 'motoboy', password_hash: hash, role: 'motoboy' },
     { id: customerId, name: 'Maria Cliente', phone: 'cliente', password_hash: hash, role: 'customer' }
   ]);
 
   await supabase.from('stores').insert({
-    id: storeId, name: 'Pe de Acai', owner_id: adminId,
+    id: storeId, name: 'Pé de Açaí', owner_id: adminId,
     address: 'Rua do Acai, 100 - Centro, Sao Paulo',
     lat: -23.5505, lng: -46.6333
   });
