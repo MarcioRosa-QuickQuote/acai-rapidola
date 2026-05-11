@@ -162,6 +162,14 @@ router.patch('/:id/status', authMiddleware, async (req, res) => {
 
   await supabase.from('orders').update({ status, updated_at: new Date().toISOString() }).eq('id', req.params.id);
 
+  if (status === 'delivered' && order.motoboy_id) {
+    const deliveryFee = parseFloat((order.total * 0.2).toFixed(2));
+    await supabase.from('motoboy_earnings').insert({
+      id: uuid(), motoboy_id: order.motoboy_id, order_id: req.params.id,
+      amount: deliveryFee, status: 'pending'
+    });
+  }
+
   if (status === 'ready') {
     const { data: motoboys } = await supabase.from('store_motoboys')
       .select('motoboy_id, motoboy_locations!inner(online)')

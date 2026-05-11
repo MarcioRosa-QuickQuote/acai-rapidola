@@ -33,7 +33,13 @@ router.get('/profile', authMiddleware, roleMiddleware('motoboy'), async (req, re
     .select('store_id, employee, stores(name)')
     .eq('motoboy_id', req.user.id);
 
-  res.json({ employments: (employments || []).map(e => ({ ...e, store_name: e.stores?.name })) });
+  const { data: earnings } = await supabase.from('motoboy_earnings')
+    .select('*').eq('motoboy_id', req.user.id).order('created_at', { ascending: false });
+
+  const total = (earnings || []).reduce((s, e) => s + e.amount, 0);
+  const pending = (earnings || []).filter(e => e.status === 'pending').reduce((s, e) => s + e.amount, 0);
+
+  res.json({ employments: (employments || []).map(e => ({ ...e, store_name: e.stores?.name })), earnings: earnings || [], total, pending });
 });
 
 router.post('/accept/:orderId', authMiddleware, roleMiddleware('motoboy'), async (req, res) => {

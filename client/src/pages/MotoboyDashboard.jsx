@@ -37,6 +37,7 @@ export default function MotoboyDashboard() {
   const [online, setOnline] = useState(true);
   const [selectedTab, setSelectedTab] = useState('available');
   const [isEmployee, setIsEmployee] = useState(false);
+  const [earnings, setEarnings] = useState({ total: 0, pending: 0, list: [] });
 
   useEffect(() => {
     loadData();
@@ -47,6 +48,7 @@ export default function MotoboyDashboard() {
       if (d.employments && d.employments.some(e => e.employee)) {
         setIsEmployee(true);
       }
+      if (d.total !== undefined) setEarnings({ total: d.total, pending: d.pending, list: d.earnings || [] });
     });
     const interval = setInterval(loadData, 10000);
     return () => clearInterval(interval);
@@ -182,6 +184,18 @@ export default function MotoboyDashboard() {
             <span style={{ fontWeight: 600, color: '#2E7D32', fontSize: 13 }}>
               Você é parceiro desta loja — os pedidos chegam automaticamente, sem precisar aceitar
             </span>
+          </div>
+        )}
+
+        {earnings.total > 0 && (
+          <div className="card" style={{ background: 'linear-gradient(135deg, #E3F2FD, #BBDEFB)', border: '1px solid #90CAF9', textAlign: 'center', padding: 14, marginBottom: 12 }}>
+            <div className="text-xs text-muted" style={{ marginBottom: 4 }}>Seus ganhos</div>
+            <div style={{ fontSize: 28, fontWeight: 800, color: '#1565C0' }}>R$ {earnings.total.toFixed(2)}</div>
+            {earnings.pending > 0 && (
+              <div className="text-xs" style={{ color: '#E65100', marginTop: 4 }}>
+                R$ {earnings.pending.toFixed(2)} a receber
+              </div>
+            )}
           </div>
         )}
 
