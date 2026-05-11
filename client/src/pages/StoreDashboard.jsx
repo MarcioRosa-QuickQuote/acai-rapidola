@@ -411,10 +411,7 @@ export default function StoreDashboard() {
                       <label className="label">Tamanho (ml)</label>
                       <select className="input" value={productForm.size_ml}
                         onChange={e => setProductForm(p => ({ ...p, size_ml: e.target.value }))}>
-                        <option value="300">300ml</option>
-                        <option value="400">400ml</option>
-                        <option value="500">500ml (meio litro)</option>
-                        <option value="700">700ml</option>
+                        <option value="500">500ml (Meio Litro)</option>
                         <option value="1000">1 Litro</option>
                       </select>
                     </div>

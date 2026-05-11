@@ -169,7 +169,7 @@ export default function Register() {
                   <div key={value}
                     onClick={() => setRole(value)}
                     style={{
-                      flex: 1, padding: '12px 8px', borderRadius: 12, cursor: 'pointer', textAlign: 'center',
+                      flex: 1, padding: '12px 8px', borderRadius: 12, textAlign: 'center',
                       border: `2px solid ${role === value ? '#9C27B0' : '#E8E0F0'}`,
                       background: role === value ? '#F3E5F5' : 'white',
                       transition: 'all 0.2s',
