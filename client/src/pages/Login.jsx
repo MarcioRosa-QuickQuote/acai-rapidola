@@ -14,8 +14,8 @@ const berries = Array.from({ length: 18 }, (_, i) => ({
 
 export default function Login() {
   const { login } = useAuth();
-  const [phone, setPhone] = useState('');
-  const [password, setPassword] = useState('');
+  const [phone, setPhone] = useState('admin');
+  const [password, setPassword] = useState('123456');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [storeLogo, setStoreLogo] = useState('');
@@ -137,22 +137,15 @@ export default function Login() {
             src={storeLogo || '/logo.png'}
             alt="Logo"
             style={{
-              width: 130, height: 130, borderRadius: 24,
+              width: 170, height: 170, borderRadius: 28,
               objectFit: 'contain',
-              marginBottom: 18,
               position: 'relative', zIndex: 1
             }}
             onError={e => { e.target.style.display = 'none'; }}
           />
-          <h1 style={{
-            fontSize: 32, fontWeight: 800, marginBottom: 4,
-            letterSpacing: -0.5, position: 'relative', zIndex: 1
-          }}>
-            Pé de Açaí
-          </h1>
           <p style={{
-            opacity: 0.8, fontSize: 14, fontWeight: 400,
-            position: 'relative', zIndex: 1
+            opacity: 0.75, fontSize: 13, fontWeight: 400,
+            position: 'relative', zIndex: 1, marginTop: 10
           }}>
             O jeito mais rápido de pedir seu açaí
           </p>
