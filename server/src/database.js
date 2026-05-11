@@ -72,7 +72,4 @@ async function seedProducts(storeId) {
   console.log('[DB] Produtos padrão inseridos.');
 }
 
-init();
-seed();
-
 module.exports = { supabase, uuid, bcrypt };

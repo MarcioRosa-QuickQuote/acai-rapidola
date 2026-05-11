@@ -14,7 +14,6 @@ const orderRoutes = require('./routes/orders');
 const motoboyRoutes = require('./routes/motoboy');
 const paymentRoutes = require('./routes/payment');
 
-require('./database');
 const { supabase } = require('./database');
 
 const app = express();
