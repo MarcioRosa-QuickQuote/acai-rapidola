@@ -163,7 +163,7 @@ export default function Register() {
               <div style={{ display: 'flex', gap: 8 }}>
                 {[
                   { value: 'customer', label: 'Cliente', desc: 'Fazer pedidos' },
-                  { value: 'store', label: 'Loja', desc: 'R$ 89/mês' },
+                  { value: 'store', label: 'Loja', desc: 'Vender açaí' },
                   { value: 'motoboy', label: 'Motoboy', desc: 'Entregar' }
                 ].map(({ value, label, desc }) => (
                   <div key={value}
