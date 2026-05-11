@@ -142,10 +142,14 @@ export default function CustomerHome() {
                   ) : (
                     <div style={{
                       width: 72, height: 72, borderRadius: 12, flexShrink: 0,
-                      background: 'linear-gradient(135deg, #F3E5F5, #E1BEE7)',
+                      background: p.size_ml >= 1000 ? 'linear-gradient(135deg, #4A148C, #7B1FA2)' :
+                                   p.name.includes('Farinha') ? 'linear-gradient(135deg, #FFF8E1, #FFE082)' :
+                                   'linear-gradient(135deg, #6A1B9A, #9C27B0)',
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      color: '#6A1B9A', fontSize: 28
-                    }}></div>
+                      fontSize: 30
+                    }}>
+                      {p.name.includes('Açaí') ? '' : p.name.includes('Farinha') ? '' : ''}
+                    </div>
                   )}
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ fontWeight: 700, fontSize: 16 }}>{p.name}</div>
