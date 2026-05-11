@@ -97,6 +97,8 @@ export default function CustomerOrder() {
       setDeliveryFee(fee);
     }
   }
+
+  function handleMapClick(clickLat, clickLng) {
     setLat(clickLat);
     setLng(clickLng);
     updateDeliveryFee(clickLat, clickLng);
