@@ -111,10 +111,10 @@ export default function CustomerHome() {
             }}>
               {user?.name?.charAt(0)?.toUpperCase()}
             </div>
-            <div style={{ textAlign: 'left', lineHeight: 1.3 }}>
-              <div style={{ fontSize: 13, fontWeight: 600, color: 'white' }}>{user?.name?.split(' ')[0]}</div>
+            <div style={{ lineHeight: 1.3 }}>
+              <div style={{ fontSize: 13, fontWeight: 700, color: 'white' }}>{user?.name?.split(' ')[0]}</div>
               <span onClick={(e) => { e.stopPropagation(); logout(); }}
-                style={{ fontSize: 10, color: 'rgba(255,255,255,0.6)', cursor: 'pointer' }}>
+                style={{ fontSize: 10, color: 'rgba(255,255,255,0.6)', cursor: 'pointer', fontWeight: 400 }}>
                 Sair
               </span>
             </div>
@@ -129,24 +129,52 @@ export default function CustomerHome() {
   );
 
   function renderConta() {
+    const [addr, setAddr] = useState(user?.address || '');
+    const [saving, setSaving] = useState(false);
+    const [msg, setMsg] = useState('');
+
+    async function saveAddress() {
+      setSaving(true);
+      const data = await apiFetch('/orders', { method: 'PATCH', body: JSON.stringify({ address: addr }) });
+      setMsg(data.ok ? 'Endereco salvo!' : 'Erro ao salvar');
+      setTimeout(() => setMsg(''), 3000);
+      setSaving(false);
+    }
+
     return (
       <>
-        <div className="page-title">Minha Conta</div>
-        <div className="card">
-          <div className="form-group">
-            <label className="label" style={{ textAlign: 'left' }}>Nome</label>
-            <div className="text-sm" style={{ textAlign: 'left' }}>{user?.name}</div>
+        <div className="page-title" style={{ fontWeight: 800 }}>Minha Conta</div>
+        <div className="card" style={{ textAlign: 'left' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
+            <div style={{
+              width: 56, height: 56, borderRadius: '50%',
+              background: 'linear-gradient(135deg, #CE93D8, #AB47BC)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              color: 'white', fontWeight: 700, fontSize: 24
+            }}>
+              {user?.name?.charAt(0)?.toUpperCase()}
+            </div>
+            <div>
+              <div style={{ fontWeight: 800, fontSize: 16 }}>{user?.name}</div>
+              <div style={{ fontSize: 12, color: '#888' }}>Cliente</div>
+            </div>
           </div>
-          <div className="form-group">
-            <label className="label" style={{ textAlign: 'left' }}>Telefone</label>
-            <div className="text-sm" style={{ textAlign: 'left' }}>{user?.phone}</div>
+
+          <div style={{ marginBottom: 16 }}>
+            <label className="label" style={{ fontWeight: 700 }}>Telefone</label>
+            <div style={{ fontWeight: 600 }}>{user?.phone}</div>
           </div>
-          <div className="form-group">
-            <label className="label" style={{ textAlign: 'left' }}>Endereco de entrega</label>
-            <input className="input" type="text" value={user?.address || ''}
-              readOnly placeholder="Salvo no primeiro pedido" style={{ background: '#F5F5F5', textAlign: 'left' }} />
-            <span className="text-xs text-muted">Para alterar, faca um novo pedido com o endereco atualizado.</span>
+
+          <div style={{ marginBottom: 8 }}>
+            <label className="label" style={{ fontWeight: 700 }}>Endereco de entrega</label>
+            <input className="input" type="text" value={addr}
+              onChange={e => setAddr(e.target.value)}
+              placeholder="Rua, numero, bairro - Cidade" />
           </div>
+          {msg && <div style={{ fontSize: 13, fontWeight: 600, color: msg.includes('Erro') ? '#C62828' : '#2E7D32', marginBottom: 8 }}>{msg}</div>}
+          <button className="btn btn-primary btn-sm" onClick={saveAddress} disabled={saving}>
+            {saving ? 'Salvando...' : 'Salvar Endereco'}
+          </button>
         </div>
       </>
     );

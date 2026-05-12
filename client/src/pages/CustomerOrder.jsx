@@ -237,23 +237,28 @@ export default function CustomerOrder() {
             )}
 
             <div className="form-group">
-              <label className="label">Endereço de entrega</label>
-              {addrSaved && (
-                <div style={{ background: '#E8F5E9', color: '#2E7D32', padding: '8px 12px', borderRadius: 8, marginBottom: 10, fontSize: 13, fontWeight: 600 }}>
-                  Endereço salvo! So precisa cadastrar uma vez.
+              <label className="label">Endereco de entrega</label>
+              {user?.address ? (
+                <div>
+                  <div style={{ fontSize: 15, fontWeight: 600, color: '#333', marginBottom: 6 }}>{user.address}</div>
+                  <span className="text-xs text-muted">
+                    Para alterar, va em <a href="#" onClick={e => { e.preventDefault(); navigate('/customer'); }} style={{ color: '#6A1B9A', fontWeight: 600 }}>Minha Conta</a>
+                  </span>
+                  <input type="hidden" value={user.address} />
+                </div>
+              ) : (
+                <div className="flex-row" style={{ gap: 8 }}>
+                  <input className="input" type="text" value={address} onChange={e => setAddress(e.target.value)}
+                    onBlur={() => { if (address.length > 10) geocodeAddress(); }}
+                    placeholder="Rua, numero, bairro - Cidade" required
+                    style={{ flex: 1 }} />
+                  <button type="button" className="btn btn-sm btn-secondary"
+                    onClick={geocodeAddress} disabled={geocoding}
+                    style={{ width: 'auto', whiteSpace: 'nowrap' }}>
+                    {geocoding ? '...' : 'Buscar'}
+                  </button>
                 </div>
               )}
-              <div className="flex-row" style={{ gap: 8 }}>
-                <input className="input" type="text" value={address} onChange={e => setAddress(e.target.value)}
-                  onBlur={() => { if (address.length > 10) geocodeAddress(); }}
-                  placeholder="Rua, número, bairro - Cidade" required
-                  style={{ flex: 1 }} />
-                <button type="button" className="btn btn-sm btn-secondary"
-                  onClick={geocodeAddress} disabled={geocoding}
-                  style={{ width: 'auto', whiteSpace: 'nowrap' }}>
-                  {geocoding ? '...' : 'Buscar'}
-                </button>
-              </div>
             </div>
 
             {(showMap || lat) && (
