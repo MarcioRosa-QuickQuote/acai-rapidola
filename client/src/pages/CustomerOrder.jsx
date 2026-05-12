@@ -52,6 +52,12 @@ export default function CustomerOrder() {
   const [geocoding, setGeocoding] = useState(false);
   const [showMap, setShowMap] = useState(false);
   const [addrSaved, setAddrSaved] = useState(false);
+  const [splitLiter, setSplitLiter] = useState(false);
+
+  const hasLiterItem = orderItems.some(i => {
+    const prod = orderItems.find(oi => oi.product_id === i.product_id);
+    return i.size_ml >= 1000 || prod?.size_ml >= 1000;
+  });
 
   useEffect(() => {
     if (user?.address && !address) {
@@ -104,6 +110,8 @@ export default function CustomerOrder() {
       const km = R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
       const fee = Math.max(6.00, parseFloat((5.00 + km * 1.80).toFixed(2)));
       setDeliveryFee(fee);
+    } else if (store?.lat && store?.lng) {
+      setDeliveryFee(6.00);
     }
   }
 
@@ -128,7 +136,7 @@ export default function CustomerOrder() {
           address,
           lat: lat,
           lng: lng,
-          notes
+          notes: splitLiter ? 'Dividir o açaí de 1 litro em 2 sacos de 500ml. ' + (notes || '') : notes
         })
       });
       if (data.ok) {
@@ -177,6 +185,15 @@ export default function CustomerOrder() {
             <span>Total</span>
             <span>R$ {total.toFixed(2)}</span>
           </div>
+
+          {orderItems.some(i => i.size_ml >= 1000 || i.product?.size_ml >= 1000) && (
+            <div style={{ marginTop: 12, padding: 10, background: '#FFF8E1', borderRadius: 8, border: '1px solid #FFE082' }}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', fontSize: 14, fontWeight: 600, color: '#E65100' }}>
+                <input type="checkbox" checked={splitLiter} onChange={e => setSplitLiter(e.target.checked)} />
+                Dividir o açaí de 1 litro em 2 sacos de 500ml
+              </label>
+            </div>
+          )}
         </div>
 
         <div className="card">
@@ -196,6 +213,7 @@ export default function CustomerOrder() {
               )}
               <div className="flex-row" style={{ gap: 8 }}>
                 <input className="input" type="text" value={address} onChange={e => setAddress(e.target.value)}
+                  onBlur={() => { if (address.length > 10) geocodeAddress(); }}
                   placeholder="Rua, número, bairro - Cidade" required
                   style={{ flex: 1 }} />
                 <button type="button" className="btn btn-sm btn-secondary"
