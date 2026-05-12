@@ -240,7 +240,7 @@ export default function CustomerHome() {
               </div>
             )}
           </>
-        ) : (
+        ) : view === 'orders' ? (
           <>
             <div className="page-title">Meus Pedidos</div>
             {orders.length === 0 ? (
@@ -285,7 +285,7 @@ export default function CustomerHome() {
               ))
             )}
           </>
-        ) : view === 'conta' ? (
+        ) : (
           <>
             <div className="page-title">Minha Conta</div>
             <div className="card">
