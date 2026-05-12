@@ -109,8 +109,8 @@ export default function CustomerHome() {
         <div className="header-right">
           <button className="btn btn-sm"
             style={{ color: 'white', borderColor: 'rgba(255,255,255,0.5)', fontSize: 12, background: 'transparent', border: '1px solid rgba(255,255,255,0.4)' }}
-            onClick={() => setView(view === 'menu' ? 'orders' : 'menu')}>
-            {view === 'menu' ? 'Pedidos' : 'Cardápio'}
+            onClick={() => setView(view === 'menu' ? 'orders' : view === 'orders' ? 'conta' : 'menu')}>
+            {view === 'menu' ? 'Pedidos' : view === 'orders' ? 'Conta' : 'Cardápio'}
           </button>
           <button className="btn btn-sm"
             style={{ background: 'rgba(255,255,255,0.15)', color: 'white', fontSize: 12 }}
@@ -284,6 +284,28 @@ export default function CustomerHome() {
                 </div>
               ))
             )}
+          </>
+        ) : view === 'conta' ? (
+          <>
+            <div className="page-title">Minha Conta</div>
+            <div className="card">
+              <div className="form-group">
+                <label className="label">Endereço de entrega</label>
+                <input className="input" type="text" value={user?.address || ''}
+                  readOnly
+                  placeholder="Seu endereço será salvo no primeiro pedido"
+                  style={{ background: '#F5F5F5' }} />
+                <span className="text-xs text-muted">
+                  O endereço é salvo automaticamente no seu primeiro pedido. Para alterar, faça um novo pedido com o endereço atualizado.
+                </span>
+              </div>
+              <div className="flex-between text-sm" style={{ marginTop: 8 }}>
+                <span>Nome:</span><span className="font-bold">{user?.name}</span>
+              </div>
+              <div className="flex-between text-sm" style={{ marginTop: 4 }}>
+                <span>Telefone:</span><span>{user?.phone}</span>
+              </div>
+            </div>
           </>
         )}
       </div>

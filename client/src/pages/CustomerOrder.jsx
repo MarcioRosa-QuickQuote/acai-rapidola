@@ -53,21 +53,13 @@ export default function CustomerOrder() {
   }, []);
 
   function updateDeliveryFee(custLat, custLng) {
-    if (!custLat || !custLng || !store?.lat || !store?.lng) {
-      setDeliveryFee(6.50);
-      return;
-    }
-    if (!isFinite(custLat) || !isFinite(custLng) || !isFinite(store.lat) || !isFinite(store.lng)) {
-      setDeliveryFee(6.50);
-      return;
-    }
-    const R = 6371;
-    const dLat = (custLat - store.lat) * Math.PI / 180;
-    const dLng = (custLng - store.lng) * Math.PI / 180;
-    const a = Math.sin(dLat / 2) ** 2 + Math.cos(store.lat * Math.PI / 180) * Math.cos(custLat * Math.PI / 180) * Math.sin(dLng / 2) ** 2;
-    const km = R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    const fee = Math.max(6.50, Math.min(50, parseFloat((5.00 + km * 1.80).toFixed(2))));
-    setDeliveryFee(fee);
+    if (!store?.id || !custLat || !custLng) { setDeliveryFee(6.50); return; }
+    apiFetch('/orders/estimate-fee', {
+      method: 'POST',
+      body: JSON.stringify({ store_id: store.id, lat: custLat, lng: custLng })
+    }).then(d => {
+      if (d.fee) setDeliveryFee(d.fee);
+    }).catch(() => setDeliveryFee(6.50));
   }
 
   useEffect(() => {
@@ -151,9 +143,18 @@ export default function CustomerOrder() {
       });
       console.log('[Order response]', data);
       if (data.order?.id) {
-        navigate(`/customer/payment/${data.order.id}`);
+        const mpData = await apiFetch('/create-preference', {
+          method: 'POST',
+          body: JSON.stringify({ order_id: data.order.id })
+        });
+        if (mpData.init_point) {
+          window.location.href = mpData.sandbox_init_point || mpData.init_point;
+        } else {
+          navigate(`/customer/payment/${data.order.id}`);
+        }
       } else {
-        setError(data.error || data.message || 'Erro ao criar pedido');
+        const msg = data.error || data.message || JSON.stringify(data);
+        setError(msg || 'Erro ao criar pedido');
       }
     } catch (err) {
       setError(err.message);
@@ -299,6 +300,10 @@ export default function CustomerOrder() {
             <button className="btn btn-primary" type="submit" disabled={loading}>
               {loading ? <span className="spinner" style={{ width: 20, height: 20 }} /> : 'Ir para Pagamento'}
             </button>
+
+            <p className="text-xs text-muted" style={{ marginTop: 8, textAlign: 'center' }}>
+              Pagamento seguro via Mercado Pago
+            </p>
           </form>
         </div>
       </div>

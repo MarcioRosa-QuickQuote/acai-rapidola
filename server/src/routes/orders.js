@@ -125,6 +125,18 @@ router.post('/', authMiddleware, roleMiddleware('customer'), async (req, res) =>
   }
 });
 
+router.post('/estimate-fee', authMiddleware, async (req, res) => {
+  const { store_id, lat, lng } = req.body;
+  if (!store_id) return res.status(400).json({ error: 'Loja obrigatoria' });
+
+  const { data: st } = await supabase.from('stores').select('lat, lng').eq('id', store_id).single();
+  if (!st) return res.status(404).json({ error: 'Loja nao encontrada' });
+
+  const km = calcDistance(st.lat, st.lng, lat || st.lat, lng || st.lng);
+  const fee = calcDeliveryFee(km);
+  res.json({ fee, distance_km: parseFloat(km.toFixed(2)) });
+});
+
 router.get('/', authMiddleware, async (req, res) => {
   if (req.user.role === 'customer') {
     const { data } = await supabase.from('orders')
