@@ -29,18 +29,6 @@ export default function CustomerOrder() {
   const [store, setStore] = useState(storeFromState);
   const navigate = useNavigate();
 
-  useEffect(() => {
-    if (!store) {
-      apiFetch('/stores').then(d => {
-        if (d.data?.[0]) setStore(d.data[0]);
-      });
-    }
-  }, []);
-
-  useEffect(() => {
-    updateDeliveryFee(lat, lng);
-  }, [lat, lng, store]);
-
   const orderItems = items || (product ? [{ product_id: product.id, name: product.name, price: product.price, quantity: quantity || 1 }] : []);
   const subtotal = orderItems.reduce((s, i) => s + (i.price || 0) * (i.quantity || 1), 0);
   const [deliveryFee, setDeliveryFee] = useState(6.50);
@@ -58,10 +46,29 @@ export default function CustomerOrder() {
   const [addrSaved, setAddrSaved] = useState(false);
   const [splitLiter, setSplitLiter] = useState(false);
 
-  const hasLiterItem = orderItems.some(i => {
-    const prod = orderItems.find(oi => oi.product_id === i.product_id);
-    return i.size_ml >= 1000 || prod?.size_ml >= 1000;
-  });
+  function updateDeliveryFee(custLat, custLng) {
+    setDeliveryFee(d => d > 0 ? d : 6.50);
+    if (!store?.lat || !store?.lng || !custLat || !custLng) return;
+    const R = 6371;
+    const dLat = (custLat - store.lat) * Math.PI / 180;
+    const dLng = (custLng - store.lng) * Math.PI / 180;
+    const a = Math.sin(dLat / 2) ** 2 + Math.cos(store.lat * Math.PI / 180) * Math.cos(custLat * Math.PI / 180) * Math.sin(dLng / 2) ** 2;
+    const km = R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    const fee = Math.max(6.50, parseFloat((5.00 + km * 1.80).toFixed(2)));
+    setDeliveryFee(fee);
+  }
+
+  useEffect(() => {
+    if (!store) {
+      apiFetch('/stores').then(d => {
+        if (d.data?.[0]) setStore(d.data[0]);
+      });
+    }
+  }, []);
+
+  useEffect(() => {
+    updateDeliveryFee(lat, lng);
+  }, [lat, lng, store]);
 
   useEffect(() => {
     if (user?.address && !address) {
@@ -103,18 +110,6 @@ export default function CustomerOrder() {
     } finally {
       setGeocoding(false);
     }
-  }
-
-  function updateDeliveryFee(custLat, custLng) {
-    setDeliveryFee(d => d > 0 ? d : 6.50);
-    if (!store?.lat || !store?.lng || !custLat || !custLng) return;
-    const R = 6371;
-    const dLat = (custLat - store.lat) * Math.PI / 180;
-    const dLng = (custLng - store.lng) * Math.PI / 180;
-    const a = Math.sin(dLat / 2) ** 2 + Math.cos(store.lat * Math.PI / 180) * Math.cos(custLat * Math.PI / 180) * Math.sin(dLng / 2) ** 2;
-    const km = R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-      const fee = Math.max(6.50, parseFloat((5.00 + km * 1.80).toFixed(2)));
-    setDeliveryFee(fee);
   }
 
   function handleMapClick(clickLat, clickLng) {
