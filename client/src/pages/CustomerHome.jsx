@@ -26,6 +26,9 @@ export default function CustomerHome() {
   const [cart, setCart] = useState({});
   const [splitItems, setSplitItems] = useState({});
   const [loading, setLoading] = useState(true);
+  const [addrForm, setAddrForm] = useState('');
+  const [savingAddr, setSavingAddr] = useState(false);
+  const [addrMsg, setAddrMsg] = useState('');
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -129,16 +132,14 @@ export default function CustomerHome() {
   );
 
   function renderConta() {
-    const [addr, setAddr] = useState(user?.address || '');
-    const [saving, setSaving] = useState(false);
-    const [msg, setMsg] = useState('');
+    const currentAddr = addrForm || user?.address || '';
 
     async function saveAddress() {
-      setSaving(true);
-      const data = await apiFetch('/orders', { method: 'PATCH', body: JSON.stringify({ address: addr }) });
-      setMsg(data.ok ? 'Endereco salvo!' : 'Erro ao salvar');
-      setTimeout(() => setMsg(''), 3000);
-      setSaving(false);
+      setSavingAddr(true);
+      const data = await apiFetch('/orders', { method: 'PATCH', body: JSON.stringify({ address: currentAddr }) });
+      setAddrMsg(data.ok ? 'Endereco salvo!' : 'Erro ao salvar');
+      setTimeout(() => setAddrMsg(''), 3000);
+      setSavingAddr(false);
     }
 
     return (
@@ -167,13 +168,13 @@ export default function CustomerHome() {
 
           <div style={{ marginBottom: 8 }}>
             <label className="label" style={{ fontWeight: 700 }}>Endereco de entrega</label>
-            <input className="input" type="text" value={addr}
-              onChange={e => setAddr(e.target.value)}
+            <input className="input" type="text" value={currentAddr}
+              onChange={e => setAddrForm(e.target.value)}
               placeholder="Rua, numero, bairro - Cidade" />
           </div>
-          {msg && <div style={{ fontSize: 13, fontWeight: 600, color: msg.includes('Erro') ? '#C62828' : '#2E7D32', marginBottom: 8 }}>{msg}</div>}
-          <button className="btn btn-primary btn-sm" onClick={saveAddress} disabled={saving}>
-            {saving ? 'Salvando...' : 'Salvar Endereco'}
+          {addrMsg && <div style={{ fontSize: 13, fontWeight: 600, color: addrMsg.includes('Erro') ? '#C62828' : '#2E7D32', marginBottom: 8 }}>{addrMsg}</div>}
+          <button className="btn btn-primary btn-sm" onClick={saveAddress} disabled={savingAddr}>
+            {savingAddr ? 'Salvando...' : 'Salvar Endereco'}
           </button>
         </div>
       </>
