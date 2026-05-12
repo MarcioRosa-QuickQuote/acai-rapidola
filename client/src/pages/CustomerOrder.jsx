@@ -43,7 +43,7 @@ export default function CustomerOrder() {
 
   const orderItems = items || (product ? [{ product_id: product.id, name: product.name, price: product.price, quantity: quantity || 1 }] : []);
   const subtotal = orderItems.reduce((s, i) => s + (i.price || 0) * (i.quantity || 1), 0);
-  const [deliveryFee, setDeliveryFee] = useState(6.00);
+  const [deliveryFee, setDeliveryFee] = useState(7.50);
   const total = subtotal + deliveryFee;
 
   const [address, setAddress] = useState('');
@@ -106,14 +106,14 @@ export default function CustomerOrder() {
   }
 
   function updateDeliveryFee(custLat, custLng) {
-    setDeliveryFee(d => d > 0 ? d : 6.00);
+    setDeliveryFee(d => d > 0 ? d : 7.50);
     if (!store?.lat || !store?.lng || !custLat || !custLng) return;
     const R = 6371;
     const dLat = (custLat - store.lat) * Math.PI / 180;
     const dLng = (custLng - store.lng) * Math.PI / 180;
     const a = Math.sin(dLat / 2) ** 2 + Math.cos(store.lat * Math.PI / 180) * Math.cos(custLat * Math.PI / 180) * Math.sin(dLng / 2) ** 2;
     const km = R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    const fee = Math.max(6.00, parseFloat((5.00 + km * 1.80).toFixed(2)));
+      const fee = Math.max(7.50, parseFloat((5.00 + km * 1.80).toFixed(2)));
     setDeliveryFee(fee);
   }
 
