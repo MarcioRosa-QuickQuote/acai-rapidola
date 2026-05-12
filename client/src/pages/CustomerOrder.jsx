@@ -43,7 +43,7 @@ export default function CustomerOrder() {
 
   const orderItems = items || (product ? [{ product_id: product.id, name: product.name, price: product.price, quantity: quantity || 1 }] : []);
   const subtotal = orderItems.reduce((s, i) => s + (i.price || 0) * (i.quantity || 1), 0);
-  const [deliveryFee, setDeliveryFee] = useState(0);
+  const [deliveryFee, setDeliveryFee] = useState(6.00);
   const total = subtotal + deliveryFee;
 
   const [address, setAddress] = useState('');
