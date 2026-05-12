@@ -53,14 +53,20 @@ export default function CustomerOrder() {
   }, []);
 
   function updateDeliveryFee(custLat, custLng) {
-    setDeliveryFee(d => d > 0 ? d : 6.50);
-    if (!store?.lat || !store?.lng || !custLat || !custLng) return;
+    if (!custLat || !custLng || !store?.lat || !store?.lng) {
+      setDeliveryFee(6.50);
+      return;
+    }
+    if (!isFinite(custLat) || !isFinite(custLng) || !isFinite(store.lat) || !isFinite(store.lng)) {
+      setDeliveryFee(6.50);
+      return;
+    }
     const R = 6371;
     const dLat = (custLat - store.lat) * Math.PI / 180;
     const dLng = (custLng - store.lng) * Math.PI / 180;
     const a = Math.sin(dLat / 2) ** 2 + Math.cos(store.lat * Math.PI / 180) * Math.cos(custLat * Math.PI / 180) * Math.sin(dLng / 2) ** 2;
     const km = R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    const fee = Math.max(6.50, parseFloat((5.00 + km * 1.80).toFixed(2)));
+    const fee = Math.max(6.50, Math.min(50, parseFloat((5.00 + km * 1.80).toFixed(2))));
     setDeliveryFee(fee);
   }
 

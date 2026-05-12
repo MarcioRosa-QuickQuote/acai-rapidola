@@ -30,6 +30,8 @@ export default function CustomerHome() {
   useEffect(() => {
     apiFetch('/products').then(d => {
       if (d.data) setProducts(d.data);
+      setCart({});
+      setSplitItems({});
       setLoading(false);
     });
     apiFetch('/stores').then(d => {

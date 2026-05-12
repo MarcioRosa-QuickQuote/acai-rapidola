@@ -32,10 +32,11 @@ function calcDistance(lat1, lng1, lat2, lng2) {
 }
 
 function calcDeliveryFee(distanceKm) {
+  if (!isFinite(distanceKm) || distanceKm > 100) return 6.50;
   const base = 5.00;
   const perKm = 1.80;
   const fee = base + distanceKm * perKm;
-  return Math.max(6.50, parseFloat(fee.toFixed(2)));
+  return Math.max(6.50, Math.min(50, parseFloat(fee.toFixed(2))));
 }
 
 async function notifyUser(userId, title, body, type = 'info') {
