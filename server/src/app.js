@@ -29,8 +29,34 @@ app.get('/api/setup', async (req, res) => {
   const bcrypt = require('bcryptjs');
   const { v4: uuid } = require('uuid');
 
+  async function seedProductsForStore(storeId) {
+    const products = [
+      ['Açai 500ml (Meio Litro)', 'Açai feito da polpa', 25.00, 500, '/açai 500ml.png'],
+      ['Açai 1 Litro', 'Açai feito da polpa', 45.00, 1000, '/açai 1 litro.png'],
+      ['Farinha de Tapioca', 'Acompanhamento tradicional — farinha de tapioca', 5.00, 100, '/farinha de tapioca.png'],
+      ['Farinha D\'água', 'Farinha d\'água típica do Pará', 6.00, 100, '/Farinha dagua.png'],
+    ];
+    await supabase.from('products').insert(
+      products.map(([name, description, price, size_ml, image]) => ({
+        id: uuid(), store_id: storeId, name, description, price, size_ml, image
+      }))
+    );
+  }
+
   const { data: existing } = await supabase.from('users').select('id').eq('phone', 'admin').single();
-  if (existing) return res.json({ ok: true, message: 'Ja configurado' });
+  const force = req.query.force === '1';
+
+  if (existing && force) {
+    const { data: store } = await supabase.from('stores').select('id').eq('owner_id', existing.id).single();
+    if (store) {
+      await supabase.from('products').delete().eq('store_id', store.id);
+      await seedProductsForStore(store.id);
+      return res.json({ ok: true, message: 'Produtos recriados com imagens!' });
+    }
+    return res.json({ ok: false, message: 'Loja nao encontrada' });
+  }
+
+  if (existing) return res.json({ ok: true, message: 'Ja configurado. Use ?force=1 para recriar produtos.' });
 
   const adminId = uuid();
   const storeId = uuid();
@@ -55,18 +81,7 @@ app.get('/api/setup', async (req, res) => {
     { onConflict: 'motoboy_id' }
   );
 
-  const products = [
-    ['Açai 500ml (Meio Litro)', 'Açai feito da polpa', 25.00, 500, '/açai 500ml.png'],
-    ['Açai 1 Litro', 'Açai feito da polpa', 45.00, 1000, '/açai 1 litro.png'],
-    ['Farinha de Tapioca', 'Acompanhamento tradicional — farinha de tapioca', 5.00, 100, '/farinha de tapioca.png'],
-    ['Farinha D\'água', 'Farinha d\'água típica do Pará', 6.00, 100, '/Farinha dagua.png'],
-  ];
-
-  await supabase.from('products').insert(
-    products.map(([name, description, price, size_ml, image]) => ({
-      id: uuid(), store_id: storeId, name, description, price, size_ml, image
-    }))
-  );
+  await seedProductsForStore(storeId);
 
   res.json({ ok: true, message: 'Configurado! admin/123456, motoboy/123456, cliente/123456' });
 });
