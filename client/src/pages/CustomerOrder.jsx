@@ -146,7 +146,7 @@ export default function CustomerOrder() {
       if (data.order?.id) {
         navigate(`/customer/payment/${data.order.id}`);
       } else {
-        setError(data.error || 'Erro ao criar pedido');
+        setError(data.error || data.message || 'Erro ao criar pedido');
       }
     } catch (err) {
       setError(err.message);
