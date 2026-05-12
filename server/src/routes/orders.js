@@ -35,7 +35,7 @@ function calcDeliveryFee(distanceKm) {
   const base = 5.00;
   const perKm = 1.80;
   const fee = base + distanceKm * perKm;
-  return Math.max(7.50, parseFloat(fee.toFixed(2)));
+  return Math.max(6.50, parseFloat(fee.toFixed(2)));
 }
 
 async function notifyUser(userId, title, body, type = 'info') {
