@@ -87,13 +87,13 @@ router.post('/', authMiddleware, roleMiddleware('customer'), async (req, res) =>
   );
   const deliveryFee = calcDeliveryFee(distanceKm);
 
-  await supabase.from('orders').insert({
+  const { data: created } = await supabase.from('orders').insert({
     id: orderId, customer_id: customerId, store_id,
     total: total + deliveryFee,
     delivery_fee: deliveryFee,
     customer_address: address,
     customer_lat: lat || -23.55, customer_lng: lng || -46.63, notes: notes || ''
-  });
+  }).select('*').single();
 
   await supabase.from('order_items').insert(
     orderItems.map(({ product, quantity }) => ({
@@ -112,8 +112,7 @@ router.post('/', authMiddleware, roleMiddleware('customer'), async (req, res) =>
 
   await notifyUser(store.owner_id, 'Novo Pedido!', `${req.user.name} fez um pedido de R$ ${total.toFixed(2)}`, 'order');
 
-  const { data: order } = await supabase.from('orders').select('*').eq('id', orderId).single();
-  res.json({ order, items: orderItems });
+  res.json({ order: created, items: orderItems });
   } catch (err) {
     console.error('[Orders] Error:', err);
     res.status(500).json({ error: err.message || 'Erro interno ao criar pedido' });
