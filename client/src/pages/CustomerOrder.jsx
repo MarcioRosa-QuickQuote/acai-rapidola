@@ -127,6 +127,7 @@ export default function CustomerOrder() {
   async function handleSubmit(e) {
     e.preventDefault();
     if (!address) { setError('Informe o endereço de entrega'); return; }
+    if (!store?.id) { setError('Loja não encontrada. Volte ao cardápio e tente novamente.'); return; }
     setLoading(true);
     setError('');
 
@@ -134,7 +135,7 @@ export default function CustomerOrder() {
       const data = await apiFetch('/orders', {
         method: 'POST',
         body: JSON.stringify({
-          store_id: store?.id,
+          store_id: store.id,
           items: orderItems.map(i => ({ product_id: i.product_id, quantity: i.quantity })),
           address,
           lat: lat,
@@ -142,7 +143,7 @@ export default function CustomerOrder() {
           notes: splitLiter ? `Modo: ${(orderItems[0]?.quantity || 1)}L dividido. ` + (notes || '') : notes
         })
       });
-      if (data.ok) {
+      if (data.order?.id) {
         navigate(`/customer/payment/${data.order.id}`);
       } else {
         setError(data.error || 'Erro ao criar pedido');
