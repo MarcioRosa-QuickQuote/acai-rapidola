@@ -143,6 +143,7 @@ export default function CustomerOrder() {
           notes: splitLiter ? `Modo: ${(orderItems[0]?.quantity || 1)}L dividido. ` + (notes || '') : notes
         })
       });
+      console.log('[Order response]', data);
       if (data.order?.id) {
         navigate(`/customer/payment/${data.order.id}`);
       } else {
