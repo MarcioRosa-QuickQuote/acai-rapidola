@@ -95,8 +95,8 @@ router.post('/create-preference', authMiddleware, async (req, res) => {
         notification_url: buildAppUrl(req, '/api/webhook'),
         back_urls: {
           success: buildAppUrl(req, `/customer/tracking/${order_id}`),
-          failure: buildAppUrl(req, `/customer/payment/${order_id}`),
-          pending: buildAppUrl(req, `/customer/payment/${order_id}`)
+          failure: buildAppUrl(req, `/customer`),
+          pending: buildAppUrl(req, `/customer`)
         },
         auto_return: 'approved'
       }

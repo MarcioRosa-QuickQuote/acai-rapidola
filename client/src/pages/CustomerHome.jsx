@@ -22,6 +22,7 @@ export default function CustomerHome() {
   const [products, setProducts] = useState([]);
   const [orders, setOrders] = useState([]);
   const [view, setView] = useState('menu');
+  const [mainTab, setMainTab] = useState('menu');
   const [cart, setCart] = useState({});
   const [splitItems, setSplitItems] = useState({});
   const [loading, setLoading] = useState(true);
@@ -98,19 +99,21 @@ export default function CustomerHome() {
     <div>
       <div className="header">
         <div className="header-left">
-          {store?.logo && (
-            <img src={store.logo} alt="Logo" style={{ width: 56, height: 56, borderRadius: 8, objectFit: 'contain', flexShrink: 0 }} onError={e => { e.target.style.display = 'none'; }} />
+          {store?.logo ? (
+            <img src={store.logo} alt="Logo" style={{ width: 44, height: 44, borderRadius: 8, objectFit: 'contain', flexShrink: 0 }} onError={e => { e.target.style.display = 'none'; }} />
+          ) : (
+            <img src="/logo.png" alt="Logo" style={{ width: 44, height: 44, borderRadius: 8, objectFit: 'contain', flexShrink: 0 }} />
           )}
           <div style={{ minWidth: 0 }}>
-            <div style={{ fontSize: 12, opacity: 0.8 }}>Olá, {user?.name?.split(' ')[0]}</div>
-            <div className="header-title">Açaí Rapidola</div>
+            <div className="header-title">{store?.name || 'Cardapio'}</div>
           </div>
         </div>
         <div className="header-right">
+          <span className="hide-mobile" style={{ fontSize: 12, color: 'rgba(255,255,255,0.8)' }}>{user?.name?.split(' ')[0]}</span>
           <button className="btn btn-sm"
-            style={{ color: 'white', borderColor: 'rgba(255,255,255,0.5)', fontSize: 12, background: 'transparent', border: '1px solid rgba(255,255,255,0.4)' }}
-            onClick={() => setView(view === 'menu' ? 'orders' : view === 'orders' ? 'conta' : 'menu')}>
-            {view === 'menu' ? 'Pedidos' : view === 'orders' ? 'Conta' : 'Cardápio'}
+            style={{ background: view === 'conta' ? 'rgba(255,255,255,0.3)' : 'rgba(255,255,255,0.15)', color: 'white', fontSize: 12 }}
+            onClick={() => setView(view === 'conta' ? 'menu' : 'conta')}>
+            {view === 'conta' ? 'Cardapio' : 'Conta'}
           </button>
           <button className="btn btn-sm"
             style={{ background: 'rgba(255,255,255,0.15)', color: 'white', fontSize: 12 }}
@@ -125,13 +128,18 @@ export default function CustomerHome() {
               <div className="card" style={{
                 background: '#FFF3E0', border: '1px solid #FF6F00', textAlign: 'center' }}>
                 <span className="font-bold" style={{ color: '#FF6F00' }}>
-                  As entregas já encerraram por hoje. Volte amanhã!
+                  As entregas ja encerraram por hoje. Volte amanha!
                 </span>
               </div>
             )}
 
-            <div className="page-title" style={{ color: 'var(--primary)' }}>
-              <span role="img" aria-label="acai"></span> Cardápio
+            <div className="flex-row" style={{ marginBottom: 12 }}>
+              <button className={`btn btn-sm ${view === 'menu' || !view || view !== 'conta' ? 'btn-primary' : 'btn-outline'}`}
+                onClick={() => setView('menu')}>Cardapio</button>
+              <button className={`btn btn-sm ${view === 'orders' ? 'btn-primary' : 'btn-outline'}`}
+                onClick={() => setView('orders')}>
+                Meus Pedidos ({orders.length})
+              </button>
             </div>
 
             {products.map(p => (
