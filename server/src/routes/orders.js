@@ -53,6 +53,7 @@ async function notifyUser(userId, title, body, type = 'info') {
 }
 
 router.post('/', authMiddleware, roleMiddleware('customer'), async (req, res) => {
+  try {
   const { store_id, items, address, lat, lng, notes } = req.body;
   if (!store_id || !items || !items.length || !address) {
     return res.status(400).json({ error: 'Loja, itens e endereço são obrigatórios' });
@@ -113,6 +114,10 @@ router.post('/', authMiddleware, roleMiddleware('customer'), async (req, res) =>
 
   const { data: order } = await supabase.from('orders').select('*').eq('id', orderId).single();
   res.json({ order, items: orderItems });
+  } catch (err) {
+    console.error('[Orders] Error:', err);
+    res.status(500).json({ error: err.message || 'Erro interno ao criar pedido' });
+  }
 });
 
 router.get('/', authMiddleware, async (req, res) => {
