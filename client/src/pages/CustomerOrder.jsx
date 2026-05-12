@@ -25,7 +25,7 @@ export default function CustomerOrder() {
   const { user, apiFetch } = useAuth();
   const location = useLocation();
   const state = location.state || {};
-  const { items, store: storeFromState, product, quantity } = state;
+  const { items, store: storeFromState, product, quantity, splitItems } = state;
   const [store, setStore] = useState(storeFromState);
   const navigate = useNavigate();
 
@@ -45,6 +45,13 @@ export default function CustomerOrder() {
   const [showMap, setShowMap] = useState(false);
   const [addrSaved, setAddrSaved] = useState(false);
   const [splitLiter, setSplitLiter] = useState(false);
+
+  useEffect(() => {
+    if (orderItems.some(i => (i.size_ml || product?.size_ml) >= 1000)) {
+      const hasSplit = product && splitItems?.[product.id];
+      setSplitLiter(!!hasSplit);
+    }
+  }, []);
 
   function updateDeliveryFee(custLat, custLng) {
     setDeliveryFee(d => d > 0 ? d : 6.50);
@@ -133,7 +140,7 @@ export default function CustomerOrder() {
           address,
           lat: lat,
           lng: lng,
-          notes: splitLiter ? 'Dividir o açaí de 1 litro em 2 sacos de 500ml. ' + (notes || '') : notes
+          notes: splitLiter ? `Dividir em ${(product?.quantity || orderItems[0]?.quantity || 1) * 2} sacos de 500ml. ` + (notes || '') : notes
         })
       });
       if (data.ok) {
@@ -187,7 +194,12 @@ export default function CustomerOrder() {
             <div style={{ marginTop: 12, padding: 10, background: '#FFF8E1', borderRadius: 8, border: '1px solid #FFE082' }}>
               <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', fontSize: 14, fontWeight: 600, color: '#E65100' }}>
                 <input type="checkbox" checked={splitLiter} onChange={e => setSplitLiter(e.target.checked)} />
-                Dividir o açaí de 1 litro em 2 sacos de 500ml
+                Dividir em sacos de 500ml
+                {splitLiter && (
+                  <span style={{ color: '#2E7D32' }}>
+                    ({(orderItems[0]?.quantity || 1) * 2} sacos)
+                  </span>
+                )}
               </label>
             </div>
           )}

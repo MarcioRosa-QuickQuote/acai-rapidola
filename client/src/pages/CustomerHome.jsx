@@ -23,6 +23,7 @@ export default function CustomerHome() {
   const [orders, setOrders] = useState([]);
   const [view, setView] = useState('menu');
   const [cart, setCart] = useState({});
+  const [splitItems, setSplitItems] = useState({});
   const [quantities, setQuantities] = useState({});
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
@@ -85,7 +86,7 @@ export default function CustomerHome() {
     const prod = products.find(p => p.id === productId);
     if (prod) {
       navigate('/customer/order', {
-        state: { product: prod, store, quantity: cart[productId] || 1 }
+        state: { product: prod, store, quantity: cart[productId] || 1, splitItems }
       });
     }
   }
@@ -186,6 +187,22 @@ export default function CustomerHome() {
                     )}
                   </div>
                 </div>
+
+                {p.size_ml >= 1000 && cart[p.id] > 0 && (
+                  <div style={{ marginTop: 8, padding: 8, background: '#FFF8E1', borderRadius: 8, border: '1px solid #FFE082' }}>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', fontSize: 13, fontWeight: 600, color: '#E65100' }}>
+                      <input type="checkbox"
+                        checked={!!splitItems[p.id]}
+                        onChange={e => setSplitItems(s => ({ ...s, [p.id]: e.target.checked }))} />
+                      Dividir em 2 de 500ml
+                      {splitItems[p.id] && (
+                        <span style={{ color: '#2E7D32', fontSize: 12 }}>
+                          ({cart[p.id] * 2} sacos de 500ml)
+                        </span>
+                      )}
+                    </label>
+                  </div>
+                )}
               </div>
             ))}
 
