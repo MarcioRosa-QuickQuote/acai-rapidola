@@ -242,7 +242,7 @@ export default function CustomerOrder() {
                 <div>
                   <div style={{ fontSize: 15, fontWeight: 600, color: '#333', marginBottom: 6 }}>{user.address}</div>
                   <span className="text-xs text-muted">
-                    Para alterar, va em <a href="#" onClick={e => { e.preventDefault(); navigate('/customer'); }} style={{ color: '#6A1B9A', fontWeight: 600 }}>Minha Conta</a>
+                    Para alterar, va em <a href="/customer?tab=conta" style={{ color: '#6A1B9A', fontWeight: 600 }}>Minha Conta</a>
                   </span>
                   <input type="hidden" value={user.address} />
                 </div>

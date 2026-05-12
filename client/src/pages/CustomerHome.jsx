@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useSocket } from '../contexts/SocketContext';
 
@@ -23,6 +23,7 @@ export default function CustomerHome() {
   const [orders, setOrders] = useState([]);
   const [view, setView] = useState('menu');
   const [mainTab, setMainTab] = useState('menu');
+  const [searchParams] = useSearchParams();
   const [cart, setCart] = useState({});
   const [splitItems, setSplitItems] = useState({});
   const [loading, setLoading] = useState(true);
@@ -30,6 +31,10 @@ export default function CustomerHome() {
   const [savingAddr, setSavingAddr] = useState(false);
   const [addrMsg, setAddrMsg] = useState('');
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (searchParams.get('tab') === 'conta') setView('conta');
+  }, [searchParams]);
 
   useEffect(() => {
     apiFetch('/products').then(d => {
