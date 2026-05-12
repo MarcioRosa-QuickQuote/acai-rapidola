@@ -194,12 +194,7 @@ export default function CustomerHome() {
                       <input type="checkbox"
                         checked={!!splitItems[p.id]}
                         onChange={e => setSplitItems(s => ({ ...s, [p.id]: e.target.checked }))} />
-                      Dividir em 2 de 500ml
-                      {splitItems[p.id] && (
-                        <span style={{ color: '#2E7D32', fontSize: 12 }}>
-                          ({cart[p.id] * 2} sacos de 500ml)
-                        </span>
-                      )}
+                      Dividir em {cart[p.id] * 2} sacos de 500ml
                     </label>
                   </div>
                 )}
