@@ -246,7 +246,7 @@ export default function CustomerHome() {
                   </div>
                 )}
               </div>
-            ))}
+            )}
 
             {Object.keys(cart).length > 0 && (
               <div style={{
