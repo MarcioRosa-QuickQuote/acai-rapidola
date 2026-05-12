@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useSocket } from '../contexts/SocketContext';
@@ -30,6 +30,9 @@ export default function CustomerHome() {
   const [addrForm, setAddrForm] = useState('');
   const [savingAddr, setSavingAddr] = useState(false);
   const [addrMsg, setAddrMsg] = useState('');
+  const [addressSuggestions, setAddressSuggestions] = useState([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const photoRef = useRef(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -115,16 +118,16 @@ export default function CustomerHome() {
               width: 34, height: 34, borderRadius: '50%',
               background: 'linear-gradient(135deg, #CE93D8, #AB47BC)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              color: 'white', fontWeight: 700, fontSize: 15, flexShrink: 0
+              color: 'white', fontWeight: 700, fontSize: 15, flexShrink: 0, lineHeight: 1
             }}>
               {user?.name?.charAt(0)?.toUpperCase()}
             </div>
-            <div style={{ lineHeight: 1.3 }}>
-              <div style={{ fontSize: 13, fontWeight: 700, color: 'white' }}>{user?.name?.split(' ')[0]}</div>
-              <span onClick={(e) => { e.stopPropagation(); logout(); }}
-                style={{ fontSize: 10, color: 'rgba(255,255,255,0.6)', cursor: 'pointer', fontWeight: 400 }}>
+            <div>
+              <div style={{ fontSize: 13, fontWeight: 700, color: 'white', lineHeight: 1.2 }}>{user?.name?.split(' ')[0]}</div>
+              <div onClick={(e) => { e.stopPropagation(); logout(); }}
+                style={{ fontSize: 10, color: 'rgba(255,255,255,0.6)', cursor: 'pointer', lineHeight: 1 }}>
                 Sair
-              </span>
+              </div>
             </div>
           </div>
         </div>
@@ -147,19 +150,50 @@ export default function CustomerHome() {
       setSavingAddr(false);
     }
 
+    async function searchAddress(q) {
+      if (q.length < 5) { setAddressSuggestions([]); setShowSuggestions(false); return; }
+      try {
+        const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(q)}&limit=5&countrycodes=BR`);
+        const data = await res.json();
+        setAddressSuggestions(data || []);
+        setShowSuggestions(data?.length > 0);
+      } catch { setShowSuggestions(false); }
+    }
+
+    function selectAddress(suggestion) {
+      setAddrForm(suggestion.display_name);
+      setShowSuggestions(false);
+    }
+
+    async function uploadPhoto(file) {
+      const formData = new FormData();
+      formData.append('image', file);
+      await fetch('/api/products/upload-image', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+        body: formData
+      });
+    }
+
     return (
       <>
         <div className="page-title" style={{ fontWeight: 800 }}>Minha Conta</div>
         <div className="card" style={{ textAlign: 'left' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
-            <div style={{
-              width: 56, height: 56, borderRadius: '50%',
-              background: 'linear-gradient(135deg, #CE93D8, #AB47BC)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              color: 'white', fontWeight: 700, fontSize: 24
-            }}>
-              {user?.name?.charAt(0)?.toUpperCase()}
-            </div>
+            <label style={{ cursor: 'pointer', position: 'relative' }}>
+              <div style={{
+                width: 56, height: 56, borderRadius: '50%',
+                background: 'linear-gradient(135deg, #CE93D8, #AB47BC)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                color: 'white', fontWeight: 700, fontSize: 24
+              }}>
+                {user?.name?.charAt(0)?.toUpperCase()}
+              </div>
+              <input type="file" accept="image/*" ref={photoRef}
+                onChange={e => { if (e.target.files?.[0]) uploadPhoto(e.target.files[0]); }}
+                style={{ display: 'none' }} />
+              <div style={{ fontSize: 9, color: '#888', textAlign: 'center', marginTop: 2 }}>Alterar foto</div>
+            </label>
             <div>
               <div style={{ fontWeight: 800, fontSize: 16 }}>{user?.name}</div>
               <div style={{ fontSize: 12, color: '#888' }}>Cliente</div>
@@ -171,11 +205,27 @@ export default function CustomerHome() {
             <div style={{ fontWeight: 600 }}>{user?.phone}</div>
           </div>
 
-          <div style={{ marginBottom: 8 }}>
+          <div style={{ marginBottom: 8, position: 'relative' }}>
             <label className="label" style={{ fontWeight: 700 }}>Endereco de entrega</label>
             <input className="input" type="text" value={currentAddr}
-              onChange={e => setAddrForm(e.target.value)}
+              onChange={e => { setAddrForm(e.target.value); searchAddress(e.target.value); }}
+              onFocus={() => { if (addressSuggestions.length > 0) setShowSuggestions(true); }}
+              onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
               placeholder="Rua, numero, bairro - Cidade" />
+            {showSuggestions && addressSuggestions.length > 0 && (
+              <div style={{
+                position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 10,
+                background: 'white', border: '1px solid #DDD', borderRadius: 8, maxHeight: 200, overflow: 'auto',
+                boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+              }}>
+                {addressSuggestions.map((s, i) => (
+                  <div key={i} onMouseDown={() => selectAddress(s)}
+                    style={{ padding: '10px 14px', cursor: 'pointer', fontSize: 13, borderBottom: '1px solid #F0F0F0' }}>
+                    {s.display_name}
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
           {addrMsg && <div style={{ fontSize: 13, fontWeight: 600, color: addrMsg.includes('Erro') ? '#C62828' : '#2E7D32', marginBottom: 8 }}>{addrMsg}</div>}
           <button className="btn btn-primary btn-sm" onClick={saveAddress} disabled={savingAddr}>
