@@ -88,13 +88,18 @@ router.post('/', authMiddleware, roleMiddleware('customer'), async (req, res) =>
   );
   const deliveryFee = calcDeliveryFee(distanceKm);
 
-  const { data: created } = await supabase.from('orders').insert({
+  const { data: created, error: insertErr } = await supabase.from('orders').insert({
     id: orderId, customer_id: customerId, store_id,
     total: total + deliveryFee,
     delivery_fee: deliveryFee,
     customer_address: address,
     customer_lat: lat || -23.55, customer_lng: lng || -46.63, notes: notes || ''
-  }).select('*').single();
+  }).select('*');
+
+  if (insertErr || !created || created.length === 0) {
+    throw new Error(insertErr?.message || 'Falha ao inserir pedido');
+  }
+  const newOrder = created[0];
 
   await supabase.from('order_items').insert(
     orderItems.map(({ product, quantity }) => ({
@@ -113,7 +118,7 @@ router.post('/', authMiddleware, roleMiddleware('customer'), async (req, res) =>
 
   await notifyUser(store.owner_id, 'Novo Pedido!', `${req.user.name} fez um pedido de R$ ${total.toFixed(2)}`, 'order');
 
-  res.json({ order: created, items: orderItems });
+  res.json({ order: newOrder, items: orderItems });
   } catch (err) {
     console.error('[Orders] Error:', err);
     res.status(500).json({ error: err.message || 'Erro interno ao criar pedido' });
