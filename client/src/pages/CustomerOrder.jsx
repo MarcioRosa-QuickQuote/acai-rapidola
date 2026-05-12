@@ -25,7 +25,7 @@ export default function CustomerOrder() {
   const { user, apiFetch } = useAuth();
   const location = useLocation();
   const state = location.state || {};
-  const { items, store: storeFromState, product, quantity, splitItems } = state;
+  const { items, store: storeFromState, product, quantity, splitCount } = state;
   const [store, setStore] = useState(storeFromState);
   const navigate = useNavigate();
 
@@ -48,8 +48,7 @@ export default function CustomerOrder() {
 
   useEffect(() => {
     if (orderItems.some(i => (i.size_ml || product?.size_ml) >= 1000)) {
-      const hasSplit = product && splitItems?.[product.id];
-      setSplitLiter(!!hasSplit);
+      setSplitLiter(splitCount > 0);
     }
   }, []);
 
@@ -140,7 +139,7 @@ export default function CustomerOrder() {
           address,
           lat: lat,
           lng: lng,
-          notes: splitLiter ? `Dividir em ${(product?.quantity || orderItems[0]?.quantity || 1) * 2} sacos de 500ml. ` + (notes || '') : notes
+          notes: splitLiter ? `Modo: ${(orderItems[0]?.quantity || 1)}L dividido. ` + (notes || '') : notes
         })
       });
       if (data.ok) {
@@ -191,16 +190,31 @@ export default function CustomerOrder() {
           </div>
 
           {orderItems.some(i => i.size_ml >= 1000 || i.product?.size_ml >= 1000) && (
-            <div style={{ marginTop: 12, padding: 10, background: '#FFF8E1', borderRadius: 8, border: '1px solid #FFE082' }}>
-              <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', fontSize: 14, fontWeight: 600, color: '#E65100' }}>
-                <input type="checkbox" checked={splitLiter} onChange={e => setSplitLiter(e.target.checked)} />
-                Dividir em sacos de 500ml
-                {splitLiter && (
-                  <span style={{ color: '#2E7D32' }}>
-                    ({(orderItems[0]?.quantity || 1) * 2} sacos)
-                  </span>
-                )}
-              </label>
+            <div style={{ marginTop: 12 }}>
+              <div style={{ fontSize: 13, fontWeight: 600, color: '#888', marginBottom: 8 }}>Como quer receber?</div>
+              <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                {Array.from({ length: (orderItems[0]?.quantity || 1) + 1 }, (_, k) => {
+                  const litrosInteiros = (orderItems[0]?.quantity || 1) - k;
+                  const meios = k * 2;
+                  if (litrosInteiros === 0 && meios === 0) return null;
+                  let label = '';
+                  if (litrosInteiros > 0 && meios > 0) label = `${litrosInteiros}L + ${meios} de meio`;
+                  else if (litrosInteiros > 0) label = `${litrosInteiros}L`;
+                  else label = `${meios} de meio`;
+                  const isActive = k > 0;
+                  return (
+                    <button key={k}
+                      onClick={() => setSplitLiter(k > 0)}
+                      style={{
+                        padding: '6px 12px', borderRadius: 20, border: isActive ? '2px solid #6A1B9A' : '1px solid #DDD',
+                        background: isActive ? '#F3E5F5' : 'white', color: isActive ? '#6A1B9A' : '#666',
+                        fontSize: 13, fontWeight: isActive ? 700 : 400, cursor: 'pointer'
+                      }}>
+                      {label}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
           )}
         </div>

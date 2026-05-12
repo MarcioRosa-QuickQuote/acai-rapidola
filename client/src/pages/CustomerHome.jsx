@@ -24,7 +24,6 @@ export default function CustomerHome() {
   const [view, setView] = useState('menu');
   const [cart, setCart] = useState({});
   const [splitItems, setSplitItems] = useState({});
-  const [quantities, setQuantities] = useState({});
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
@@ -86,7 +85,7 @@ export default function CustomerHome() {
     const prod = products.find(p => p.id === productId);
     if (prod) {
       navigate('/customer/order', {
-        state: { product: prod, store, quantity: cart[productId] || 1, splitItems }
+        state: { product: prod, store, quantity: cart[productId] || 1, splitCount: splitItems[productId] || 0 }
       });
     }
   }
@@ -189,13 +188,31 @@ export default function CustomerHome() {
                 </div>
 
                 {p.size_ml >= 1000 && cart[p.id] > 0 && (
-                  <div style={{ marginTop: 8, padding: 8, background: '#FFF8E1', borderRadius: 8, border: '1px solid #FFE082' }}>
-                    <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', fontSize: 13, fontWeight: 600, color: '#E65100' }}>
-                      <input type="checkbox"
-                        checked={!!splitItems[p.id]}
-                        onChange={e => setSplitItems(s => ({ ...s, [p.id]: e.target.checked }))} />
-                      Dividir em {cart[p.id] * 2} sacos de 500ml
-                    </label>
+                  <div style={{ marginTop: 8 }}>
+                    <div style={{ fontSize: 12, fontWeight: 600, color: '#888', marginBottom: 6 }}>Como quer receber?</div>
+                    <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                      {Array.from({ length: cart[p.id] + 1 }, (_, k) => {
+                        const litrosInteiros = cart[p.id] - k;
+                        const meios = k * 2;
+                        if (litrosInteiros === 0 && meios === 0) return null;
+                        let label = '';
+                        if (litrosInteiros > 0 && meios > 0) label = `${litrosInteiros}L + ${meios} de meio`;
+                        else if (litrosInteiros > 0) label = `${litrosInteiros}L`;
+                        else label = `${meios} de meio`;
+                        const isActive = (splitItems[p.id] || 0) === k;
+                        return (
+                          <button key={k}
+                            onClick={() => setSplitItems(s => ({ ...s, [p.id]: k }))}
+                            style={{
+                              padding: '6px 12px', borderRadius: 20, border: isActive ? '2px solid #6A1B9A' : '1px solid #DDD',
+                              background: isActive ? '#F3E5F5' : 'white', color: isActive ? '#6A1B9A' : '#666',
+                              fontSize: 13, fontWeight: isActive ? 700 : 400, cursor: 'pointer'
+                            }}>
+                            {label}
+                          </button>
+                        );
+                      })}
+                    </div>
                   </div>
                 )}
               </div>
