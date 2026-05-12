@@ -100,16 +100,25 @@ export default function CustomerHome() {
             <div className="header-title">{store?.name || 'Pe de Acai'}</div>
           </div>
         </div>
-        <div className="header-right">
-          <div style={{ textAlign: 'right' }}>
-            <div style={{ fontSize: 13, fontWeight: 600, color: 'white' }}>{user?.name?.split(' ')[0]}</div>
-            <span onClick={logout} style={{ fontSize: 10, color: 'rgba(255,255,255,0.6)', cursor: 'pointer' }}>Sair</span>
+        <div className="header-right" style={{ gap: 8 }}>
+          <div onClick={() => setView(view === 'conta' ? 'menu' : 'conta')}
+            style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
+            <div style={{
+              width: 34, height: 34, borderRadius: '50%',
+              background: 'linear-gradient(135deg, #CE93D8, #AB47BC)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              color: 'white', fontWeight: 700, fontSize: 15, flexShrink: 0
+            }}>
+              {user?.name?.charAt(0)?.toUpperCase()}
+            </div>
+            <div style={{ textAlign: 'left', lineHeight: 1.3 }}>
+              <div style={{ fontSize: 13, fontWeight: 600, color: 'white' }}>{user?.name?.split(' ')[0]}</div>
+              <span onClick={(e) => { e.stopPropagation(); logout(); }}
+                style={{ fontSize: 10, color: 'rgba(255,255,255,0.6)', cursor: 'pointer' }}>
+                Sair
+              </span>
+            </div>
           </div>
-          <button className="btn btn-sm"
-            style={{ background: view === 'conta' ? 'rgba(255,255,255,0.3)' : 'rgba(255,255,255,0.15)', color: 'white', fontSize: 12, padding: '6px 12px' }}
-            onClick={() => setView(view === 'conta' ? 'menu' : 'conta')}>
-            {view === 'conta' ? 'Voltar' : 'Conta'}
-          </button>
         </div>
       </div>
 
@@ -125,16 +134,18 @@ export default function CustomerHome() {
         <div className="page-title">Minha Conta</div>
         <div className="card">
           <div className="form-group">
-            <label className="label">Endereco de entrega</label>
-            <input className="input" type="text" value={user?.address || ''} readOnly
-              placeholder="Salvo no primeiro pedido" style={{ background: '#F5F5F5' }} />
-            <span className="text-xs text-muted">O endereco e salvo automaticamente no primeiro pedido.</span>
+            <label className="label" style={{ textAlign: 'left' }}>Nome</label>
+            <div className="text-sm" style={{ textAlign: 'left' }}>{user?.name}</div>
           </div>
-          <div className="flex-between text-sm" style={{ marginTop: 8 }}>
-            <span>Nome:</span><span className="font-bold">{user?.name}</span>
+          <div className="form-group">
+            <label className="label" style={{ textAlign: 'left' }}>Telefone</label>
+            <div className="text-sm" style={{ textAlign: 'left' }}>{user?.phone}</div>
           </div>
-          <div className="flex-between text-sm" style={{ marginTop: 4 }}>
-            <span>Telefone:</span><span>{user?.phone}</span>
+          <div className="form-group">
+            <label className="label" style={{ textAlign: 'left' }}>Endereco de entrega</label>
+            <input className="input" type="text" value={user?.address || ''}
+              readOnly placeholder="Salvo no primeiro pedido" style={{ background: '#F5F5F5', textAlign: 'left' }} />
+            <span className="text-xs text-muted">Para alterar, faca um novo pedido com o endereco atualizado.</span>
           </div>
         </div>
       </>
@@ -155,7 +166,7 @@ export default function CustomerHome() {
             onClick={() => setMainTab('menu')}>Cardapio</button>
           <button className={`btn btn-sm ${mainTab === 'orders' ? 'btn-primary' : 'btn-outline'}`}
             onClick={() => { setMainTab('orders'); loadOrders(); }}>
-            Meus Pedidos ({orders.length})
+            Meus Pedidos
           </button>
         </div>
 
