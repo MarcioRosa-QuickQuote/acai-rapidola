@@ -99,50 +99,70 @@ export default function CustomerHome() {
     <div>
       <div className="header">
         <div className="header-left">
-          {store?.logo ? (
-            <img src={store.logo} alt="Logo" style={{ width: 44, height: 44, borderRadius: 8, objectFit: 'contain', flexShrink: 0 }} onError={e => { e.target.style.display = 'none'; }} />
-          ) : (
-            <img src="/logo.png" alt="Logo" style={{ width: 44, height: 44, borderRadius: 8, objectFit: 'contain', flexShrink: 0 }} />
-          )}
+          <img
+            src={store?.logo || '/logo.png'}
+            alt="Logo"
+            style={{ width: 52, height: 52, borderRadius: 10, objectFit: 'contain', flexShrink: 0 }}
+            onError={e => { e.target.style.display = 'none'; }}
+          />
           <div style={{ minWidth: 0 }}>
-            <div className="header-title">{store?.name || 'Cardapio'}</div>
+            <div className="header-title">{store?.name || 'Pe de Acai'}</div>
           </div>
         </div>
         <div className="header-right">
-          <span className="hide-mobile" style={{ fontSize: 12, color: 'rgba(255,255,255,0.8)' }}>{user?.name?.split(' ')[0]}</span>
+          <div style={{ textAlign: 'right' }}>
+            <div style={{ fontSize: 13, fontWeight: 600, color: 'white' }}>{user?.name?.split(' ')[0]}</div>
+            <span onClick={logout}
+              style={{ fontSize: 10, color: 'rgba(255,255,255,0.6)', cursor: 'pointer' }}>
+              Sair
+            </span>
+          </div>
           <button className="btn btn-sm"
-            style={{ background: view === 'conta' ? 'rgba(255,255,255,0.3)' : 'rgba(255,255,255,0.15)', color: 'white', fontSize: 12 }}
+            style={{ background: view === 'conta' ? 'rgba(255,255,255,0.3)' : 'rgba(255,255,255,0.15)', color: 'white', fontSize: 12, padding: '6px 12px' }}
             onClick={() => setView(view === 'conta' ? 'menu' : 'conta')}>
-            {view === 'conta' ? 'Cardapio' : 'Conta'}
+            {view === 'conta' ? 'Voltar' : 'Conta'}
           </button>
-          <button className="btn btn-sm"
-            style={{ background: 'rgba(255,255,255,0.15)', color: 'white', fontSize: 12 }}
-            onClick={logout}>Sair</button>
         </div>
       </div>
 
       <div className="container" style={{ paddingTop: 12 }}>
-        {view === 'menu' ? (
+        {view === 'conta' ? (
+          <>
+            <div className="page-title">Minha Conta</div>
+            <div className="card">
+              <div className="form-group">
+                <label className="label">Endereco de entrega</label>
+                <input className="input" type="text" value={user?.address || ''} readOnly
+                  placeholder="Salvo no primeiro pedido" style={{ background: '#F5F5F5' }} />
+                <span className="text-xs text-muted">O endereco e salvo automaticamente. Para alterar, faca um novo pedido.</span>
+              </div>
+              <div className="flex-between text-sm" style={{ marginTop: 8 }}>
+                <span>Nome:</span><span className="font-bold">{user?.name}</span>
+              </div>
+              <div className="flex-between text-sm" style={{ marginTop: 4 }}>
+                <span>Telefone:</span><span>{user?.phone}</span>
+              </div>
+            </div>
+          </>
+        ) : (
           <>
             {store && !store.open && (
-              <div className="card" style={{
-                background: '#FFF3E0', border: '1px solid #FF6F00', textAlign: 'center' }}>
-                <span className="font-bold" style={{ color: '#FF6F00' }}>
-                  As entregas ja encerraram por hoje. Volte amanha!
-                </span>
+              <div className="card" style={{ background: '#FFF3E0', border: '1px solid #FF6F00', textAlign: 'center' }}>
+                <span className="font-bold" style={{ color: '#FF6F00' }}>Entregas encerradas por hoje.</span>
               </div>
             )}
 
             <div className="flex-row" style={{ marginBottom: 12 }}>
-              <button className={`btn btn-sm ${view === 'menu' || !view || view !== 'conta' ? 'btn-primary' : 'btn-outline'}`}
-                onClick={() => setView('menu')}>Cardapio</button>
-              <button className={`btn btn-sm ${view === 'orders' ? 'btn-primary' : 'btn-outline'}`}
-                onClick={() => setView('orders')}>
+              <button className={`btn btn-sm ${mainTab === 'menu' ? 'btn-primary' : 'btn-outline'}`}
+                onClick={() => setMainTab('menu')}>Cardapio</button>
+              <button className={`btn btn-sm ${mainTab === 'orders' ? 'btn-primary' : 'btn-outline'}`}
+                onClick={() => { setMainTab('orders'); loadOrders(); }}>
                 Meus Pedidos ({orders.length})
               </button>
             </div>
 
-            {products.map(p => (
+            {mainTab === 'menu' && (
+            <>
               <div key={p.id} className="card">
                 <div className="flex-row" style={{ gap: 12, marginBottom: 8 }}>
                   {p.image ? (
@@ -246,11 +266,12 @@ export default function CustomerHome() {
                   Ver Carrinho ({Object.values(cart).reduce((a,b) => a+b, 0)} itens)
                 </button>
               </div>
+              )}
+            </>
             )}
-          </>
-        ) : view === 'orders' ? (
-          <>
-            <div className="page-title">Meus Pedidos</div>
+            {mainTab === 'orders' && (
+            <>
+              <div className="page-title">Meus Pedidos</div>
             {orders.length === 0 ? (
               <div className="empty-state">
                 <div className="empty-state-icon">
@@ -292,29 +313,9 @@ export default function CustomerHome() {
                 </div>
               ))
             )}
-          </>
-        ) : (
-          <>
-            <div className="page-title">Minha Conta</div>
-            <div className="card">
-              <div className="form-group">
-                <label className="label">Endereço de entrega</label>
-                <input className="input" type="text" value={user?.address || ''}
-                  readOnly
-                  placeholder="Seu endereço será salvo no primeiro pedido"
-                  style={{ background: '#F5F5F5' }} />
-                <span className="text-xs text-muted">
-                  O endereço é salvo automaticamente no seu primeiro pedido. Para alterar, faça um novo pedido com o endereço atualizado.
-                </span>
-              </div>
-              <div className="flex-between text-sm" style={{ marginTop: 8 }}>
-                <span>Nome:</span><span className="font-bold">{user?.name}</span>
-              </div>
-              <div className="flex-between text-sm" style={{ marginTop: 4 }}>
-                <span>Telefone:</span><span>{user?.phone}</span>
-              </div>
-            </div>
-          </>
+            </>
+          )}
+        </>
         )}
       </div>
     </div>
