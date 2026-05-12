@@ -56,15 +56,15 @@ app.get('/api/setup', async (req, res) => {
   );
 
   const products = [
-    ['Açai 500ml (Meio Litro)', 'Açai feito da polpa', 25.00, 500],
-    ['Açai 1 Litro', 'Açai feito da polpa', 45.00, 1000],
-    ['Farinha de Tapioca', 'Acompanhamento tradicional — farinha de tapioca', 5.00, 100],
-    ["Farinha D'agua", "Farinha d'agua tipica do Para", 6.00, 100],
+    ['Açai 500ml (Meio Litro)', 'Açai feito da polpa', 25.00, 500, '/açai 500ml.png'],
+    ['Açai 1 Litro', 'Açai feito da polpa', 45.00, 1000, '/açai 1 litro.png'],
+    ['Farinha de Tapioca', 'Acompanhamento tradicional — farinha de tapioca', 5.00, 100, '/farinha de tapioca.png'],
+    ['Farinha D\'água', 'Farinha d\'água típica do Pará', 6.00, 100, '/Farinha dagua.png'],
   ];
 
   await supabase.from('products').insert(
-    products.map(([name, description, price, size_ml]) => ({
-      id: uuid(), store_id: storeId, name, description, price, size_ml
+    products.map(([name, description, price, size_ml, image]) => ({
+      id: uuid(), store_id: storeId, name, description, price, size_ml, image
     }))
   );
 

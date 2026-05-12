@@ -18,19 +18,9 @@ export default function Login() {
   const [password, setPassword] = useState('123456');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const [storeLogo, setStoreLogo] = useState('');
   const [showTest, setShowTest] = useState(false);
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const bgRef = useRef(null);
-
-  useEffect(() => {
-    fetch('/api/stores')
-      .then(r => r.json())
-      .then(stores => {
-        if (stores.length > 0 && stores[0].logo) setStoreLogo(stores[0].logo);
-      })
-      .catch(() => {});
-  }, []);
 
   useEffect(() => {
     const handleMove = (e) => {
@@ -133,7 +123,7 @@ export default function Login() {
           }} />
 
           <img
-            src={storeLogo || '/logo.png'}
+            src="/logo.png"
             alt="Logo"
             style={{
               width: 160, height: 160, borderRadius: 26,
