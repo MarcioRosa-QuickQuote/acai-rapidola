@@ -137,6 +137,20 @@ router.post('/estimate-fee', authMiddleware, async (req, res) => {
   res.json({ fee, distance_km: parseFloat(km.toFixed(2)) });
 });
 
+router.get('/geocode', async (req, res) => {
+  const { q } = req.query;
+  if (!q || q.length < 3) return res.json([]);
+  try {
+    const resp = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(q)}&limit=5&countrycodes=BR`, {
+      headers: { 'User-Agent': 'PedeAcai/1.0' }
+    });
+    const data = await resp.json();
+    res.json(data);
+  } catch {
+    res.json([]);
+  }
+});
+
 router.get('/', authMiddleware, async (req, res) => {
   if (req.user.role === 'customer') {
     const { data } = await supabase.from('orders')

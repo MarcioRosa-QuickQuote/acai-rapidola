@@ -55,7 +55,7 @@ router.put('/:id', authMiddleware, roleMiddleware('store'), async (req, res) => 
   res.json({ success: true });
 });
 
-router.post('/upload-image', authMiddleware, roleMiddleware('store'), async (req, res) => {
+router.post('/upload-image', authMiddleware, async (req, res) => {
   const multer = require('multer');
   const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 5 * 1024 * 1024 }, fileFilter: (req, file, cb) => {
     if (file.mimetype.startsWith('image/')) cb(null, true);

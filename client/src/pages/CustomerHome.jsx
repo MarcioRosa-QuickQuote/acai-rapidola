@@ -153,7 +153,7 @@ export default function CustomerHome() {
     async function searchAddress(q) {
       if (q.length < 5) { setAddressSuggestions([]); setShowSuggestions(false); return; }
       try {
-        const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(q)}&limit=5&countrycodes=BR`);
+        const res = await fetch(`/api/orders/geocode?q=${encodeURIComponent(q)}`);
         const data = await res.json();
         setAddressSuggestions(data || []);
         setShowSuggestions(data?.length > 0);

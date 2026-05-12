@@ -93,7 +93,7 @@ export default function CustomerOrder() {
     setGeocoding(true);
     try {
       const res = await fetch(
-        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}&limit=1&countrycodes=BR`
+        fetch(`/api/orders/geocode?q=${encodeURIComponent(address)}`)
       );
       const data = await res.json();
       if (data.length > 0) {
