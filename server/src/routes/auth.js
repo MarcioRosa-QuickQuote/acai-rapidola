@@ -104,4 +104,16 @@ router.get('/me', authMiddleware, async (req, res) => {
   res.json({ user, store });
 });
 
+router.patch('/profile', authMiddleware, async (req, res) => {
+  const { address } = req.body;
+  const update = {};
+  if (address !== undefined) update.address = address;
+
+  if (Object.keys(update).length > 0) {
+    await supabase.from('users').update(update).eq('id', req.user.id);
+  }
+
+  res.json({ ok: true });
+});
+
 module.exports = router;

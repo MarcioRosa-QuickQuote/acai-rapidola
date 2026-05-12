@@ -144,7 +144,7 @@ export default function CustomerHome() {
 
     async function saveAddress() {
       setSavingAddr(true);
-      const data = await apiFetch('/orders', { method: 'PATCH', body: JSON.stringify({ address: currentAddr }) });
+      const data = await apiFetch('/auth/profile', { method: 'PATCH', body: JSON.stringify({ address: currentAddr }) });
       setAddrMsg(data.ok ? 'Endereco salvo!' : 'Erro ao salvar');
       setTimeout(() => setAddrMsg(''), 3000);
       setSavingAddr(false);
