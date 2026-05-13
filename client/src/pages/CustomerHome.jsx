@@ -117,8 +117,6 @@ export default function CustomerHome() {
             onClick={() => navigate('/customer')}>
             &larr; Lojas
           </button>
-          <img src="/logo.png" alt="Logo"
-            style={{ width: 56, height: 56, borderRadius: 14, objectFit: 'contain', flexShrink: 0 }} />
           <div style={{ minWidth: 0 }}>
             <div className="header-title">{store?.name || 'Minha Conta'}</div>
           </div>
@@ -338,7 +336,25 @@ export default function CustomerHome() {
         )}
 
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12, flexWrap: 'wrap' }}>
-          {store && <span style={{ fontWeight: 700, fontSize: 15, color: 'var(--primary)' }}>{store.name}</span>}
+          {store && (
+            <>
+              {store.logo ? (
+                <img src={store.logo} alt={store.name}
+                  style={{ width: 40, height: 40, borderRadius: 10, objectFit: 'cover', flexShrink: 0 }}
+                  onError={e => { e.target.style.display = 'none'; }} />
+              ) : (
+                <div style={{
+                  width: 40, height: 40, borderRadius: 10, flexShrink: 0,
+                  background: `linear-gradient(135deg, ${store.color_primary || '#6A1B9A'}, ${store.color_secondary || '#4A148C'})`,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  color: 'white', fontWeight: 800, fontSize: 20
+                }}>
+                  {store.name.charAt(0).toUpperCase()}
+                </div>
+              )}
+              <span style={{ fontWeight: 700, fontSize: 15, color: 'var(--primary)' }}>{store.name}</span>
+            </>
+          )}
           <div className="flex-row">
             <button className={`btn btn-sm ${mainTab === 'menu' ? 'btn-primary' : 'btn-outline'}`}
               onClick={() => setMainTab('menu')}>Cardápio</button>
