@@ -399,7 +399,7 @@ export default function StoreDashboard() {
 
             {settingsTab === 'produtos' ? (
             <>
-            <div className="page-title">Cardapio</div>
+            <div className="page-title">Cardápio</div>
 
             <div className="card">
               {!productForm ? (
@@ -548,7 +548,7 @@ export default function StoreDashboard() {
                   <input className="input" type="text" value={settings.address}
                     onChange={e => setSettings(s => ({ ...s, address: e.target.value }))}
                     onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); geocodeAddress(); } }}
-                    placeholder="Rua, numero, bairro - Cidade"
+                    placeholder="Rua, número, bairro - Cidade"
                     style={{ flex: 1 }} />
                   <button className="btn btn-sm btn-secondary"
                     onClick={geocodeAddress} disabled={geocoding}

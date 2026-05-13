@@ -124,7 +124,7 @@ export default function Login() {
 
           <img
             src="/logo.png"
-            alt="Pe de Acai"
+            alt="Pé de Açaí"
             style={{
               width: 200, height: 200, borderRadius: 28,
               objectFit: 'contain',

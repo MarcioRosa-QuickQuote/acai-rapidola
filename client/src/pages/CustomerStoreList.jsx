@@ -3,11 +3,10 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 
 export default function CustomerStoreList() {
-  const { user, apiFetch } = useAuth();
+  const { user, apiFetch, logout } = useAuth();
   const [stores, setStores] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
-  const [openOnly, setOpenOnly] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -36,9 +35,7 @@ export default function CustomerStoreList() {
     );
   }
 
-  const displayStores = openOnly
-    ? filteredOpen
-    : [...filteredOpen, ...filteredClosed];
+  const displayStores = [...filteredOpen, ...filteredClosed];
 
   if (loading) return <div className="loading"><div className="spinner" /></div>;
 
@@ -46,29 +43,37 @@ export default function CustomerStoreList() {
     <div>
       <div className="header" style={{ padding: '12px 16px' }}>
         <div className="header-left" style={{ gap: 10 }}>
-          <img src="/logo.png" alt="Pe de Acai"
-            style={{ width: 40, height: 40, borderRadius: 10, objectFit: 'contain', flexShrink: 0 }} />
+          <img src="/logo.png" alt="Pé de Açaí"
+            style={{ width: 56, height: 56, borderRadius: 14, objectFit: 'contain', flexShrink: 0 }} />
           <div>
-            <div className="header-title" style={{ fontSize: 18 }}>Pe de Acai</div>
-            <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.6)' }}>{user?.name?.split(' ')[0]}</div>
+            <div className="header-title" style={{ fontSize: 18 }}>Pé de Açaí</div>
           </div>
         </div>
-        <div className="header-right">
-          {user?.photo_url ? (
-            <img src={user.photo_url} alt="Foto"
-              onClick={() => navigate('/customer/conta')}
-              style={{ width: 34, height: 34, borderRadius: '50%', objectFit: 'cover', cursor: 'pointer' }}
-              onError={e => { e.target.style.display = 'none'; }} />
-          ) : (
-            <div onClick={() => navigate('/customer/conta')} style={{
-              width: 34, height: 34, borderRadius: '50%',
-              background: 'linear-gradient(135deg, #CE93D8, #AB47BC)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              color: 'white', fontWeight: 700, fontSize: 15, cursor: 'pointer'
-            }}>
-              {user?.name?.charAt(0)?.toUpperCase()}
+        <div className="header-right" style={{ gap: 8 }}>
+          <div onClick={() => navigate('/customer/conta')}
+            style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
+            {user?.photo_url ? (
+              <img src={user.photo_url} alt="Foto"
+                style={{ width: 34, height: 34, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }}
+                onError={e => { e.target.style.display = 'none'; }} />
+            ) : (
+              <div style={{
+                width: 34, height: 34, borderRadius: '50%',
+                background: 'linear-gradient(135deg, #CE93D8, #AB47BC)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                color: 'white', fontWeight: 700, fontSize: 15, flexShrink: 0, lineHeight: 1
+              }}>
+                {user?.name?.charAt(0)?.toUpperCase()}
+              </div>
+            )}
+            <div>
+              <div style={{ fontSize: 13, fontWeight: 700, color: 'white', lineHeight: 1.2 }}>{user?.name?.split(' ')[0]}</div>
+              <div onClick={(e) => { e.stopPropagation(); logout(); }}
+                style={{ fontSize: 10, color: 'rgba(255,255,255,0.6)', cursor: 'pointer', lineHeight: 1 }}>
+                Sair
+              </div>
             </div>
-          )}
+          </div>
         </div>
       </div>
 
@@ -81,28 +86,11 @@ export default function CustomerStoreList() {
             </svg>
             <input className="input" type="text" value={search}
               onChange={e => setSearch(e.target.value)}
-              placeholder="Buscar loja ou endereco..."
+              placeholder="Buscar loja ou endereço..."
               style={{ paddingLeft: 42, fontSize: 15, borderRadius: 24, border: '2px solid #E8E0F0' }} />
           </div>
 
-          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-            <button
-              onClick={() => setOpenOnly(!openOnly)}
-              style={{
-                padding: '8px 18px', borderRadius: 24, border: openOnly ? '2px solid #6A1B9A' : '1px solid #DDD',
-                background: openOnly ? '#F3E5F5' : 'white',
-                color: openOnly ? '#6A1B9A' : '#666',
-                fontSize: 13, fontWeight: 600, cursor: 'pointer',
-                display: 'flex', alignItems: 'center', gap: 6
-              }}>
-              <span style={{
-                width: 8, height: 8, borderRadius: '50%',
-                background: openOnly ? '#6A1B9A' : '#4CAF50',
-                display: 'inline-block'
-              }} />
-              Abertas agora
-            </button>
-          </div>
+
         </div>
 
         {displayStores.length === 0 && (
@@ -113,19 +101,13 @@ export default function CustomerStoreList() {
                 <path d="M22 28h20M22 34h12" stroke="var(--border)" strokeWidth="2" strokeLinecap="round"/>
               </svg>
             </div>
-            <p>{search ? 'Nenhuma loja encontrada' : 'Nenhuma loja disponivel'}</p>
+            <p>{search ? 'Nenhuma loja encontrada' : 'Nenhuma loja disponível'}</p>
           </div>
-        )}
-
-        {openOnly && filteredClosed.length > 0 && filteredOpen.length === 0 && (
-          <p style={{ textAlign: 'center', color: '#888', fontSize: 14, marginTop: 20 }}>
-            Não há lojas abertas no momento. Desative o filtro para ver todas.
-          </p>
         )}
 
         {displayStores.map((store, i) => {
           const isOpen = !!store.open;
-          const isFirstClosed = !openOnly && !isOpen && (i === 0 || displayStores[i - 1]?.open);
+          const isFirstClosed = !isOpen && (i === 0 || displayStores[i - 1]?.open);
 
           return (
             <div key={store.id}>

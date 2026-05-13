@@ -130,7 +130,7 @@ router.post('/estimate-fee', authMiddleware, async (req, res) => {
   if (!store_id) return res.status(400).json({ error: 'Loja obrigatoria' });
 
   const { data: st } = await supabase.from('stores').select('lat, lng').eq('id', store_id).single();
-  if (!st) return res.status(404).json({ error: 'Loja nao encontrada' });
+  if (!st) return res.status(404).json({ error: 'Loja não encontrada' });
 
   const km = calcDistance(st.lat, st.lng, lat || st.lat, lng || st.lng);
   const fee = calcDeliveryFee(km);

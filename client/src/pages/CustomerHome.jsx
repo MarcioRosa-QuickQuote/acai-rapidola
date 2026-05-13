@@ -6,7 +6,7 @@ import { useSocket } from '../contexts/SocketContext';
 const statusLabels = {
   pending: 'Aguardando', confirmed: 'Confirmado', preparing: 'Preparando',
   ready: 'Pronto', assigned: 'Motoboy a caminho', picked_up: 'Retirado',
-  in_transit: 'Em transito', arriving: 'Chegando', delivered: 'Entregue', cancelled: 'Cancelado'
+  in_transit: 'Em trânsito', arriving: 'Chegando', delivered: 'Entregue', cancelled: 'Cancelado'
 };
 
 const statusColors = {
@@ -118,7 +118,7 @@ export default function CustomerHome() {
             &larr; Lojas
           </button>
           <img src="/logo.png" alt="Logo"
-            style={{ width: 40, height: 40, borderRadius: 10, objectFit: 'contain', flexShrink: 0 }} />
+            style={{ width: 56, height: 56, borderRadius: 14, objectFit: 'contain', flexShrink: 0 }} />
           <div style={{ minWidth: 0 }}>
             <div className="header-title">{store?.name || 'Minha Conta'}</div>
           </div>
@@ -167,7 +167,7 @@ export default function CustomerHome() {
       const newAddr = addrForm || '';
       const data = await apiFetch('/auth/profile', { method: 'PATCH', body: JSON.stringify({ address: newAddr }) });
       if (data.ok) {
-        setAddrMsg('Endereco salvo!');
+        setAddrMsg('Endereço salvo!');
         window.location.reload();
       } else {
         setAddrMsg(data.error || 'Erro ao salvar');
@@ -181,7 +181,7 @@ export default function CustomerHome() {
       setAddrForm('');
       const data = await apiFetch('/auth/profile', { method: 'PATCH', body: JSON.stringify({ address: '', lat: null, lng: null }) });
       if (data.ok) {
-        setAddrMsg('Endereco removido!');
+        setAddrMsg('Endereço removido!');
         window.location.reload();
       } else {
         setAddrMsg(data.error || 'Erro ao remover');
@@ -279,7 +279,7 @@ export default function CustomerHome() {
           </div>
 
           <div style={{ marginBottom: 8, position: 'relative' }}>
-            <label className="label" style={{ fontWeight: 700 }}>Endereco de entrega</label>
+            <label className="label" style={{ fontWeight: 700 }}>Endereço de entrega</label>
             <div className="flex-row" style={{ gap: 8, marginBottom: 8 }}>
               <input className="input" type="text" value={cep}
                 onChange={e => { setCep(e.target.value.replace(/\D/g, '').slice(0, 8)); }}
@@ -295,7 +295,7 @@ export default function CustomerHome() {
               onChange={e => { setAddrForm(e.target.value); searchAddress(e.target.value); }}
               onFocus={() => { if (addressSuggestions.length > 0) setShowSuggestions(true); }}
               onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
-              placeholder="Rua, numero, bairro - Cidade" />
+              placeholder="Rua, número, bairro - Cidade" />
             {showSuggestions && addressSuggestions.length > 0 && (
               <div style={{
                 position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 10,
@@ -314,12 +314,12 @@ export default function CustomerHome() {
           {addrMsg && <div style={{ fontSize: 13, fontWeight: 600, color: addrMsg.includes('Erro') || addrMsg.includes('não') ? '#C62828' : '#2E7D32', marginBottom: 8 }}>{addrMsg}</div>}
           <div style={{ display: 'flex', gap: 8 }}>
             <button className="btn btn-primary btn-sm" onClick={saveAddress} disabled={savingAddr}>
-              {savingAddr ? 'Salvando...' : 'Salvar Endereco'}
+              {savingAddr ? 'Salvando...' : 'Salvar Endereço'}
             </button>
             {user?.address && (
               <button className="btn btn-sm" onClick={clearAddress} disabled={savingAddr}
                 style={{ background: '#FFEBEE', color: '#C62828', border: '1px solid #EF9A9A' }}>
-                Limpar Endereco
+                Limpar Endereço
               </button>
             )}
           </div>
@@ -337,13 +337,16 @@ export default function CustomerHome() {
           </div>
         )}
 
-        <div className="flex-row" style={{ marginBottom: 12 }}>
-          <button className={`btn btn-sm ${mainTab === 'menu' ? 'btn-primary' : 'btn-outline'}`}
-            onClick={() => setMainTab('menu')}>Cardapio</button>
-          <button className={`btn btn-sm ${mainTab === 'orders' ? 'btn-primary' : 'btn-outline'}`}
-            onClick={() => { setMainTab('orders'); loadOrders(); }}>
-            Meus Pedidos
-          </button>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12, flexWrap: 'wrap' }}>
+          {store && <span style={{ fontWeight: 700, fontSize: 15, color: 'var(--primary)' }}>{store.name}</span>}
+          <div className="flex-row">
+            <button className={`btn btn-sm ${mainTab === 'menu' ? 'btn-primary' : 'btn-outline'}`}
+              onClick={() => setMainTab('menu')}>Cardápio</button>
+            <button className={`btn btn-sm ${mainTab === 'orders' ? 'btn-primary' : 'btn-outline'}`}
+              onClick={() => { setMainTab('orders'); loadOrders(); }}>
+              Meus Pedidos
+            </button>
+          </div>
         </div>
 
         {mainTab === 'menu' && renderCardapio()}

@@ -73,9 +73,9 @@ router.post('/create-preference', authMiddleware, async (req, res) => {
   if (!order_id) return res.status(400).json({ error: 'ID do pedido obrigatorio' });
 
   const { data: order } = await supabase.from('orders').select('*').eq('id', order_id).single();
-  if (!order) return res.status(404).json({ error: 'Pedido nao encontrado' });
+  if (!order) return res.status(404).json({ error: 'Pedido não encontrado' });
   if (order.payment_status === 'paid') return res.status(400).json({ error: 'Pedido ja foi pago' });
-  if (!mpClient) return res.status(500).json({ error: 'Gateway nao configurado' });
+  if (!mpClient) return res.status(500).json({ error: 'Gateway não configurado' });
 
   const paymentId = uuid();
   await supabase.from('orders').update({ payment_id: paymentId }).eq('id', order_id);
@@ -86,8 +86,8 @@ router.post('/create-preference', authMiddleware, async (req, res) => {
       body: {
         items: [{
           id: order_id.slice(0, 8),
-          title: `Pedido Pe de Acai #${order_id.slice(0, 8)}`,
-          description: `Acai delivery`,
+          title: `Pedido Pé de Açaí #${order_id.slice(0, 8)}`,
+          description: `Açaí delivery`,
           quantity: 1, unit_price: parseFloat(order.total.toFixed(2)),
           currency_id: 'BRL'
         }],
@@ -143,7 +143,7 @@ router.post('/webhook', async (req, res) => {
 router.post('/pix/qrcode', authMiddleware, async (req, res) => {
   const { order_id } = req.body;
   const { data: order } = await supabase.from('orders').select('*').eq('id', order_id).single();
-  if (!order) return res.status(404).json({ error: 'Pedido nao encontrado' });
+  if (!order) return res.status(404).json({ error: 'Pedido não encontrado' });
   if (order.payment_status === 'paid') return res.status(400).json({ error: 'Pedido ja foi pago' });
   res.json({ pix_id: uuid(), pix_code: 'SIMULADO', total: order.total, expires_in: 300 });
 });
@@ -151,7 +151,7 @@ router.post('/pix/qrcode', authMiddleware, async (req, res) => {
 router.post('/pix/confirm', authMiddleware, async (req, res) => {
   const { order_id } = req.body;
   const { data: order } = await supabase.from('orders').select('*').eq('id', order_id).single();
-  if (!order) return res.status(404).json({ error: 'Pedido nao encontrado' });
+  if (!order) return res.status(404).json({ error: 'Pedido não encontrado' });
   await confirmOrderPayment(order_id, order.store_id);
   res.json({ success: true, status: 'paid' });
 });
@@ -161,16 +161,16 @@ router.post('/process-card-payment', authMiddleware, async (req, res) => {
   if (!order_id || !token || !payment_method_id) return res.status(400).json({ error: 'Dados incompletos' });
 
   const { data: order } = await supabase.from('orders').select('*').eq('id', order_id).single();
-  if (!order) return res.status(404).json({ error: 'Pedido nao encontrado' });
+  if (!order) return res.status(404).json({ error: 'Pedido não encontrado' });
   if (order.payment_status === 'paid') return res.status(400).json({ error: 'Pedido ja foi pago' });
-  if (!mpClient) return res.status(500).json({ error: 'Gateway nao configurado' });
+  if (!mpClient) return res.status(500).json({ error: 'Gateway não configurado' });
 
   try {
     const paymentApi = new Payment(mpClient);
     const payment = await paymentApi.create({
       body: {
         transaction_amount: parseFloat(order.total.toFixed(2)),
-        token, description: `Pedido Pe de Acai #${order_id.slice(0, 8)}`,
+        token, description: `Pedido Pé de Açaí #${order_id.slice(0, 8)}`,
         installments: parseInt(installments) || 1, payment_method_id, issuer_id,
         payer: {
           email: payer_email || `cliente_${req.user.id}@pedeacai.app`,
@@ -226,9 +226,9 @@ router.post('/pay-with-saved-card', authMiddleware, async (req, res) => {
   if (!order_id || !card_id) return res.status(400).json({ error: 'Dados incompletos' });
 
   const { data: order } = await supabase.from('orders').select('*').eq('id', order_id).single();
-  if (!order) return res.status(404).json({ error: 'Pedido nao encontrado' });
+  if (!order) return res.status(404).json({ error: 'Pedido não encontrado' });
   if (order.payment_status === 'paid') return res.status(400).json({ error: 'Pedido ja foi pago' });
-  if (!mpClient) return res.status(500).json({ error: 'Gateway nao configurado' });
+  if (!mpClient) return res.status(500).json({ error: 'Gateway não configurado' });
 
   try {
     const email = `cliente_${req.user.id}@pedeacai.app`;
@@ -241,7 +241,7 @@ router.post('/pay-with-saved-card', authMiddleware, async (req, res) => {
     const payment = await paymentApi.create({
       body: {
         transaction_amount: parseFloat(order.total.toFixed(2)),
-        description: `Pedido Pe de Acai #${order_id.slice(0, 8)}`,
+        description: `Pedido Pé de Açaí #${order_id.slice(0, 8)}`,
         installments: 1, payment_method_id: 'visa',
         payer: { email, type: 'customer', id: customerId },
         token: card_id, external_reference: order_id,

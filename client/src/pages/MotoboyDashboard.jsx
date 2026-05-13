@@ -228,7 +228,7 @@ export default function MotoboyDashboard() {
                     <path d="M32 20v8l5 5" stroke="var(--border)" strokeWidth="2" strokeLinecap="round"/>
                   </svg>
                 </div>
-                <p>{isEmployee ? 'Nenhum pedido pendente da loja' : 'Nenhum pedido disponivel no momento'}</p>
+                <p>{isEmployee ? 'Nenhum pedido pendente da loja' : 'Nenhum pedido disponível no momento'}</p>
               </div>
             ) : (
               availableOrders.map(order => (

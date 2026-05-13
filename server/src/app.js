@@ -53,10 +53,10 @@ app.get('/api/setup', async (req, res) => {
       await seedProductsForStore(store.id);
       return res.json({ ok: true, message: 'Produtos recriados com imagens!' });
     }
-    return res.json({ ok: false, message: 'Loja nao encontrada' });
+    return res.json({ ok: false, message: 'Loja não encontrada' });
   }
 
-  if (existing) return res.json({ ok: true, message: 'Ja configurado. Use ?force=1 para recriar produtos.' });
+  if (existing) return res.json({ ok: true, message: 'Já configurado. Use ?force=1 para recriar produtos.' });
 
   const adminId = uuid();
   const storeId = uuid();

@@ -109,11 +109,11 @@ export default function CustomerOrder() {
         updateDeliveryFee(newLat, newLng);
         checkDistanceWarning(newLat, newLng);
       } else {
-        setError('Endereco nao encontrado. Tente um endereco mais especifico ou o CEP.');
+        setError('Endereço não encontrado. Tente um endereço mais específico ou o CEP.');
         setTimeout(() => setError(''), 4000);
       }
     } catch {
-      setError('Erro ao buscar endereco.');
+      setError('Erro ao buscar endereço.');
       setTimeout(() => setError(''), 4000);
     } finally {
       setGeocoding(false);
@@ -160,7 +160,7 @@ export default function CustomerOrder() {
     if (user?.lat && user?.lng) {
       const d = calcDistance(user.lat, user.lng, newLat, newLng);
       if (d > 5) {
-        setDistanceWarning(`Voce esta a ${d.toFixed(1)}km do seu endereco cadastrado. Confirme se o endereco esta correto.`);
+        setDistanceWarning(`Você está a ${d.toFixed(1)}km do seu endereço cadastrado. Confirme se o endereço está correto.`);
       } else {
         setDistanceWarning('');
       }
@@ -296,13 +296,13 @@ export default function CustomerOrder() {
             )}
 
             <div className="form-group">
-              <label className="label">Endereco de entrega</label>
+              <label className="label">Endereço de entrega</label>
               {user?.address && !editAddr ? (
                 <div>
                   <div style={{ fontSize: 15, fontWeight: 600, color: '#333', marginBottom: 6 }}>{user.address}</div>
                   <button type="button" className="btn btn-sm btn-outline"
                     onClick={() => { setEditAddr(true); setAddress(user.address); }}>
-                    Alterar endereco
+                    Alterar endereço
                   </button>
                   <input type="hidden" value={user.address} />
                 </div>
@@ -322,7 +322,7 @@ export default function CustomerOrder() {
                   <div className="flex-row" style={{ gap: 8 }}>
                     <input className="input" type="text" value={address} onChange={e => setAddress(e.target.value)}
                       onBlur={() => { if (address.length > 10) geocodeAddress(); }}
-                      placeholder="Rua, numero, bairro - Cidade" required
+                      placeholder="Rua, número, bairro - Cidade" required
                       style={{ flex: 1 }} />
                     <button type="button" className="btn btn-sm btn-secondary"
                       onClick={geocodeAddress} disabled={geocoding}
