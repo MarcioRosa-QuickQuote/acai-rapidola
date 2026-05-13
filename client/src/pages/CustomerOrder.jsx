@@ -291,7 +291,7 @@ export default function CustomerOrder() {
         <div className="header-left">
           <button className="btn btn-sm"
             style={{ background: 'rgba(255,255,255,0.15)', color: 'white', fontSize: 14 }}
-            onClick={() => navigate('/customer')}>
+            onClick={() => navigate(-1)}>
             Voltar
           </button>
         </div>

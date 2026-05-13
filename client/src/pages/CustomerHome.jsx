@@ -24,6 +24,7 @@ export default function CustomerHome() {
   const [orders, setOrders] = useState([]);
   const [view, setView] = useState('menu');
   const [mainTab, setMainTab] = useState('menu');
+  const [contaTab, setContaTab] = useState('enderecos');
   const [searchParams] = useSearchParams();
   const [cart, setCart] = useState({});
   const [splitItems, setSplitItems] = useState({});
@@ -270,8 +271,8 @@ export default function CustomerHome() {
     return (
       <>
         <div className="page-title" style={{ fontWeight: 800 }}>Minha Conta</div>
-        <div className="card" style={{ textAlign: 'left' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
+        <div className="card" style={{ textAlign: 'left', padding: 0, overflow: 'hidden' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '16px 20px', borderBottom: '1px solid var(--border)' }}>
             <label style={{ cursor: 'pointer', position: 'relative' }}>
               {user?.photo_url ? (
                 <img src={user.photo_url} alt="Foto"
@@ -294,68 +295,123 @@ export default function CustomerHome() {
             </label>
             <div>
               <div style={{ fontWeight: 800, fontSize: 16 }}>{user?.name}</div>
-              <div style={{ fontSize: 12, color: '#888' }}>Cliente</div>
+              <div style={{ fontSize: 12, color: '#888' }}>{user?.phone}</div>
             </div>
           </div>
 
-          <div style={{ marginBottom: 16 }}>
-            <label className="label" style={{ fontWeight: 700 }}>Telefone</label>
-            <div style={{ fontWeight: 600 }}>{user?.phone}</div>
-          </div>
-
-          <div style={{ marginBottom: 8, position: 'relative' }}>
-            <label className="label" style={{ fontWeight: 700 }}>Endereço de entrega</label>
-            <button type="button" className="btn btn-outline btn-sm"
-              onClick={useMyLocationConta} disabled={savingAddr}
-              style={{ width: '100%', justifyContent: 'flex-start', gap: 8, marginBottom: 8, padding: '10px 14px' }}>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/>
-                <line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/>
-                <line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/>
-              </svg>
-              {savingAddr ? 'Obtendo localização...' : 'Usar minha localização atual'}
-            </button>
-            <div className="flex-row" style={{ gap: 8, marginBottom: 8 }}>
-              <input className="input" type="text" value={cep}
-                onChange={e => { setCep(e.target.value.replace(/\D/g, '').slice(0, 8)); }}
-                placeholder="CEP (ex: 01001000)" maxLength={8}
-                style={{ width: 140, flexShrink: 0 }} />
-              <button type="button" className="btn btn-sm btn-secondary"
-                onClick={lookupCep} disabled={cepLoading || cep.replace(/\D/g, '').length !== 8}
-                style={{ whiteSpace: 'nowrap' }}>
-                {cepLoading ? '...' : 'Buscar CEP'}
+          <div style={{ display: 'flex', borderBottom: '1px solid var(--border)' }}>
+            {[
+              { key: 'enderecos', label: 'Endereços', icon: '📍' },
+              { key: 'pagamentos', label: 'Pagamentos', icon: '💳' },
+              { key: 'conversas', label: 'Conversas', icon: '💬' },
+              { key: 'notificacoes', label: 'Notificações', icon: '🔔' },
+              { key: 'favoritos', label: 'Favoritos', icon: '⭐' },
+            ].map(tab => (
+              <button key={tab.key}
+                onClick={() => setContaTab(tab.key)}
+                style={{
+                  flex: 1, padding: '10px 4px', border: 'none', background: 'none',
+                  fontSize: 11, fontWeight: contaTab === tab.key ? 700 : 500,
+                  color: contaTab === tab.key ? 'var(--primary)' : '#999',
+                  borderBottom: contaTab === tab.key ? '2px solid var(--primary)' : '2px solid transparent',
+                  cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4,
+                  transition: 'all 0.2s'
+                }}>
+                <span style={{ fontSize: 16 }}>{tab.icon}</span>
+                {tab.label}
               </button>
-            </div>
-            <input className="input" type="text" value={currentAddr}
-              onChange={e => { setAddrForm(e.target.value); searchAddress(e.target.value); }}
-              onFocus={() => { if (addressSuggestions.length > 0) setShowSuggestions(true); }}
-              onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
-              placeholder="Rua, número, bairro - Cidade" />
-            {showSuggestions && addressSuggestions.length > 0 && (
-              <div style={{
-                position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 10,
-                background: 'white', border: '1px solid #DDD', borderRadius: 8, maxHeight: 200, overflow: 'auto',
-                boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
-              }}>
-                {addressSuggestions.map((s, i) => (
-                  <div key={i} onMouseDown={() => selectAddress(s)}
-                    style={{ padding: '10px 14px', cursor: 'pointer', fontSize: 13, borderBottom: '1px solid #F0F0F0' }}>
-                    {s.display_name}
+            ))}
+          </div>
+
+          <div style={{ padding: 20 }}>
+            {contaTab === 'enderecos' && (
+              <div style={{ position: 'relative' }}>
+                <label className="label" style={{ fontWeight: 700 }}>Endereço de entrega</label>
+                <button type="button" className="btn btn-outline btn-sm"
+                  onClick={useMyLocationConta} disabled={savingAddr}
+                  style={{ width: '100%', justifyContent: 'flex-start', gap: 8, marginBottom: 8, padding: '10px 14px' }}>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/>
+                    <line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/>
+                    <line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/>
+                  </svg>
+                  {savingAddr ? 'Obtendo localização...' : 'Usar minha localização atual'}
+                </button>
+                <div className="flex-row" style={{ gap: 8, marginBottom: 8 }}>
+                  <input className="input" type="text" value={cep}
+                    onChange={e => { setCep(e.target.value.replace(/\D/g, '').slice(0, 8)); }}
+                    placeholder="CEP (ex: 01001000)" maxLength={8}
+                    style={{ width: 140, flexShrink: 0 }} />
+                  <button type="button" className="btn btn-sm btn-secondary"
+                    onClick={lookupCep} disabled={cepLoading || cep.replace(/\D/g, '').length !== 8}
+                    style={{ whiteSpace: 'nowrap' }}>
+                    {cepLoading ? '...' : 'Buscar CEP'}
+                  </button>
+                </div>
+                <input className="input" type="text" value={currentAddr}
+                  onChange={e => { setAddrForm(e.target.value); searchAddress(e.target.value); }}
+                  onFocus={() => { if (addressSuggestions.length > 0) setShowSuggestions(true); }}
+                  onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
+                  placeholder="Rua, número, bairro - Cidade" />
+                {showSuggestions && addressSuggestions.length > 0 && (
+                  <div style={{
+                    position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 10,
+                    background: 'white', border: '1px solid #DDD', borderRadius: 8, maxHeight: 200, overflow: 'auto',
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+                  }}>
+                    {addressSuggestions.map((s, i) => (
+                      <div key={i} onMouseDown={() => selectAddress(s)}
+                        style={{ padding: '10px 14px', cursor: 'pointer', fontSize: 13, borderBottom: '1px solid #F0F0F0' }}>
+                        {s.display_name}
+                      </div>
+                    ))}
                   </div>
-                ))}
+                )}
+                {addrMsg && <div style={{ fontSize: 13, fontWeight: 600, color: addrMsg.includes('Erro') || addrMsg.includes('não') ? '#C62828' : '#2E7D32', marginTop: 8 }}>{addrMsg}</div>}
+                <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
+                  <button className="btn btn-primary btn-sm" onClick={saveAddress} disabled={savingAddr}>
+                    {savingAddr ? 'Salvando...' : 'Salvar Endereço'}
+                  </button>
+                  {user?.address && (
+                    <button className="btn btn-sm" onClick={clearAddress} disabled={savingAddr}
+                      style={{ background: '#FFEBEE', color: '#C62828', border: '1px solid #EF9A9A' }}>
+                      Limpar Endereço
+                    </button>
+                  )}
+                </div>
               </div>
             )}
-          </div>
-          {addrMsg && <div style={{ fontSize: 13, fontWeight: 600, color: addrMsg.includes('Erro') || addrMsg.includes('não') ? '#C62828' : '#2E7D32', marginBottom: 8 }}>{addrMsg}</div>}
-          <div style={{ display: 'flex', gap: 8 }}>
-            <button className="btn btn-primary btn-sm" onClick={saveAddress} disabled={savingAddr}>
-              {savingAddr ? 'Salvando...' : 'Salvar Endereço'}
-            </button>
-            {user?.address && (
-              <button className="btn btn-sm" onClick={clearAddress} disabled={savingAddr}
-                style={{ background: '#FFEBEE', color: '#C62828', border: '1px solid #EF9A9A' }}>
-                Limpar Endereço
-              </button>
+
+            {contaTab === 'pagamentos' && (
+              <div style={{ textAlign: 'center', padding: '24px 0' }}>
+                <div style={{ fontSize: 40, marginBottom: 12 }}>💳</div>
+                <div style={{ fontWeight: 700, fontSize: 15, color: 'var(--text)', marginBottom: 6 }}>Nenhum pagamento</div>
+                <div style={{ fontSize: 13, color: '#999' }}>Seus pagamentos aparecerão aqui</div>
+              </div>
+            )}
+
+            {contaTab === 'conversas' && (
+              <div style={{ textAlign: 'center', padding: '24px 0' }}>
+                <div style={{ fontSize: 40, marginBottom: 12 }}>💬</div>
+                <div style={{ fontWeight: 700, fontSize: 15, color: 'var(--text)', marginBottom: 6 }}>Nenhuma conversa</div>
+                <div style={{ fontSize: 13, color: '#999' }}>Converse com as lojas pelo chat</div>
+              </div>
+            )}
+
+            {contaTab === 'notificacoes' && (
+              <div style={{ textAlign: 'center', padding: '24px 0' }}>
+                <div style={{ fontSize: 40, marginBottom: 12 }}>🔔</div>
+                <div style={{ fontWeight: 700, fontSize: 15, color: 'var(--text)', marginBottom: 6 }}>Nenhuma notificação</div>
+                <div style={{ fontSize: 13, color: '#999' }}>Atualizações dos seus pedidos</div>
+              </div>
+            )}
+
+            {contaTab === 'favoritos' && (
+              <div style={{ textAlign: 'center', padding: '24px 0' }}>
+                <div style={{ fontSize: 40, marginBottom: 12 }}>⭐</div>
+                <div style={{ fontWeight: 700, fontSize: 15, color: 'var(--text)', marginBottom: 6 }}>Nenhum favorito</div>
+                <div style={{ fontSize: 13, color: '#999' }}>Favorite lojas e produtos</div>
+              </div>
             )}
           </div>
         </div>
