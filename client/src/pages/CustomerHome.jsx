@@ -117,9 +117,6 @@ export default function CustomerHome() {
             onClick={() => navigate('/customer')}>
             &larr; Lojas
           </button>
-          <div style={{ minWidth: 0 }}>
-            <div className="header-title">{store?.name || 'Minha Conta'}</div>
-          </div>
         </div>
         <div className="header-right" style={{ gap: 8 }}>
           <div onClick={() => {
