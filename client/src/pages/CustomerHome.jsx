@@ -2,6 +2,16 @@ import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useSocket } from '../contexts/SocketContext';
+import { MapContainer, TileLayer, Marker } from 'react-leaflet';
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
+
+delete L.Icon.Default.prototype._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon-2x.png',
+  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
+});
 
 const statusLabels = {
   pending: 'Aguardando', confirmed: 'Confirmado', preparing: 'Preparando',
@@ -165,20 +175,31 @@ export default function CustomerHome() {
       navigator.geolocation.getCurrentPosition(
         async (pos) => {
           const { latitude, longitude } = pos.coords;
+          let foundAddr = '';
           try {
             const res = await fetch(`/api/orders/reverse-geocode?lat=${latitude}&lng=${longitude}`);
             const data = await res.json();
             if (data.display_name) {
-              setAddrForm(data.display_name);
-              setAddrMsg('Endereço preenchido pelo GPS! Confira e salve.');
+              foundAddr = data.display_name;
             } else {
-              setAddrForm(data.error || `${latitude.toFixed(5)}, ${longitude.toFixed(5)}`);
               setAddrMsg(data.error || 'Endereço não encontrado. Digite manualmente.');
             }
           } catch (err) {
             console.error('Reverse geocode error:', err);
-            setAddrForm(`${latitude.toFixed(5)}, ${longitude.toFixed(5)}`);
             setAddrMsg('Erro ao buscar endereço. Digite manualmente.');
+          }
+          if (foundAddr) {
+            setAddrForm(foundAddr);
+            const saveRes = await apiFetch('/auth/profile', {
+              method: 'PATCH',
+              body: JSON.stringify({ address: foundAddr, lat: latitude, lng: longitude })
+            });
+            if (saveRes.ok) {
+              setAddrMsg('Endereço salvo com sucesso!');
+              window.location.reload();
+            } else {
+              setAddrMsg('Endereço preenchido. Clique em Salvar.');
+            }
           }
           setSavingAddr(false);
           setTimeout(() => setAddrMsg(''), 4000);
@@ -384,9 +405,20 @@ export default function CustomerHome() {
                   </div>
                 )}
                 {user?.lat && user?.lng && (
-                  <div style={{ borderRadius: 8, overflow: 'hidden', border: '1px solid var(--border)', marginBottom: 12 }}>
-                    <img src={`https://staticmap.openstreetmap.de/staticmap.php?center=${user.lat},${user.lng}&zoom=16&size=400x200&markers=${user.lat},${user.lng},red-pushpin`}
-                      alt="Mapa" style={{ width: '100%', height: 200, objectFit: 'cover', display: 'block' }} />
+                  <div style={{ height: 200, borderRadius: 8, overflow: 'hidden', border: '1px solid var(--border)', marginBottom: 12 }}>
+                    <MapContainer
+                      center={[user.lat, user.lng]}
+                      zoom={16}
+                      style={{ height: '100%', width: '100%' }}
+                      key={`conta-${user.lat}-${user.lng}`}
+                      scrollWheelZoom={false}
+                    >
+                      <TileLayer
+                        attribution='&copy; OpenStreetMap'
+                        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                      />
+                      <Marker position={[user.lat, user.lng]} />
+                    </MapContainer>
                   </div>
                 )}
                 {addrMsg && <div style={{ fontSize: 13, fontWeight: 600, color: addrMsg.includes('Erro') || addrMsg.includes('não') ? '#C62828' : '#2E7D32', marginBottom: 8 }}>{addrMsg}</div>}
@@ -471,19 +503,12 @@ export default function CustomerHome() {
             </>
           )}
           <div className="flex-row">
-            <button className={`btn btn-sm ${mainTab === 'menu' ? 'btn-primary' : 'btn-outline'}`}
-              onClick={() => setMainTab('menu')}>Cardápio</button>
-            <button className={`btn btn-sm ${mainTab === 'orders' ? 'btn-primary' : 'btn-outline'}`}
-              onClick={() => { setMainTab('orders'); loadOrders(); }}>
-              Meus Pedidos
-            </button>
           </div>
         </div>
 
-        {mainTab === 'menu' && renderCardapio()}
-        {mainTab === 'orders' && renderPedidos()}
+        {renderCardapio()}
 
-        {Object.keys(cart).length > 0 && mainTab === 'menu' && (
+        {Object.keys(cart).length > 0 && (
           <div style={{
             position: 'fixed', bottom: 0, left: 0, right: 0,
             background: 'white', padding: 16, boxShadow: '0 -4px 20px rgba(0,0,0,0.1)',
