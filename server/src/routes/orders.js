@@ -141,13 +141,34 @@ router.get('/geocode', async (req, res) => {
   const { q } = req.query;
   if (!q || q.length < 3) return res.json([]);
   try {
-    const resp = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(q)}&limit=5&countrycodes=BR`, {
+    const resp = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(q)}&limit=5&countrycodes=BR&addressdetails=1`, {
       headers: { 'User-Agent': 'PedeAcai/1.0' }
     });
     const data = await resp.json();
     res.json(data);
   } catch {
     res.json([]);
+  }
+});
+
+router.get('/cep/:cep', async (req, res) => {
+  const cep = req.params.cep.replace(/\D/g, '');
+  if (cep.length !== 8) return res.json({ error: 'CEP inválido' });
+  try {
+    const resp = await fetch(`https://brasilapi.com.br/api/cep/v2/${cep}`);
+    if (!resp.ok) return res.json({ error: 'CEP não encontrado' });
+    const data = await resp.json();
+    if (data.erro) return res.json({ error: 'CEP não encontrado' });
+    res.json({
+      cep: data.cep,
+      street: data.street,
+      neighborhood: data.neighborhood,
+      city: data.city,
+      state: data.state,
+      display_name: `${data.street}, ${data.neighborhood} - ${data.city}/${data.state}`
+    });
+  } catch {
+    res.json({ error: 'Erro ao consultar CEP' });
   }
 });
 

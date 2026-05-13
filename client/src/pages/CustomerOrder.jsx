@@ -44,7 +44,11 @@ export default function CustomerOrder() {
   const [geocoding, setGeocoding] = useState(false);
   const [showMap, setShowMap] = useState(false);
   const [addrSaved, setAddrSaved] = useState(false);
+  const [editAddr, setEditAddr] = useState(false);
   const [splitLiter, setSplitLiter] = useState(false);
+  const [cep, setCep] = useState('');
+  const [cepLoading, setCepLoading] = useState(false);
+  const [distanceWarning, setDistanceWarning] = useState('');
 
   useEffect(() => {
     if (orderItems.some(i => (i.size_ml || product?.size_ml) >= 1000)) {
@@ -91,10 +95,9 @@ export default function CustomerOrder() {
   async function geocodeAddress() {
     if (!address) return;
     setGeocoding(true);
+    setError('');
     try {
-      const res = await fetch(
-        fetch(`/api/orders/geocode?q=${encodeURIComponent(address)}`)
-      );
+      const res = await fetch(`/api/orders/geocode?q=${encodeURIComponent(address)}`);
       const data = await res.json();
       if (data.length > 0) {
         const newLat = parseFloat(data[0].lat);
@@ -104,16 +107,72 @@ export default function CustomerOrder() {
         setMapCenter([newLat, newLng]);
         setShowMap(true);
         updateDeliveryFee(newLat, newLng);
+        checkDistanceWarning(newLat, newLng);
       } else {
-        setError('Endereço não encontrado. Tente um endereço mais específico.');
+        setError('Endereco nao encontrado. Tente um endereco mais especifico ou o CEP.');
         setTimeout(() => setError(''), 4000);
       }
     } catch {
-      setError('Erro ao buscar endereço.');
+      setError('Erro ao buscar endereco.');
       setTimeout(() => setError(''), 4000);
     } finally {
       setGeocoding(false);
     }
+  }
+
+  async function lookupCep() {
+    const cleaned = cep.replace(/\D/g, '');
+    if (cleaned.length !== 8) return;
+    setCepLoading(true);
+    setError('');
+    try {
+      const res = await fetch(`/api/orders/cep/${cleaned}`);
+      const data = await res.json();
+      if (data.error) {
+        setError(data.error);
+        setTimeout(() => setError(''), 4000);
+        return;
+      }
+      const fullAddr = data.display_name;
+      setAddress(fullAddr);
+      const geoRes = await fetch(`/api/orders/geocode?q=${encodeURIComponent(fullAddr)}`);
+      const geoData = await geoRes.json();
+      if (geoData.length > 0) {
+        const newLat = parseFloat(geoData[0].lat);
+        const newLng = parseFloat(geoData[0].lon);
+        setLat(newLat);
+        setLng(newLng);
+        setMapCenter([newLat, newLng]);
+        setShowMap(true);
+        updateDeliveryFee(newLat, newLng);
+        checkDistanceWarning(newLat, newLng);
+      }
+      setEditAddr(true);
+    } catch {
+      setError('Erro ao consultar CEP.');
+      setTimeout(() => setError(''), 4000);
+    } finally {
+      setCepLoading(false);
+    }
+  }
+
+  function checkDistanceWarning(newLat, newLng) {
+    if (user?.lat && user?.lng) {
+      const d = calcDistance(user.lat, user.lng, newLat, newLng);
+      if (d > 5) {
+        setDistanceWarning(`Voce esta a ${d.toFixed(1)}km do seu endereco cadastrado. Confirme se o endereco esta correto.`);
+      } else {
+        setDistanceWarning('');
+      }
+    }
+  }
+
+  function calcDistance(lat1, lng1, lat2, lng2) {
+    const R = 6371;
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLng = (lng2 - lng1) * Math.PI / 180;
+    const a = Math.sin(dLat / 2) ** 2 + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLng / 2) ** 2;
+    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   }
 
   function handleMapClick(clickLat, clickLng) {
@@ -238,30 +297,50 @@ export default function CustomerOrder() {
 
             <div className="form-group">
               <label className="label">Endereco de entrega</label>
-              {user?.address ? (
+              {user?.address && !editAddr ? (
                 <div>
                   <div style={{ fontSize: 15, fontWeight: 600, color: '#333', marginBottom: 6 }}>{user.address}</div>
-                  <span className="text-xs text-muted">
-                    Para alterar, va em <a href="/customer?tab=conta" style={{ color: '#6A1B9A', fontWeight: 600 }}>Minha Conta</a>
-                  </span>
+                  <button type="button" className="btn btn-sm btn-outline"
+                    onClick={() => { setEditAddr(true); setAddress(user.address); }}>
+                    Alterar endereco
+                  </button>
                   <input type="hidden" value={user.address} />
                 </div>
               ) : (
-                <div className="flex-row" style={{ gap: 8 }}>
-                  <input className="input" type="text" value={address} onChange={e => setAddress(e.target.value)}
-                    onBlur={() => { if (address.length > 10) geocodeAddress(); }}
-                    placeholder="Rua, numero, bairro - Cidade" required
-                    style={{ flex: 1 }} />
-                  <button type="button" className="btn btn-sm btn-secondary"
-                    onClick={geocodeAddress} disabled={geocoding}
-                    style={{ width: 'auto', whiteSpace: 'nowrap' }}>
-                    {geocoding ? '...' : 'Buscar'}
-                  </button>
-                </div>
+                <>
+                  <div className="flex-row" style={{ gap: 8, marginBottom: 8 }}>
+                    <input className="input" type="text" value={cep}
+                      onChange={e => { setCep(e.target.value.replace(/\D/g, '').slice(0, 8)); }}
+                      placeholder="CEP (ex: 01001000)" maxLength={8}
+                      style={{ width: 140, flexShrink: 0 }} />
+                    <button type="button" className="btn btn-sm btn-secondary"
+                      onClick={lookupCep} disabled={cepLoading || cep.replace(/\D/g, '').length !== 8}
+                      style={{ whiteSpace: 'nowrap' }}>
+                      {cepLoading ? '...' : 'Buscar CEP'}
+                    </button>
+                  </div>
+                  <div className="flex-row" style={{ gap: 8 }}>
+                    <input className="input" type="text" value={address} onChange={e => setAddress(e.target.value)}
+                      onBlur={() => { if (address.length > 10) geocodeAddress(); }}
+                      placeholder="Rua, numero, bairro - Cidade" required
+                      style={{ flex: 1 }} />
+                    <button type="button" className="btn btn-sm btn-secondary"
+                      onClick={geocodeAddress} disabled={geocoding}
+                      style={{ width: 'auto', whiteSpace: 'nowrap' }}>
+                      {geocoding ? '...' : 'Buscar'}
+                    </button>
+                  </div>
+                </>
               )}
             </div>
 
-            {(showMap || lat) && (
+            {distanceWarning && (
+              <div style={{ background: '#FFF3E0', color: '#E65100', padding: 12, borderRadius: 8, marginBottom: 12, fontSize: 14, fontWeight: 600 }}>
+                {distanceWarning}
+              </div>
+            )}
+
+            {showMap && lat && editAddr && (
               <div className="form-group">
                 <label className="label">Confirme no mapa (clique para ajustar)</label>
                 <div style={{ height: 250, borderRadius: 8, overflow: 'hidden', border: '1px solid var(--border)' }}>
@@ -284,11 +363,15 @@ export default function CustomerOrder() {
                             const pos = e.target.getLatLng();
                             setLat(pos.lat);
                             setLng(pos.lng);
+                            checkDistanceWarning(pos.lat, pos.lng);
                           }
                         }}
                       />
                     )}
-                    <MapClickHandler onClick={handleMapClick} />
+                    <MapClickHandler onClick={(clickLat, clickLng) => {
+                      handleMapClick(clickLat, clickLng);
+                      checkDistanceWarning(clickLat, clickLng);
+                    }} />
                   </MapContainer>
                 </div>
                 <p className="text-xs text-muted mt-2">Arraste o marcador ou clique para posicionar exatamente.</p>

@@ -10,6 +10,7 @@ CREATE TABLE IF NOT EXISTS users (
   address TEXT DEFAULT '',
   lat REAL DEFAULT NULL,
   lng REAL DEFAULT NULL,
+  photo_url TEXT DEFAULT '',
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 

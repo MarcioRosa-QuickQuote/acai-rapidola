@@ -76,7 +76,7 @@ router.post('/login', async (req, res) => {
   const valid = bcrypt.compareSync(password, user.password_hash);
   if (!valid) return res.status(401).json({ error: 'Telefone ou senha inválidos' });
 
-  const payload = { id: user.id, name: user.name, role: user.role, phone: user.phone, address: user.address || '', lat: user.lat, lng: user.lng };
+  const payload = { id: user.id, name: user.name, role: user.role, phone: user.phone, address: user.address || '', lat: user.lat, lng: user.lng, photo_url: user.photo_url || '' };
   const token = signToken(payload);
 
   let store = null;
@@ -90,7 +90,7 @@ router.post('/login', async (req, res) => {
 
 router.get('/me', authMiddleware, async (req, res) => {
   const { data: user } = await supabase.from('users')
-    .select('id, name, phone, role, address, lat, lng, created_at')
+    .select('id, name, phone, role, address, lat, lng, photo_url, created_at')
     .eq('id', req.user.id).single();
 
   if (!user) return res.status(404).json({ error: 'Usuário não encontrado' });
@@ -105,9 +105,12 @@ router.get('/me', authMiddleware, async (req, res) => {
 });
 
 router.patch('/profile', authMiddleware, async (req, res) => {
-  const { address } = req.body;
+  const { address, lat, lng, photo_url } = req.body;
   const update = {};
   if (address !== undefined) update.address = address;
+  if (lat !== undefined) update.lat = lat;
+  if (lng !== undefined) update.lng = lng;
+  if (photo_url !== undefined) update.photo_url = photo_url;
 
   if (Object.keys(update).length > 0) {
     await supabase.from('users').update(update).eq('id', req.user.id);

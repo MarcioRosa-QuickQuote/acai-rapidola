@@ -32,6 +32,8 @@ export default function CustomerHome() {
   const [addrMsg, setAddrMsg] = useState('');
   const [addressSuggestions, setAddressSuggestions] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [cep, setCep] = useState('');
+  const [cepLoading, setCepLoading] = useState(false);
   const photoRef = useRef(null);
   const navigate = useNavigate();
 
@@ -114,14 +116,20 @@ export default function CustomerHome() {
         <div className="header-right" style={{ gap: 8 }}>
           <div onClick={() => setView(view === 'conta' ? 'menu' : 'conta')}
             style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
-            <div style={{
-              width: 34, height: 34, borderRadius: '50%',
-              background: 'linear-gradient(135deg, #CE93D8, #AB47BC)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              color: 'white', fontWeight: 700, fontSize: 15, flexShrink: 0, lineHeight: 1
-            }}>
-              {user?.name?.charAt(0)?.toUpperCase()}
-            </div>
+            {user?.photo_url ? (
+              <img src={user.photo_url} alt="Foto"
+                style={{ width: 34, height: 34, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }}
+                onError={e => { e.target.style.display = 'none'; }} />
+            ) : (
+              <div style={{
+                width: 34, height: 34, borderRadius: '50%',
+                background: 'linear-gradient(135deg, #CE93D8, #AB47BC)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                color: 'white', fontWeight: 700, fontSize: 15, flexShrink: 0, lineHeight: 1
+              }}>
+                {user?.name?.charAt(0)?.toUpperCase()}
+              </div>
+            )}
             <div>
               <div style={{ fontSize: 13, fontWeight: 700, color: 'white', lineHeight: 1.2 }}>{user?.name?.split(' ')[0]}</div>
               <div onClick={(e) => { e.stopPropagation(); logout(); }}
@@ -144,8 +152,28 @@ export default function CustomerHome() {
 
     async function saveAddress() {
       setSavingAddr(true);
-      const data = await apiFetch('/auth/profile', { method: 'PATCH', body: JSON.stringify({ address: currentAddr }) });
-      setAddrMsg(data.ok ? 'Endereco salvo!' : 'Erro ao salvar');
+      const newAddr = addrForm || '';
+      const data = await apiFetch('/auth/profile', { method: 'PATCH', body: JSON.stringify({ address: newAddr }) });
+      if (data.ok) {
+        setAddrMsg('Endereco salvo!');
+        window.location.reload();
+      } else {
+        setAddrMsg(data.error || 'Erro ao salvar');
+      }
+      setTimeout(() => setAddrMsg(''), 3000);
+      setSavingAddr(false);
+    }
+
+    async function clearAddress() {
+      setSavingAddr(true);
+      setAddrForm('');
+      const data = await apiFetch('/auth/profile', { method: 'PATCH', body: JSON.stringify({ address: '', lat: null, lng: null }) });
+      if (data.ok) {
+        setAddrMsg('Endereco removido!');
+        window.location.reload();
+      } else {
+        setAddrMsg(data.error || 'Erro ao remover');
+      }
       setTimeout(() => setAddrMsg(''), 3000);
       setSavingAddr(false);
     }
@@ -160,6 +188,28 @@ export default function CustomerHome() {
       } catch { setShowSuggestions(false); }
     }
 
+    async function lookupCep() {
+      const cleaned = cep.replace(/\D/g, '');
+      if (cleaned.length !== 8) return;
+      setCepLoading(true);
+      try {
+        const res = await fetch(`/api/orders/cep/${cleaned}`);
+        const data = await res.json();
+        if (data.error) {
+          setAddrMsg(data.error);
+          setTimeout(() => setAddrMsg(''), 3000);
+          return;
+        }
+        setAddrForm(data.display_name);
+        setShowSuggestions(false);
+      } catch {
+        setAddrMsg('Erro ao consultar CEP');
+        setTimeout(() => setAddrMsg(''), 3000);
+      } finally {
+        setCepLoading(false);
+      }
+    }
+
     function selectAddress(suggestion) {
       setAddrForm(suggestion.display_name);
       setShowSuggestions(false);
@@ -168,11 +218,16 @@ export default function CustomerHome() {
     async function uploadPhoto(file) {
       const formData = new FormData();
       formData.append('image', file);
-      await fetch('/api/products/upload-image', {
+      const res = await fetch('/api/products/upload-image', {
         method: 'POST',
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
         body: formData
       });
+      const data = await res.json();
+      if (data.url) {
+        await apiFetch('/auth/profile', { method: 'PATCH', body: JSON.stringify({ photo_url: data.url }) });
+        window.location.reload();
+      }
     }
 
     return (
@@ -181,14 +236,20 @@ export default function CustomerHome() {
         <div className="card" style={{ textAlign: 'left' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
             <label style={{ cursor: 'pointer', position: 'relative' }}>
-              <div style={{
-                width: 56, height: 56, borderRadius: '50%',
-                background: 'linear-gradient(135deg, #CE93D8, #AB47BC)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                color: 'white', fontWeight: 700, fontSize: 24
-              }}>
-                {user?.name?.charAt(0)?.toUpperCase()}
-              </div>
+              {user?.photo_url ? (
+                <img src={user.photo_url} alt="Foto"
+                  style={{ width: 56, height: 56, borderRadius: '50%', objectFit: 'cover' }}
+                  onError={e => { e.target.style.display = 'none'; }} />
+              ) : (
+                <div style={{
+                  width: 56, height: 56, borderRadius: '50%',
+                  background: 'linear-gradient(135deg, #CE93D8, #AB47BC)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  color: 'white', fontWeight: 700, fontSize: 24
+                }}>
+                  {user?.name?.charAt(0)?.toUpperCase()}
+                </div>
+              )}
               <input type="file" accept="image/*" ref={photoRef}
                 onChange={e => { if (e.target.files?.[0]) uploadPhoto(e.target.files[0]); }}
                 style={{ display: 'none' }} />
@@ -207,6 +268,17 @@ export default function CustomerHome() {
 
           <div style={{ marginBottom: 8, position: 'relative' }}>
             <label className="label" style={{ fontWeight: 700 }}>Endereco de entrega</label>
+            <div className="flex-row" style={{ gap: 8, marginBottom: 8 }}>
+              <input className="input" type="text" value={cep}
+                onChange={e => { setCep(e.target.value.replace(/\D/g, '').slice(0, 8)); }}
+                placeholder="CEP (ex: 01001000)" maxLength={8}
+                style={{ width: 140, flexShrink: 0 }} />
+              <button type="button" className="btn btn-sm btn-secondary"
+                onClick={lookupCep} disabled={cepLoading || cep.replace(/\D/g, '').length !== 8}
+                style={{ whiteSpace: 'nowrap' }}>
+                {cepLoading ? '...' : 'Buscar CEP'}
+              </button>
+            </div>
             <input className="input" type="text" value={currentAddr}
               onChange={e => { setAddrForm(e.target.value); searchAddress(e.target.value); }}
               onFocus={() => { if (addressSuggestions.length > 0) setShowSuggestions(true); }}
@@ -227,10 +299,18 @@ export default function CustomerHome() {
               </div>
             )}
           </div>
-          {addrMsg && <div style={{ fontSize: 13, fontWeight: 600, color: addrMsg.includes('Erro') ? '#C62828' : '#2E7D32', marginBottom: 8 }}>{addrMsg}</div>}
-          <button className="btn btn-primary btn-sm" onClick={saveAddress} disabled={savingAddr}>
-            {savingAddr ? 'Salvando...' : 'Salvar Endereco'}
-          </button>
+          {addrMsg && <div style={{ fontSize: 13, fontWeight: 600, color: addrMsg.includes('Erro') || addrMsg.includes('não') ? '#C62828' : '#2E7D32', marginBottom: 8 }}>{addrMsg}</div>}
+          <div style={{ display: 'flex', gap: 8 }}>
+            <button className="btn btn-primary btn-sm" onClick={saveAddress} disabled={savingAddr}>
+              {savingAddr ? 'Salvando...' : 'Salvar Endereco'}
+            </button>
+            {user?.address && (
+              <button className="btn btn-sm" onClick={clearAddress} disabled={savingAddr}
+                style={{ background: '#FFEBEE', color: '#C62828', border: '1px solid #EF9A9A' }}>
+                Limpar Endereco
+              </button>
+            )}
+          </div>
         </div>
       </>
     );
