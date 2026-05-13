@@ -151,6 +151,29 @@ router.get('/geocode', async (req, res) => {
   }
 });
 
+router.get('/reverse-geocode', async (req, res) => {
+  const { lat, lng } = req.query;
+  if (!lat || !lng) return res.json({ error: 'lat e lng obrigatorios' });
+  try {
+    const resp = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&addressdetails=1&countrycodes=BR&zoom=18`, {
+      headers: { 'User-Agent': 'PedeAcai/1.0' }
+    });
+    const data = await resp.json();
+    if (data.error) return res.json({ error: data.error });
+    res.json({
+      display_name: data.display_name,
+      road: data.address?.road || '',
+      suburb: data.address?.suburb || '',
+      city: data.address?.city || data.address?.town || '',
+      state: data.address?.state || '',
+      lat: parseFloat(data.lat),
+      lon: parseFloat(data.lon)
+    });
+  } catch {
+    res.json({ error: 'Erro ao buscar endereco' });
+  }
+});
+
 router.get('/cep/:cep', async (req, res) => {
   const cep = req.params.cep.replace(/\D/g, '');
   if (cep.length !== 8) return res.json({ error: 'CEP inválido' });

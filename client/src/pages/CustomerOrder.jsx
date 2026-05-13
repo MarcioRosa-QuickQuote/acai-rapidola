@@ -49,6 +49,8 @@ export default function CustomerOrder() {
   const [cep, setCep] = useState('');
   const [cepLoading, setCepLoading] = useState(false);
   const [distanceWarning, setDistanceWarning] = useState('');
+  const [gpsLoading, setGpsLoading] = useState(false);
+  const [showCep, setShowCep] = useState(false);
 
   useEffect(() => {
     if (orderItems.some(i => (i.size_ml || product?.size_ml) >= 1000)) {
@@ -173,6 +175,49 @@ export default function CustomerOrder() {
     const dLng = (lng2 - lng1) * Math.PI / 180;
     const a = Math.sin(dLat / 2) ** 2 + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLng / 2) ** 2;
     return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  }
+
+  function useMyLocation() {
+    if (!navigator.geolocation) {
+      setError('Geolocalização não disponível no seu navegador.');
+      setTimeout(() => setError(''), 4000);
+      return;
+    }
+    setGpsLoading(true);
+    setError('');
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        const { latitude, longitude } = pos.coords;
+        setLat(latitude);
+        setLng(longitude);
+        setMapCenter([latitude, longitude]);
+        setShowMap(true);
+        setEditAddr(true);
+        try {
+          const res = await fetch(`/api/orders/reverse-geocode?lat=${latitude}&lng=${longitude}`);
+          const data = await res.json();
+          if (data.display_name) {
+            setAddress(data.display_name);
+          } else {
+            setAddress(`${latitude.toFixed(5)}, ${longitude.toFixed(5)}`);
+          }
+        } catch {
+          setAddress(`${latitude.toFixed(5)}, ${longitude.toFixed(5)}`);
+        }
+        updateDeliveryFee(latitude, longitude);
+        setGpsLoading(false);
+      },
+      (err) => {
+        setGpsLoading(false);
+        if (err.code === 1) {
+          setError('Permissão de localização negada. Digite o endereço manualmente.');
+        } else {
+          setError('Não foi possível obter sua localização. Digite o endereço.');
+        }
+        setTimeout(() => setError(''), 5000);
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 120000 }
+    );
   }
 
   function handleMapClick(clickLat, clickLng) {
@@ -308,28 +353,51 @@ export default function CustomerOrder() {
                 </div>
               ) : (
                 <>
-                  <div className="flex-row" style={{ gap: 8, marginBottom: 8 }}>
-                    <input className="input" type="text" value={cep}
-                      onChange={e => { setCep(e.target.value.replace(/\D/g, '').slice(0, 8)); }}
-                      placeholder="CEP (ex: 01001000)" maxLength={8}
-                      style={{ width: 140, flexShrink: 0 }} />
-                    <button type="button" className="btn btn-sm btn-secondary"
-                      onClick={lookupCep} disabled={cepLoading || cep.replace(/\D/g, '').length !== 8}
-                      style={{ whiteSpace: 'nowrap' }}>
-                      {cepLoading ? '...' : 'Buscar CEP'}
+                  {!lat && (
+                    <button type="button" className="btn btn-outline"
+                      onClick={useMyLocation} disabled={gpsLoading}
+                      style={{ marginBottom: 12, width: '100%', justifyContent: 'flex-start', gap: 10, padding: '12px 16px' }}>
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/>
+                        <line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/>
+                        <line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/>
+                      </svg>
+                      {gpsLoading ? 'Obtendo sua localização...' : 'Usar minha localização atual'}
                     </button>
-                  </div>
+                  )}
                   <div className="flex-row" style={{ gap: 8 }}>
                     <input className="input" type="text" value={address} onChange={e => setAddress(e.target.value)}
-                      onBlur={() => { if (address.length > 10) geocodeAddress(); }}
+                      onBlur={() => { if (address.length > 10 && !lat) geocodeAddress(); }}
                       placeholder="Rua, número, bairro - Cidade" required
                       style={{ flex: 1 }} />
                     <button type="button" className="btn btn-sm btn-secondary"
-                      onClick={geocodeAddress} disabled={geocoding}
+                      onClick={geocodeAddress} disabled={geocoding || !address}
                       style={{ width: 'auto', whiteSpace: 'nowrap' }}>
                       {geocoding ? '...' : 'Buscar'}
                     </button>
                   </div>
+                  {!showCep ? (
+                    <button type="button" onClick={() => setShowCep(true)}
+                      style={{ background: 'none', border: 'none', color: 'var(--primary)', fontSize: 13, fontWeight: 600, cursor: 'pointer', padding: '8px 0', textDecoration: 'underline' }}>
+                      Buscar por CEP
+                    </button>
+                  ) : (
+                    <div className="flex-row" style={{ gap: 8, marginTop: 8 }}>
+                      <input className="input" type="text" value={cep}
+                        onChange={e => { setCep(e.target.value.replace(/\D/g, '').slice(0, 8)); }}
+                        placeholder="CEP (ex: 01001000)" maxLength={8}
+                        style={{ width: 140, flexShrink: 0 }} />
+                      <button type="button" className="btn btn-sm btn-secondary"
+                        onClick={lookupCep} disabled={cepLoading || cep.replace(/\D/g, '').length !== 8}
+                        style={{ whiteSpace: 'nowrap' }}>
+                        {cepLoading ? '...' : 'Buscar CEP'}
+                      </button>
+                      <button type="button" onClick={() => setShowCep(false)}
+                        style={{ background: 'none', border: 'none', color: '#999', fontSize: 20, cursor: 'pointer', padding: '0 4px' }}>
+                        ×
+                      </button>
+                    </div>
+                  )}
                 </>
               )}
             </div>
