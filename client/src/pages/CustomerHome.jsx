@@ -28,7 +28,7 @@ export default function CustomerHome() {
   const [cart, setCart] = useState({});
   const [splitItems, setSplitItems] = useState({});
   const [loading, setLoading] = useState(true);
-  const [addrForm, setAddrForm] = useState('');
+  const [addrForm, setAddrForm] = useState(null);
   const [savingAddr, setSavingAddr] = useState(false);
   const [addrMsg, setAddrMsg] = useState('');
   const [addressSuggestions, setAddressSuggestions] = useState([]);
@@ -155,7 +155,7 @@ export default function CustomerHome() {
   );
 
   function renderConta() {
-    const currentAddr = addrForm || user?.address || '';
+    const currentAddr = addrForm !== null ? addrForm : (user?.address || '');
 
     async function saveAddress() {
       setSavingAddr(true);
