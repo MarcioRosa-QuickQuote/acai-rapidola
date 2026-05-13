@@ -97,7 +97,7 @@ export default function Login() {
 
       {/* Card */}
       <div style={{
-        width: '100%', maxWidth: 420,
+        width: '100%', maxWidth: 440,
         background: 'rgba(255,255,255,0.97)',
         backdropFilter: 'blur(20px)',
         borderRadius: 24,
@@ -124,14 +124,14 @@ export default function Login() {
 
           <img
             src="/logo.png"
-            alt="Logo"
+            alt="Pe de Acai"
             style={{
-              width: 160, height: 160, borderRadius: 26,
+              width: 200, height: 200, borderRadius: 28,
               objectFit: 'contain',
               position: 'relative', zIndex: 1,
-              marginBottom: 6
+              marginBottom: 4,
+              filter: 'drop-shadow(0 4px 12px rgba(0,0,0,0.25))'
             }}
-            onError={e => { e.target.style.display = 'none'; }}
           />
           <p style={{
             opacity: 0.75, fontSize: 13, fontWeight: 400,

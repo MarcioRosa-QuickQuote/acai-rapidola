@@ -2,6 +2,7 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from './contexts/AuthContext';
 import Login from './pages/Login';
 import Register from './pages/Register';
+import CustomerStoreList from './pages/CustomerStoreList';
 import CustomerHome from './pages/CustomerHome';
 import CustomerOrder from './pages/CustomerOrder';
 import CustomerPayment from './pages/CustomerPayment';
@@ -33,7 +34,13 @@ export default function App() {
       <Route path="/login" element={user ? <Navigate to={`/${user.role}`} /> : <Login />} />
       <Route path="/register" element={user ? <Navigate to={`/${user.role}`} /> : <Register />} />
 
-      <Route path="/customer/*" element={
+      <Route path="/customer" element={
+        <ProtectedRoute role="customer"><CustomerStoreList /></ProtectedRoute>
+      } />
+      <Route path="/customer/conta" element={
+        <ProtectedRoute role="customer"><CustomerHome /></ProtectedRoute>
+      } />
+      <Route path="/customer/menu/:storeId" element={
         <ProtectedRoute role="customer"><CustomerHome /></ProtectedRoute>
       } />
       <Route path="/customer/order" element={
@@ -55,7 +62,7 @@ export default function App() {
       } />
 
       <Route path="*" element={
-        user ? <Navigate to={`/${user.role}`} /> : <Navigate to="/login" />
+        user ? <Navigate to={`/${user.role === 'customer' ? 'customer' : user.role}`} /> : <Navigate to="/login" />
       } />
     </Routes>
   );

@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useSocket } from '../contexts/SocketContext';
 
@@ -18,6 +18,7 @@ const statusColors = {
 export default function CustomerHome() {
   const { user, apiFetch, logout } = useAuth();
   const { socket, joinOrder } = useSocket();
+  const { storeId } = useParams();
   const [store, setStore] = useState(null);
   const [products, setProducts] = useState([]);
   const [orders, setOrders] = useState([]);
@@ -42,17 +43,22 @@ export default function CustomerHome() {
   }, [searchParams]);
 
   useEffect(() => {
-    apiFetch('/products').then(d => {
+    if (!storeId) {
+      setView('conta');
+      setLoading(false);
+      return;
+    }
+    apiFetch(`/products?store_id=${storeId}`).then(d => {
       if (d.data) setProducts(d.data);
       setCart({});
       setSplitItems({});
       setLoading(false);
     });
-    apiFetch('/stores').then(d => {
-      if (d.data && d.data.length > 0) setStore(d.data[0]);
+    apiFetch(`/stores/${storeId}`).then(d => {
+      if (d.ok) setStore(d);
     });
     loadOrders();
-  }, []);
+  }, [storeId]);
 
   useEffect(() => {
     if (!socket) return;
@@ -93,7 +99,7 @@ export default function CustomerHome() {
 
   function goToOrder(productId) {
     const prod = products.find(pp => pp.id === productId);
-    if (prod) {
+    if (prod && store) {
       navigate('/customer/order', {
         state: { product: prod, store, quantity: cart[productId] || 1, splitCount: splitItems[productId] || 0 }
       });
@@ -106,16 +112,22 @@ export default function CustomerHome() {
     <div>
       <div className="header">
         <div className="header-left">
-          <img src={store?.logo || '/logo.png'} alt="Logo"
-            style={{ width: 52, height: 52, borderRadius: 10, objectFit: 'contain', flexShrink: 0 }}
-            onError={e => { e.target.style.display = 'none'; }} />
+          <button className="btn btn-sm"
+            style={{ background: 'rgba(255,255,255,0.15)', color: 'white', fontSize: 13, padding: '6px 10px' }}
+            onClick={() => navigate('/customer')}>
+            &larr; Lojas
+          </button>
+          <img src="/logo.png" alt="Logo"
+            style={{ width: 40, height: 40, borderRadius: 10, objectFit: 'contain', flexShrink: 0 }} />
           <div style={{ minWidth: 0 }}>
-            <div className="header-title">{store?.name || 'Pe de Acai'}</div>
+            <div className="header-title">{store?.name || 'Minha Conta'}</div>
           </div>
         </div>
         <div className="header-right" style={{ gap: 8 }}>
-          <div onClick={() => setView(view === 'conta' ? 'menu' : 'conta')}
-            style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
+          <div onClick={() => {
+            if (storeId) setView(view === 'conta' ? 'menu' : 'conta');
+          }}
+            style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: storeId ? 'pointer' : 'default' }}>
             {user?.photo_url ? (
               <img src={user.photo_url} alt="Foto"
                 style={{ width: 34, height: 34, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }}
