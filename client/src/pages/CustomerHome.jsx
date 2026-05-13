@@ -157,6 +157,36 @@ export default function CustomerHome() {
   function renderConta() {
     const currentAddr = addrForm !== null ? addrForm : (user?.address || '');
 
+    async function useMyLocationConta() {
+      if (!navigator.geolocation) { setAddrMsg('Geolocalização não disponível'); setTimeout(() => setAddrMsg(''), 3000); return; }
+      setSavingAddr(true);
+      navigator.geolocation.getCurrentPosition(
+        async (pos) => {
+          const { latitude, longitude } = pos.coords;
+          try {
+            const res = await fetch(`/api/orders/reverse-geocode?lat=${latitude}&lng=${longitude}`);
+            const data = await res.json();
+            if (data.display_name) {
+              setAddrForm(data.display_name);
+              setAddrMsg('Endereço preenchido pelo GPS! Confira e salve.');
+            } else {
+              setAddrForm(`${latitude.toFixed(5)}, ${longitude.toFixed(5)}`);
+            }
+          } catch {
+            setAddrForm(`${latitude.toFixed(5)}, ${longitude.toFixed(5)}`);
+          }
+          setSavingAddr(false);
+          setTimeout(() => setAddrMsg(''), 4000);
+        },
+        () => {
+          setAddrMsg('Permissão de localização negada');
+          setSavingAddr(false);
+          setTimeout(() => setAddrMsg(''), 3000);
+        },
+        { enableHighAccuracy: true, timeout: 10000, maximumAge: 120000 }
+      );
+    }
+
     async function saveAddress() {
       setSavingAddr(true);
       const newAddr = addrForm || '';
@@ -275,6 +305,16 @@ export default function CustomerHome() {
 
           <div style={{ marginBottom: 8, position: 'relative' }}>
             <label className="label" style={{ fontWeight: 700 }}>Endereço de entrega</label>
+            <button type="button" className="btn btn-outline btn-sm"
+              onClick={useMyLocationConta} disabled={savingAddr}
+              style={{ width: '100%', justifyContent: 'flex-start', gap: 8, marginBottom: 8, padding: '10px 14px' }}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/>
+                <line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/>
+                <line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/>
+              </svg>
+              {savingAddr ? 'Obtendo localização...' : 'Usar minha localização atual'}
+            </button>
             <div className="flex-row" style={{ gap: 8, marginBottom: 8 }}>
               <input className="input" type="text" value={cep}
                 onChange={e => { setCep(e.target.value.replace(/\D/g, '').slice(0, 8)); }}

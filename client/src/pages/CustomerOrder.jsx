@@ -51,6 +51,8 @@ export default function CustomerOrder() {
   const [distanceWarning, setDistanceWarning] = useState('');
   const [gpsLoading, setGpsLoading] = useState(false);
   const [showCep, setShowCep] = useState(false);
+  const [addressSuggestions, setAddressSuggestions] = useState([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
 
   useEffect(() => {
     if (orderItems.some(i => (i.size_ml || product?.size_ml) >= 1000)) {
@@ -120,6 +122,22 @@ export default function CustomerOrder() {
     } finally {
       setGeocoding(false);
     }
+  }
+
+  async function searchAddress(q) {
+    if (q.length < 4) { setAddressSuggestions([]); setShowSuggestions(false); return; }
+    try {
+      const res = await fetch(`/api/orders/geocode?q=${encodeURIComponent(q)}`);
+      const data = await res.json();
+      setAddressSuggestions(data || []);
+      setShowSuggestions((data || []).length > 0);
+    } catch { setShowSuggestions(false); }
+  }
+
+  function selectSuggestion(suggestion) {
+    setAddress(suggestion.display_name);
+    setAddressSuggestions([]);
+    setShowSuggestions(false);
   }
 
   async function lookupCep() {
@@ -365,16 +383,34 @@ export default function CustomerOrder() {
                       {gpsLoading ? 'Obtendo sua localização...' : 'Usar minha localização atual'}
                     </button>
                   )}
-                  <div className="flex-row" style={{ gap: 8 }}>
-                    <input className="input" type="text" value={address} onChange={e => setAddress(e.target.value)}
-                      onBlur={() => { if (address.length > 10 && !lat) geocodeAddress(); }}
-                      placeholder="Rua, número, bairro - Cidade" required
-                      style={{ flex: 1 }} />
-                    <button type="button" className="btn btn-sm btn-secondary"
-                      onClick={geocodeAddress} disabled={geocoding || !address}
-                      style={{ width: 'auto', whiteSpace: 'nowrap' }}>
-                      {geocoding ? '...' : 'Buscar'}
-                    </button>
+                  <div style={{ position: 'relative' }}>
+                    <div className="flex-row" style={{ gap: 8 }}>
+                      <input className="input" type="text" value={address}
+                        onChange={e => { setAddress(e.target.value); searchAddress(e.target.value); }}
+                        onFocus={() => { if (addressSuggestions.length > 0) setShowSuggestions(true); }}
+                        onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
+                        placeholder="Rua, número, bairro - Cidade" required
+                        style={{ flex: 1 }} />
+                      <button type="button" className="btn btn-sm btn-secondary"
+                        onClick={geocodeAddress} disabled={geocoding || !address}
+                        style={{ width: 'auto', whiteSpace: 'nowrap' }}>
+                        {geocoding ? '...' : 'Buscar'}
+                      </button>
+                    </div>
+                    {showSuggestions && addressSuggestions.length > 0 && (
+                      <div style={{
+                        position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 10,
+                        background: 'white', border: '1px solid #DDD', borderRadius: 8, maxHeight: 200, overflow: 'auto',
+                        boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+                      }}>
+                        {addressSuggestions.map((s, i) => (
+                          <div key={i} onMouseDown={() => selectSuggestion(s)}
+                            style={{ padding: '10px 14px', cursor: 'pointer', fontSize: 13, borderBottom: '1px solid #F0F0F0' }}>
+                            {s.display_name}
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
                   {!showCep ? (
                     <button type="button" onClick={() => setShowCep(true)}
