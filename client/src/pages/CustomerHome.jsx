@@ -25,6 +25,7 @@ export default function CustomerHome() {
   const [view, setView] = useState('menu');
   const [mainTab, setMainTab] = useState('menu');
   const [contaTab, setContaTab] = useState('enderecos');
+  const [showCepConta, setShowCepConta] = useState(false);
   const [searchParams] = useSearchParams();
   const [cart, setCart] = useState({});
   const [splitItems, setSplitItems] = useState({});
@@ -171,10 +172,13 @@ export default function CustomerHome() {
               setAddrForm(data.display_name);
               setAddrMsg('Endereço preenchido pelo GPS! Confira e salve.');
             } else {
-              setAddrForm(`${latitude.toFixed(5)}, ${longitude.toFixed(5)}`);
+              setAddrForm(data.error || `${latitude.toFixed(5)}, ${longitude.toFixed(5)}`);
+              setAddrMsg(data.error || 'Endereço não encontrado. Digite manualmente.');
             }
-          } catch {
+          } catch (err) {
+            console.error('Reverse geocode error:', err);
             setAddrForm(`${latitude.toFixed(5)}, ${longitude.toFixed(5)}`);
+            setAddrMsg('Erro ao buscar endereço. Digite manualmente.');
           }
           setSavingAddr(false);
           setTimeout(() => setAddrMsg(''), 4000);
@@ -305,7 +309,7 @@ export default function CustomerHome() {
               { key: 'pagamentos', label: 'Pagamentos', icon: '💳' },
               { key: 'conversas', label: 'Conversas', icon: '💬' },
               { key: 'notificacoes', label: 'Notificações', icon: '🔔' },
-              { key: 'favoritos', label: 'Favoritos', icon: '⭐' },
+              { key: 'favoritos', label: 'Favoritos', icon: '❤️' },
             ].map(tab => (
               <button key={tab.key}
                 onClick={() => setContaTab(tab.key)}
@@ -337,22 +341,12 @@ export default function CustomerHome() {
                   </svg>
                   {savingAddr ? 'Obtendo localização...' : 'Usar minha localização atual'}
                 </button>
-                <div className="flex-row" style={{ gap: 8, marginBottom: 8 }}>
-                  <input className="input" type="text" value={cep}
-                    onChange={e => { setCep(e.target.value.replace(/\D/g, '').slice(0, 8)); }}
-                    placeholder="CEP (ex: 01001000)" maxLength={8}
-                    style={{ width: 140, flexShrink: 0 }} />
-                  <button type="button" className="btn btn-sm btn-secondary"
-                    onClick={lookupCep} disabled={cepLoading || cep.replace(/\D/g, '').length !== 8}
-                    style={{ whiteSpace: 'nowrap' }}>
-                    {cepLoading ? '...' : 'Buscar CEP'}
-                  </button>
-                </div>
                 <input className="input" type="text" value={currentAddr}
                   onChange={e => { setAddrForm(e.target.value); searchAddress(e.target.value); }}
                   onFocus={() => { if (addressSuggestions.length > 0) setShowSuggestions(true); }}
                   onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
-                  placeholder="Rua, número, bairro - Cidade" />
+                  placeholder="Rua, número, bairro - Cidade"
+                  style={{ marginBottom: 8 }} />
                 {showSuggestions && addressSuggestions.length > 0 && (
                   <div style={{
                     position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 10,
@@ -367,8 +361,36 @@ export default function CustomerHome() {
                     ))}
                   </div>
                 )}
-                {addrMsg && <div style={{ fontSize: 13, fontWeight: 600, color: addrMsg.includes('Erro') || addrMsg.includes('não') ? '#C62828' : '#2E7D32', marginTop: 8 }}>{addrMsg}</div>}
-                <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
+                {!showCepConta ? (
+                  <button type="button" onClick={() => setShowCepConta(true)}
+                    style={{ background: 'none', border: 'none', color: 'var(--primary)', fontSize: 13, fontWeight: 600, cursor: 'pointer', padding: '4px 0', textDecoration: 'underline', marginBottom: 8 }}>
+                    Buscar por CEP
+                  </button>
+                ) : (
+                  <div className="flex-row" style={{ gap: 8, marginBottom: 8 }}>
+                    <input className="input" type="text" value={cep}
+                      onChange={e => { setCep(e.target.value.replace(/\D/g, '').slice(0, 8)); }}
+                      placeholder="CEP (ex: 01001000)" maxLength={8}
+                      style={{ width: 140, flexShrink: 0 }} />
+                    <button type="button" className="btn btn-sm btn-secondary"
+                      onClick={lookupCep} disabled={cepLoading || cep.replace(/\D/g, '').length !== 8}
+                      style={{ whiteSpace: 'nowrap' }}>
+                      {cepLoading ? '...' : 'Buscar CEP'}
+                    </button>
+                    <button type="button" onClick={() => setShowCepConta(false)}
+                      style={{ background: 'none', border: 'none', color: '#999', fontSize: 20, cursor: 'pointer', padding: '0 4px' }}>
+                      ×
+                    </button>
+                  </div>
+                )}
+                {user?.lat && user?.lng && (
+                  <div style={{ borderRadius: 8, overflow: 'hidden', border: '1px solid var(--border)', marginBottom: 12 }}>
+                    <img src={`https://staticmap.openstreetmap.de/staticmap.php?center=${user.lat},${user.lng}&zoom=16&size=400x200&markers=${user.lat},${user.lng},red-pushpin`}
+                      alt="Mapa" style={{ width: '100%', height: 200, objectFit: 'cover', display: 'block' }} />
+                  </div>
+                )}
+                {addrMsg && <div style={{ fontSize: 13, fontWeight: 600, color: addrMsg.includes('Erro') || addrMsg.includes('não') ? '#C62828' : '#2E7D32', marginBottom: 8 }}>{addrMsg}</div>}
+                <div style={{ display: 'flex', gap: 8 }}>
                   <button className="btn btn-primary btn-sm" onClick={saveAddress} disabled={savingAddr}>
                     {savingAddr ? 'Salvando...' : 'Salvar Endereço'}
                   </button>
@@ -408,7 +430,7 @@ export default function CustomerHome() {
 
             {contaTab === 'favoritos' && (
               <div style={{ textAlign: 'center', padding: '24px 0' }}>
-                <div style={{ fontSize: 40, marginBottom: 12 }}>⭐</div>
+                <div style={{ fontSize: 40, marginBottom: 12 }}>❤️</div>
                 <div style={{ fontWeight: 700, fontSize: 15, color: 'var(--text)', marginBottom: 6 }}>Nenhum favorito</div>
                 <div style={{ fontSize: 13, color: '#999' }}>Favorite lojas e produtos</div>
               </div>
