@@ -249,7 +249,7 @@ export default function Login() {
       `}</style>
 
       <p style={{ marginTop: 24, fontSize: 11, color: 'rgba(255,255,255,0.35)', zIndex: 1 }}>
-        Pé de Açaí © 2026 — v302
+        Pé de Açaí © 2026 — v303
       </p>
     </div>
   );
