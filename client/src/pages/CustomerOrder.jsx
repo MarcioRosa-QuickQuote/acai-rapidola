@@ -481,7 +481,7 @@ export default function CustomerOrder() {
                     center={mapCenter}
                     zoom={15}
                     style={{ height: '100%', width: '100%' }}
-                    key={`cust-${mapCenter[0]}-${mapCenter[1]}`}
+                    key="cust-map"
                   >
                     <TileLayer
                       attribution='&copy; OpenStreetMap'
