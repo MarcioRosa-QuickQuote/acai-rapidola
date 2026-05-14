@@ -130,4 +130,11 @@ router.post('/optimize-route', authMiddleware, roleMiddleware('motoboy'), async 
   });
 });
 
+router.patch('/profile', authMiddleware, roleMiddleware('motoboy'), async (req, res) => {
+  const { pix_key } = req.body;
+  const { error } = await supabase.from('users').update({ pix_key }).eq('id', req.user.id);
+  if (error) return res.status(500).json({ error: 'Erro ao salvar' });
+  res.json({ ok: true });
+});
+
 module.exports = router;

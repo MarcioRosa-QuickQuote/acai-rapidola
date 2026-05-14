@@ -33,6 +33,9 @@ export default function MotoboyDashboard() {
   const [myOrders, setMyOrders] = useState([]);
   const [store, setStore] = useState(null);
   const [route, setRoute] = useState(null);
+  const [pixKey, setPixKey] = useState('');
+  const [pixSaving, setPixSaving] = useState(false);
+  const [pixMsg, setPixMsg] = useState('');
   const [loading, setLoading] = useState(true);
   const [online, setOnline] = useState(true);
   const [selectedTab, setSelectedTab] = useState('available');
@@ -420,6 +423,64 @@ export default function MotoboyDashboard() {
               </div>
             )}
           </>
+        )}
+
+        {selectedTab === 'profile' && (
+          <div className="card" style={{ textAlign: 'left' }}>
+            <div className="page-title" style={{ fontSize: 20 }}>Meu Perfil</div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
+              {user?.photo_url ? (
+                <img src={user.photo_url} alt="Foto"
+                  style={{ width: 56, height: 56, borderRadius: '50%', objectFit: 'cover' }}
+                  onError={e => { e.target.style.display = 'none'; }} />
+              ) : (
+                <div style={{
+                  width: 56, height: 56, borderRadius: '50%',
+                  background: 'linear-gradient(135deg, #42A5F5, #1565C0)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  color: 'white', fontWeight: 700, fontSize: 24
+                }}>
+                  {user?.name?.charAt(0)?.toUpperCase()}
+                </div>
+              )}
+              <div>
+                <div style={{ fontWeight: 800, fontSize: 16 }}>{user?.name}</div>
+                <div style={{ fontSize: 12, color: '#888' }}>Motoboy</div>
+              </div>
+            </div>
+            <div className="form-group">
+              <label className="label">Telefone</label>
+              <div style={{ fontWeight: 600 }}>{user?.phone}</div>
+            </div>
+            <div className="form-group">
+              <label className="label">Chave PIX (para receber entregas)</label>
+              <input className="input" type="text" value={pixKey}
+                onChange={e => setPixKey(e.target.value)}
+                placeholder="CPF, telefone, e-mail ou chave aleatoria" />
+              <span className="text-xs text-muted">Taxa de entrega sera enviada para esta chave</span>
+            </div>
+            {pixMsg && (
+              <div style={{
+                fontSize: 13, fontWeight: 600, padding: '10px 14px', borderRadius: 8, marginBottom: 12,
+                background: pixMsg.includes('Erro') ? '#FFEBEE' : '#E8F5E9',
+                color: pixMsg.includes('Erro') ? '#C62828' : '#2E7D32'
+              }}>
+                {pixMsg}
+              </div>
+            )}
+            <button className="btn btn-primary" onClick={async () => {
+              setPixSaving(true);
+              const res = await apiFetch('/motoboy/profile', {
+                method: 'PATCH',
+                body: JSON.stringify({ pix_key: pixKey })
+              });
+              setPixMsg(res.ok ? 'Chave PIX salva!' : (res.error || 'Erro ao salvar'));
+              setPixSaving(false);
+              setTimeout(() => setPixMsg(''), 3000);
+            }} disabled={pixSaving}>
+              {pixSaving ? 'Salvando...' : 'Salvar'}
+            </button>
+          </div>
         )}
       </div>
     </div>

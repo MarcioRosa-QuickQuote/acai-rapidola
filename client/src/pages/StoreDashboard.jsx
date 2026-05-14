@@ -38,7 +38,7 @@ export default function StoreDashboard() {
   const [loading, setLoading] = useState(true);
   const [view, setView] = useState('orders');
   const [selectedOrder, setSelectedOrder] = useState(null);
-  const [settings, setSettings] = useState({ name: '', logo: '', address: '', lat: '', lng: '' });
+  const [settings, setSettings] = useState({ name: '', logo: '', address: '', lat: '', lng: '', pix_key: '' });
   const [saveMsg, setSaveMsg] = useState('');
   const [mapCenter, setMapCenter] = useState([-23.5505, -46.6333]);
   const [geocoding, setGeocoding] = useState(false);
@@ -158,7 +158,8 @@ export default function StoreDashboard() {
         logo: settings.logo,
         address: settings.address,
         lat: parseFloat(settings.lat),
-        lng: parseFloat(settings.lng)
+        lng: parseFloat(settings.lng),
+        pix_key: settings.pix_key
       })
     });
     if (data.ok) {
@@ -611,6 +612,15 @@ export default function StoreDashboard() {
                   {saveMsg}
                 </div>
               )}
+
+              <div className="form-group">
+                <label className="label">Chave PIX (para receber)</label>
+                <input className="input" type="text" value={settings.pix_key}
+                  onChange={e => setSettings(s => ({ ...s, pix_key: e.target.value }))}
+                  placeholder="CPF, telefone, e-mail ou chave aleatoria"
+                  style={{ fontSize: 15 }} />
+                <span className="text-xs text-muted">Valor dos produtos sera enviado para esta chave apos entrega</span>
+              </div>
 
               <button className="btn btn-primary" onClick={saveSettings} disabled={uploading}>
                 {uploading ? 'Salvando...' : 'Salvar Configurações'}
