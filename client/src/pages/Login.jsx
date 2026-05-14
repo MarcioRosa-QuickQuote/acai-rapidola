@@ -123,7 +123,7 @@ export default function Login() {
           }} />
 
           <img
-            src="/logo.png"
+            src="/logomarca.png"
             alt="Pé de Açaí"
             style={{
               width: 200, height: 200, borderRadius: 28,
