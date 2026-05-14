@@ -38,7 +38,7 @@ export default function StoreDashboard() {
   const [loading, setLoading] = useState(true);
   const [view, setView] = useState('orders');
   const [selectedOrder, setSelectedOrder] = useState(null);
-  const [settings, setSettings] = useState({ name: '', logo: '', address: '', lat: '', lng: '', pix_key: '' });
+  const [settings, setSettings] = useState({ name: '', logo: '', address: '', lat: '', lng: '', pix_key: localStorage.getItem('store_pix_key') || '' });
   const [saveMsg, setSaveMsg] = useState('');
   const [mapCenter, setMapCenter] = useState([-23.5505, -46.6333]);
   const [geocoding, setGeocoding] = useState(false);
@@ -164,6 +164,7 @@ export default function StoreDashboard() {
       })
     });
     if (data.ok) {
+      localStorage.setItem('store_pix_key', settings.pix_key);
       if (data.name) setStore(data);
       setSaveMsg('Configurações salvas!');
       setTimeout(() => setSaveMsg(''), 3000);
