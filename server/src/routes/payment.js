@@ -309,4 +309,63 @@ router.post('/pay-with-saved-card', authMiddleware, async (req, res) => {
   }
 });
 
+router.get('/earnings', authMiddleware, async (req, res) => {
+  try {
+    const [storeEarn, motoboyEarn] = await Promise.all([
+      supabase.from('store_earnings').select('*').eq('store_id', req.user.id).order('created_at', { ascending: false }),
+      supabase.from('motoboy_earnings').select('*').eq('motoboy_id', req.user.id).order('created_at', { ascending: false })
+    ]);
+    
+    const storeData = storeEarn.data || [];
+    const motoboyData = motoboyEarn.data || [];
+    
+    const totalStorePending = storeData.filter(e => e.status === 'pending').reduce((s, e) => s + e.amount, 0);
+    const totalStorePaid = storeData.filter(e => e.status === 'paid').reduce((s, e) => s + e.amount, 0);
+    const totalMotoboyPending = motoboyData.filter(e => e.status === 'pending').reduce((s, e) => s + e.amount, 0);
+    
+    res.json({
+      store: { pending: totalStorePending, paid: totalStorePaid, total: totalStorePending + totalStorePaid },
+      motoboy: { pending: totalMotoboyPending, paid: 0, total: totalMotoboyPending }
+    });
+  } catch {
+    res.json({ store: { pending: 0, paid: 0, total: 0 }, motoboy: { pending: 0, paid: 0, total: 0 } });
+  }
+});
+
+router.post('/payout', authMiddleware, async (req, res) => {
+  const { type } = req.body;
+  try {
+    if (type === 'store') {
+      const { data: store } = await supabase.from('stores').select('*').eq('owner_id', req.user.id).single();
+      if (!store) return res.status(404).json({ error: 'Loja não encontrada' });
+      if (!store.pix_key) return res.status(400).json({ error: 'Cadastre sua chave PIX na aba Conta' });
+      
+      const { data: pending } = await supabase.from('store_earnings').select('*').eq('store_id', store.id).eq('status', 'pending');
+      if (!pending.length) return res.status(400).json({ error: 'Sem valores pendentes' });
+      
+      const total = pending.reduce((s, e) => s + e.amount, 0);
+      
+      await supabase.from('store_earnings').update({ status: 'paid', paid_at: new Date().toISOString() }).eq('store_id', store.id).eq('status', 'pending');
+      
+      res.json({ ok: true, message: `R$ ${total.toFixed(2)} enviado para ${store.pix_key}`, amount: total });
+    } else if (type === 'motoboy') {
+      if (!req.user.pix_key) return res.status(400).json({ error: 'Cadastre sua chave PIX no seu perfil' });
+      
+      const { data: pending } = await supabase.from('motoboy_earnings').select('*').eq('motoboy_id', req.user.id).eq('status', 'pending');
+      if (!pending.length) return res.status(400).json({ error: 'Sem valores pendentes' });
+      
+      const total = pending.reduce((s, e) => s + e.amount, 0);
+      
+      await supabase.from('motoboy_earnings').update({ status: 'paid', paid_at: new Date().toISOString() }).eq('motoboy_id', req.user.id).eq('status', 'pending');
+      
+      res.json({ ok: true, message: `R$ ${total.toFixed(2)} enviado para ${req.user.pix_key}`, amount: total });
+    } else {
+      res.status(400).json({ error: 'Tipo inválido' });
+    }
+  } catch (err) {
+    console.error('Payout error:', err);
+    res.status(500).json({ error: 'Erro ao processar pagamento' });
+  }
+});
+
 module.exports = router;

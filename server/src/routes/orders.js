@@ -286,6 +286,18 @@ router.patch('/:id/status', authMiddleware, async (req, res) => {
     });
   }
 
+  if (status === 'delivered') {
+    const storeAmount = order.total - (order.delivery_fee || 0);
+    const { data: store } = await supabase.from('stores').select('owner_id').eq('id', order.store_id).single();
+    await supabase.from('store_earnings').insert({
+      id: uuid(), store_id: order.store_id, order_id: req.params.id,
+      amount: parseFloat(storeAmount.toFixed(2)), status: 'pending'
+    });
+    if (store) {
+      await notifyUser(store.owner_id, 'Pedido Entregue!', `Pedido #${req.params.id.slice(0,8)} — R$ ${storeAmount.toFixed(2)} a receber.`, 'delivery');
+    }
+  }
+
   if (status === 'ready') {
     const { data: motoboys } = await supabase.from('store_motoboys')
       .select('motoboy_id, motoboy_locations!inner(online)')

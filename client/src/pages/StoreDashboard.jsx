@@ -353,6 +353,73 @@ export default function StoreDashboard() {
     return (now - created) <= 2 * 60 * 60 * 1000;
   }) : orders;
 
+  const [earnings, setEarnings] = useState({ store: { pending: 0, paid: 0 }, motoboy: { pending: 0, paid: 0 } });
+  const [payoutMsg, setPayoutMsg] = useState('');
+
+  useEffect(() => {
+    if (settingsTab === 'financeiro') loadEarnings();
+  }, [settingsTab]);
+
+  async function loadEarnings() {
+    const data = await apiFetch('/earnings');
+    if (data.store) setEarnings(data);
+  }
+
+  async function doPayout() {
+    setPayoutMsg('');
+    const data = await apiFetch('/payout', { method: 'POST', body: JSON.stringify({ type: 'store' }) });
+    if (data.ok) {
+      setPayoutMsg(data.message);
+      loadEarnings();
+    } else {
+      setPayoutMsg(data.error || 'Erro');
+    }
+    setTimeout(() => setPayoutMsg(''), 4000);
+  }
+
+  function FinanceiroTab() {
+    return (
+      <div className="card" style={{ textAlign: 'left' }}>
+        <div className="page-title" style={{ fontSize: 20 }}>Financeiro</div>
+        <div style={{ display: 'flex', gap: 12, marginBottom: 16 }}>
+          <div className="card text-center" style={{ flex: 1, background: 'linear-gradient(135deg, #E8F5E9, #C8E6C9)', padding: 16 }}>
+            <div style={{ fontSize: 24, fontWeight: 800, color: 'var(--secondary)' }}>
+              R$ {paidOrders.reduce((s, o) => s + o.total, 0).toFixed(2)}
+            </div>
+            <div style={{ fontSize: 12, fontWeight: 600, color: '#2E7D32' }}>Total vendido</div>
+          </div>
+          <div className="card text-center" style={{ flex: 1, background: 'linear-gradient(135deg, #FFE0B2, #FFCC80)', padding: 16 }}>
+            <div style={{ fontSize: 24, fontWeight: 800, color: '#E65100' }}>
+              R$ {earnings.store.pending.toFixed(2)}
+            </div>
+            <div style={{ fontSize: 12, fontWeight: 600, color: '#BF360C' }}>A receber</div>
+          </div>
+        </div>
+        {earnings.store.pending > 0 && (
+          <div style={{ marginBottom: 16 }}>
+            <button className="btn btn-primary" onClick={doPayout}>
+              Sacar R$ {earnings.store.pending.toFixed(2)} via PIX
+            </button>
+          </div>
+        )}
+        {earnings.store.paid > 0 && (
+          <div className="card" style={{ background: '#E8F5E9', border: '1px solid #C8E6C9', textAlign: 'center' }}>
+            <div style={{ fontWeight: 600, color: '#2E7D32' }}>Total já recebido: R$ {earnings.store.paid.toFixed(2)}</div>
+          </div>
+        )}
+        {payoutMsg && (
+          <div style={{
+            marginTop: 12, fontSize: 13, fontWeight: 600, padding: '10px 14px', borderRadius: 8,
+            background: payoutMsg.includes('Erro') || payoutMsg.includes('Cadastre') ? '#FFEBEE' : '#E8F5E9',
+            color: payoutMsg.includes('Erro') || payoutMsg.includes('Cadastre') ? '#C62828' : '#2E7D32'
+          }}>
+            {payoutMsg}
+          </div>
+        )}
+      </div>
+    );
+  }
+
   return (
     <div>
       <div className="header">
@@ -778,25 +845,7 @@ export default function StoreDashboard() {
             </>
             )}
             {settingsTab === 'financeiro' && (
-              <div className="card" style={{ textAlign: 'left' }}>
-                <div className="page-title" style={{ fontSize: 20 }}>Financeiro</div>
-                <div style={{ display: 'flex', gap: 12, marginBottom: 16 }}>
-                  <div className="card text-center" style={{ flex: 1, background: 'linear-gradient(135deg, #E8F5E9, #C8E6C9)', padding: 16 }}>
-                    <div style={{ fontSize: 24, fontWeight: 800, color: 'var(--secondary)' }}>
-                      R$ {paidOrders.reduce((s, o) => s + o.total, 0).toFixed(2)}
-                    </div>
-                    <div style={{ fontSize: 12, fontWeight: 600, color: '#2E7D32' }}>Total vendido (mês)</div>
-                  </div>
-                  <div className="card text-center" style={{ flex: 1, background: 'linear-gradient(135deg, #F3E5F5, #E1BEE7)', padding: 16 }}>
-                    <div style={{ fontSize: 24, fontWeight: 800, color: 'var(--primary)' }}>{paidOrders.length}</div>
-                    <div style={{ fontSize: 12, fontWeight: 600, color: '#6A1B9A' }}>Pedidos pagos</div>
-                  </div>
-                </div>
-                <div className="card" style={{ background: '#FFF8E1', border: '1px solid #FFE082', textAlign: 'center' }}>
-                  <div style={{ fontSize: 13, fontWeight: 600, color: '#F57F17', marginBottom: 4 }}>Relatório completo</div>
-                  <div style={{ fontSize: 12, color: '#999' }}>Em breve: exportação de relatórios fiscais e extratos</div>
-                </div>
-              </div>
+              <FinanceiroTab />
             )}
 
             {settingsTab === 'assinatura' && (

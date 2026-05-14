@@ -43,12 +43,13 @@ router.put('/:id/settings', authMiddleware, roleMiddleware('store'), async (req,
     .select('*').eq('id', req.params.id).eq('owner_id', req.user.id).single();
   if (!store) return res.status(403).json({ error: 'Não autorizado' });
 
-  const { name, logo, lat, lng, address, color_primary, color_secondary } = req.body;
+  const { name, logo, lat, lng, address, color_primary, color_secondary, pix_key } = req.body;
   const update = {};
   const toVal = (v) => (v === '' || v === null || v === undefined || Number.isNaN(v)) ? null : v;
 
   const n = toVal(name); const l = toVal(logo); const la = toVal(lat);
   const ln = toVal(lng); const ad = toVal(address); const cp = toVal(color_primary); const cs = toVal(color_secondary);
+  const pk = toVal(pix_key);
 
   if (n !== null) update.name = n;
   if (l !== null) update.logo = l;
@@ -57,6 +58,7 @@ router.put('/:id/settings', authMiddleware, roleMiddleware('store'), async (req,
   if (ad !== null) update.address = ad;
   if (cp !== null) update.color_primary = cp;
   if (cs !== null) update.color_secondary = cs;
+  if (pk !== null) update.pix_key = pk;
 
   if (Object.keys(update).length > 0) {
     await supabase.from('stores').update(update).eq('id', store.id);
