@@ -46,7 +46,7 @@ router.put('/:id', authMiddleware, roleMiddleware('store'), async (req, res) => 
   if (price !== undefined) update.price = price;
   if (size_ml !== undefined) update.size_ml = size_ml;
   if (active !== undefined) update.active = active;
-  if (image !== undefined) update.image = image;
+  if (image !== undefined && image !== null && image !== '') update.image = image;
 
   if (Object.keys(update).length > 0) {
     await supabase.from('products').update(update).eq('id', req.params.id);

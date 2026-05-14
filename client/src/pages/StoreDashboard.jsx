@@ -294,15 +294,19 @@ export default function StoreDashboard() {
       if (data.url) imageUrl = data.url;
     }
 
+    const body = { name, description, price: parseFloat(price), size_ml: parseInt(size_ml) };
+    if (imageUrl) body.image = imageUrl;
+    if (file && imageUrl) body.image = imageUrl;
+
     if (id) {
       await apiFetch(`/products/${id}`, {
         method: 'PUT',
-        body: JSON.stringify({ name, description, price: parseFloat(price), size_ml: parseInt(size_ml), image: imageUrl })
+        body: JSON.stringify(body)
       });
     } else {
       await apiFetch('/products', {
         method: 'POST',
-        body: JSON.stringify({ name, description, price: parseFloat(price), size_ml: parseInt(size_ml), image: imageUrl })
+        body: JSON.stringify(body)
       });
     }
     setProductForm(null);
