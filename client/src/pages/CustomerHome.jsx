@@ -37,6 +37,7 @@ export default function CustomerHome() {
   const [mainTab, setMainTab] = useState('menu');
   const [contaTab, setContaTab] = useState('enderecos');
   const [showCepConta, setShowCepConta] = useState(false);
+  const [showCart, setShowCart] = useState(false);
   const [contaMapLat, setContaMapLat] = useState(null);
   const [contaMapLng, setContaMapLng] = useState(null);
   const [savedAddresses, setSavedAddresses] = useState(() => {
@@ -173,6 +174,7 @@ export default function CustomerHome() {
 
   function addToCart(productId) {
     setCart(prev => ({ ...prev, [productId]: (prev[productId] || 0) + 1 }));
+    setShowCart(true);
   }
 
   function removeFromCart(productId) {
@@ -687,23 +689,103 @@ export default function CustomerHome() {
         {renderCardapio()}
 
         {Object.keys(cart).length > 0 && (
-          <div style={{
-            position: 'fixed', bottom: 0, left: 0, right: 0,
-            background: 'white', padding: 16, boxShadow: '0 -4px 20px rgba(0,0,0,0.1)',
-            display: 'flex', justifyContent: 'center'
-          }}>
-            <button className="btn btn-primary" style={{ maxWidth: 400 }}
-              onClick={() => {
-                const items = Object.entries(cart).map(([id, qty]) => {
-                  const pr = products.find(pp => pp.id === id);
-                  return { product_id: id, quantity: qty, name: pr?.name, price: pr?.price };
-                });
-                const total = items.reduce((s, i) => s + (i.price || 0) * i.quantity, 0);
-                navigate('/customer/order', { state: { items, store, total } });
+          <>
+            <div style={{ height: 100 }} />
+            {showCart ? (
+              <div style={{
+                position: 'fixed', bottom: 0, left: 0, right: 0,
+                background: 'white', zIndex: 200,
+                borderTopLeftRadius: 20, borderTopRightRadius: 20,
+                boxShadow: '0 -8px 30px rgba(0,0,0,0.15)',
+                maxHeight: '60vh', overflow: 'auto', paddingBottom: 20
               }}>
-              Ver Carrinho ({Object.values(cart).reduce((a, b) => a + b, 0)} itens)
-            </button>
-          </div>
+                <div style={{
+                  display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                  padding: '16px 20px 12px', borderBottom: '1px solid var(--border)'
+                }}>
+                  <span style={{ fontWeight: 800, fontSize: 16 }}>Seu carrinho</span>
+                  <button onClick={() => setShowCart(false)}
+                    style={{ background: 'none', border: 'none', fontSize: 18, color: '#999', cursor: 'pointer' }}>
+                    ✕
+                  </button>
+                </div>
+                <div style={{ padding: '0 20px' }}>
+                  {Object.entries(cart).map(([id, qty]) => {
+                    const prod = products.find(pp => pp.id === id);
+                    if (!prod) return null;
+                    return (
+                      <div key={id} style={{
+                        display: 'flex', alignItems: 'center', gap: 12,
+                        padding: '14px 0', borderBottom: '1px solid #F5F5F5'
+                      }}>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ fontWeight: 700, fontSize: 14 }}>{prod.name}</div>
+                          <div style={{ fontSize: 13, color: 'var(--primary)', fontWeight: 600 }}>
+                            R$ {prod.price.toFixed(2)}
+                          </div>
+                        </div>
+                        <div className="flex-row" style={{ gap: 0, flexShrink: 0 }}>
+                          <button onClick={() => removeFromCart(id)}
+                            style={{
+                              width: 34, height: 34, borderRadius: '50%',
+                              border: '1px solid #DDD', background: 'white',
+                              fontSize: 18, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                              cursor: 'pointer', color: '#C62828'
+                            }}>
+                            {cart[id] === 1 ? '🗑' : '-'}
+                          </button>
+                          <span style={{ fontWeight: 700, minWidth: 28, textAlign: 'center' }}>{qty}</span>
+                          <button onClick={() => addToCart(id)}
+                            style={{
+                              width: 34, height: 34, borderRadius: '50%',
+                              border: 'none', background: 'var(--primary)',
+                              color: 'white', fontSize: 18,
+                              display: 'flex', alignItems: 'center', justifyContent: 'center',
+                              cursor: 'pointer'
+                            }}>+</button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+                <div style={{ padding: '16px 20px' }}>
+                  <div className="flex-between" style={{ marginBottom: 14, fontSize: 15 }}>
+                    <span style={{ fontWeight: 600 }}>Total</span>
+                    <span style={{ fontWeight: 800, color: 'var(--primary-dark)', fontSize: 20 }}>
+                      R$ {Object.entries(cart).reduce((s, [id, qty]) => {
+                        const pr = products.find(pp => pp.id === id);
+                        return s + (pr?.price || 0) * qty;
+                      }, 0).toFixed(2)}
+                    </span>
+                  </div>
+                  <button className="btn btn-primary" style={{ fontSize: 16, padding: '14px' }}
+                    onClick={() => {
+                      const items = Object.entries(cart).map(([id, qty]) => {
+                        const pr = products.find(pp => pp.id === id);
+                        return { product_id: id, quantity: qty, name: pr?.name, price: pr?.price };
+                      });
+                      const total = items.reduce((s, i) => s + (i.price || 0) * i.quantity, 0);
+                      navigate('/customer/order', { state: { items, store, total } });
+                    }}>
+                    Finalizar Pedido
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div style={{
+                position: 'fixed', bottom: 0, left: 0, right: 0,
+                zIndex: 200, padding: '12px 20px'
+              }}>
+                <button className="btn btn-primary" style={{ maxWidth: 400, margin: '0 auto', padding: '14px' }}
+                  onClick={() => setShowCart(true)}>
+                  🛒 Ver Carrinho ({Object.values(cart).reduce((a, b) => a + b, 0)} itens) — R$ {Object.entries(cart).reduce((s, [id, qty]) => {
+                    const pr = products.find(pp => pp.id === id);
+                    return s + (pr?.price || 0) * qty;
+                  }, 0).toFixed(2)}
+                </button>
+              </div>
+            )}
+          </>
         )}
       </>
     );
