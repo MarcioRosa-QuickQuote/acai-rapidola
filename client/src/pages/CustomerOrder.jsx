@@ -61,6 +61,18 @@ export default function CustomerOrder() {
     return parts.slice(0, 2).join(', ');
   }
 
+  function cleanNominatimAddress(displayName) {
+    if (!displayName) return '';
+    const parts = displayName.split(',').map(p => p.trim());
+    const skip = ['Região Norte', 'Região Nordeste', 'Região Sudeste', 'Região Sul', 'Região Centro-Oeste', 'Brazil', 'Brasil'];
+    const filtered = parts.filter((p) => {
+      if (skip.includes(p)) return false;
+      if (/^\d{5}-\d{3}$/.test(p)) return false;
+      return true;
+    });
+    return filtered.join(', ');
+  }
+
   function formatAddressLines(addr) {
     if (!addr) return { line1: '', line2: '', line3: '' };
     const parts = addr.split(',').map(p => p.trim());
@@ -232,7 +244,7 @@ export default function CustomerOrder() {
           const res = await fetch(`/api/orders/reverse-geocode?lat=${latitude}&lng=${longitude}`);
           const data = await res.json();
           if (data.display_name) {
-            setAddress(data.display_name);
+            setAddress(cleanNominatimAddress(data.display_name));
           } else {
             setAddress(`${latitude.toFixed(5)}, ${longitude.toFixed(5)}`);
           }

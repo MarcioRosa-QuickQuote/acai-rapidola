@@ -48,6 +48,18 @@ export default function CustomerHome() {
       line3: parts.slice(3, 5).join(', ')
     };
   }
+
+  function cleanNominatimAddress(displayName) {
+    if (!displayName) return '';
+    const parts = displayName.split(',').map(p => p.trim());
+    const skip = ['Região Norte', 'Região Nordeste', 'Região Sudeste', 'Região Sul', 'Região Centro-Oeste', 'Brazil', 'Brasil'];
+    const filtered = parts.filter((p, i) => {
+      if (skip.includes(p)) return false;
+      if (/^\d{5}-\d{3}$/.test(p)) return false;
+      return true;
+    });
+    return filtered.join(', ');
+  }
   const [searchParams] = useSearchParams();
   const [cart, setCart] = useState({});
   const [splitItems, setSplitItems] = useState({});
@@ -192,7 +204,7 @@ export default function CustomerHome() {
             const res = await fetch(`/api/orders/reverse-geocode?lat=${latitude}&lng=${longitude}`);
             const data = await res.json();
             if (data.display_name) {
-              foundAddr = data.display_name;
+              foundAddr = cleanNominatimAddress(data.display_name);
             } else {
               setAddrMsg(data.error || 'Endereço não encontrado. Digite manualmente.');
             }
