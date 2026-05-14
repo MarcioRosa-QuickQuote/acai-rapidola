@@ -338,21 +338,6 @@ export default function StoreDashboard() {
 
   if (loading) return <div className="loading"><div className="spinner" /></div>;
 
-  const unpaidOrders = orders.filter(o => o.payment_status !== 'paid');
-  const pendingOrders = orders.filter(o => o.payment_status === 'paid' && !['delivered','cancelled'].includes(o.status));
-  const paidOrders = orders.filter(o => o.payment_status === 'paid');
-  
-  const now = Date.now();
-  const staleUnpaid = unpaidOrders.filter(o => {
-    const created = new Date(o.created_at).getTime();
-    return (now - created) > 2 * 60 * 60 * 1000;
-  });
-  
-  const displayOrders = orderFilter === 'ativos' ? pendingOrders : orderFilter === 'pendentes' ? unpaidOrders.filter(o => {
-    const created = new Date(o.created_at).getTime();
-    return (now - created) <= 2 * 60 * 60 * 1000;
-  }) : orders;
-
   const [earnings, setEarnings] = useState({ store: { pending: 0, paid: 0 }, motoboy: { pending: 0, paid: 0 } });
   const [payoutMsg, setPayoutMsg] = useState('');
 
@@ -376,6 +361,21 @@ export default function StoreDashboard() {
     }
     setTimeout(() => setPayoutMsg(''), 4000);
   }
+
+  const unpaidOrders = orders.filter(o => o.payment_status !== 'paid');
+  const pendingOrders = orders.filter(o => o.payment_status === 'paid' && !['delivered','cancelled'].includes(o.status));
+  const paidOrders = orders.filter(o => o.payment_status === 'paid');
+  
+  const now = Date.now();
+  const staleUnpaid = unpaidOrders.filter(o => {
+    const created = new Date(o.created_at).getTime();
+    return (now - created) > 2 * 60 * 60 * 1000;
+  });
+  
+  const displayOrders = orderFilter === 'ativos' ? pendingOrders : orderFilter === 'pendentes' ? unpaidOrders.filter(o => {
+    const created = new Date(o.created_at).getTime();
+    return (now - created) <= 2 * 60 * 60 * 1000;
+  }) : orders;
 
   function FinanceiroTab() {
     return (

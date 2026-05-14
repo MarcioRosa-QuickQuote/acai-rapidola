@@ -51,6 +51,11 @@ export default function CustomerOrder() {
   const [distanceWarning, setDistanceWarning] = useState('');
   const [gpsLoading, setGpsLoading] = useState(false);
   const [showCep, setShowCep] = useState(false);
+  const [savedAddresses, setSavedAddresses] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('user_addresses') || '[]'); }
+    catch { return []; }
+  });
+  const [showAddrList, setShowAddrList] = useState(false);
   const [addressSuggestions, setAddressSuggestions] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
 
@@ -381,6 +386,30 @@ export default function CustomerOrder() {
 
             <div className="form-group">
               <label className="label">Endereço de entrega</label>
+              {savedAddresses.length > 0 && !editAddr && (
+                <div style={{ marginBottom: 8 }}>
+                  <select className="input" value={address} onChange={e => {
+                    const addr = savedAddresses.find(a => a.address === e.target.value);
+                    if (addr) {
+                      setAddress(addr.address);
+                      if (addr.lat && addr.lng) {
+                        setLat(addr.lat);
+                        setLng(addr.lng);
+                        setMapCenter([addr.lat, addr.lng]);
+                        setShowMap(true);
+                        updateDeliveryFee(addr.lat, addr.lng);
+                      }
+                    }
+                  }} style={{ fontSize: 14, fontWeight: 600, color: '#333' }}>
+                    <option value={user?.address || ''}>{shortAddress(user?.address) || 'Selecione...'}</option>
+                    {savedAddresses.filter(a => a.address !== user?.address).map(addr => (
+                      <option key={addr.id} value={addr.address}>
+                        {addr.label} — {shortAddress(addr.address)}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
               {user?.address && !editAddr ? (
                 <div>
                   <div style={{ fontSize: 15, fontWeight: 600, color: '#333', marginBottom: 6 }}>{shortAddress(user.address)}</div>

@@ -38,6 +38,47 @@ export default function CustomerHome() {
   const [showCepConta, setShowCepConta] = useState(false);
   const [contaMapLat, setContaMapLat] = useState(null);
   const [contaMapLng, setContaMapLng] = useState(null);
+  const [savedAddresses, setSavedAddresses] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('user_addresses') || '[]'); }
+    catch { return []; }
+  });
+  const [showAddrForm, setShowAddrForm] = useState(false);
+  const [addrLabel, setAddrLabel] = useState('');
+
+  useEffect(() => {
+    localStorage.setItem('user_addresses', JSON.stringify(savedAddresses));
+  }, [savedAddresses]);
+
+  function addAddress() {
+    if (!addrForm || addrForm.length < 5) { setAddrMsg('Digite um endereço'); setTimeout(() => setAddrMsg(''), 3000); return; }
+    const label = addrLabel || 'Endereço ' + (savedAddresses.length + 1);
+    setSavedAddresses(prev => [...prev, {
+      id: Date.now().toString(),
+      label,
+      address: addrForm,
+      lat: contaMapLat,
+      lng: contaMapLng
+    }]);
+    setAddrForm(null);
+    setAddrLabel('');
+    setContaMapLat(null);
+    setContaMapLng(null);
+    setShowAddrForm(false);
+    setAddrMsg('Endereço adicionado!');
+    setTimeout(() => setAddrMsg(''), 3000);
+  }
+
+  function removeAddress(id) {
+    setSavedAddresses(prev => prev.filter(a => a.id !== id));
+  }
+
+  function setPrimaryAddress(addr) {
+    setAddrForm(addr.address);
+    if (addr.lat && addr.lng) {
+      setContaMapLat(addr.lat);
+      setContaMapLng(addr.lng);
+    }
+  }
 
   function formatAddressLines(addr) {
     if (!addr) return { line1: '', line2: '', line3: '' };
@@ -400,48 +441,119 @@ export default function CustomerHome() {
 
           <div style={{ padding: 20 }}>
             {contaTab === 'enderecos' && (
-              <div style={{ position: 'relative' }}>
-                <label className="label" style={{ fontWeight: 700 }}>Endereço de entrega</label>
-                <button type="button" className="btn btn-outline btn-sm"
-                  onClick={useMyLocationConta} disabled={savingAddr}
-                  style={{ width: '100%', justifyContent: 'flex-start', gap: 8, marginBottom: 8, padding: '10px 14px' }}>
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/>
-                    <line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/>
-                    <line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/>
-                  </svg>
-                  {savingAddr ? 'Obtendo localização...' : 'Usar minha localização atual'}
-                </button>
-                <div className="flex-row" style={{ gap: 8, marginBottom: 8 }}>
-                  <input className="input" type="text" value={currentAddr}
-                    onChange={e => { setAddrForm(e.target.value); searchAddress(e.target.value); }}
-                    onFocus={() => { if (addressSuggestions.length > 0) setShowSuggestions(true); }}
-                    onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
-                    placeholder="Rua, número, bairro - Cidade"
-                    style={{ flex: 1 }} />
-                  <button type="button" className="btn btn-sm btn-secondary"
-                    onClick={geocodeConta} disabled={savingAddr}
-                    style={{ width: 'auto', whiteSpace: 'nowrap' }}>
-                    {savingAddr ? '...' : 'Buscar'}
-                  </button>
-                </div>
-                {showSuggestions && addressSuggestions.length > 0 && (
-                  <div style={{
-                    position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 10,
-                    background: 'white', border: '1px solid #DDD', borderRadius: 8, maxHeight: 200, overflow: 'auto',
-                    boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
-                  }}>
-                    {addressSuggestions.map((s, i) => (
-                      <div key={i} onMouseDown={() => selectAddress(s)}
-                        style={{ padding: '10px 14px', cursor: 'pointer', fontSize: 13, borderBottom: '1px solid #F0F0F0' }}>
-                        {s.display_name}
+              <div>
+                {savedAddresses.length > 0 && (
+                  <div style={{ marginBottom: 16 }}>
+                    {savedAddresses.map(addr => (
+                      <div key={addr.id} className="card" style={{
+                        padding: 14, marginBottom: 8, cursor: 'pointer',
+                        background: addrForm === addr.address ? '#F3E5F5' : 'white',
+                        border: addrForm === addr.address ? '2px solid var(--primary)' : '1px solid var(--border)'
+                      }} onClick={() => setPrimaryAddress(addr)}>
+                        <div className="flex-between">
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 2 }}>{addr.label}</div>
+                            <div style={{ fontSize: 12, color: '#888', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                              {addr.address}
+                            </div>
+                          </div>
+                          <button className="btn btn-sm"
+                            onClick={e => { e.stopPropagation(); removeAddress(addr.id); }}
+                            style={{ color: '#C62828', fontSize: 11, padding: '4px 8px', background: 'transparent' }}>
+                            ✕
+                          </button>
+                        </div>
+                        {addr.lat && addr.lng && addrForm === addr.address && (
+                          <div style={{ height: 160, borderRadius: 8, overflow: 'hidden', border: '1px solid var(--border)', marginTop: 8 }}>
+                            <MapContainer
+                              center={[addr.lat, addr.lng]} zoom={16}
+                              style={{ height: '100%', width: '100%' }}
+                              key={`addr-${addr.id}`} scrollWheelZoom={false}>
+                              <TileLayer attribution='&copy; OSM' url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+                              <Marker position={[addr.lat, addr.lng]} />
+                            </MapContainer>
+                          </div>
+                        )}
                       </div>
                     ))}
                   </div>
                 )}
+
+                {!showAddrForm ? (
+                  <button className="btn btn-outline" onClick={() => setShowAddrForm(true)}
+                    style={{ width: '100%', justifyContent: 'flex-start', gap: 8, padding: '12px 16px', marginBottom: 8 }}>
+                    <span style={{ fontSize: 18, lineHeight: 1 }}>+</span>
+                    Adicionar novo endereço
+                  </button>
+                ) : (
+                  <div className="card" style={{ marginBottom: 12, padding: 16 }}>
+                    <div className="form-group">
+                      <label className="label">Nome do endereço</label>
+                      <input className="input" type="text" value={addrLabel}
+                        onChange={e => setAddrLabel(e.target.value)}
+                        placeholder="Ex: Casa, Trabalho, Praia..."
+                        style={{ marginBottom: 8 }} />
+                    </div>
+                    <button type="button" className="btn btn-outline btn-sm"
+                      onClick={useMyLocationConta} disabled={savingAddr}
+                      style={{ width: '100%', justifyContent: 'flex-start', gap: 8, marginBottom: 8, padding: '10px 14px' }}>
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/>
+                        <line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/>
+                      </svg>
+                      {savingAddr ? 'Obtendo localização...' : 'Usar minha localização'}
+                    </button>
+                    <div className="flex-row" style={{ gap: 8, marginBottom: 8 }}>
+                      <input className="input" type="text" value={currentAddr}
+                        onChange={e => { setAddrForm(e.target.value); searchAddress(e.target.value); }}
+                        onFocus={() => { if (addressSuggestions.length > 0) setShowSuggestions(true); }}
+                        onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
+                        placeholder="Rua, número, bairro - Cidade"
+                        style={{ flex: 1 }} />
+                      <button type="button" className="btn btn-sm btn-secondary"
+                        onClick={geocodeConta} disabled={savingAddr}
+                        style={{ width: 'auto', whiteSpace: 'nowrap' }}>
+                        Buscar
+                      </button>
+                    </div>
+                    {showSuggestions && addressSuggestions.length > 0 && (
+                      <div style={{
+                        background: 'white', border: '1px solid #DDD', borderRadius: 8, maxHeight: 160, overflow: 'auto',
+                        boxShadow: '0 4px 12px rgba(0,0,0,0.1)', marginBottom: 8
+                      }}>
+                        {addressSuggestions.map((s, i) => (
+                          <div key={i} onMouseDown={() => selectAddress(s)}
+                            style={{ padding: '10px 14px', cursor: 'pointer', fontSize: 13, borderBottom: '1px solid #F0F0F0' }}>
+                            {s.display_name}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    {(contaMapLat || user?.lat) && (contaMapLng || user?.lng) && (
+                      <div style={{ height: 180, borderRadius: 8, overflow: 'hidden', border: '1px solid var(--border)', marginBottom: 8 }}>
+                        <MapContainer
+                          center={[contaMapLat || user.lat, contaMapLng || user.lng]} zoom={16}
+                          style={{ height: '100%', width: '100%' }}
+                          key={`conta-new-${contaMapLat || 0}-${contaMapLng || 0}`} scrollWheelZoom={false}>
+                          <TileLayer attribution='&copy; OSM' url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+                          <Marker position={[contaMapLat || user.lat, contaMapLng || user.lng]} />
+                        </MapContainer>
+                      </div>
+                    )}
+                    <div className="flex-row" style={{ gap: 8 }}>
+                      <button className="btn btn-primary btn-sm" onClick={addAddress}>
+                        Salvar Endereço
+                      </button>
+                      <button className="btn btn-sm" onClick={() => { setShowAddrForm(false); setAddrLabel(''); }}
+                        style={{ background: '#F5F5F5', color: '#666' }}>
+                        Cancelar
+                      </button>
+                    </div>
+                  </div>
+                )}
                 {!showCepConta ? (
                   <button type="button" onClick={() => setShowCepConta(true)}
-                    style={{ background: 'none', border: 'none', color: 'var(--primary)', fontSize: 13, fontWeight: 600, cursor: 'pointer', padding: '4px 0', textDecoration: 'underline', marginBottom: 8 }}>
+                    style={{ background: 'none', border: 'none', color: 'var(--primary)', fontSize: 13, fontWeight: 600, cursor: 'pointer', padding: '4px 0', textDecoration: 'underline' }}>
                     Buscar por CEP
                   </button>
                 ) : (
@@ -455,57 +567,9 @@ export default function CustomerHome() {
                       style={{ whiteSpace: 'nowrap' }}>
                       {cepLoading ? '...' : 'Buscar CEP'}
                     </button>
-                    <button type="button" onClick={() => setShowCepConta(false)}
-                      style={{ background: 'none', border: 'none', color: '#999', fontSize: 20, cursor: 'pointer', padding: '0 4px' }}>
-                      ×
-                    </button>
                   </div>
                 )}
-                {(contaMapLat || user?.lat) && (contaMapLng || user?.lng) && (
-                  <div>
-                    {user?.address && (
-                      <div style={{ marginBottom: 8, fontSize: 13, color: '#555', lineHeight: 1.5 }}>
-                        {(() => {
-                          const addr = formatAddressLines(user.address);
-                          return (
-                            <>
-                              <div style={{ fontWeight: 600, color: '#333' }}>{addr.line1}</div>
-                              {addr.line2 && <div>{addr.line2}</div>}
-                              {addr.line3 && <div>{addr.line3}</div>}
-                            </>
-                          );
-                        })()}
-                      </div>
-                    )}
-                    <div style={{ height: 200, borderRadius: 8, overflow: 'hidden', border: '1px solid var(--border)', marginBottom: 12 }}>
-                    <MapContainer
-                      center={[contaMapLat || user.lat, contaMapLng || user.lng]}
-                      zoom={16}
-                      style={{ height: '100%', width: '100%' }}
-                      key={`conta-${contaMapLat || user.lat}-${contaMapLng || user.lng}`}
-                      scrollWheelZoom={false}
-                    >
-                      <TileLayer
-                        attribution='&copy; OpenStreetMap'
-                        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                      />
-                      <Marker position={[contaMapLat || user.lat, contaMapLng || user.lng]} />
-                    </MapContainer>
-                  </div>
-                </div>
-                )}
-                {addrMsg && <div style={{ fontSize: 13, fontWeight: 600, color: addrMsg.includes('Erro') || addrMsg.includes('não') ? '#C62828' : '#2E7D32', marginBottom: 8 }}>{addrMsg}</div>}
-                <div style={{ display: 'flex', gap: 8 }}>
-                  <button className="btn btn-primary btn-sm" onClick={saveAddress} disabled={savingAddr}>
-                    {savingAddr ? 'Salvando...' : 'Salvar Endereço'}
-                  </button>
-                  {user?.address && (
-                    <button className="btn btn-sm" onClick={clearAddress} disabled={savingAddr}
-                      style={{ background: '#FFEBEE', color: '#C62828', border: '1px solid #EF9A9A' }}>
-                      Limpar Endereço
-                    </button>
-                  )}
-                </div>
+                {addrMsg && <div style={{ fontSize: 13, fontWeight: 600, color: addrMsg.includes('Erro') ? '#C62828' : '#2E7D32', marginTop: 8 }}>{addrMsg}</div>}
               </div>
             )}
 
