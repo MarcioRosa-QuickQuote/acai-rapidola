@@ -39,7 +39,7 @@ export default function CustomerPayment() {
         body: JSON.stringify({ order_id: id })
       });
       if (data.init_point) {
-        window.location.href = data.sandbox_init_point || data.init_point;
+        window.location.href = data.init_point;
       } else if (data.error) {
         setError(data.error);
       }

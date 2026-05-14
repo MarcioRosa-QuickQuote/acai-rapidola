@@ -287,7 +287,7 @@ export default function CustomerOrder() {
           body: JSON.stringify({ order_id: data.order.id })
         });
         if (mpData.init_point) {
-          window.location.href = mpData.sandbox_init_point || mpData.init_point;
+          window.location.href = mpData.init_point;
         } else {
           navigate(`/customer/payment/${data.order.id}`);
         }
