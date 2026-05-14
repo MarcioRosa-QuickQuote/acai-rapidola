@@ -55,7 +55,8 @@ export default function StoreDashboard() {
   const [products, setProducts] = useState([]);
   const [productForm, setProductForm] = useState(null);
   const [productImg, setProductImg] = useState(null);
-  const productImgRef = useRef(null);
+  const [earnings, setEarnings] = useState({ store: { pending: 0, paid: 0 }, motoboy: { pending: 0, paid: 0 } });
+  const [payoutMsg, setPayoutMsg] = useState('');
 
   useEffect(() => {
     loadOrders();
@@ -336,14 +337,11 @@ export default function StoreDashboard() {
     return null;
   }
 
-  if (loading) return <div className="loading"><div className="spinner" /></div>;
-
-  const [earnings, setEarnings] = useState({ store: { pending: 0, paid: 0 }, motoboy: { pending: 0, paid: 0 } });
-  const [payoutMsg, setPayoutMsg] = useState('');
-
   useEffect(() => {
     if (settingsTab === 'financeiro') loadEarnings();
   }, [settingsTab]);
+
+  if (loading) return <div className="loading"><div className="spinner" /></div>;
 
   async function loadEarnings() {
     const data = await apiFetch('/earnings');
