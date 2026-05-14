@@ -91,7 +91,9 @@ app.use('/api', paymentRoutes);
 
 if (!isVercel) {
   const clientDist = path.join(__dirname, '..', '..', 'client', 'dist');
+  const publicDir = path.join(__dirname, '..', '..', 'public');
   app.use(express.static(clientDist));
+  app.use(express.static(publicDir));
   app.get('*', (req, res) => {
     res.sendFile(path.join(clientDist, 'index.html'));
   });
