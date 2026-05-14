@@ -57,7 +57,7 @@ export default function CustomerPayment() {
       <div className="header">
         <div className="header-left">
           <button className="btn btn-sm"
-            style={{ background: 'rgba(255,255,255,0.15)', color: 'white', fontSize: 14 }}
+            style={{ background: 'var(--border)', color: 'var(--primary-dark)', fontSize: 13, fontWeight: 700 }}
             onClick={() => navigate('/customer')}>
             Voltar
           </button>

@@ -153,17 +153,16 @@ export default function MotoboyDashboard() {
 
   return (
     <div>
-      <div className="header" style={{ background: 'linear-gradient(135deg, #1565C0, #0D47A1)' }}>
-        <div className="header-left">
-          {store?.logo && (
-            <img src={store.logo} alt="Logo" style={{ width: 56, height: 56, borderRadius: 8, objectFit: 'contain', flexShrink: 0 }} onError={e => { e.target.style.display = 'none'; }} />
-          )}
-          <div style={{ minWidth: 0 }}>
-            <div style={{ fontSize: 12, opacity: 0.8 }}>Olá, {user?.name?.split(' ')[0]}</div>
-            <div className="header-title">Entregas</div>
+      <div className="header">
+        <div className="header-left" style={{ gap: 10 }}>
+          <img src="/logomarca.png" alt="Pé de Açaí"
+            style={{ width: 42, height: 42, borderRadius: 10, objectFit: 'contain', flexShrink: 0 }} />
+          <div>
+            <div className="header-title" style={{ fontSize: 17 }}>Pé de Açaí</div>
+            <div style={{ fontSize: 11, color: 'var(--text-light)' }}>Motoboy</div>
           </div>
         </div>
-        <div className="header-right">
+        <div className="header-right" style={{ gap: 8 }}>
           <div className="toggle-switch" onClick={() => {
             setOnline(!online);
             if (!online) sendLocation();
@@ -171,10 +170,32 @@ export default function MotoboyDashboard() {
             <input type="checkbox" checked={online} readOnly />
             <span className="toggle-slider" />
           </div>
-          <span className="hide-mobile" style={{ fontSize: 12, color: 'white' }}>{online ? 'Online' : 'Offline'}</span>
-          <button className="btn btn-sm"
-            style={{ background: 'rgba(255,255,255,0.15)', color: 'white', fontSize: 12 }}
-            onClick={logout}>Sair</button>
+          <span style={{ fontSize: 11, fontWeight: 600, color: online ? 'var(--success)' : 'var(--text-light)' }}>
+            {online ? 'Online' : 'Offline'}
+          </span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer' }}>
+            {user?.photo_url ? (
+              <img src={user.photo_url} alt="Foto"
+                style={{ width: 30, height: 30, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }}
+                onError={e => { e.target.style.display = 'none'; }} />
+            ) : (
+              <div style={{
+                width: 30, height: 30, borderRadius: '50%',
+                background: 'linear-gradient(135deg, #42A5F5, #1565C0)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                color: 'white', fontWeight: 700, fontSize: 13, flexShrink: 0
+              }}>
+                {user?.name?.charAt(0)?.toUpperCase()}
+              </div>
+            )}
+            <div>
+              <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--text)', lineHeight: 1.2 }}>{user?.name?.split(' ')[0]}</div>
+              <div onClick={(e) => { e.stopPropagation(); logout(); }}
+                style={{ fontSize: 9, color: 'var(--text-light)', cursor: 'pointer' }}>
+                Sair
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 

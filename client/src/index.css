@@ -183,8 +183,10 @@ body {
 }
 
 .header {
-  background: linear-gradient(135deg, #7B1FA2 0%, var(--primary) 40%, var(--primary-dark) 100%);
-  color: white;
+  background: rgba(255,255,255,0.92);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  color: var(--text);
   padding: 16px 20px;
   display: flex;
   align-items: center;
@@ -193,7 +195,7 @@ body {
   top: 0;
   z-index: 100;
   gap: 8px;
-  box-shadow: 0 2px 12px rgba(74,20,140,0.25);
+  border-bottom: 1px solid var(--border);
 }
 
 .header-title {
@@ -205,6 +207,7 @@ body {
   max-width: 180px;
   letter-spacing: -0.02em;
   line-height: 1.2;
+  color: var(--primary-dark);
 }
 
 .header-left {

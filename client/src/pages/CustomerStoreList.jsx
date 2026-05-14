@@ -67,9 +67,9 @@ export default function CustomerStoreList() {
               </div>
             )}
             <div>
-              <div style={{ fontSize: 13, fontWeight: 700, color: 'white', lineHeight: 1.2 }}>{user?.name?.split(' ')[0]}</div>
+              <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text)', lineHeight: 1.2 }}>{user?.name?.split(' ')[0]}</div>
               <div onClick={(e) => { e.stopPropagation(); logout(); }}
-                style={{ fontSize: 10, color: 'rgba(255,255,255,0.6)', cursor: 'pointer', lineHeight: 1 }}>
+                style={{ fontSize: 10, color: 'var(--text-light)', cursor: 'pointer', lineHeight: 1 }}>
                 Sair
               </div>
             </div>

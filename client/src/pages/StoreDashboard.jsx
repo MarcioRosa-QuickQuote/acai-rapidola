@@ -350,38 +350,33 @@ export default function StoreDashboard() {
             <div className="header-title">{storeData?.name || 'Loja'}</div>
           </div>
         </div>
+        <div style={{ textAlign: 'center', flex: 1 }}>
+          <span style={{
+            fontSize: 12, fontWeight: 700,
+            color: open ? 'var(--success)' : 'var(--danger)',
+            background: open ? '#E8F5E9' : '#FFEBEE',
+            padding: '4px 14px', borderRadius: 20
+          }}>
+            {open ? 'ABERTA - Aceitando pedidos' : 'FECHADA'}
+          </span>
+        </div>
         <div className="header-right">
-          <span className="hide-mobile" style={{ fontSize: 12, fontWeight: 600, opacity: 0.9 }}>Delivery</span>
           <div className="toggle-switch" onClick={toggleOpen} title={open ? 'Fechar loja' : 'Abrir loja'}>
             <input type="checkbox" checked={open} readOnly />
             <span className="toggle-slider" />
           </div>
           <button className="btn btn-sm"
-            style={{ background: view !== 'orders' ? 'rgba(255,255,255,0.3)' : 'rgba(255,255,255,0.15)', color: 'white', fontSize: 12 }}
+            style={{ background: view !== 'orders' ? 'var(--primary)' : 'var(--border)', color: view !== 'orders' ? 'white' : 'var(--text)', fontSize: 12 }}
             onClick={() => setView(view === 'settings' ? 'orders' : 'settings')}>
             {view === 'orders' ? 'Conta' : 'Pedidos'}
           </button>
           <button className="btn btn-sm"
-            style={{ background: 'rgba(255,255,255,0.15)', color: 'white', fontSize: 12 }}
+            style={{ background: 'var(--border)', color: 'var(--text)', fontSize: 12 }}
             onClick={logout}>Sair</button>
         </div>
       </div>
 
       <div className="container">
-        <div className="card" style={{
-          background: open
-            ? 'linear-gradient(135deg, #E8F5E9, #C8E6C9)'
-            : 'linear-gradient(135deg, #FFEBEE, #FFCDD2)',
-          textAlign: 'center'
-        }}>
-          <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 4 }}>
-            {open ? 'Loja ABERTA - Aceitando pedidos' : 'Loja FECHADA - Entregas encerradas'}
-          </div>
-          <div className="text-xs text-muted">
-            {open ? 'Os clientes podem fazer pedidos' : 'Clientes verão que as entregas já encerraram'}
-          </div>
-        </div>
-
         {view === 'settings' ? (
           <>
             <div className="flex-row" style={{ marginBottom: 16 }}>

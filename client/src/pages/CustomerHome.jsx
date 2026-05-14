@@ -149,7 +149,7 @@ export default function CustomerHome() {
       <div className="header">
         <div className="header-left">
           <button className="btn btn-sm"
-            style={{ background: 'rgba(255,255,255,0.15)', color: 'white', fontSize: 13, padding: '6px 10px' }}
+            style={{ background: 'var(--border)', color: 'var(--primary-dark)', fontSize: 13, padding: '6px 10px', fontWeight: 700 }}
             onClick={() => navigate('/customer')}>
             &larr; Lojas
           </button>
@@ -174,9 +174,9 @@ export default function CustomerHome() {
               </div>
             )}
             <div>
-              <div style={{ fontSize: 13, fontWeight: 700, color: 'white', lineHeight: 1.2 }}>{user?.name?.split(' ')[0]}</div>
+              <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text)', lineHeight: 1.2 }}>{user?.name?.split(' ')[0]}</div>
               <div onClick={(e) => { e.stopPropagation(); logout(); }}
-                style={{ fontSize: 10, color: 'rgba(255,255,255,0.6)', cursor: 'pointer', lineHeight: 1 }}>
+                style={{ fontSize: 10, color: 'var(--text-light)', cursor: 'pointer', lineHeight: 1 }}>
                 Sair
               </div>
             </div>
