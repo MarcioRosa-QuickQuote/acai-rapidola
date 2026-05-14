@@ -282,19 +282,20 @@ router.patch('/:id/status', authMiddleware, async (req, res) => {
   if (status === 'delivered' && order.motoboy_id) {
     await supabase.from('motoboy_earnings').insert({
       id: uuid(), motoboy_id: order.motoboy_id, order_id: req.params.id,
-      amount: order.delivery_fee || parseFloat((order.total * 0.2).toFixed(2)), status: 'pending'
+      amount: order.delivery_fee || parseFloat((order.total * 0.2).toFixed(2)), status: 'paid', paid_at: new Date().toISOString()
     });
   }
 
   if (status === 'delivered') {
     const storeAmount = order.total - (order.delivery_fee || 0);
-    const { data: store } = await supabase.from('stores').select('owner_id').eq('id', order.store_id).single();
     await supabase.from('store_earnings').insert({
       id: uuid(), store_id: order.store_id, order_id: req.params.id,
-      amount: parseFloat(storeAmount.toFixed(2)), status: 'pending'
+      amount: parseFloat(storeAmount.toFixed(2)), status: 'paid', paid_at: new Date().toISOString()
     });
+    const { data: store } = await supabase.from('stores').select('owner_id, pix_key').eq('id', order.store_id).single();
     if (store) {
-      await notifyUser(store.owner_id, 'Pedido Entregue!', `Pedido #${req.params.id.slice(0,8)} — R$ ${storeAmount.toFixed(2)} a receber.`, 'delivery');
+      const pixInfo = store.pix_key ? ` — PIX: ${store.pix_key}` : ' — Cadastre sua chave PIX na aba Conta';
+      await notifyUser(store.owner_id, 'Pedido Entregue + Pago!', `Pedido #${req.params.id.slice(0,8)} — R$ ${storeAmount.toFixed(2)} creditado.${pixInfo}`, 'delivery');
     }
   }
 
