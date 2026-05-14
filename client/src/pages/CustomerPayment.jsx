@@ -61,6 +61,7 @@ export default function CustomerPayment() {
         const res = await apiFetch(`/payment-status/${paymentId}`);
         if (res.status === 'approved') {
           clearInterval(timer);
+          await apiFetch('/pix/confirm', { method: 'POST', body: JSON.stringify({ order_id: id }) });
           navigate(`/customer/tracking/${id}`);
         }
       } catch {}

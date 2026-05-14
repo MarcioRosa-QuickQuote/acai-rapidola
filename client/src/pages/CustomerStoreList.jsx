@@ -7,12 +7,19 @@ export default function CustomerStoreList() {
   const [stores, setStores] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
+  const [activeOrder, setActiveOrder] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
     apiFetch('/stores').then(d => {
       if (d.data) setStores(d.data);
       setLoading(false);
+    });
+    apiFetch('/orders').then(d => {
+      if (d.data) {
+        const active = d.data.find(o => !['delivered','cancelled'].includes(o.status));
+        if (active) setActiveOrder(active);
+      }
     });
   }, []);
 
@@ -49,7 +56,22 @@ export default function CustomerStoreList() {
             <div className="header-title" style={{ fontSize: 18 }}>Pé de Açaí</div>
           </div>
         </div>
-        <div className="header-right" style={{ gap: 8 }}>
+        <div className="header-right" style={{ gap: 6 }}>
+          {activeOrder && (
+            <button className="btn btn-sm"
+              onClick={() => {
+                if (activeOrder.payment_status === 'paid') navigate(`/customer/tracking/${activeOrder.id}`);
+                else navigate(`/customer/payment/${activeOrder.id}`);
+              }}
+              style={{
+                background: activeOrder.payment_status === 'paid' ? '#E8F5E9' : '#FFF3E0',
+                color: activeOrder.payment_status === 'paid' ? '#2E7D32' : '#E65100',
+                fontSize: 11, fontWeight: 700, padding: '4px 10px',
+                border: 'none', borderRadius: 20, width: 'auto'
+              }}>
+              {activeOrder.payment_status === 'paid' ? '📦' : '🧾'}
+            </button>
+          )}
           <div onClick={() => navigate('/customer/conta')}
             style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
             {user?.photo_url ? (
