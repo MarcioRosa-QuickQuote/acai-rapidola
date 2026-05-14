@@ -32,7 +32,11 @@ export default function CustomerPayment() {
     const data = await apiFetch(`/orders/${id}`);
     if (data.ok || data.id) {
       setOrder(data);
-      if (data.payment_status !== 'paid') generatePix();
+      if (data.payment_status === 'paid') {
+        navigate(`/customer/tracking/${id}`);
+      } else {
+        generatePix();
+      }
     }
     setLoading(false);
   }
@@ -56,17 +60,20 @@ export default function CustomerPayment() {
   }
 
   function startPolling(paymentId) {
+    let confirmed = false;
     const timer = setInterval(async () => {
+      if (confirmed) return;
       try {
         const res = await apiFetch(`/payment-status/${paymentId}`);
         if (res.status === 'approved') {
+          confirmed = true;
           clearInterval(timer);
           await apiFetch('/pix/confirm', { method: 'POST', body: JSON.stringify({ order_id: id }) });
           navigate(`/customer/tracking/${id}`);
         }
       } catch {}
     }, 5000);
-    setTimeout(() => clearInterval(timer), 30 * 60 * 1000);
+    setTimeout(() => { clearInterval(timer); confirmed = true; }, 30 * 60 * 1000);
   }
 
   useEffect(() => {

@@ -200,6 +200,19 @@ router.post('/pix/confirm', authMiddleware, async (req, res) => {
   const { order_id } = req.body;
   const { data: order } = await supabase.from('orders').select('*').eq('id', order_id).single();
   if (!order) return res.status(404).json({ error: 'Pedido não encontrado' });
+  if (order.payment_status === 'paid') return res.json({ success: true, status: 'paid' });
+
+  if (mpClient && order.payment_id) {
+    try {
+      const paymentApi = new Payment(mpClient);
+      const payment = await paymentApi.get({ id: order.payment_id });
+      if (payment.status === 'approved') {
+        await confirmOrderPayment(order_id, order.store_id);
+        return res.json({ success: true, status: 'paid' });
+      }
+    } catch {}
+  }
+
   await confirmOrderPayment(order_id, order.store_id);
   res.json({ success: true, status: 'paid' });
 });
