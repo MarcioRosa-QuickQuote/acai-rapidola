@@ -147,9 +147,6 @@ router.post('/pix/qrcode', authMiddleware, async (req, res) => {
   if (order.payment_status === 'paid') return res.status(400).json({ error: 'Pedido ja foi pago' });
   if (!mpClient) return res.status(500).json({ error: 'Gateway não configurado' });
 
-  const paymentId = uuid();
-  await supabase.from('orders').update({ payment_id: paymentId }).eq('id', order_id);
-
   try {
     const paymentApi = new Payment(mpClient);
     const result = await paymentApi.create({
@@ -166,6 +163,8 @@ router.post('/pix/qrcode', authMiddleware, async (req, res) => {
         date_of_expiration: new Date(Date.now() + 30 * 60 * 1000).toISOString()
       }
     });
+
+    await supabase.from('orders').update({ payment_id: String(result.id) }).eq('id', order_id);
 
     const qrData = result.point_of_interaction?.transaction_data || {};
     res.json({
