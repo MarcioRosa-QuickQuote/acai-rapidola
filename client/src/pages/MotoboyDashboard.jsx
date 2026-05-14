@@ -156,24 +156,15 @@ export default function MotoboyDashboard() {
       <div className="header">
         <div className="header-left" style={{ gap: 10 }}>
           <img src="/logomarca.png" alt="Pé de Açaí"
-            style={{ width: 42, height: 42, borderRadius: 10, objectFit: 'contain', flexShrink: 0 }} />
+            style={{ width: 64, height: 64, borderRadius: 14, objectFit: 'contain', flexShrink: 0 }} />
           <div>
-            <div className="header-title" style={{ fontSize: 17 }}>Pé de Açaí</div>
+            <div className="header-title" style={{ fontSize: 18 }}>Pé de Açaí</div>
             <div style={{ fontSize: 11, color: 'var(--text-light)' }}>Motoboy</div>
           </div>
         </div>
-        <div className="header-right" style={{ gap: 8 }}>
-          <div className="toggle-switch" onClick={() => {
-            setOnline(!online);
-            if (!online) sendLocation();
-          }}>
-            <input type="checkbox" checked={online} readOnly />
-            <span className="toggle-slider" />
-          </div>
-          <span style={{ fontSize: 11, fontWeight: 600, color: online ? 'var(--success)' : 'var(--text-light)' }}>
-            {online ? 'Online' : 'Offline'}
-          </span>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer' }}>
+        <div className="header-right" style={{ gap: 6 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer' }}
+            onClick={() => setSelectedTab('profile')}>
             {user?.photo_url ? (
               <img src={user.photo_url} alt="Foto"
                 style={{ width: 30, height: 30, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }}
@@ -220,23 +211,37 @@ export default function MotoboyDashboard() {
           </div>
         )}
 
-        <div className="flex-row" style={{ marginBottom: 16 }}>
-          <button className={`btn btn-sm ${selectedTab === 'available' ? 'btn-primary' : 'btn-outline'}`}
-            onClick={() => setSelectedTab('available')}>
-            {isEmployee ? 'Pedidos da Loja' : 'Disponiveis'} ({availableOrders.length})
-          </button>
-          <button className={`btn btn-sm ${selectedTab === 'mine' ? 'btn-primary' : 'btn-outline'}`}
-            onClick={() => setSelectedTab('mine')}>
-            Minhas ({myOrders.length})
-          </button>
-          <button className={`btn btn-sm ${selectedTab === 'route' ? 'btn-primary' : 'btn-outline'}`}
-            onClick={() => {
-              setSelectedTab('route');
-              optimizeRoute();
+        <div className="flex-row" style={{ marginBottom: 16, justifyContent: 'space-between' }}>
+          <div className="flex-row">
+            <button className={`btn btn-sm ${selectedTab === 'available' ? 'btn-primary' : 'btn-outline'}`}
+              onClick={() => setSelectedTab('available')}>
+              {isEmployee ? 'Pedidos da Loja' : 'Disponiveis'} ({availableOrders.length})
+            </button>
+            <button className={`btn btn-sm ${selectedTab === 'mine' ? 'btn-primary' : 'btn-outline'}`}
+              onClick={() => setSelectedTab('mine')}>
+              Minhas ({myOrders.length})
+            </button>
+            <button className={`btn btn-sm ${selectedTab === 'route' ? 'btn-primary' : 'btn-outline'}`}
+              onClick={() => {
+                setSelectedTab('route');
+                optimizeRoute();
             }}>
             Rota
           </button>
         </div>
+        <div className="flex-row" style={{ gap: 8 }}>
+          <span style={{ fontSize: 11, fontWeight: 600, color: online ? 'var(--success)' : 'var(--text-light)' }}>
+            {online ? 'Online' : 'Offline'}
+          </span>
+          <div className="toggle-switch" onClick={() => {
+            setOnline(!online);
+            if (!online) sendLocation();
+          }}>
+            <input type="checkbox" checked={online} readOnly />
+            <span className="toggle-slider" />
+          </div>
+        </div>
+      </div>
 
         {selectedTab === 'available' && (
           <>
