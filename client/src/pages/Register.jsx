@@ -100,10 +100,10 @@ export default function Register() {
       }}>
         <div style={{
           background: 'linear-gradient(135deg, #4A148C 0%, #6A1B9A 50%, #9C27B0 100%)',
-          padding: '35px 30px 32px', textAlign: 'center', color: 'white'
+          padding: '20px 30px 18px', textAlign: 'center', color: 'white'
         }}>
-          <h1 style={{ fontSize: 28, fontWeight: 800, marginBottom: 4 }}>Pé de Açaí</h1>
-          <p style={{ opacity: 0.8, fontSize: 14 }}>Crie sua conta</p>
+          <h1 style={{ fontSize: 24, fontWeight: 800, marginBottom: 2 }}>Pé de Açaí</h1>
+          <p style={{ opacity: 0.8, fontSize: 13 }}>Crie sua conta</p>
           {inviteToken && (
             <div style={{
               background: 'rgba(255,255,255,0.15)', padding: '6px 14px',
@@ -115,21 +115,21 @@ export default function Register() {
           )}
         </div>
 
-        <div style={{ padding: '28px 30px' }}>
+        <div style={{ padding: '18px 30px 20px' }}>
           <form onSubmit={handleSubmit}>
             {error && (
               <div style={{
-                background: '#FFF0F0', color: '#C62828', padding: '12px 16px',
-                borderRadius: 12, marginBottom: 20, fontSize: 13,
-                border: '1px solid #FFCDD2', display: 'flex', alignItems: 'center', gap: 8
+                background: '#FFF0F0', color: '#C62828', padding: '10px 14px',
+                borderRadius: 10, marginBottom: 14, fontSize: 12,
+                border: '1px solid #FFCDD2', display: 'flex', alignItems: 'center', gap: 6
               }}>
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="#C62828"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="#C62828"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
                 {error}
               </div>
             )}
 
-            <div style={{ marginBottom: 16 }}>
-              <label style={{ fontSize: 13, fontWeight: 600, color: '#555', marginBottom: 6, display: 'block' }}>Nome completo</label>
+            <div style={{ marginBottom: 12 }}>
+              <label style={{ fontSize: 12, fontWeight: 600, color: '#555', marginBottom: 4, display: 'block' }}>Nome completo</label>
               <input
                 type="text" value={name} onChange={e => setName(e.target.value)}
                 placeholder="Seu nome" required
@@ -138,8 +138,8 @@ export default function Register() {
               />
             </div>
 
-            <div style={{ marginBottom: 16 }}>
-              <label style={{ fontSize: 13, fontWeight: 600, color: '#555', marginBottom: 6, display: 'block' }}>Telefone</label>
+            <div style={{ marginBottom: 12 }}>
+              <label style={{ fontSize: 12, fontWeight: 600, color: '#555', marginBottom: 4, display: 'block' }}>Telefone</label>
               <input
                 type="text" value={phone} onChange={e => setPhone(e.target.value)}
                 placeholder="(11) 99999-9999" required
@@ -152,8 +152,8 @@ export default function Register() {
               />
             </div>
 
-            <div style={{ marginBottom: 20 }}>
-              <label style={{ fontSize: 13, fontWeight: 600, color: '#555', marginBottom: 6, display: 'block' }}>Senha</label>
+            <div style={{ marginBottom: 14 }}>
+              <label style={{ fontSize: 12, fontWeight: 600, color: '#555', marginBottom: 4, display: 'block' }}>Senha</label>
               <input
                 type="password" value={password} onChange={e => setPassword(e.target.value)}
                 placeholder="Mínimo 6 caracteres" required minLength={6}
@@ -187,8 +187,8 @@ export default function Register() {
               </>
             )}
 
-            <div style={{ marginBottom: 20 }}>
-              <label style={{ fontSize: 13, fontWeight: 600, color: '#555', marginBottom: 8, display: 'block' }}>Tipo de conta</label>
+            <div style={{ marginBottom: 14 }}>
+              <label style={{ fontSize: 12, fontWeight: 600, color: '#555', marginBottom: 6, display: 'block' }}>Tipo de conta</label>
               <div style={{ display: 'flex', gap: 8 }}>
                 {[
                   { value: 'customer', label: 'Cliente', desc: 'Fazer pedidos' },
@@ -198,14 +198,14 @@ export default function Register() {
                   <div key={value}
                     onClick={() => setRole(value)}
                     style={{
-                      flex: 1, padding: '12px 8px', borderRadius: 12, textAlign: 'center',
+                      flex: 1, padding: '10px 6px', borderRadius: 10, textAlign: 'center',
                       border: `2px solid ${role === value ? '#9C27B0' : '#E8E0F0'}`,
                       background: role === value ? '#F3E5F5' : 'white',
                       transition: 'all 0.2s',
                       opacity: inviteToken && value !== 'motoboy' ? 0.5 : 1,
                       cursor: inviteToken && value !== 'motoboy' ? 'default' : 'pointer'
                     }}>
-                    <div style={{ fontWeight: 700, fontSize: 13, color: role === value ? '#6A1B9A' : '#444' }}>{label}</div>
+                    <div style={{ fontWeight: 700, fontSize: 12, color: role === value ? '#6A1B9A' : '#444' }}>{label}</div>
                     <div style={{ fontSize: 10, color: '#999' }}>{desc}</div>
                   </div>
                 ))}
@@ -213,17 +213,17 @@ export default function Register() {
             </div>
 
             <button type="submit" disabled={loading} style={{
-              width: '100%', padding: '15px',
+              width: '100%', padding: '13px',
               background: 'linear-gradient(135deg, #6A1B9A, #9C27B0)',
-              color: 'white', border: 'none', borderRadius: 12,
-              fontSize: 16, fontWeight: 700, cursor: loading ? 'default' : 'pointer',
+              color: 'white', border: 'none', borderRadius: 10,
+              fontSize: 15, fontWeight: 700, cursor: loading ? 'default' : 'pointer',
               opacity: loading ? 0.7 : 1,
               boxShadow: '0 4px 14px rgba(106,27,154,0.4)'
             }}>
               {loading ? 'Criando conta...' : 'Cadastrar'}
             </button>
 
-            <p style={{ textAlign: 'center', marginTop: 20, fontSize: 14, color: '#888' }}>
+            <p style={{ textAlign: 'center', marginTop: 14, fontSize: 13, color: '#888' }}>
               Já tem conta?{' '}
               <Link to="/login" style={{ color: '#6A1B9A', fontWeight: 700, textDecoration: 'none' }}>Entrar</Link>
             </p>

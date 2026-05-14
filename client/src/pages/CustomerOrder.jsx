@@ -54,6 +54,23 @@ export default function CustomerOrder() {
   const [addressSuggestions, setAddressSuggestions] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
 
+  function shortAddress(addr) {
+    if (!addr) return '';
+    const parts = addr.split(',').map(p => p.trim());
+    if (parts.length <= 2) return addr;
+    return parts.slice(0, 2).join(', ');
+  }
+
+  function formatAddressLines(addr) {
+    if (!addr) return { line1: '', line2: '', line3: '' };
+    const parts = addr.split(',').map(p => p.trim());
+    return {
+      line1: parts.slice(0, 2).join(', '),
+      line2: parts[2] || '',
+      line3: parts.slice(3, 5).join(', ')
+    };
+  }
+
   useEffect(() => {
     if (orderItems.some(i => (i.size_ml || product?.size_ml) >= 1000)) {
       setSplitLiter(splitCount > 0);
@@ -362,7 +379,7 @@ export default function CustomerOrder() {
               <label className="label">Endereço de entrega</label>
               {user?.address && !editAddr ? (
                 <div>
-                  <div style={{ fontSize: 15, fontWeight: 600, color: '#333', marginBottom: 6 }}>{user.address}</div>
+                  <div style={{ fontSize: 15, fontWeight: 600, color: '#333', marginBottom: 6 }}>{shortAddress(user.address)}</div>
                   <button type="button" className="btn btn-sm btn-outline"
                     onClick={() => { setEditAddr(true); setAddress(user.address); }}>
                     Alterar endereço

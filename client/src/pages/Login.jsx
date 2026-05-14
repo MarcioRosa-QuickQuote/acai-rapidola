@@ -110,14 +110,14 @@ export default function Login() {
         {/* Banner */}
         <div style={{
           background: 'linear-gradient(135deg, #4A148C 0%, #6A1B9A 50%, #9C27B0 100%)',
-          padding: '16px 30px 14px',
+          padding: '10px 30px 8px',
           textAlign: 'center', color: 'white',
           position: 'relative', overflow: 'hidden'
         }}>
           <div style={{
-            position: 'absolute', width: 200, height: 200, borderRadius: '50%',
+            position: 'absolute', width: 150, height: 150, borderRadius: '50%',
             background: 'radial-gradient(circle, rgba(255,255,255,0.1), transparent)',
-            top: -60, left: '50%',
+            top: -40, left: '50%',
             transform: `translate(-50%, ${mousePos.y * 10}px)`,
             transition: 'transform 0.8s ease-out'
           }} />
@@ -126,15 +126,15 @@ export default function Login() {
             src="/logomarca.png"
             alt="Pé de Açaí"
             style={{
-              width: 200, height: 200, borderRadius: 28,
+              width: 100, height: 100, borderRadius: 20,
               objectFit: 'contain',
               position: 'relative', zIndex: 1,
-              marginBottom: 4,
+              marginBottom: 2,
               filter: 'drop-shadow(0 4px 12px rgba(0,0,0,0.25))'
             }}
           />
           <p style={{
-            opacity: 0.75, fontSize: 13, fontWeight: 400,
+            opacity: 0.75, fontSize: 11, fontWeight: 400,
             position: 'relative', zIndex: 1, margin: 0
           }}>
             O jeito mais rápido de pedir seu açaí
@@ -142,21 +142,21 @@ export default function Login() {
         </div>
 
         {/* Form */}
-        <div style={{ padding: '20px 30px 24px' }}>
+        <div style={{ padding: '16px 30px 20px' }}>
           <form onSubmit={handleSubmit}>
             {error && (
               <div style={{
-                background: '#FFF0F0', color: '#C62828', padding: '12px 16px',
-                borderRadius: 12, marginBottom: 20, fontSize: 13,
-                border: '1px solid #FFCDD2', display: 'flex', alignItems: 'center', gap: 8
+                background: '#FFF0F0', color: '#C62828', padding: '10px 14px',
+                borderRadius: 10, marginBottom: 16, fontSize: 12,
+                border: '1px solid #FFCDD2', display: 'flex', alignItems: 'center', gap: 6
               }}>
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="#C62828"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="#C62828"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
                 {error}
               </div>
             )}
 
-            <div style={{ marginBottom: 20 }}>
-              <label style={{ fontSize: 13, fontWeight: 600, color: '#555', marginBottom: 6, display: 'block' }}>
+            <div style={{ marginBottom: 14 }}>
+              <label style={{ fontSize: 12, fontWeight: 600, color: '#555', marginBottom: 4, display: 'block' }}>
                 Telefone
               </label>
               <input
@@ -164,8 +164,8 @@ export default function Login() {
                 onChange={e => setPhone(e.target.value)}
                 placeholder="(11) 99999-9999" required
                 style={{
-                  width: '100%', padding: '14px 16px', fontSize: 16,
-                  border: '2px solid #E8E0F0', borderRadius: 12, outline: 'none',
+                  width: '100%', padding: '12px 14px', fontSize: 15,
+                  border: '2px solid #E8E0F0', borderRadius: 10, outline: 'none',
                   transition: 'border-color 0.2s, box-shadow 0.2s',
                   boxSizing: 'border-box'
                 }}
@@ -174,8 +174,8 @@ export default function Login() {
               />
             </div>
 
-            <div style={{ marginBottom: 24 }}>
-              <label style={{ fontSize: 13, fontWeight: 600, color: '#555', marginBottom: 6, display: 'block' }}>
+            <div style={{ marginBottom: 18 }}>
+              <label style={{ fontSize: 12, fontWeight: 600, color: '#555', marginBottom: 4, display: 'block' }}>
                 Senha
               </label>
               <input
@@ -183,8 +183,8 @@ export default function Login() {
                 onChange={e => setPassword(e.target.value)}
                 placeholder="Sua senha" required
                 style={{
-                  width: '100%', padding: '14px 16px', fontSize: 16,
-                  border: '2px solid #E8E0F0', borderRadius: 12, outline: 'none',
+                  width: '100%', padding: '12px 14px', fontSize: 15,
+                  border: '2px solid #E8E0F0', borderRadius: 10, outline: 'none',
                   transition: 'border-color 0.2s, box-shadow 0.2s',
                   boxSizing: 'border-box'
                 }}
@@ -194,10 +194,10 @@ export default function Login() {
             </div>
 
             <button type="submit" disabled={loading} style={{
-              width: '100%', padding: '15px',
+              width: '100%', padding: '13px',
               background: 'linear-gradient(135deg, #6A1B9A, #9C27B0)',
-              color: 'white', border: 'none', borderRadius: 12,
-              fontSize: 16, fontWeight: 700,
+              color: 'white', border: 'none', borderRadius: 10,
+              fontSize: 15, fontWeight: 700,
               cursor: loading ? 'default' : 'pointer',
               opacity: loading ? 0.7 : 1,
               transition: 'box-shadow 0.2s, transform 0.15s',
@@ -209,7 +209,7 @@ export default function Login() {
               {loading ? 'Entrando...' : 'Entrar'}
             </button>
 
-            <p style={{ textAlign: 'center', marginTop: 20, fontSize: 14, color: '#888' }}>
+            <p style={{ textAlign: 'center', marginTop: 16, fontSize: 13, color: '#888' }}>
               Não tem conta?{' '}
               <Link to="/register" style={{ color: '#6A1B9A', fontWeight: 700, textDecoration: 'none' }}>
                 Cadastre-se
@@ -217,14 +217,14 @@ export default function Login() {
             </p>
           </form>
 
-          <div style={{ marginTop: 24, borderTop: '1px solid #F3E5F5', paddingTop: 16, textAlign: 'center' }}>
+          <div style={{ marginTop: 18, borderTop: '1px solid #F3E5F5', paddingTop: 12, textAlign: 'center' }}>
             <button onClick={() => setShowTest(!showTest)} style={{
               background: 'none', border: 'none', color: '#CCC', fontSize: 11, cursor: 'pointer'
             }}>
               {showTest ? 'Ocultar' : 'Contas de teste'}
             </button>
             {showTest && (
-              <div style={{ marginTop: 8, display: 'flex', gap: 6, justifyContent: 'center', flexWrap: 'wrap' }}>
+              <div style={{ marginTop: 6, display: 'flex', gap: 6, justifyContent: 'center', flexWrap: 'wrap' }}>
                 {[
                   { role: 'store', label: 'Loja', bg: '#F3E5F5', color: '#6A1B9A' },
                   { role: 'motoboy', label: 'Motoboy', bg: '#E8F5E9', color: '#2E7D32' },
@@ -232,7 +232,7 @@ export default function Login() {
                 ].map(({ role, label, bg, color }) => (
                   <button key={role} onClick={() => fillTest(role)} style={{
                     background: bg, color, border: 'none',
-                    padding: '6px 14px', borderRadius: 20, fontSize: 12, fontWeight: 600, cursor: 'pointer'
+                    padding: '6px 12px', borderRadius: 20, fontSize: 11, fontWeight: 600, cursor: 'pointer'
                   }}>{label}</button>
                 ))}
               </div>

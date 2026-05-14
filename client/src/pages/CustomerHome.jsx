@@ -36,6 +36,18 @@ export default function CustomerHome() {
   const [mainTab, setMainTab] = useState('menu');
   const [contaTab, setContaTab] = useState('enderecos');
   const [showCepConta, setShowCepConta] = useState(false);
+  const [contaMapLat, setContaMapLat] = useState(null);
+  const [contaMapLng, setContaMapLng] = useState(null);
+
+  function formatAddressLines(addr) {
+    if (!addr) return { line1: '', line2: '', line3: '' };
+    const parts = addr.split(',').map(p => p.trim());
+    return {
+      line1: parts.slice(0, 2).join(', '),
+      line2: parts[2] || '',
+      line3: parts.slice(3, 5).join(', ')
+    };
+  }
   const [searchParams] = useSearchParams();
   const [cart, setCart] = useState({});
   const [splitItems, setSplitItems] = useState({});
@@ -276,6 +288,32 @@ export default function CustomerHome() {
     function selectAddress(suggestion) {
       setAddrForm(suggestion.display_name);
       setShowSuggestions(false);
+      if (suggestion.lat && suggestion.lon) {
+        setContaMapLat(parseFloat(suggestion.lat));
+        setContaMapLng(parseFloat(suggestion.lon));
+      }
+    }
+
+    async function geocodeConta() {
+      const addr = addrForm || user?.address;
+      if (!addr || addr.length < 5) return;
+      setSavingAddr(true);
+      try {
+        const res = await fetch(`/api/orders/geocode?q=${encodeURIComponent(addr)}`);
+        const data = await res.json();
+        if (data.length > 0) {
+          setContaMapLat(parseFloat(data[0].lat));
+          setContaMapLng(parseFloat(data[0].lon));
+        } else {
+          setAddrMsg('Endereço não encontrado');
+          setTimeout(() => setAddrMsg(''), 3000);
+        }
+      } catch {
+        setAddrMsg('Erro ao buscar endereço');
+        setTimeout(() => setAddrMsg(''), 3000);
+      } finally {
+        setSavingAddr(false);
+      }
     }
 
     async function uploadPhoto(file) {
@@ -362,12 +400,19 @@ export default function CustomerHome() {
                   </svg>
                   {savingAddr ? 'Obtendo localização...' : 'Usar minha localização atual'}
                 </button>
-                <input className="input" type="text" value={currentAddr}
-                  onChange={e => { setAddrForm(e.target.value); searchAddress(e.target.value); }}
-                  onFocus={() => { if (addressSuggestions.length > 0) setShowSuggestions(true); }}
-                  onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
-                  placeholder="Rua, número, bairro - Cidade"
-                  style={{ marginBottom: 8 }} />
+                <div className="flex-row" style={{ gap: 8, marginBottom: 8 }}>
+                  <input className="input" type="text" value={currentAddr}
+                    onChange={e => { setAddrForm(e.target.value); searchAddress(e.target.value); }}
+                    onFocus={() => { if (addressSuggestions.length > 0) setShowSuggestions(true); }}
+                    onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
+                    placeholder="Rua, número, bairro - Cidade"
+                    style={{ flex: 1 }} />
+                  <button type="button" className="btn btn-sm btn-secondary"
+                    onClick={geocodeConta} disabled={savingAddr}
+                    style={{ width: 'auto', whiteSpace: 'nowrap' }}>
+                    {savingAddr ? '...' : 'Buscar'}
+                  </button>
+                </div>
                 {showSuggestions && addressSuggestions.length > 0 && (
                   <div style={{
                     position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 10,
@@ -404,22 +449,38 @@ export default function CustomerHome() {
                     </button>
                   </div>
                 )}
-                {user?.lat && user?.lng && (
-                  <div style={{ height: 200, borderRadius: 8, overflow: 'hidden', border: '1px solid var(--border)', marginBottom: 12 }}>
+                {(contaMapLat || user?.lat) && (contaMapLng || user?.lng) && (
+                  <div>
+                    {user?.address && (
+                      <div style={{ marginBottom: 8, fontSize: 13, color: '#555', lineHeight: 1.5 }}>
+                        {(() => {
+                          const addr = formatAddressLines(user.address);
+                          return (
+                            <>
+                              <div style={{ fontWeight: 600, color: '#333' }}>{addr.line1}</div>
+                              {addr.line2 && <div>{addr.line2}</div>}
+                              {addr.line3 && <div>{addr.line3}</div>}
+                            </>
+                          );
+                        })()}
+                      </div>
+                    )}
+                    <div style={{ height: 200, borderRadius: 8, overflow: 'hidden', border: '1px solid var(--border)', marginBottom: 12 }}>
                     <MapContainer
-                      center={[user.lat, user.lng]}
+                      center={[contaMapLat || user.lat, contaMapLng || user.lng]}
                       zoom={16}
                       style={{ height: '100%', width: '100%' }}
-                      key={`conta-${user.lat}-${user.lng}`}
+                      key={`conta-${contaMapLat || user.lat}-${contaMapLng || user.lng}`}
                       scrollWheelZoom={false}
                     >
                       <TileLayer
                         attribution='&copy; OpenStreetMap'
                         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                       />
-                      <Marker position={[user.lat, user.lng]} />
+                      <Marker position={[contaMapLat || user.lat, contaMapLng || user.lng]} />
                     </MapContainer>
                   </div>
+                </div>
                 )}
                 {addrMsg && <div style={{ fontSize: 13, fontWeight: 600, color: addrMsg.includes('Erro') || addrMsg.includes('não') ? '#C62828' : '#2E7D32', marginBottom: 8 }}>{addrMsg}</div>}
                 <div style={{ display: 'flex', gap: 8 }}>
