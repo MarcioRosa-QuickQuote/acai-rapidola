@@ -34,9 +34,17 @@ export default function CustomerPayment() {
       setOrder(data);
       if (data.payment_status === 'paid') {
         navigate(`/customer/tracking/${id}`);
-      } else {
-        generatePix();
+        return;
       }
+      if (data.payment_id) {
+        const statusRes = await apiFetch(`/payment-status/${data.payment_id}`);
+        if (statusRes.status === 'approved') {
+          await apiFetch('/pix/confirm', { method: 'POST', body: JSON.stringify({ order_id: id }) });
+          navigate(`/customer/tracking/${id}`);
+          return;
+        }
+      }
+      generatePix();
     }
     setLoading(false);
   }

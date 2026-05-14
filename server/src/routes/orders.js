@@ -255,10 +255,15 @@ router.patch('/:id/status', authMiddleware, async (req, res) => {
     return res.status(400).json({ error: 'Status inválido' });
   }
 
-  const { data: order } = await supabase.from('orders').select('*').eq('id', req.params.id).single();
-  if (!order) return res.status(404).json({ error: 'Pedido não encontrado' });
-
-  if (req.user.role === 'store') {
+  if (req.user.role === 'customer') {
+    if (order.customer_id !== req.user.id) {
+      return res.status(403).json({ error: 'Não autorizado' });
+    }
+    if (status !== 'cancelled') {
+      return res.status(403).json({ error: 'Você só pode cancelar seus pedidos' });
+    }
+   
+  } else if (req.user.role === 'store') {
     const { data: store } = await supabase.from('stores').select('*').eq('owner_id', req.user.id).single();
     if (!store || order.store_id !== store.id) {
       return res.status(403).json({ error: 'Não autorizado' });
