@@ -46,6 +46,7 @@ export default function StoreDashboard() {
   const fileRef = useRef(null);
   const [logoSaving, setLogoSaving] = useState(false);
   const [settingsTab, setSettingsTab] = useState('produtos');
+  const [orderFilter, setOrderFilter] = useState('ativos');
   const [motoboys, setMotoboys] = useState([]);
   const [motoboyPhone, setMotoboyPhone] = useState('');
   const [motoboyMsg, setMotoboyMsg] = useState('');
@@ -336,8 +337,20 @@ export default function StoreDashboard() {
 
   if (loading) return <div className="loading"><div className="spinner" /></div>;
 
+  const unpaidOrders = orders.filter(o => o.payment_status !== 'paid');
   const pendingOrders = orders.filter(o => o.payment_status === 'paid' && !['delivered','cancelled'].includes(o.status));
   const paidOrders = orders.filter(o => o.payment_status === 'paid');
+  
+  const now = Date.now();
+  const staleUnpaid = unpaidOrders.filter(o => {
+    const created = new Date(o.created_at).getTime();
+    return (now - created) > 2 * 60 * 60 * 1000;
+  });
+  
+  const displayOrders = orderFilter === 'ativos' ? pendingOrders : orderFilter === 'pendentes' ? unpaidOrders.filter(o => {
+    const created = new Date(o.created_at).getTime();
+    return (now - created) <= 2 * 60 * 60 * 1000;
+  }) : orders;
 
   return (
     <div>
@@ -389,6 +402,14 @@ export default function StoreDashboard() {
               <button className={`btn btn-sm ${settingsTab === 'motoboys' ? 'btn-primary' : 'btn-outline'}`}
                 onClick={() => setSettingsTab('motoboys')}>
                 Motoboys ({motoboys.length})
+              </button>
+              <button className={`btn btn-sm ${settingsTab === 'financeiro' ? 'btn-primary' : 'btn-outline'}`}
+                onClick={() => setSettingsTab('financeiro')}>
+                Financeiro
+              </button>
+              <button className={`btn btn-sm ${settingsTab === 'assinatura' ? 'btn-primary' : 'btn-outline'}`}
+                onClick={() => setSettingsTab('assinatura')}>
+                Assinatura
               </button>
             </div>
 
@@ -747,6 +768,49 @@ export default function StoreDashboard() {
             </div>
             </>
             )}
+
+            {settingsTab === 'financeiro' && (
+              <div className="card" style={{ textAlign: 'left' }}>
+                <div className="page-title" style={{ fontSize: 20 }}>Financeiro</div>
+                <div style={{ display: 'flex', gap: 12, marginBottom: 16 }}>
+                  <div className="card text-center" style={{ flex: 1, background: 'linear-gradient(135deg, #E8F5E9, #C8E6C9)', padding: 16 }}>
+                    <div style={{ fontSize: 24, fontWeight: 800, color: 'var(--secondary)' }}>
+                      R$ {paidOrders.reduce((s, o) => s + o.total, 0).toFixed(2)}
+                    </div>
+                    <div style={{ fontSize: 12, fontWeight: 600, color: '#2E7D32' }}>Total vendido (mês)</div>
+                  </div>
+                  <div className="card text-center" style={{ flex: 1, background: 'linear-gradient(135deg, #F3E5F5, #E1BEE7)', padding: 16 }}>
+                    <div style={{ fontSize: 24, fontWeight: 800, color: 'var(--primary)' }}>{paidOrders.length}</div>
+                    <div style={{ fontSize: 12, fontWeight: 600, color: '#6A1B9A' }}>Pedidos pagos</div>
+                  </div>
+                </div>
+                <div className="card" style={{ background: '#FFF8E1', border: '1px solid #FFE082', textAlign: 'center' }}>
+                  <div style={{ fontSize: 13, fontWeight: 600, color: '#F57F17', marginBottom: 4 }}>Relatório completo</div>
+                  <div style={{ fontSize: 12, color: '#999' }}>Em breve: exportação de relatórios fiscais e extratos</div>
+                </div>
+              </div>
+            )}
+
+            {settingsTab === 'assinatura' && (
+              <div className="card" style={{ textAlign: 'left' }}>
+                <div className="page-title" style={{ fontSize: 20 }}>Assinatura</div>
+                <div style={{
+                  background: 'linear-gradient(135deg, #6A1B9A, #4A148C)',
+                  borderRadius: 14, padding: 24, color: 'white', textAlign: 'center', marginBottom: 16
+                }}>
+                  <div style={{ fontSize: 13, opacity: 0.8, marginBottom: 4 }}>Plano Atual</div>
+                  <div style={{ fontSize: 36, fontWeight: 800 }}>R$ 89<span style={{ fontSize: 16, fontWeight: 400 }}>/mês</span></div>
+                  <div style={{ fontSize: 12, opacity: 0.7, marginTop: 6 }}>Plano Profissional</div>
+                </div>
+                <div style={{ fontSize: 13, color: 'var(--text-light)', lineHeight: 1.6 }}>
+                  <div style={{ marginBottom: 8 }}>✅ Pedidos ilimitados</div>
+                  <div style={{ marginBottom: 8 }}>✅ Até 5 motoboys parceiros</div>
+                  <div style={{ marginBottom: 8 }}>✅ Pagamento via Mercado Pago</div>
+                  <div style={{ marginBottom: 8 }}>✅ Gestão de cardápio</div>
+                  <div style={{ marginBottom: 8 }}>✅ Suporte prioritário</div>
+                </div>
+              </div>
+            )}
           </>
         ) : (
           <>
@@ -765,7 +829,18 @@ export default function StoreDashboard() {
 
             <div className="page-title">Pedidos</div>
 
-            {orders.length === 0 ? (
+            <div className="flex-row" style={{ marginBottom: 14 }}>
+              <button className={`btn btn-sm ${orderFilter === 'ativos' ? 'btn-primary' : 'btn-outline'}`}
+                onClick={() => setOrderFilter('ativos')}>
+                Ativos ({pendingOrders.length})
+              </button>
+              <button className={`btn btn-sm ${orderFilter === 'pendentes' ? 'btn-primary' : 'btn-outline'}`}
+                onClick={() => setOrderFilter('pendentes')}>
+                Pendentes ({unpaidOrders.filter(o => (now - new Date(o.created_at).getTime()) <= 2*60*60*1000).length})
+              </button>
+            </div>
+
+            {displayOrders.length === 0 ? (
               <div className="empty-state">
                 <div className="empty-state-icon">
                   <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
@@ -776,7 +851,7 @@ export default function StoreDashboard() {
                 <p>Nenhum pedido ainda</p>
               </div>
             ) : (
-              orders.map(order => (
+              displayOrders.map(order => (
                 <div key={order.id} className="card">
                   <div className="flex-between" style={{ marginBottom: 6 }}>
                     <div>
