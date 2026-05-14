@@ -294,15 +294,7 @@ export default function CustomerOrder() {
       });
       console.log('[Order response]', data);
       if (data.order?.id) {
-        const mpData = await apiFetch('/create-preference', {
-          method: 'POST',
-          body: JSON.stringify({ order_id: data.order.id })
-        });
-        if (mpData.init_point) {
-          window.location.href = mpData.init_point;
-        } else {
-          navigate(`/customer/payment/${data.order.id}`);
-        }
+        navigate(`/customer/payment/${data.order.id}`);
       } else {
         const msg = data.error || data.message || JSON.stringify(data);
         setError(msg || 'Erro ao criar pedido');

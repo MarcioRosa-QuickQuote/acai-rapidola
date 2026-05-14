@@ -9,8 +9,11 @@ export default function CustomerPayment() {
   const { socket, joinOrder } = useSocket();
   const navigate = useNavigate();
   const [order, setOrder] = useState(null);
-  const [paying, setPaying] = useState(false);
+  const [pix, setPix] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [copied, setCopied] = useState(false);
+  const [countdown, setCountdown] = useState(1800);
 
   useEffect(() => {
     joinOrder(id);
@@ -27,30 +30,66 @@ export default function CustomerPayment() {
 
   async function loadOrder() {
     const data = await apiFetch(`/orders/${id}`);
-    if (data.ok || data.id) setOrder(data);
+    if (data.ok || data.id) {
+      setOrder(data);
+      if (data.payment_status !== 'paid') generatePix();
+    }
+    setLoading(false);
   }
 
-  async function pagar() {
-    setPaying(true);
+  async function generatePix() {
     setError('');
     try {
-      const data = await apiFetch('/create-preference', {
+      const data = await apiFetch('/pix/qrcode', {
         method: 'POST',
         body: JSON.stringify({ order_id: id })
       });
-      if (data.init_point) {
-        window.location.href = data.init_point;
+      if (data.success) {
+        setPix(data);
+        startPolling(data.payment_id);
       } else if (data.error) {
         setError(data.error);
       }
     } catch {
-      setError('Erro ao iniciar pagamento.');
-    } finally {
-      setPaying(false);
+      setError('Erro ao gerar PIX. Tente novamente.');
     }
   }
 
-  if (!order) return <div className="loading"><div className="spinner" /></div>;
+  function startPolling(paymentId) {
+    const timer = setInterval(async () => {
+      try {
+        const res = await apiFetch(`/payment-status/${paymentId}`);
+        if (res.status === 'approved') {
+          clearInterval(timer);
+          navigate(`/customer/tracking/${id}`);
+        }
+      } catch {}
+    }, 5000);
+    setTimeout(() => clearInterval(timer), 30 * 60 * 1000);
+  }
+
+  useEffect(() => {
+    if (!pix) return;
+    const t = setInterval(() => {
+      setCountdown(prev => {
+        if (prev <= 1) { clearInterval(t); return 0; }
+        return prev - 1;
+      });
+    }, 1000);
+    return () => clearInterval(t);
+  }, [pix]);
+
+  function copyPix() {
+    if (!pix?.pix_copy_paste) return;
+    navigator.clipboard.writeText(pix.pix_copy_paste);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  }
+
+  const minutes = Math.floor(countdown / 60);
+  const seconds = countdown % 60;
+
+  if (loading) return <div className="loading"><div className="spinner" /></div>;
 
   return (
     <div>
@@ -58,7 +97,7 @@ export default function CustomerPayment() {
         <div className="header-left">
           <button className="btn btn-sm"
             style={{ background: 'var(--border)', color: 'var(--primary-dark)', fontSize: 13, fontWeight: 700 }}
-            onClick={() => navigate('/customer')}>
+            onClick={() => navigate(-1)}>
             Voltar
           </button>
         </div>
@@ -67,45 +106,83 @@ export default function CustomerPayment() {
       </div>
 
       <div className="container" style={{ textAlign: 'center' }}>
-        <div className="card">
-          <div style={{ fontSize: 48, marginBottom: 8 }}>
-            <svg width="80" height="80" viewBox="0 0 80 80" fill="none">
-              <rect x="10" y="20" width="60" height="40" rx="6" stroke="#6A1B9A" strokeWidth="3" fill="#F3E5F5"/>
-              <path d="M25 35h30M25 42h20" stroke="#6A1B9A" strokeWidth="3" strokeLinecap="round"/>
-              <circle cx="58" cy="38" r="12" fill="#2E7D32"/>
-              <path d="M54 38l2.5 2.5L62 35" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-          </div>
-          <div style={{ fontSize: 28, fontWeight: 800, color: 'var(--primary)' }}>
+        <div className="card" style={{ background: 'linear-gradient(135deg, #F3E5F5, #E1BEE7)', border: '1px solid #CE93D8' }}>
+          <div style={{ fontSize: 13, fontWeight: 600, color: '#6A1B9A', marginBottom: 4 }}>Valor do pedido</div>
+          <div style={{ fontSize: 32, fontWeight: 800, color: 'var(--primary-dark)' }}>
             R$ {order.total.toFixed(2)}
           </div>
-          {order.delivery_fee > 0 && (
-            <p className="text-xs text-muted mt-2">
-              Inclui R$ {order.delivery_fee.toFixed(2)} de taxa de entrega
-            </p>
-          )}
         </div>
 
-        <div className="card">
-          {error && (
-            <div style={{
-              background: '#FFEBEE', color: '#C62828', padding: 10,
-              borderRadius: 8, marginBottom: 12, fontSize: 13
-            }}>
-              {error}
+        {order.payment_status === 'paid' ? (
+          <div className="card" style={{ background: '#E8F5E9', border: '1px solid #C8E6C9', textAlign: 'center' }}>
+            <div style={{ fontSize: 48, marginBottom: 8 }}>✅</div>
+            <div style={{ fontSize: 18, fontWeight: 700, color: '#2E7D32' }}>Pagamento confirmado!</div>
+            <p className="text-sm text-muted mt-2">Redirecionando para acompanhar seu pedido...</p>
+          </div>
+        ) : pix ? (
+          <div className="card" style={{ padding: '16px 20px' }}>
+            <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text)', marginBottom: 12 }}>
+              Pague com PIX
             </div>
-          )}
 
-          <button className="btn btn-primary"
-            onClick={pagar} disabled={paying}
-            style={{ padding: '16px 32px', fontSize: 18, fontWeight: 700, borderRadius: 12 }}>
-            {paying ? 'Redirecionando...' : 'Ir para Pagamento'}
-          </button>
+            {pix.qr_code_base64 && (
+              <div style={{
+                background: 'white', padding: 16, borderRadius: 12,
+                display: 'inline-block', border: '2px solid #E8E0F0', marginBottom: 16
+              }}>
+                <img src={`data:image/png;base64,${pix.qr_code_base64}`}
+                  alt="QR Code PIX" style={{ width: 200, height: 200, display: 'block' }} />
+              </div>
+            )}
 
-          <p className="text-xs text-muted mt-4">
-            Pagamento seguro via Mercado Pago
-          </p>
-        </div>
+            {pix.pix_copy_paste && (
+              <div style={{ textAlign: 'left', marginBottom: 16 }}>
+                <div style={{ fontSize: 11, fontWeight: 600, color: '#999', marginBottom: 6 }}>
+                  Ou copie o código PIX:
+                </div>
+                <div style={{ display: 'flex', gap: 8 }}>
+                  <div style={{
+                    flex: 1, background: '#F5F5F5', padding: '10px 12px', borderRadius: 8,
+                    fontSize: 11, wordBreak: 'break-all', color: '#666', border: '1px solid #E0E0E0',
+                    maxHeight: 60, overflow: 'auto'
+                  }}>
+                    {pix.pix_copy_paste}
+                  </div>
+                  <button className="btn btn-sm btn-primary"
+                    onClick={copyPix} style={{ width: 'auto', whiteSpace: 'nowrap', padding: '10px 16px' }}>
+                    {copied ? 'Copiado!' : 'Copiar'}
+                  </button>
+                </div>
+              </div>
+            )}
+
+            <div style={{
+              background: '#FFF3E0', borderRadius: 8, padding: '10px 14px',
+              fontSize: 12, color: '#E65100', fontWeight: 600
+            }}>
+              Expira em {minutes}:{seconds.toString().padStart(2, '0')}
+            </div>
+
+            <p className="text-xs text-muted mt-3">
+              Pagamento seguro via Mercado Pago
+            </p>
+          </div>
+        ) : (
+          <div className="card">
+            {error && (
+              <div style={{
+                background: '#FFEBEE', color: '#C62828', padding: 10,
+                borderRadius: 8, marginBottom: 12, fontSize: 13
+              }}>
+                {error}
+              </div>
+            )}
+            <button className="btn btn-primary" onClick={generatePix}
+              style={{ padding: '16px 32px', fontSize: 18, fontWeight: 700, borderRadius: 12 }}>
+              Gerar PIX
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

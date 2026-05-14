@@ -145,7 +145,55 @@ router.post('/pix/qrcode', authMiddleware, async (req, res) => {
   const { data: order } = await supabase.from('orders').select('*').eq('id', order_id).single();
   if (!order) return res.status(404).json({ error: 'Pedido não encontrado' });
   if (order.payment_status === 'paid') return res.status(400).json({ error: 'Pedido ja foi pago' });
-  res.json({ pix_id: uuid(), pix_code: 'SIMULADO', total: order.total, expires_in: 300 });
+  if (!mpClient) return res.status(500).json({ error: 'Gateway não configurado' });
+
+  const paymentId = uuid();
+  await supabase.from('orders').update({ payment_id: paymentId }).eq('id', order_id);
+
+  try {
+    const paymentApi = new Payment(mpClient);
+    const result = await paymentApi.create({
+      body: {
+        transaction_amount: parseFloat(order.total.toFixed(2)),
+        payment_method_id: 'pix',
+        payer: {
+          email: order.customer_email || 'cliente@pedeacai.com.br',
+          first_name: order.customer_name?.split(' ')[0] || 'Cliente'
+        },
+        notification_url: buildAppUrl(req, '/api/webhook'),
+        description: `Pedido #${order_id.slice(0, 8)}`,
+        external_reference: order_id,
+        date_of_expiration: new Date(Date.now() + 30 * 60 * 1000).toISOString()
+      }
+    });
+
+    const qrData = result.point_of_interaction?.transaction_data || {};
+    res.json({
+      success: true,
+      payment_id: result.id,
+      qr_code: qrData.qr_code || '',
+      qr_code_base64: qrData.qr_code_base64 || '',
+      pix_copy_paste: qrData.qr_code || '',
+      total: order.total,
+      status: result.status,
+      expires_in: 1800
+    });
+  } catch (err) {
+    console.error('[MP] Erro criar PIX:', err);
+    res.status(500).json({ error: 'Erro ao gerar PIX. Tente novamente.' });
+  }
+});
+
+router.get('/payment-status/:paymentId', authMiddleware, async (req, res) => {
+  const { paymentId } = req.params;
+  if (!mpClient) return res.json({ status: 'unknown' });
+  try {
+    const paymentApi = new Payment(mpClient);
+    const result = await paymentApi.get({ id: paymentId });
+    res.json({ status: result.status, detail: result.status_detail });
+  } catch {
+    res.json({ status: 'unknown' });
+  }
 });
 
 router.post('/pix/confirm', authMiddleware, async (req, res) => {
