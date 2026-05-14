@@ -410,7 +410,7 @@ export default function StoreDashboard() {
               </button>
             </div>
 
-            {settingsTab === 'produtos' ? (
+            {settingsTab === 'produtos' && (
             <>
             <div className="page-title">Cardápio</div>
 
@@ -524,7 +524,8 @@ export default function StoreDashboard() {
               </div>
             </div>
             </>
-            ) : settingsTab === 'conta' ? (
+            )}
+            {settingsTab === 'conta' && (
             <>
             <div className="page-title">Conta da Loja</div>
 
@@ -630,7 +631,8 @@ export default function StoreDashboard() {
               </div>
             </div>
             </>
-            ) : (
+            )}
+            {settingsTab === 'motoboys' && (
             <>
             <div className="page-title">Motoboys</div>
 
@@ -765,7 +767,6 @@ export default function StoreDashboard() {
             </div>
             </>
             )}
-
             {settingsTab === 'financeiro' && (
               <div className="card" style={{ textAlign: 'left' }}>
                 <div className="page-title" style={{ fontSize: 20 }}>Financeiro</div>
