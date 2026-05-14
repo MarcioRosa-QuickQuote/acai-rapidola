@@ -33,7 +33,7 @@ export default function MotoboyDashboard() {
   const [myOrders, setMyOrders] = useState([]);
   const [store, setStore] = useState(null);
   const [route, setRoute] = useState(null);
-  const [pixKey, setPixKey] = useState('');
+  const [pixKey, setPixKey] = useState(() => localStorage.getItem('motoboy_pix_key') || '');
   const [pixSaving, setPixSaving] = useState(false);
   const [pixMsg, setPixMsg] = useState('');
   const [loading, setLoading] = useState(true);
@@ -470,11 +470,17 @@ export default function MotoboyDashboard() {
             )}
             <button className="btn btn-primary" onClick={async () => {
               setPixSaving(true);
-              const res = await apiFetch('/motoboy/profile', {
-                method: 'PATCH',
-                body: JSON.stringify({ pix_key: pixKey })
-              });
-              setPixMsg(res.ok ? 'Chave PIX salva!' : (res.error || 'Erro ao salvar'));
+              try {
+                localStorage.setItem('motoboy_pix_key', pixKey);
+                const res = await apiFetch('/motoboy/profile', {
+                  method: 'PATCH',
+                  body: JSON.stringify({ pix_key: pixKey })
+                });
+                setPixMsg(res.ok ? 'Chave PIX salva!' : (res.error || 'Salvo localmente. Execute ALTER TABLE no Supabase.'));
+              } catch {
+                localStorage.setItem('motoboy_pix_key', pixKey);
+                setPixMsg('Chave PIX salva localmente!');
+              }
               setPixSaving(false);
               setTimeout(() => setPixMsg(''), 3000);
             }} disabled={pixSaving}>

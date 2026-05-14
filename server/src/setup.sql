@@ -11,6 +11,7 @@ CREATE TABLE IF NOT EXISTS users (
   lat REAL DEFAULT NULL,
   lng REAL DEFAULT NULL,
   photo_url TEXT DEFAULT '',
+  pix_key TEXT DEFAULT '',
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
@@ -124,3 +125,7 @@ CREATE POLICY IF NOT EXISTS "Public uploads" ON storage.objects
 -- Política para inserção autenticada
 CREATE POLICY IF NOT EXISTS "Auth insert uploads" ON storage.objects
   FOR INSERT WITH CHECK (bucket_id = 'uploads');
+
+-- Colunas adicionadas posteriormente (rodar se necessario):
+-- ALTER TABLE users ADD COLUMN IF NOT EXISTS pix_key TEXT DEFAULT '';
+-- ALTER TABLE stores ADD COLUMN IF NOT EXISTS pix_key TEXT DEFAULT '';

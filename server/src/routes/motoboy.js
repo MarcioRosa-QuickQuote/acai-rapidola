@@ -132,9 +132,14 @@ router.post('/optimize-route', authMiddleware, roleMiddleware('motoboy'), async 
 
 router.patch('/profile', authMiddleware, roleMiddleware('motoboy'), async (req, res) => {
   const { pix_key } = req.body;
-  const { error } = await supabase.from('users').update({ pix_key }).eq('id', req.user.id);
-  if (error) return res.status(500).json({ error: 'Erro ao salvar' });
-  res.json({ ok: true });
+  try {
+    const { error } = await supabase.from('users').update({ pix_key }).eq('id', req.user.id);
+    if (error) throw error;
+    res.json({ ok: true });
+  } catch (err) {
+    console.error('[Motoboy] Erro ao salvar pix_key:', err?.message || err);
+    res.status(500).json({ error: 'Execute o ALTER TABLE no Supabase: ALTER TABLE users ADD COLUMN IF NOT EXISTS pix_key TEXT DEFAULT \'\';' });
+  }
 });
 
 module.exports = router;
