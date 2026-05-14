@@ -288,14 +288,15 @@ router.patch('/:id/status', authMiddleware, async (req, res) => {
 
   if (status === 'delivered') {
     const storeAmount = order.total - (order.delivery_fee || 0);
-    await supabase.from('store_earnings').insert({
-      id: uuid(), store_id: order.store_id, order_id: req.params.id,
-      amount: parseFloat(storeAmount.toFixed(2)), status: 'paid', paid_at: new Date().toISOString()
-    });
-    const { data: store } = await supabase.from('stores').select('owner_id, pix_key').eq('id', order.store_id).single();
+    try {
+      await supabase.from('store_earnings').insert({
+        id: uuid(), store_id: order.store_id, order_id: req.params.id,
+        amount: parseFloat(storeAmount.toFixed(2)), status: 'paid', paid_at: new Date().toISOString()
+      });
+    } catch {}
+    const { data: store } = await supabase.from('stores').select('owner_id').eq('id', order.store_id).single();
     if (store) {
-      const pixInfo = store.pix_key ? ` — PIX: ${store.pix_key}` : ' — Cadastre sua chave PIX na aba Conta';
-      await notifyUser(store.owner_id, 'Pedido Entregue + Pago!', `Pedido #${req.params.id.slice(0,8)} — R$ ${storeAmount.toFixed(2)} creditado.${pixInfo}`, 'delivery');
+      await notifyUser(store.owner_id, 'Pedido Entregue!', `Pedido #${req.params.id.slice(0,8)} — R$ ${storeAmount.toFixed(2)} creditado.`, 'delivery');
     }
   }
 

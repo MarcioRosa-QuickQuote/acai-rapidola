@@ -312,16 +312,13 @@ router.post('/pay-with-saved-card', authMiddleware, async (req, res) => {
 router.get('/earnings', authMiddleware, async (req, res) => {
   try {
     const [storeEarn, motoboyEarn] = await Promise.all([
-      supabase.from('store_earnings').select('*').eq('store_id', req.user.id).order('created_at', { ascending: false }),
-      supabase.from('motoboy_earnings').select('*').eq('motoboy_id', req.user.id).order('created_at', { ascending: false })
+      supabase.from('store_earnings').select('*').eq('store_id', req.user.id).order('created_at', { ascending: false }).then(r => r.data || []).catch(() => []),
+      supabase.from('motoboy_earnings').select('*').eq('motoboy_id', req.user.id).order('created_at', { ascending: false }).then(r => r.data || []).catch(() => [])
     ]);
     
-    const storeData = storeEarn.data || [];
-    const motoboyData = motoboyEarn.data || [];
-    
-    const totalStorePending = storeData.filter(e => e.status === 'pending').reduce((s, e) => s + e.amount, 0);
-    const totalStorePaid = storeData.filter(e => e.status === 'paid').reduce((s, e) => s + e.amount, 0);
-    const totalMotoboyPending = motoboyData.filter(e => e.status === 'pending').reduce((s, e) => s + e.amount, 0);
+    const totalStorePending = storeEarn.filter(e => e.status === 'pending').reduce((s, e) => s + e.amount, 0);
+    const totalStorePaid = storeEarn.filter(e => e.status === 'paid').reduce((s, e) => s + e.amount, 0);
+    const totalMotoboyPending = motoboyEarn.filter(e => e.status === 'pending').reduce((s, e) => s + e.amount, 0);
     
     res.json({
       store: { pending: totalStorePending, paid: totalStorePaid, total: totalStorePending + totalStorePaid },
