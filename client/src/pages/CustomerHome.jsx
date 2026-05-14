@@ -156,6 +156,11 @@ export default function CustomerHome() {
     };
   }, [socket]);
 
+  useEffect(() => {
+    const active = orders.find(o => !['delivered','cancelled'].includes(o.status));
+    setActiveOrder(active || null);
+  }, [orders]);
+
   function loadOrders() {
     apiFetch('/orders').then(d => {
       if (d.data) {
@@ -213,7 +218,7 @@ export default function CustomerHome() {
                 fontSize: 11, fontWeight: 700, padding: '4px 10px',
                 border: 'none', borderRadius: 20, width: 'auto'
               }}>
-              {activeOrder.payment_status === 'paid' ? '📦' : '🧾'}
+              {activeOrder.payment_status === 'paid' ? 'Pedido' : 'Pagar'}
             </button>
           )}
           <div onClick={() => {

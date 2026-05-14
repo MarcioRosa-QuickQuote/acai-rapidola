@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { useSocket } from '../contexts/SocketContext';
 
 export default function CustomerStoreList() {
   const { user, apiFetch, logout } = useAuth();
+  const { socket } = useSocket();
   const [stores, setStores] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -11,6 +13,13 @@ export default function CustomerStoreList() {
   const navigate = useNavigate();
 
   useEffect(() => {
+    loadData();
+    const onFocus = () => loadData();
+    window.addEventListener('focus', onFocus);
+    return () => window.removeEventListener('focus', onFocus);
+  }, []);
+
+  function loadData() {
     apiFetch('/stores').then(d => {
       if (d.data) setStores(d.data);
       setLoading(false);
@@ -18,10 +27,24 @@ export default function CustomerStoreList() {
     apiFetch('/orders').then(d => {
       if (d.data) {
         const active = d.data.find(o => !['delivered','cancelled'].includes(o.status));
-        if (active) setActiveOrder(active);
+        setActiveOrder(active || null);
       }
     });
-  }, []);
+  }
+
+  useEffect(() => {
+    if (!socket) return;
+    socket.on('order_status', (data) => {
+      if (['delivered','cancelled'].includes(data.status)) setActiveOrder(null);
+    });
+    socket.on('payment_confirmed', (data) => {
+      setActiveOrder(prev => prev ? { ...prev, payment_status: 'paid', status: 'confirmed' } : prev);
+    });
+    return () => {
+      socket.off('order_status');
+      socket.off('payment_confirmed');
+    };
+  }, [socket]);
 
   function selectStore(store) {
     navigate(`/customer/menu/${store.id}`);
@@ -69,7 +92,7 @@ export default function CustomerStoreList() {
                 fontSize: 11, fontWeight: 700, padding: '4px 10px',
                 border: 'none', borderRadius: 20, width: 'auto'
               }}>
-              {activeOrder.payment_status === 'paid' ? '📦' : '🧾'}
+              {activeOrder.payment_status === 'paid' ? 'Pedido' : 'Pagar'}
             </button>
           )}
           <div onClick={() => navigate('/customer/conta')}
