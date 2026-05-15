@@ -692,7 +692,7 @@ export default function CustomerHome() {
 
         {renderCardapio()}
 
-        {Object.keys(cart).length > 0 && (
+        {Object.keys(cart).length > 0 && showCart && (
           <div style={{
             position: 'fixed', bottom: 0, left: 0, right: 0,
             background: 'white', zIndex: 200,
@@ -705,6 +705,10 @@ export default function CustomerHome() {
               padding: '16px 20px 12px', borderBottom: '1px solid var(--border)'
             }}>
               <span style={{ fontWeight: 800, fontSize: 16, color: 'var(--primary-dark)' }}>🛒 Carrinho</span>
+              <button onClick={() => setShowCart(false)}
+                style={{ background: 'none', border: 'none', fontSize: 18, color: '#999', cursor: 'pointer' }}>
+                ✕
+              </button>
             </div>
             <div style={{ padding: '0 20px' }}>
               {Object.entries(cart).map(([id, qty]) => {
@@ -768,6 +772,9 @@ export default function CustomerHome() {
               </button>
             </div>
           </div>
+        )}
+        {Object.keys(cart).length > 0 && !showCart && (
+          <div style={{ height: 60 }} />
         )}
       </>
     );
