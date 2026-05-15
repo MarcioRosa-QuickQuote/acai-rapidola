@@ -204,11 +204,13 @@ router.get('/', authMiddleware, async (req, res) => {
 
   if (req.user.role === 'motoboy') {
     const { data } = await supabase.from('orders')
-      .select('*, stores(name, address), users!orders_customer_id_fkey(name)')
+      .select('*, stores(name, address, lat, lng), users!orders_customer_id_fkey(name)')
       .or(`motoboy_id.eq.${req.user.id},and(motoboy_id.is.null,payment_status.eq.paid,status.in.(confirmed,preparing,ready))`)
       .order('created_at', { ascending: false });
     return res.json((data || []).map(o => ({
-      ...o, store_name: o.stores?.name, store_address: o.stores?.address, customer_name: o.users?.name
+      ...o, store_name: o.stores?.name, store_address: o.stores?.address,
+      store_lat: o.stores?.lat, store_lng: o.stores?.lng,
+      customer_name: o.users?.name
     })));
   }
 

@@ -1,6 +1,16 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useSocket } from '../contexts/SocketContext';
+import { MapContainer, TileLayer, Marker, Polyline, useMap } from 'react-leaflet';
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
+
+delete L.Icon.Default.prototype._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon-2x.png',
+  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
+});
 
 const statusLabels = {
   assigned: 'Designado', picked_up: 'Retirado',
@@ -326,6 +336,35 @@ export default function MotoboyDashboard() {
                   <div className="text-sm text-muted" style={{ marginBottom: 8 }}>
                     Entregar: {order.customer_address}
                   </div>
+
+                  {(order.store_lat || order.customer_lat) && (
+                    <div style={{ height: 200, borderRadius: 8, overflow: 'hidden', border: '1px solid var(--border)', marginBottom: 8 }}>
+                      <MapContainer
+                        center={[
+                          (order.store_lat + (order.customer_lat || order.store_lat)) / 2,
+                          ((order.store_lng || 0) + (order.customer_lng || order.store_lng || 0)) / 2
+                        ]}
+                        zoom={13}
+                        style={{ height: '100%', width: '100%' }}
+                        key={`order-map-${order.id}`}
+                        scrollWheelZoom={false}
+                      >
+                        <TileLayer attribution='&copy; OSM' url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+                        {order.store_lat && order.store_lng && (
+                          <Marker position={[order.store_lat, order.store_lng]} />
+                        )}
+                        {order.customer_lat && order.customer_lng && (
+                          <Marker position={[order.customer_lat, order.customer_lng]} />
+                        )}
+                        {order.store_lat && order.store_lng && order.customer_lat && order.customer_lng && (
+                          <Polyline
+                            positions={[[order.store_lat, order.store_lng], [order.customer_lat, order.customer_lng]]}
+                            pathOptions={{ color: '#1565C0', weight: 3, dashArray: '8 4' }}
+                          />
+                        )}
+                      </MapContainer>
+                    </div>
+                  )}
 
                   {order.status === 'in_transit' && (
                     <div className="card mt-2" style={{ background: '#FFF3E0', border: '1px solid #FFE0B2', padding: 8 }}>
