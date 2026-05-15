@@ -216,6 +216,18 @@ export default function CustomerHome() {
           </button>
         </div>
         <div className="header-right" style={{ gap: 6 }}>
+          {activeOrder && activeOrder.payment_status === 'paid' && !['delivered','cancelled'].includes(activeOrder.status) && (
+            <button className="btn btn-sm"
+              onClick={() => navigate(`/customer/tracking/${activeOrder.id}`)}
+              title="Acompanhar pedido"
+              style={{
+                background: '#E8F5E9', color: '#2E7D32',
+                fontSize: 16, fontWeight: 700, padding: '4px 8px',
+                border: 'none', borderRadius: 20, width: 'auto'
+              }}>
+              🏍️
+            </button>
+          )}
           {Object.keys(cart).length > 0 && (
             <button className="btn btn-sm"
               onClick={() => setShowCart(!showCart)}
