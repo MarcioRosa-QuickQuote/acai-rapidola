@@ -252,8 +252,12 @@ router.patch('/:id/status', authMiddleware, async (req, res) => {
     }
    
   } else if (req.user.role === 'store') {
-    const { data: store } = await supabase.from('stores').select('*').eq('owner_id', req.user.id).single();
-    if (!store || order.store_id !== store.id) {
+    try {
+      const { data: store } = await supabase.from('stores').select('*').eq('owner_id', req.user.id).maybeSingle();
+      if (!store || order.store_id !== store.id) {
+        return res.status(403).json({ error: 'Não autorizado' });
+      }
+    } catch {
       return res.status(403).json({ error: 'Não autorizado' });
     }
   } else if (req.user.role === 'motoboy') {
