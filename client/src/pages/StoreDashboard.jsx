@@ -14,20 +14,19 @@ L.Icon.Default.mergeOptions({
 
 const statusLabels = {
   pending: 'Aguardando pgto', confirmed: 'Confirmado', preparing: 'Preparando',
-  ready: 'Pronto', assigned: 'Motoboy a caminho', picked_up: 'Retirado',
-  in_transit: 'Em trânsito', arriving: 'Chegando', delivered: 'Entregue', cancelled: 'Cancelado'
+  ready: 'Pronto p/ retirada', assigned: 'Motoboy designado', picked_up: 'A caminho',
+  arriving: 'Chegando', delivered: 'Entregue', cancelled: 'Cancelado'
 };
 
 const statusColors = {
   pending: 'badge-warning', confirmed: 'badge-primary', preparing: 'badge-info',
-  ready: 'badge-success', assigned: 'badge-primary', picked_up: 'badge-primary',
-  in_transit: 'badge-info', arriving: 'badge-accent', delivered: 'badge-success', cancelled: 'badge-danger'
+  ready: 'badge-success', assigned: 'badge-primary', picked_up: 'badge-info',
+  arriving: 'badge-accent', delivered: 'badge-success', cancelled: 'badge-danger'
 };
 
 const actionMap = {
   confirmed: { label: 'Preparar', next: 'preparing' },
-  preparing: { label: 'Marcar Pronto', next: 'ready' },
-  ready: { label: 'Já está pronto', next: 'ready' }
+  preparing: { label: 'Marcar Pronto', next: 'ready' }
 };
 
 export default function StoreDashboard() {

@@ -13,26 +13,24 @@ L.Icon.Default.mergeOptions({
 });
 
 const statusLabels = {
-  assigned: 'Designado', picked_up: 'Retirado',
-  in_transit: 'Em trânsito', arriving: 'Chegando', delivered: 'Entregue'
+  assigned: 'Aguardando retirada', picked_up: 'A caminho',
+  arriving: 'Chegando', delivered: 'Entregue'
 };
 
 const statusColors = {
   assigned: 'badge-primary', picked_up: 'badge-info',
-  in_transit: 'badge-info', arriving: 'badge-accent', delivered: 'badge-success'
+  arriving: 'badge-accent', delivered: 'badge-success'
 };
 
 const nextStatus = {
   assigned: 'picked_up',
-  picked_up: 'in_transit',
-  in_transit: 'arriving',
+  picked_up: 'arriving',
   arriving: 'delivered'
 };
 
 const nextStatusLabel = {
   assigned: 'Retirei o pedido',
-  picked_up: 'Indo entregar',
-  in_transit: 'Chegando',
+  picked_up: 'Chegando',
   arriving: 'Entregue'
 };
 

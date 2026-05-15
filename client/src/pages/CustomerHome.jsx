@@ -15,14 +15,14 @@ L.Icon.Default.mergeOptions({
 
 const statusLabels = {
   pending: 'Aguardando', confirmed: 'Confirmado', preparing: 'Preparando',
-  ready: 'Pronto', assigned: 'Motoboy a caminho', picked_up: 'Retirado',
-  in_transit: 'Em trânsito', arriving: 'Chegando', delivered: 'Entregue', cancelled: 'Cancelado'
+  ready: 'Pronto', assigned: 'Saiu para entrega', picked_up: 'A caminho',
+  arriving: 'Chegando', delivered: 'Entregue', cancelled: 'Cancelado'
 };
 
 const statusColors = {
   pending: 'badge-warning', confirmed: 'badge-primary', preparing: 'badge-primary',
   ready: 'badge-success', assigned: 'badge-info', picked_up: 'badge-info',
-  in_transit: 'badge-info', arriving: 'badge-accent', delivered: 'badge-success', cancelled: 'badge-danger'
+  arriving: 'badge-accent', delivered: 'badge-success', cancelled: 'badge-danger'
 };
 
 export default function CustomerHome() {
