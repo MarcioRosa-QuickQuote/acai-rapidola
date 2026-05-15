@@ -11,16 +11,18 @@ function getIO() {
 }
 
 async function notifyUser(userId, title, body, type = 'info') {
-  const id = uuid();
-  await supabase.from('notifications').insert({ id, user_id: userId, title, body, type });
-  const io = getIO();
-  if (io) {
-    for (const [socketId, socket] of io.sockets.sockets) {
-      if (socket.userId === userId) {
-        socket.emit('notification', { id, title, body, type });
+  try {
+    const id = uuid();
+    await supabase.from('notifications').insert({ id, user_id: userId, title, body, type });
+  } catch {}
+  try {
+    const io = getIO();
+    if (io) {
+      for (const [socketId, socket] of io.sockets.sockets) {
+        if (socket.userId === userId) socket.emit('notification', { id: uuid(), title, body, type });
       }
     }
-  }
+  } catch {}
 }
 
 function calcDistance(lat1, lng1, lat2, lng2) {
@@ -37,20 +39,6 @@ function calcDeliveryFee(distanceKm) {
   const perKm = 1.80;
   const fee = base + distanceKm * perKm;
   return Math.max(6.50, Math.min(50, parseFloat(fee.toFixed(2))));
-}
-
-async function notifyUser(userId, title, body, type = 'info') {
-  const id = uuid();
-  await supabase.from('notifications').insert({ id, user_id: userId, title, body, type });
-
-  const io = getIO();
-  if (io) {
-    for (const [socketId, socket] of io.sockets.sockets) {
-      if (socket.userId === userId) {
-        socket.emit('notification', { id, title, body, type });
-      }
-    }
-  }
 }
 
 router.post('/', authMiddleware, roleMiddleware('customer'), async (req, res) => {
