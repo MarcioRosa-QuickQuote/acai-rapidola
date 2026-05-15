@@ -136,9 +136,10 @@ export default function CustomerHome() {
     }
     apiFetch(`/products?store_id=${storeId}`).then(d => {
       if (d.data) setProducts(d.data);
-      setCart({});
-      setSplitItems({});
-      sessionStorage.removeItem('cart');
+      if (!sessionStorage.getItem('cart')) {
+        setCart({});
+        setSplitItems({});
+      }
       setLoading(false);
     });
     apiFetch(`/stores/${storeId}`).then(d => {
@@ -182,6 +183,7 @@ export default function CustomerHome() {
 
   function addToCart(productId) {
     setCart(prev => ({ ...prev, [productId]: (prev[productId] || 0) + 1 }));
+    setShowCart(true);
   }
 
   function removeFromCart(productId) {
@@ -768,7 +770,18 @@ export default function CustomerHome() {
           </div>
         )}
         {Object.keys(cart).length > 0 && !showCart && (
-          <div style={{ height: 60 }} />
+          <div style={{
+            position: 'fixed', bottom: 0, left: 0, right: 0,
+            zIndex: 199, padding: '12px 20px'
+          }}>
+            <button className="btn btn-primary" style={{ maxWidth: 400, margin: '0 auto', padding: '14px', fontSize: 16 }}
+              onClick={() => setShowCart(true)}>
+              🛒 Ver Carrinho ({Object.values(cart).reduce((a, b) => a + b, 0)}) — R$ {Object.entries(cart).reduce((s, [id, qty]) => {
+                const pr = products.find(pp => pp.id === id);
+                return s + (pr?.price || 0) * qty;
+              }, 0).toFixed(2)}
+            </button>
+          </div>
         )}
       </>
     );
