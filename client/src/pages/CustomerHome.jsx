@@ -656,6 +656,7 @@ export default function CustomerHome() {
   function renderMenu() {
     return (
       <>
+        {/* Cart bottom sheet v2 */}
         {store && !store.open && (
           <div className="card" style={{ background: '#FFF3E0', border: '1px solid #FF6F00', textAlign: 'center' }}>
             <span className="font-bold" style={{ color: '#FF6F00' }}>Entregas encerradas por hoje.</span>
@@ -703,7 +704,7 @@ export default function CustomerHome() {
                   display: 'flex', justifyContent: 'space-between', alignItems: 'center',
                   padding: '16px 20px 12px', borderBottom: '1px solid var(--border)'
                 }}>
-                  <span style={{ fontWeight: 800, fontSize: 16 }}>Seu carrinho</span>
+                  <span style={{ fontWeight: 800, fontSize: 16, color: 'var(--primary-dark)' }}>🛒 Carrinho</span>
                   <button onClick={() => setShowCart(false)}
                     style={{ background: 'none', border: 'none', fontSize: 18, color: '#999', cursor: 'pointer' }}>
                     ✕
