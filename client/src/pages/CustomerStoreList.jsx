@@ -80,37 +80,6 @@ export default function CustomerStoreList() {
           </div>
         </div>
         <div className="header-right" style={{ gap: 6 }}>
-          {activeOrder && (
-            <>
-              <button className="btn btn-sm"
-                onClick={() => {
-                  if (activeOrder.payment_status === 'paid') navigate(`/customer/tracking/${activeOrder.id}`);
-                  else navigate(`/customer/payment/${activeOrder.id}`);
-                }}
-                style={{
-                  background: activeOrder.payment_status === 'paid' ? '#E8F5E9' : '#FFF3E0',
-                  color: activeOrder.payment_status === 'paid' ? '#2E7D32' : '#E65100',
-                  fontSize: 14, fontWeight: 700, padding: '4px 8px',
-                  border: 'none', borderRadius: 20, width: 'auto'
-                }}>
-                🛒
-              </button>
-              {activeOrder.payment_status !== 'paid' && (
-                <button className="btn btn-sm"
-                  onClick={async () => {
-                    await apiFetch(`/orders/${activeOrder.id}/status`, { method: 'PATCH', body: JSON.stringify({ status: 'cancelled' }) });
-                    setActiveOrder(null);
-                  }}
-                  style={{
-                    background: '#FFEBEE', color: '#C62828',
-                    fontSize: 11, fontWeight: 600, padding: '4px 8px',
-                    border: 'none', borderRadius: 20, width: 'auto'
-                  }}>
-                  ✕
-                </button>
-              )}
-            </>
-          )}
           <div onClick={() => navigate('/customer/conta')}
             style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
             {user?.photo_url ? (

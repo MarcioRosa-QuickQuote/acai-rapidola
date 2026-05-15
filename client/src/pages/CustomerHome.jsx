@@ -207,20 +207,6 @@ export default function CustomerHome() {
           </button>
         </div>
         <div className="header-right" style={{ gap: 6 }}>
-          {activeOrder && activeOrder.payment_status !== 'paid' && (
-            <button className="btn btn-sm"
-              onClick={async () => {
-                await apiFetch(`/orders/${activeOrder.id}/status`, { method: 'PATCH', body: JSON.stringify({ status: 'cancelled' }) });
-                setActiveOrder(null);
-              }}
-              style={{
-                background: '#FFEBEE', color: '#C62828',
-                fontSize: 11, fontWeight: 600, padding: '4px 8px',
-                border: 'none', borderRadius: 20, width: 'auto'
-              }}>
-              ✕
-            </button>
-          )}
           {Object.keys(cart).length > 0 && (
             <button className="btn btn-sm"
               onClick={() => setShowCart(!showCart)}
