@@ -237,11 +237,15 @@ router.get('/:id', authMiddleware, async (req, res) => {
 });
 
 router.patch('/:id/status', authMiddleware, async (req, res) => {
+  try {
   const { status } = req.body;
   const validStatuses = ['confirmed', 'preparing', 'ready', 'picked_up', 'in_transit', 'arriving', 'delivered', 'cancelled'];
   if (!validStatuses.includes(status)) {
     return res.status(400).json({ error: 'Status inválido' });
   }
+
+  const { data: order } = await supabase.from('orders').select('*').eq('id', req.params.id).single();
+  if (!order) return res.status(404).json({ error: 'Pedido não encontrado' });
 
   if (req.user.role === 'customer') {
     if (order.customer_id !== req.user.id) {
@@ -322,6 +326,10 @@ router.patch('/:id/status', authMiddleware, async (req, res) => {
   }
 
   res.json({ success: true, status });
+  } catch (err) {
+    console.error('[Orders] status update error:', err?.message || err);
+    res.status(500).json({ error: 'Erro ao atualizar status' });
+  }
 });
 
 module.exports = router;
