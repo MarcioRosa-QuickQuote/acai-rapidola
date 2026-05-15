@@ -104,8 +104,15 @@ export default function CustomerHome() {
     return filtered.join(', ');
   }
   const [searchParams] = useSearchParams();
-  const [cart, setCart] = useState({});
+  const [cart, setCart] = useState(() => {
+    try { return JSON.parse(sessionStorage.getItem('cart') || '{}'); }
+    catch { return {}; }
+  });
   const [splitItems, setSplitItems] = useState({});
+
+  useEffect(() => {
+    sessionStorage.setItem('cart', JSON.stringify(cart));
+  }, [cart]);
   const [loading, setLoading] = useState(true);
   const [addrForm, setAddrForm] = useState(null);
   const [savingAddr, setSavingAddr] = useState(false);
@@ -131,6 +138,7 @@ export default function CustomerHome() {
       if (d.data) setProducts(d.data);
       setCart({});
       setSplitItems({});
+      sessionStorage.removeItem('cart');
       setLoading(false);
     });
     apiFetch(`/stores/${storeId}`).then(d => {
