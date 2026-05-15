@@ -89,6 +89,11 @@ app.use('/api/orders', orderRoutes);
 app.use('/api/motoboy', motoboyRoutes);
 app.use('/api', paymentRoutes);
 
+app.use((err, req, res, next) => {
+  console.error('[Server] Unhandled error:', err?.message || err);
+  res.status(500).json({ error: 'Erro interno do servidor' });
+});
+
 if (!isVercel) {
   const clientDist = path.join(__dirname, '..', '..', 'client', 'dist');
   const publicDir = path.join(__dirname, '..', '..', 'public');

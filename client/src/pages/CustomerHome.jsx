@@ -771,7 +771,7 @@ export default function CustomerHome() {
         {Object.keys(cart).length > 0 && !showCart && (
           <div style={{
             position: 'fixed', bottom: 0, left: 0, right: 0,
-            zIndex: 199, padding: '12px 20px'
+            zIndex: 199, padding: '12px 20px', display: 'flex', justifyContent: 'center'
           }}>
             <button className="btn btn-primary" style={{ maxWidth: 400, margin: '0 auto', padding: '14px', fontSize: 16 }}
               onClick={() => {

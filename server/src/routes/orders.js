@@ -282,28 +282,35 @@ router.patch('/:id/status', authMiddleware, async (req, res) => {
     if (store) await notifyUser(store.owner_id, 'Pedido retirado!', 'Motoboy retirou o pedido para entrega', 'delivery');
   }
 
-  await supabase.from('orders').update({ status, updated_at: new Date().toISOString() }).eq('id', req.params.id);
-
-  if (status === 'delivered' && order.motoboy_id) {
-    await supabase.from('motoboy_earnings').insert({
-      id: uuid(), motoboy_id: order.motoboy_id, order_id: req.params.id,
-      amount: order.delivery_fee || parseFloat((order.total * 0.2).toFixed(2)), status: 'paid', paid_at: new Date().toISOString()
-    });
+  try {
+    await supabase.from('orders').update({ status, updated_at: new Date().toISOString() }).eq('id', req.params.id);
+  } catch (err) {
+    console.error('[Orders] update error:', err);
+    return res.status(500).json({ error: 'Erro ao atualizar pedido' });
   }
 
-  if (status === 'delivered') {
-    const storeAmount = order.total - (order.delivery_fee || 0);
-    try {
-      await supabase.from('store_earnings').insert({
-        id: uuid(), store_id: order.store_id, order_id: req.params.id,
-        amount: parseFloat(storeAmount.toFixed(2)), status: 'paid', paid_at: new Date().toISOString()
+  try {
+    if (status === 'delivered' && order.motoboy_id) {
+      await supabase.from('motoboy_earnings').insert({
+        id: uuid(), motoboy_id: order.motoboy_id, order_id: req.params.id,
+        amount: order.delivery_fee || parseFloat((order.total * 0.2).toFixed(2)), status: 'paid', paid_at: new Date().toISOString()
       });
-    } catch {}
-    const { data: store } = await supabase.from('stores').select('owner_id').eq('id', order.store_id).single();
-    if (store) {
-      await notifyUser(store.owner_id, 'Pedido Entregue!', `Pedido #${req.params.id.slice(0,8)} — R$ ${storeAmount.toFixed(2)} creditado.`, 'delivery');
     }
-  }
+
+    if (status === 'delivered') {
+      const storeAmount = order.total - (order.delivery_fee || 0);
+      try {
+        await supabase.from('store_earnings').insert({
+          id: uuid(), store_id: order.store_id, order_id: req.params.id,
+          amount: parseFloat(storeAmount.toFixed(2)), status: 'paid', paid_at: new Date().toISOString()
+        });
+      } catch {}
+      const { data: store } = await supabase.from('stores').select('owner_id').eq('id', order.store_id).single();
+      if (store) {
+        await notifyUser(store.owner_id, 'Pedido Entregue!', `Pedido #${req.params.id.slice(0,8)} — R$ ${storeAmount.toFixed(2)} creditado.`, 'delivery');
+      }
+    }
+  } catch {}
 
   if (status === 'ready') {
     const { data: motoboys } = await supabase.from('store_motoboys')
