@@ -57,6 +57,8 @@ export default function StoreDashboard() {
   const [earnings, setEarnings] = useState({ store: { pending: 0, paid: 0 }, motoboy: { pending: 0, paid: 0 } });
   const [payoutMsg, setPayoutMsg] = useState('');
   const [finMonth, setFinMonth] = useState(() => new Date().getMonth() + 1);
+  const [finYear, setFinYear] = useState(() => new Date().getFullYear());
+  const [expandedOrder, setExpandedOrder] = useState(null);
 
   useEffect(() => {
     loadOrders();
@@ -381,25 +383,27 @@ export default function StoreDashboard() {
   }) : orders;
 
   function FinanceiroTab() {
-    const currentYear = new Date().getFullYear();
     const filteredOrders = orders.filter(o => {
       const d = new Date(o.created_at);
-      return d.getMonth() + 1 === finMonth && d.getFullYear() === currentYear;
+      return o.payment_status === 'paid' && d.getMonth() + 1 === finMonth && d.getFullYear() === finYear;
     });
     const finTotal = filteredOrders.reduce((s, o) => s + o.total, 0);
-    const finPaid = filteredOrders.filter(o => o.payment_status === 'paid');
-    const months = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+    const months = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+    const years = [];
+    for (let y = 2025; y <= new Date().getFullYear(); y++) years.push(y);
     
     return (
       <div>
         <div className="page-title" style={{ fontSize: 20 }}>Financeiro</div>
-        <div style={{ display: 'flex', gap: 8, marginBottom: 12, flexWrap: 'wrap' }}>
-          {months.map((m, i) => (
-            <button key={i} className={`btn btn-sm ${finMonth === i+1 ? 'btn-primary' : 'btn-outline'}`}
-              onClick={() => setFinMonth(i+1)}>
-              {m}
-            </button>
-          ))}
+        <div className="flex-row" style={{ marginBottom: 16 }}>
+          <select className="input" value={finMonth} onChange={e => setFinMonth(parseInt(e.target.value))}
+            style={{ width: 'auto', flex: 1, fontSize: 14 }}>
+            {months.map((m, i) => <option key={i} value={i+1}>{m}</option>)}
+          </select>
+          <select className="input" value={finYear} onChange={e => setFinYear(parseInt(e.target.value))}
+            style={{ width: 100, fontSize: 14 }}>
+            {years.map(y => <option key={y} value={y}>{y}</option>)}
+          </select>
         </div>
         <div style={{ display: 'flex', gap: 12, marginBottom: 16 }}>
           <div className="card text-center" style={{ flex: 1, background: 'linear-gradient(135deg, #E8F5E9, #C8E6C9)', padding: 16 }}>
@@ -409,40 +413,74 @@ export default function StoreDashboard() {
             <div style={{ fontSize: 11, fontWeight: 600, color: '#2E7D32' }}>Total em {months[finMonth-1]}</div>
           </div>
           <div className="card text-center" style={{ flex: 1, background: 'linear-gradient(135deg, #F3E5F5, #E1BEE7)', padding: 16 }}>
-            <div style={{ fontSize: 22, fontWeight: 800, color: 'var(--primary)' }}>{finPaid.length}/{filteredOrders.length}</div>
-            <div style={{ fontSize: 11, fontWeight: 600, color: '#6A1B9A' }}>Pagos/Total</div>
+            <div style={{ fontSize: 22, fontWeight: 800, color: 'var(--primary)' }}>{filteredOrders.length}</div>
+            <div style={{ fontSize: 11, fontWeight: 600, color: '#6A1B9A' }}>Pedidos pagos</div>
           </div>
         </div>
         
-        <div className="card" style={{ background: '#FFF8E1', border: '1px solid #FFE082', marginBottom: 16 }}>
-          <div style={{ fontSize: 13, fontWeight: 600, color: '#E65100', marginBottom: 4 }}>💵 A receber via PIX</div>
-          <div style={{ fontSize: 20, fontWeight: 800, color: '#BF360C' }}>R$ {earnings.store.pending.toFixed(2)}</div>
-          {earnings.store.pending > 0 && (
-            <button className="btn btn-sm btn-accent mt-2" onClick={doPayout} style={{ width: 'auto' }}>
-              Sacar via PIX
-            </button>
-          )}
-        </div>
+        {earnings.store.pending > 0 && (
+          <div className="card" style={{ background: '#FFF8E1', border: '1px solid #FFE082', marginBottom: 16 }}>
+            <div className="flex-between">
+              <div>
+                <div style={{ fontSize: 13, fontWeight: 600, color: '#E65100' }}>💵 A receber via PIX</div>
+                <div style={{ fontSize: 20, fontWeight: 800, color: '#BF360C' }}>R$ {earnings.store.pending.toFixed(2)}</div>
+              </div>
+              <button className="btn btn-sm btn-accent" onClick={doPayout} style={{ width: 'auto' }}>
+                Sacar
+              </button>
+            </div>
+          </div>
+        )}
 
         {filteredOrders.length === 0 ? (
-          <div className="empty-state"><p>Nenhum pedido em {months[finMonth-1]}</p></div>
+          <div className="empty-state"><p>Nenhum pedido pago em {months[finMonth-1]}</p></div>
         ) : (
           filteredOrders.map(order => (
-            <div key={order.id} className="card" style={{ padding: 14, marginBottom: 8 }}>
+            <div key={order.id} className="card" style={{ padding: 14, marginBottom: 8, cursor: 'pointer' }}
+              onClick={() => setExpandedOrder(expandedOrder === order.id ? null : order.id)}>
               <div className="flex-between" style={{ marginBottom: 4 }}>
                 <span style={{ fontWeight: 700, fontSize: 13 }}>#{order.id.slice(0,8)}</span>
                 <span style={{ fontSize: 12, color: '#888' }}>{new Date(order.created_at).toLocaleDateString('pt-BR')}</span>
               </div>
               <div className="flex-between" style={{ marginBottom: 4 }}>
                 <span style={{ fontSize: 12 }}>{order.customer_name}</span>
-                <span className={`badge ${order.payment_status === 'paid' ? 'badge-success' : 'badge-warning'}`}>
-                  {order.payment_status === 'paid' ? 'Pago' : 'Pendente'}
-                </span>
+                <span className="badge badge-success">Pago</span>
               </div>
               <div className="flex-between" style={{ fontSize: 14 }}>
-                <span className="badge badge-info">{statusLabels[order.status] || order.status}</span>
+                <span className={`badge ${statusColors[order.status] || 'badge-primary'}`}>
+                  {statusLabels[order.status] || order.status}
+                </span>
                 <span style={{ fontWeight: 800, color: 'var(--primary)' }}>R$ {order.total.toFixed(2)}</span>
               </div>
+              {expandedOrder === order.id && (
+                <div style={{ marginTop: 12, padding: 12, background: '#F8F4FC', borderRadius: 8, border: '1px solid var(--border)' }}>
+                  <div style={{ fontSize: 12, fontWeight: 700, marginBottom: 6 }}>Detalhes do pedido</div>
+                  <div className="text-sm text-muted" style={{ marginBottom: 4 }}>
+                    📍 {order.customer_address?.split(',')[0] || 'Endereço'}
+                  </div>
+                  <div className="text-sm text-muted" style={{ marginBottom: 4 }}>
+                    📞 {order.customer_phone || '—'}
+                  </div>
+                  {order.notes && (
+                    <div className="text-sm text-muted" style={{ marginBottom: 4 }}>
+                      📝 {order.notes}
+                    </div>
+                  )}
+                  {order.delivery_fee > 0 && (
+                    <div className="text-sm text-muted" style={{ marginBottom: 4 }}>
+                      🏍️ Taxa entrega: R$ {order.delivery_fee.toFixed(2)}
+                    </div>
+                  )}
+                  {order.motoboy_name && (
+                    <div className="text-sm text-muted" style={{ marginBottom: 4 }}>
+                      👤 Motoboy: {order.motoboy_name}
+                    </div>
+                  )}
+                  <div style={{ fontSize: 13, fontWeight: 600, marginTop: 8, color: 'var(--primary)' }}>
+                    Total: R$ {order.total.toFixed(2)}
+                  </div>
+                </div>
+              )}
             </div>
           ))
         )}
@@ -491,13 +529,13 @@ export default function StoreDashboard() {
             <div className="flex-row" style={{ marginBottom: 16 }}>
               <button className={`btn btn-sm ${settingsTab === 'produtos' ? 'btn-primary' : 'btn-outline'}`}
                 onClick={() => setSettingsTab('produtos')}>
-                Produtos ({products.length})
+                Produtos
               </button>
               <button className={`btn btn-sm ${settingsTab === 'conta' ? 'btn-primary' : 'btn-outline'}`}
                 onClick={() => setSettingsTab('conta')}>Conta</button>
               <button className={`btn btn-sm ${settingsTab === 'motoboys' ? 'btn-primary' : 'btn-outline'}`}
                 onClick={() => setSettingsTab('motoboys')}>
-                Motoboys ({motoboys.length})
+                Motoboys
               </button>
               <button className={`btn btn-sm ${settingsTab === 'financeiro' ? 'btn-primary' : 'btn-outline'}`}
                 onClick={() => setSettingsTab('financeiro')}>
