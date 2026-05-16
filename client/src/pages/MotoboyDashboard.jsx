@@ -82,7 +82,7 @@ export default function MotoboyDashboard() {
     ]);
     if (avail.data) setAvailableOrders(avail.data);
     if (mine.data) {
-      setMyOrders(mine.data.filter(o => o.motoboy_id === user?.id && !['delivered','cancelled'].includes(o.status)));
+      setMyOrders(mine.data.filter(o => o.motoboy_id === user?.id));
     }
     setLoading(false);
   }
