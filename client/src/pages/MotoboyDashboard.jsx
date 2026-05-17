@@ -44,6 +44,16 @@ export default function MotoboyDashboard() {
   const [pixKey, setPixKey] = useState(() => localStorage.getItem('motoboy_pix_key') || '');
   const [pixSaving, setPixSaving] = useState(false);
   const [pixMsg, setPixMsg] = useState('');
+  const [editName, setEditName] = useState('');
+  const [editCpf, setEditCpf] = useState('');
+  const [editPlate, setEditPlate] = useState('');
+
+  function maskCpf(v) {
+    const nums = v.replace(/\D/g, '').slice(0, 11);
+    return nums.replace(/^(\d{3})(\d{3})?(\d{3})?(\d{2})?$/, (_, a, b, c, d) =>
+      a + (b ? '.' + b : '') + (c ? '.' + c : '') + (d ? '-' + d : '')
+    );
+  }
   const [loading, setLoading] = useState(true);
   const [online, setOnline] = useState(true);
   const [selectedTab, setSelectedTab] = useState('available');
@@ -171,47 +181,71 @@ export default function MotoboyDashboard() {
   ];
 
   function renderInicio() {
-    if (isEmployee) {
-      return (
-        <div className="card" style={{ background: '#E8F5E9', border: '1px solid #C8E6C9', textAlign: 'center', padding: 10, marginBottom: 12 }}>
-          <span style={{ fontWeight: 600, color: '#2E7D32', fontSize: 13 }}>
-            Você é parceiro desta loja — os pedidos chegam automaticamente, sem precisar aceitar
-          </span>
-        </div>
-      );
-    }
-    if (availableOrders.length === 0) {
-      return (
-        <div className="empty-state" style={{ paddingTop: 40 }}>
-          <div className="empty-state-icon">
-            <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
-              <circle cx="32" cy="28" r="16" stroke="var(--border)" strokeWidth="2"/>
-              <path d="M32 20v8l5 5" stroke="var(--border)" strokeWidth="2" strokeLinecap="round"/>
-            </svg>
+    return (
+      <>
+        <div style={{
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          background: online ? 'linear-gradient(135deg, #E8F5E9, #C8E6C9)' : 'linear-gradient(135deg, #F5F5F5, #EEEEEE)',
+          borderRadius: 14, padding: '12px 16px', marginBottom: 16,
+          border: online ? '1px solid #A5D6A7' : '1px solid #E0E0E0'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <div style={{ width: 12, height: 12, borderRadius: '50%',
+              background: online ? '#2E7D32' : '#BDBDBD',
+              boxShadow: online ? '0 0 0 3px rgba(46,125,50,0.2), 0 0 8px rgba(46,125,50,0.3)' : 'none' }} />
+            <div>
+              <div style={{ fontSize: 15, fontWeight: 700, color: online ? '#1B5E20' : '#757575' }}>
+                {online ? 'Online - Aceitando entregas' : 'Offline'}
+              </div>
+              <div style={{ fontSize: 11, color: online ? '#2E7D32' : '#999', marginTop: 1 }}>
+                {online ? 'Você está disponível para receber corridas' : 'Ative para receber pedidos'}
+              </div>
+            </div>
           </div>
-          <p>Nenhum pedido disponível no momento</p>
-        </div>
-      );
-    }
-    return availableOrders.map(order => (
-      <div key={order.id} className="card">
-        <div className="flex-between" style={{ marginBottom: 6 }}>
-          <div>
-            <span className="font-bold">#{order.id.slice(0, 8)}</span>
-            <span className="text-sm text-muted" style={{ marginLeft: 8 }}>{order.customer_name}</span>
+          <div className="toggle-switch" onClick={() => { setOnline(!online); if (!online) sendLocation(); }}>
+            <input type="checkbox" checked={online} readOnly />
+            <span className="toggle-slider" />
           </div>
-          <span className="badge badge-success">R$ {order.total.toFixed(2)}</span>
         </div>
-        <div className="text-sm text-muted" style={{ marginBottom: 6 }}>Loja: {order.store_name} | {order.store_address}</div>
-        <div className="text-sm text-muted" style={{ marginBottom: 8 }}>Entrega: {order.customer_address}</div>
-        <div className="flex-between">
-          <span className={`badge ${statusColors[order.status] || 'badge-primary'}`}>{statusLabels[order.status] || order.status}</span>
-          {!isEmployee && (
-            <button className="btn btn-sm btn-primary" onClick={() => acceptOrder(order.id)}>Aceitar Entrega</button>
-          )}
-        </div>
-      </div>
-    ));
+        {isEmployee ? (
+          <div className="card" style={{ background: '#E8F5E9', border: '1px solid #C8E6C9', textAlign: 'center', padding: 10, marginBottom: 12 }}>
+            <span style={{ fontWeight: 600, color: '#2E7D32', fontSize: 13 }}>
+              Você é parceiro desta loja — os pedidos chegam automaticamente
+            </span>
+          </div>
+        ) : availableOrders.length === 0 ? (
+          <div className="empty-state" style={{ paddingTop: 40 }}>
+            <div className="empty-state-icon">
+              <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
+                <circle cx="32" cy="28" r="16" stroke="var(--border)" strokeWidth="2"/>
+                <path d="M32 20v8l5 5" stroke="var(--border)" strokeWidth="2" strokeLinecap="round"/>
+              </svg>
+            </div>
+            <p>Nenhum pedido disponível no momento</p>
+          </div>
+        ) : (
+          availableOrders.map(order => (
+            <div key={order.id} className="card">
+              <div className="flex-between" style={{ marginBottom: 6 }}>
+                <div>
+                  <span className="font-bold">#{order.id.slice(0, 8)}</span>
+                  <span className="text-sm text-muted" style={{ marginLeft: 8 }}>{order.customer_name}</span>
+                </div>
+                <span className="badge badge-success">R$ {order.total.toFixed(2)}</span>
+              </div>
+              <div className="text-sm text-muted" style={{ marginBottom: 6 }}>Loja: {order.store_name}</div>
+              <div className="text-sm text-muted" style={{ marginBottom: 8 }}>Entrega: {order.customer_address}</div>
+              <div className="flex-between">
+                <span className={`badge ${statusColors[order.status] || 'badge-primary'}`}>{statusLabels[order.status] || order.status}</span>
+                {!isEmployee && (
+                  <button className="btn btn-sm btn-primary" onClick={() => acceptOrder(order.id)}>Aceitar Entrega</button>
+                )}
+              </div>
+            </div>
+          ))
+        )}
+      </>
+    );
   }
 
   function renderPedidos() {
@@ -340,7 +374,22 @@ export default function MotoboyDashboard() {
             <div style={{ fontSize: 12, color: '#888' }}>Motoboy</div>
           </div>
         </div>
+        <div className="form-group">
+          <label className="label">Nome</label>
+          <input className="input" type="text" value={editName || user?.name || ''}
+            onChange={e => setEditName(e.target.value)} placeholder="Seu nome" />
+        </div>
         <div className="form-group"><label className="label">Telefone</label><div style={{ fontWeight: 600 }}>{user?.phone}</div></div>
+        <div className="form-group">
+          <label className="label">CPF</label>
+          <input className="input" type="text" value={editCpf}
+            onChange={e => setEditCpf(maskCpf(e.target.value))} placeholder="000.000.000-00" maxLength={14} />
+        </div>
+        <div className="form-group">
+          <label className="label">Placa da moto</label>
+          <input className="input" type="text" value={editPlate}
+            onChange={e => setEditPlate(e.target.value.toUpperCase().slice(0, 8))} placeholder="ABC-1234" />
+        </div>
         <div className="form-group">
           <label className="label">Chave PIX</label>
           <input className="input" type="text" value={pixKey} onChange={e => setPixKey(e.target.value)}
@@ -360,11 +409,15 @@ export default function MotoboyDashboard() {
           setPixSaving(true);
           try {
             localStorage.setItem('motoboy_pix_key', pixKey);
-            const res = await apiFetch('/motoboy/profile', { method: 'PATCH', body: JSON.stringify({ pix_key: pixKey }) });
-            setPixMsg(res.ok ? 'Chave PIX salva!' : (res.error || 'Salvo localmente'));
-          } catch { localStorage.setItem('motoboy_pix_key', pixKey); setPixMsg('Chave PIX salva localmente!'); }
+            const body = { pix_key: pixKey };
+            if (editName) body.name = editName;
+            if (editCpf.replace(/\D/g, '').length === 11) body.cpf = editCpf;
+            const res = await apiFetch('/motoboy/profile', { method: 'PATCH', body: JSON.stringify(body) });
+            setPixMsg(res.ok ? 'Salvo com sucesso!' : (res.error || 'Erro ao salvar'));
+            if (res.ok && editName) { user.name = editName; window.location.reload(); }
+          } catch { localStorage.setItem('motoboy_pix_key', pixKey); setPixMsg('Salvo localmente!'); }
           setPixSaving(false);
-          setTimeout(() => setPixMsg(''), 3000);
+          setTimeout(() => setPixMsg(''), 4000);
         }} disabled={pixSaving}>{pixSaving ? 'Salvando...' : 'Salvar'}</button>
       </div>
     );
@@ -381,41 +434,34 @@ export default function MotoboyDashboard() {
           </div>
         </div>
         <div className="header-right">
-          <div onClick={() => logout()} style={{ fontSize: 12, color: 'var(--text-light)', cursor: 'pointer', fontWeight: 600 }}>
-            Sair
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer' }}
+            onClick={() => setPageTab('perfil')}>
+            {user?.photo_url ? (
+              <img src={user.photo_url} alt="Foto"
+                style={{ width: 34, height: 34, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }}
+                onError={e => { e.target.style.display = 'none'; }} />
+            ) : (
+              <div style={{
+                width: 34, height: 34, borderRadius: '50%',
+                background: 'linear-gradient(135deg, #42A5F5, #1565C0)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                color: 'white', fontWeight: 700, fontSize: 15, flexShrink: 0
+              }}>
+                {user?.name?.charAt(0)?.toUpperCase()}
+              </div>
+            )}
+            <div>
+              <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--text)' }}>{user?.name?.split(' ')[0]}</div>
+              <div onClick={(e) => { e.stopPropagation(); logout(); }}
+                style={{ fontSize: 9, color: 'var(--text-light)', cursor: 'pointer' }}>
+                Sair
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
       <div className="container" style={{ flex: 1, paddingBottom: 80 }}>
-        <div style={{
-          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          background: online ? 'linear-gradient(135deg, #E8F5E9, #C8E6C9)' : 'linear-gradient(135deg, #F5F5F5, #EEEEEE)',
-          borderRadius: 14, padding: '12px 16px', marginBottom: 16,
-          border: online ? '1px solid #A5D6A7' : '1px solid #E0E0E0', transition: 'all 0.3s'
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-            <div style={{
-              width: 12, height: 12, borderRadius: '50%',
-              background: online ? '#2E7D32' : '#BDBDBD',
-              boxShadow: online ? '0 0 0 3px rgba(46,125,50,0.2), 0 0 8px rgba(46,125,50,0.3)' : 'none',
-              transition: 'all 0.3s'
-            }} />
-            <div>
-              <div style={{ fontSize: 15, fontWeight: 700, color: online ? '#1B5E20' : '#757575' }}>
-                {online ? 'Online - Aceitando entregas' : 'Offline'}
-              </div>
-              <div style={{ fontSize: 11, color: online ? '#2E7D32' : '#999', marginTop: 1 }}>
-                {online ? 'Você está disponível para receber corridas' : 'Ative para receber pedidos'}
-              </div>
-            </div>
-          </div>
-          <div className="toggle-switch" onClick={() => { setOnline(!online); if (!online) sendLocation(); }}>
-            <input type="checkbox" checked={online} readOnly />
-            <span className="toggle-slider" />
-          </div>
-        </div>
-
         {pageTab === 'inicio' && renderInicio()}
         {pageTab === 'pedidos' && renderPedidos()}
         {pageTab === 'saldo' && renderSaldo()}
