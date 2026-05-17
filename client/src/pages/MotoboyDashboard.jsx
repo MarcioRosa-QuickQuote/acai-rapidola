@@ -482,8 +482,8 @@ export default function MotoboyDashboard() {
               </div>
             </div>
             <div className="form-group">
-              <label className="label">Chave PIX</label>
-              <input className="input" type="text" value={pixKey}
+              <label className="label" htmlFor="pixKey">Chave PIX</label>
+              <input className="input" id="pixKey" name="pixKey" type="text" value={pixKey}
                 onChange={e => setPixKey(e.target.value)}
                 placeholder="CPF, telefone, e-mail ou chave aleatória"
                 style={{ fontSize: 14 }} />
