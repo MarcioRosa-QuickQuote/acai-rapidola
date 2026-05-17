@@ -171,7 +171,7 @@ export default function MotoboyDashboard() {
     }
   }, [online]);
 
-  if (loading) return <div className="loading"><div className="spinner" /></div>;
+  if (loading) return <div className="loading"><img className="spin" src="/saco_acai.png" /></div>;
 
   const tabs = [
     { key: 'inicio', label: 'Início', icon: '🏠' },

@@ -65,7 +65,7 @@ export default function CustomerTracking() {
     }
   }
 
-  if (!order) return <div className="loading"><div className="spinner" /></div>;
+  if (!order) return <div className="loading"><img className="spin" src="/saco_acai.png" /></div>;
 
   const currentStep = statusSteps.indexOf(order.status);
 
@@ -140,10 +140,8 @@ export default function CustomerTracking() {
                         left: `${Math.min(90, Math.max(10, Math.random() * 100))}%`,
                         transform: 'translate(-50%, -50%)'
                       }}>
-                        <div style={{
-                          width: 24, height: 24, borderRadius: '50%',
-                          background: 'var(--primary)', border: '2px solid white',
-                          boxShadow: '0 2px 8px rgba(106,27,154,0.4)'
+                        <img src="/saco_acai.png" style={{
+                          width: 32, height: 32, objectFit: 'contain'
                         }} />
                       </div>
                     )}

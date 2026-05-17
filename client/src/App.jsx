@@ -12,7 +12,7 @@ import MotoboyDashboard from './pages/MotoboyDashboard';
 
 function ProtectedRoute({ role, children }) {
   const { user, loading } = useAuth();
-  if (loading) return <div className="loading"><div className="spinner" /></div>;
+  if (loading) return <div className="loading"><img className="spin" src="/saco_acai.png" /></div>;
   if (!user) return <Navigate to="/login" />;
   if (role && user.role !== role) return <Navigate to={`/${user.role}`} />;
   return children;
@@ -24,7 +24,7 @@ export default function App() {
   if (loading) {
     return (
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh' }}>
-        <div className="spinner" />
+        <img className="spin" src="/saco_acai.png" />
       </div>
     );
   }

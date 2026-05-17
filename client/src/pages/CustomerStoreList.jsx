@@ -67,7 +67,7 @@ export default function CustomerStoreList() {
 
   const displayStores = [...filteredOpen, ...filteredClosed];
 
-  if (loading) return <div className="loading"><div className="spinner" /></div>;
+  if (loading) return <div className="loading"><img className="spin" src="/saco_acai.png" /></div>;
 
   return (
     <div>

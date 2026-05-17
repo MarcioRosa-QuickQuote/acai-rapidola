@@ -540,7 +540,7 @@ export default function CustomerOrder() {
             </div>
 
             <button className="btn btn-primary" type="submit" disabled={loading}>
-              {loading ? <span className="spinner" style={{ width: 20, height: 20 }} /> : 'Ir para Pagamento'}
+              {loading ? <img className="spin" src="/saco_acai.png" style={{ width: 20, height: 20 }} /> : 'Ir para Pagamento'}
             </button>
 
             <p className="text-xs text-muted" style={{ marginTop: 8, textAlign: 'center' }}>
