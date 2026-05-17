@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useSocket } from '../contexts/SocketContext';
-import { MapContainer, TileLayer, Marker, Polyline, useMap } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Polyline } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 
@@ -33,6 +33,13 @@ const nextStatusLabel = {
   picked_up: 'Chegando',
   arriving: 'Entregue'
 };
+
+const navItems = [
+  { key: 'available', icon: '🏠', label: 'Início' },
+  { key: 'mine', icon: '📋', label: 'Pedidos' },
+  { key: 'route', icon: '🗺️', label: 'Rota' },
+  { key: 'profile', icon: '👤', label: 'Perfil' },
+];
 
 export default function MotoboyDashboard() {
   const { user, apiFetch, logout } = useAuth();
@@ -98,16 +105,13 @@ export default function MotoboyDashboard() {
     if (!order) return;
     const next = nextStatus[order.status];
     if (!next) return;
-
     await apiFetch(`/orders/${orderId}/status`, {
       method: 'PATCH',
       body: JSON.stringify({ status: next })
     });
-
     if (next === 'arriving') {
       setToast('Cliente será notificado que você está chegando!');
     }
-
     loadData();
   }
 
@@ -132,7 +136,6 @@ export default function MotoboyDashboard() {
       });
       return;
     }
-
     navigator.geolocation.getCurrentPosition(async (pos) => {
       await apiFetch('/motoboy/location', {
         method: 'POST',
@@ -163,87 +166,78 @@ export default function MotoboyDashboard() {
   if (loading) return <div className="loading"><div className="spinner" /></div>;
 
   return (
-    <div>
-      <div className="header">
+    <div style={{ paddingBottom: 80, background: '#f7f4fb', minHeight: '100vh' }}>
+      {/* Header */}
+      <div className="header" style={{ padding: '10px 16px' }}>
         <div className="header-left" style={{ gap: 10 }}>
           <img src="/logomarca.png" alt="Pé de Açaí"
-            style={{ width: 64, height: 64, borderRadius: 14, objectFit: 'contain', flexShrink: 0 }} />
+            style={{ width: 40, height: 40, borderRadius: 10, objectFit: 'contain', flexShrink: 0 }} />
           <div>
-            <div className="header-title" style={{ fontSize: 18 }}>Pé de Açaí</div>
-            <div style={{ fontSize: 11, color: 'var(--text-light)' }}>Motoboy</div>
+            <div style={{ fontSize: 15, fontWeight: 800, color: 'var(--primary-dark)', letterSpacing: '-0.02em' }}>Pé de Açaí</div>
+            <div style={{ fontSize: 11, color: 'var(--text-light)' }}>Olá, {user?.name?.split(' ')[0]}</div>
           </div>
         </div>
-        <div className="header-right" style={{ gap: 6 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer' }}
-            onClick={() => setSelectedTab('profile')}>
+        <div className="header-right" style={{ gap: 8 }}>
+          <div className="toggle-switch" onClick={() => {
+            setOnline(!online);
+            if (!online) sendLocation();
+          }}>
+            <input type="checkbox" checked={online} readOnly />
+            <span className="toggle-slider" />
+          </div>
+          <div onClick={() => setSelectedTab('profile')} style={{ cursor: 'pointer' }}>
             {user?.photo_url ? (
               <img src={user.photo_url} alt="Foto"
-                style={{ width: 30, height: 30, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }}
+                style={{ width: 32, height: 32, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }}
                 onError={e => { e.target.style.display = 'none'; }} />
             ) : (
               <div style={{
-                width: 30, height: 30, borderRadius: '50%',
+                width: 32, height: 32, borderRadius: '50%',
                 background: 'linear-gradient(135deg, #42A5F5, #1565C0)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                color: 'white', fontWeight: 700, fontSize: 13, flexShrink: 0
+                color: 'white', fontWeight: 700, fontSize: 14, flexShrink: 0
               }}>
                 {user?.name?.charAt(0)?.toUpperCase()}
               </div>
             )}
-            <div>
-              <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--text)', lineHeight: 1.2 }}>{user?.name?.split(' ')[0]}</div>
-              <div onClick={(e) => { e.stopPropagation(); logout(); }}
-                style={{ fontSize: 9, color: 'var(--text-light)', cursor: 'pointer' }}>
-                Sair
-              </div>
-            </div>
           </div>
         </div>
       </div>
 
-      <div className="container">
+      <div className="container" style={{ paddingTop: 12 }}>
+        {/* Partner banner */}
         {isEmployee && (
-          <div className="card" style={{ background: '#E8F5E9', border: '1px solid #C8E6C9', textAlign: 'center', padding: 10, marginBottom: 12 }}>
-            <span style={{ fontWeight: 600, color: '#2E7D32', fontSize: 13 }}>
-              Você é parceiro desta loja — os pedidos chegam automaticamente, sem precisar aceitar
-            </span>
+          <div style={{
+            background: 'linear-gradient(135deg, #E8F5E9, #C8E6C9)',
+            borderRadius: 12, padding: '10px 14px', marginBottom: 14,
+            fontSize: 12, fontWeight: 600, color: '#2E7D32', textAlign: 'center'
+          }}>
+            Parceiro da loja — pedidos chegam automaticamente
           </div>
         )}
 
-        {earnings.total > 0 && (
-          <div className="card" style={{ background: 'linear-gradient(135deg, #E3F2FD, #BBDEFB)', border: '1px solid #90CAF9', textAlign: 'center', padding: 14, marginBottom: 12 }}>
-            <div className="text-xs text-muted" style={{ marginBottom: 4 }}>Seus ganhos</div>
-            <div style={{ fontSize: 28, fontWeight: 800, color: '#1565C0' }}>R$ {earnings.total.toFixed(2)}</div>
-            {earnings.pending > 0 && (
-              <div className="text-xs" style={{ color: '#E65100', marginTop: 4 }}>
-                R$ {earnings.pending.toFixed(2)} a receber
+        {/* Online status card */}
+        <div style={{
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          background: online ? 'linear-gradient(135deg, #E8F5E9, #C8E6C9)' : 'linear-gradient(135deg, #F5F5F5, #EEEEEE)',
+          borderRadius: 14, padding: '10px 16px', marginBottom: 14
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <div style={{
+              width: 12, height: 12, borderRadius: '50%',
+              background: online ? '#4CAF50' : '#BDBDBD',
+              boxShadow: online ? '0 0 8px rgba(76,175,80,0.4)' : 'none',
+              transition: 'all 0.3s'
+            }} />
+            <div>
+              <div style={{ fontSize: 14, fontWeight: 700, color: online ? '#2E7D32' : '#999' }}>
+                {online ? 'Online' : 'Offline'}
               </div>
-            )}
+              <div style={{ fontSize: 11, color: '#888' }}>
+                {online ? 'Recebendo chamadas' : 'Toque para ficar online'}
+              </div>
+            </div>
           </div>
-        )}
-
-        <div className="flex-row" style={{ marginBottom: 16, justifyContent: 'space-between', overflowX: 'auto', WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none' }}>
-          <div className="flex-row">
-            <button className={`btn btn-sm ${selectedTab === 'available' ? 'btn-primary' : 'btn-outline'}`}
-              onClick={() => setSelectedTab('available')}>
-              {isEmployee ? 'Pedidos da Loja' : 'Disponiveis'} ({availableOrders.length})
-            </button>
-            <button className={`btn btn-sm ${selectedTab === 'mine' ? 'btn-primary' : 'btn-outline'}`}
-              onClick={() => setSelectedTab('mine')}>
-              Minhas ({myOrders.length})
-            </button>
-            <button className={`btn btn-sm ${selectedTab === 'route' ? 'btn-primary' : 'btn-outline'}`}
-              onClick={() => {
-                setSelectedTab('route');
-                optimizeRoute();
-            }}>
-            Rota
-          </button>
-        </div>
-        <div className="flex-row" style={{ gap: 8 }}>
-          <span style={{ fontSize: 11, fontWeight: 600, color: online ? 'var(--success)' : 'var(--text-light)' }}>
-            {online ? 'Online' : 'Offline'}
-          </span>
           <div className="toggle-switch" onClick={() => {
             setOnline(!online);
             if (!online) sendLocation();
@@ -252,46 +246,96 @@ export default function MotoboyDashboard() {
             <span className="toggle-slider" />
           </div>
         </div>
+
+        {/* Earnings card */}
+        {earnings.total > 0 && (
+          <div style={{
+            background: 'linear-gradient(135deg, #E3F2FD, #BBDEFB)',
+            borderRadius: 14, padding: '14px 18px', marginBottom: 14,
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <div style={{
+                width: 40, height: 40, borderRadius: '50%',
+                background: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontSize: 20
+              }}>💰</div>
+              <div>
+                <div style={{ fontSize: 11, color: '#1565C0', fontWeight: 600 }}>Seus ganhos</div>
+                <div style={{ fontSize: 22, fontWeight: 800, color: '#0D47A1' }}>R$ {earnings.total.toFixed(2)}</div>
+              </div>
+            </div>
+            {earnings.pending > 0 && (
+              <div style={{
+                background: 'rgba(255,255,255,0.7)', borderRadius: 10,
+                padding: '6px 12px', textAlign: 'center'
+              }}>
+                <div style={{ fontSize: 10, color: '#E65100' }}>a receber</div>
+                <div style={{ fontSize: 14, fontWeight: 700, color: '#BF360C' }}>R$ {earnings.pending.toFixed(2)}</div>
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
+      {/* Tabs */}
+      <div style={{
+        display: 'flex', gap: 12, padding: '0 16px 12px',
+        overflowX: 'auto', WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none'
+      }}>
+        {[
+          { key: 'available', label: isEmployee ? 'Pedidos da Loja' : 'Disponíveis' },
+          { key: 'mine', label: 'Minhas' },
+          { key: 'route', label: 'Rota' },
+        ].map(tab => (
+          <button key={tab.key}
+            onClick={() => {
+              setSelectedTab(tab.key);
+              if (tab.key === 'route') optimizeRoute();
+            }}
+            style={{
+              flex: '1 0 auto', padding: '10px 16px',
+              border: 'none', borderRadius: 24,
+              background: selectedTab === tab.key ? 'var(--primary)' : 'white',
+              color: selectedTab === tab.key ? 'white' : '#666',
+              fontSize: 13, fontWeight: selectedTab === tab.key ? 700 : 500,
+              cursor: 'pointer', transition: 'all 0.2s',
+              boxShadow: selectedTab === tab.key ? '0 2px 8px rgba(106,27,154,0.2)' : '0 1px 3px rgba(0,0,0,0.05)'
+            }}>
+            {tab.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Content area */}
+      <div style={{ padding: '0 16px' }}>
         {selectedTab === 'available' && (
           <>
-            <div className="page-title" style={{ color: '#1565C0' }}>Pedidos Disponíveis</div>
             {availableOrders.length === 0 ? (
-              <div className="empty-state">
-                <div className="empty-state-icon">
-                  <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
-                    <circle cx="32" cy="28" r="16" stroke="var(--border)" strokeWidth="2"/>
-                    <path d="M32 20v8l5 5" stroke="var(--border)" strokeWidth="2" strokeLinecap="round"/>
-                  </svg>
-                </div>
+              <div className="empty-state" style={{ padding: '40px 20px' }}>
+                <div style={{ fontSize: 40, marginBottom: 8 }}>🛵</div>
                 <p>{isEmployee ? 'Nenhum pedido pendente da loja' : 'Nenhum pedido disponível no momento'}</p>
               </div>
             ) : (
               availableOrders.map(order => (
-                <div key={order.id} className="card">
+                <div key={order.id} className="card" style={{ marginBottom: 10, padding: 14 }}>
                   <div className="flex-between" style={{ marginBottom: 6 }}>
-                    <div>
-                      <span className="font-bold">#{order.id.slice(0, 8)}</span>
-                      <span className="text-sm text-muted" style={{ marginLeft: 8 }}>
-                        {order.customer_name}
-                      </span>
-                    </div>
-                    <span className="badge badge-success">R$ {order.total.toFixed(2)}</span>
+                    <span style={{ fontWeight: 700, fontSize: 14 }}>#{order.id.slice(0, 8)}</span>
+                    <span style={{ fontWeight: 700, color: 'var(--primary-dark)', fontSize: 15 }}>
+                      R$ {order.total.toFixed(2)}
+                    </span>
                   </div>
-                  <div className="text-sm text-muted" style={{ marginBottom: 6 }}>
-                    Loja: {order.store_name} | {order.store_address}
+                  <div style={{ fontSize: 13, color: '#666', marginBottom: 4 }}>
+                    🏪 {order.store_name}
                   </div>
-                  <div className="text-sm text-muted" style={{ marginBottom: 8 }}>
-                    Entrega: {order.customer_address}
+                  <div style={{ fontSize: 13, color: '#666', marginBottom: 10 }}>
+                    📍 {order.customer_address}
                   </div>
                   <div className="flex-between">
-                    <span className={`badge ${statusColors[order.status] || 'badge-primary'}`}>
-                      {statusLabels[order.status] || order.status}
-                    </span>
+                    <span className="badge badge-success" style={{ fontSize: 11 }}>Pronto para retirada</span>
                     {!isEmployee && (
                       <button className="btn btn-sm btn-primary" onClick={() => acceptOrder(order.id)}>
-                        Aceitar Entrega
+                        Aceitar
                       </button>
                     )}
                   </div>
@@ -303,40 +347,32 @@ export default function MotoboyDashboard() {
 
         {selectedTab === 'mine' && (
           <>
-            <div className="page-title" style={{ color: '#1565C0' }}>Minhas Entregas</div>
             {myOrders.length === 0 ? (
-              <div className="empty-state">
-                <div className="empty-state-icon">
-                  <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
-                    <path d="M20 48V24l8-12h8l8 12v24" stroke="var(--border)" strokeWidth="2" strokeLinejoin="round"/>
-                    <circle cx="32" cy="36" r="4" stroke="var(--border)" strokeWidth="2"/>
-                  </svg>
-                </div>
+              <div className="empty-state" style={{ padding: '40px 20px' }}>
+                <div style={{ fontSize: 40, marginBottom: 8 }}>📋</div>
                 <p>Aceite pedidos para começar</p>
               </div>
             ) : (
               myOrders.map(order => (
-                <div key={order.id} className="card">
+                <div key={order.id} className="card" style={{ marginBottom: 10, padding: 14 }}>
                   <div className="flex-between" style={{ marginBottom: 6 }}>
                     <div>
-                      <span className="font-bold">#{order.id.slice(0, 8)}</span>
-                      <span className="text-sm text-muted" style={{ marginLeft: 8 }}>
-                        {order.customer_name}
-                      </span>
+                      <span style={{ fontWeight: 700, fontSize: 14 }}>#{order.id.slice(0, 8)}</span>
+                      <span style={{ fontSize: 12, color: '#888', marginLeft: 8 }}>{order.customer_name}</span>
                     </div>
                     <span className={`badge ${statusColors[order.status] || 'badge-primary'}`}>
                       {statusLabels[order.status] || order.status}
                     </span>
                   </div>
-                  <div className="text-sm text-muted" style={{ marginBottom: 6 }}>
+                  <div style={{ fontSize: 12, color: '#888', marginBottom: 4 }}>
                     Retirar: {order.store_name}
                   </div>
-                  <div className="text-sm text-muted" style={{ marginBottom: 8 }}>
+                  <div style={{ fontSize: 12, color: '#888', marginBottom: 8 }}>
                     Entregar: {order.customer_address}
                   </div>
 
                   {(order.store_lat || order.customer_lat) && (
-                    <div style={{ height: 200, borderRadius: 8, overflow: 'hidden', border: '1px solid var(--border)', marginBottom: 8 }}>
+                    <div style={{ height: 160, borderRadius: 10, overflow: 'hidden', border: '1px solid var(--border)', marginBottom: 8 }}>
                       <MapContainer
                         center={[
                           (order.store_lat + (order.customer_lat || order.store_lat)) / 2,
@@ -364,16 +400,8 @@ export default function MotoboyDashboard() {
                     </div>
                   )}
 
-                  {order.status === 'in_transit' && (
-                    <div className="card mt-2" style={{ background: '#FFF3E0', border: '1px solid #FFE0B2', padding: 8 }}>
-                      <button className="btn btn-sm btn-accent w-full" onClick={sendLocation}>
-                        Atualizar minha localização (GPS)
-                      </button>
-                    </div>
-                  )}
-
-                  <div className="flex-between" style={{ marginTop: 8 }}>
-                    <span className="badge badge-success">R$ {order.total.toFixed(2)}</span>
+                  <div className="flex-between" style={{ marginTop: 4 }}>
+                    <span style={{ fontWeight: 700, color: 'var(--primary-dark)' }}>R$ {order.total.toFixed(2)}</span>
                     {nextStatus[order.status] && (
                       <button className="btn btn-sm btn-primary"
                         onClick={() => updateStatus(order.id)}>
@@ -389,27 +417,24 @@ export default function MotoboyDashboard() {
 
         {selectedTab === 'route' && (
           <>
-            <div className="page-title" style={{ color: '#1565C0' }}>Rota Otimizada</div>
+            <div style={{ fontSize: 18, fontWeight: 800, color: 'var(--primary-dark)', marginBottom: 14 }}>Rota</div>
             {route ? (
               <div>
                 {route.store && (
-                  <div className="card" style={{ background: '#E8F5E9', marginBottom: 12 }}>
-                    <div className="text-sm font-bold" style={{ marginBottom: 4, color: 'var(--secondary)' }}>
-                      Ponto de Partida (Loja)
-                    </div>
-                    <div className="font-bold">{route.store.name}</div>
+                  <div className="card" style={{ background: '#E8F5E9', marginBottom: 12, padding: 14 }}>
+                    <div style={{ fontSize: 12, fontWeight: 700, color: '#2E7D32', marginBottom: 4 }}>Ponto de Partida</div>
+                    <div style={{ fontWeight: 700 }}>{route.store.name}</div>
                     <div className="text-xs text-muted">{route.store.address}</div>
                   </div>
                 )}
-
-                <div className="card" style={{ background: '#E3F2FD' }}>
-                  <p className="text-sm font-bold" style={{ marginBottom: 8 }}>
-                    Melhor ordem de entrega (menor distância):
-                  </p>
+                <div className="card" style={{ background: '#E3F2FD', padding: 14 }}>
+                  <div style={{ fontSize: 13, fontWeight: 700, color: '#1565C0', marginBottom: 10 }}>
+                    Melhor ordem de entrega
+                  </div>
                   {route.route.map((r, i) => (
-                    <div key={r.id} className="flex-row card" style={{
-                      padding: 10, marginBottom: 6,
-                      borderLeft: `4px solid ${i === 0 ? 'var(--secondary)' : 'var(--primary)'}`
+                    <div key={r.id} style={{
+                      display: 'flex', alignItems: 'center', gap: 12,
+                      padding: '10px 0', borderBottom: i < route.route.length - 1 ? '1px solid #E0E0E0' : 'none'
                     }}>
                       <div style={{
                         width: 28, height: 28, borderRadius: '50%',
@@ -421,40 +446,18 @@ export default function MotoboyDashboard() {
                         {r.stop}
                       </div>
                       <div>
-                        <div className="font-bold text-sm">{r.customer_name}</div>
-                        <div className="text-xs text-muted">{r.customer_address}</div>
+                        <div style={{ fontWeight: 700, fontSize: 13 }}>{r.customer_name}</div>
+                        <div style={{ fontSize: 11, color: '#888' }}>{r.customer_address}</div>
                       </div>
                     </div>
                   ))}
                 </div>
-
-                <div className="map-container" style={{ height: 200, background: '#E8EAF6', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginBottom: 12 }}>
-                    <div style={{
-                      width: 20, height: 20, borderRadius: '50%', background: '#2E7D32',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      color: 'white', fontSize: 10
-                    }}>L</div>
-                    {route.route.map((r, i) => (
-                      <div key={r.id} className="flex-row" style={{ alignItems: 'center' }}>
-                        <div style={{
-                          width: 30, height: 3, background: i === 0 ? '#2E7D32' : '#6A1B9A'
-                        }} />
-                        <div style={{
-                          width: 20, height: 20, borderRadius: '50%', background: '#6A1B9A',
-                          display: 'flex', alignItems: 'center', justifyContent: 'center',
-                          color: 'white', fontSize: 10
-                        }}>{r.stop}</div>
-                      </div>
-                    ))}
-                  </div>
-                  <p className="text-xs text-muted">Rota visual (simulada)</p>
-                </div>
               </div>
             ) : (
-              <div className="card text-center">
-                <p>Aceite pedidos primeiro para gerar a rota otimizada</p>
-                <button className="btn btn-primary mt-2" onClick={optimizeRoute}>
+              <div className="card" style={{ textAlign: 'center', padding: 24 }}>
+                <div style={{ fontSize: 40, marginBottom: 8 }}>🗺️</div>
+                <p style={{ marginBottom: 12 }}>Aceite pedidos para gerar a rota</p>
+                <button className="btn btn-primary btn-sm" onClick={optimizeRoute}>
                   Gerar Rota
                 </button>
               </div>
@@ -463,38 +466,35 @@ export default function MotoboyDashboard() {
         )}
 
         {selectedTab === 'profile' && (
-          <div className="card" style={{ textAlign: 'left' }}>
-            <div className="page-title" style={{ fontSize: 20 }}>Meu Perfil</div>
+          <div className="card" style={{ padding: 18, textAlign: 'left' }}>
+            <div style={{ fontSize: 18, fontWeight: 800, color: 'var(--primary-dark)', marginBottom: 16 }}>Meu Perfil</div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
               {user?.photo_url ? (
                 <img src={user.photo_url} alt="Foto"
-                  style={{ width: 56, height: 56, borderRadius: '50%', objectFit: 'cover' }}
+                  style={{ width: 48, height: 48, borderRadius: '50%', objectFit: 'cover' }}
                   onError={e => { e.target.style.display = 'none'; }} />
               ) : (
                 <div style={{
-                  width: 56, height: 56, borderRadius: '50%',
+                  width: 48, height: 48, borderRadius: '50%',
                   background: 'linear-gradient(135deg, #42A5F5, #1565C0)',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  color: 'white', fontWeight: 700, fontSize: 24
+                  color: 'white', fontWeight: 700, fontSize: 20
                 }}>
                   {user?.name?.charAt(0)?.toUpperCase()}
                 </div>
               )}
               <div>
-                <div style={{ fontWeight: 800, fontSize: 16 }}>{user?.name}</div>
-                <div style={{ fontSize: 12, color: '#888' }}>Motoboy</div>
+                <div style={{ fontWeight: 800, fontSize: 15 }}>{user?.name}</div>
+                <div style={{ fontSize: 12, color: '#888' }}>{user?.phone}</div>
               </div>
             </div>
             <div className="form-group">
-              <label className="label">Telefone</label>
-              <div style={{ fontWeight: 600 }}>{user?.phone}</div>
-            </div>
-            <div className="form-group">
-              <label className="label">Chave PIX (para receber entregas)</label>
+              <label className="label">Chave PIX</label>
               <input className="input" type="text" value={pixKey}
                 onChange={e => setPixKey(e.target.value)}
-                placeholder="CPF, telefone, e-mail ou chave aleatoria" />
-              <span className="text-xs text-muted">Taxa de entrega sera enviada para esta chave</span>
+                placeholder="CPF, telefone, e-mail ou chave aleatória"
+                style={{ fontSize: 14 }} />
+              <span className="text-xs text-muted">Receba o valor das entregas nesta chave</span>
             </div>
             {pixMsg && (
               <div style={{
@@ -505,7 +505,7 @@ export default function MotoboyDashboard() {
                 {pixMsg}
               </div>
             )}
-            <button className="btn btn-primary" onClick={async () => {
+            <button className="btn btn-primary btn-sm" onClick={async () => {
               setPixSaving(true);
               try {
                 localStorage.setItem('motoboy_pix_key', pixKey);
@@ -513,18 +513,50 @@ export default function MotoboyDashboard() {
                   method: 'PATCH',
                   body: JSON.stringify({ pix_key: pixKey })
                 });
-                setPixMsg(res.ok ? 'Chave PIX salva!' : (res.error || 'Salvo localmente. Execute ALTER TABLE no Supabase.'));
+                setPixMsg(res.ok ? 'Chave PIX salva!' : (res.error || 'Salvo localmente.'));
               } catch {
                 localStorage.setItem('motoboy_pix_key', pixKey);
                 setPixMsg('Chave PIX salva localmente!');
               }
               setPixSaving(false);
               setTimeout(() => setPixMsg(''), 3000);
-            }} disabled={pixSaving}>
+            }} disabled={pixSaving} style={{ width: '100%' }}>
               {pixSaving ? 'Salvando...' : 'Salvar'}
             </button>
+            <div onClick={logout} style={{
+              textAlign: 'center', marginTop: 16, color: '#C62828',
+              fontSize: 13, fontWeight: 600, cursor: 'pointer'
+            }}>
+              Sair da conta
+            </div>
           </div>
         )}
+      </div>
+
+      {/* Bottom Navbar */}
+      <div style={{
+        position: 'fixed', bottom: 0, left: 0, right: 0,
+        background: 'white', borderTop: '1px solid var(--border)',
+        display: 'flex', justifyContent: 'space-around',
+        padding: '8px 0', zIndex: 200,
+        boxShadow: '0 -2px 10px rgba(0,0,0,0.04)'
+      }}>
+        {navItems.map(item => (
+          <div key={item.key}
+            onClick={() => {
+              setSelectedTab(item.key);
+              if (item.key === 'route') optimizeRoute();
+            }}
+            style={{
+              display: 'flex', flexDirection: 'column', alignItems: 'center',
+              gap: 2, cursor: 'pointer', padding: '4px 12px',
+              color: selectedTab === item.key ? 'var(--primary)' : '#999',
+              transition: 'color 0.2s'
+            }}>
+            <span style={{ fontSize: 20 }}>{item.icon}</span>
+            <span style={{ fontSize: 10, fontWeight: selectedTab === item.key ? 700 : 500 }}>{item.label}</span>
+          </div>
+        ))}
       </div>
     </div>
   );
