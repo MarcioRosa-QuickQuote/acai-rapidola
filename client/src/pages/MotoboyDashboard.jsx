@@ -12,9 +12,26 @@ L.Icon.Default.mergeOptions({
   shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
 });
 
+const statusLabels = {
+  assigned: 'Aguardando retirada', picked_up: 'A caminho',
+  arriving: 'Chegando', delivered: 'Entregue'
+};
+
 const statusColors = {
   assigned: 'badge-primary', picked_up: 'badge-info',
   arriving: 'badge-accent', delivered: 'badge-success'
+};
+
+const nextStatus = {
+  assigned: 'picked_up',
+  picked_up: 'arriving',
+  arriving: 'delivered'
+};
+
+const nextStatusLabel = {
+  assigned: 'Retirei o pedido',
+  picked_up: 'Chegando',
+  arriving: 'Entregue'
 };
 
 export default function MotoboyDashboard() {
