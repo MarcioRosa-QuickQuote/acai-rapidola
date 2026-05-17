@@ -524,25 +524,29 @@ export default function StoreDashboard() {
           }}>
             {open ? 'ABERTA' : 'FECHADA'}
           </span>
-          {storeData?.logo && (
-            <img src={storeData.logo} alt="Logo"
-              onClick={() => { setView('settings'); setSettingsTab('conta'); }}
-              style={{ width: 36, height: 36, borderRadius: 8, objectFit: 'contain', flexShrink: 0, cursor: 'pointer' }}
-              onError={e => { e.target.style.display = 'none'; }} />
-          )}
-          <div style={{ minWidth: 0 }} className="hide-mobile">
-            <div className="header-title">{storeData?.name || 'Loja'}</div>
-            <div style={{ fontSize: 10, color: 'var(--text-light)' }}>Loja</div>
+        </div>
+        <div className="header-right" style={{ gap: 8 }}>
+          <div onClick={() => { setView(view === 'settings' ? 'orders' : 'settings'); if (view === 'orders') setSettingsTab('conta'); }}
+            style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
+            {storeData?.logo ? (
+              <img src={storeData.logo} alt="Logo"
+                style={{ width: 34, height: 34, borderRadius: 8, objectFit: 'contain', flexShrink: 0 }}
+                onError={e => { e.target.style.display = 'none'; }} />
+            ) : (
+              <div style={{
+                width: 34, height: 34, borderRadius: 8,
+                background: 'linear-gradient(135deg, var(--primary), var(--primary-dark))',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                color: 'white', fontWeight: 800, fontSize: 16, flexShrink: 0
+              }}>
+                {(storeData?.name || 'L').charAt(0)}
+              </div>
+            )}
+            <div style={{ minWidth: 0 }} className="hide-mobile">
+              <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text)', lineHeight: 1.2 }}>{storeData?.name || 'Loja'}</div>
+              <div style={{ fontSize: 9, color: 'var(--text-light)' }}>Loja</div>
+            </div>
           </div>
-        </div>
-        <div style={{ display: 'none' }} className="hide-mobile">
-        </div>
-        <div className="header-right">
-          <button className="btn btn-sm"
-            style={{ background: view !== 'orders' ? 'var(--primary)' : 'var(--border)', color: view !== 'orders' ? 'white' : 'var(--text)', fontSize: 12 }}
-            onClick={() => setView(view === 'settings' ? 'orders' : 'settings')}>
-            {view === 'orders' ? 'Conta' : 'Pedidos'}
-          </button>
           <button className="btn btn-sm"
             style={{ background: 'var(--border)', color: 'var(--text)', fontSize: 12 }}
             onClick={logout}>Sair</button>
