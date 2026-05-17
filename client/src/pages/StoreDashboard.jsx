@@ -514,6 +514,7 @@ export default function StoreDashboard() {
     <div>
       <div className="header">
         <div className="header-left">
+          <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-light)' }}>Loja</span>
           <div className="toggle-switch" onClick={toggleOpen} title={open ? 'Fechar loja' : 'Abrir loja'}>
             <input type="checkbox" checked={open} readOnly />
             <span className="toggle-slider" />
@@ -542,14 +543,14 @@ export default function StoreDashboard() {
                 {(storeData?.name || 'L').charAt(0)}
               </div>
             )}
-            <div style={{ minWidth: 0 }} className="hide-mobile">
+            <div>
               <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text)', lineHeight: 1.2 }}>{storeData?.name || 'Loja'}</div>
-              <div style={{ fontSize: 9, color: 'var(--text-light)' }}>Loja</div>
+              <div onClick={(e) => { e.stopPropagation(); logout(); }}
+                style={{ fontSize: 10, color: 'var(--text-light)', cursor: 'pointer' }}>
+                Sair
+              </div>
             </div>
           </div>
-          <button className="btn btn-sm"
-            style={{ background: 'var(--border)', color: 'var(--text)', fontSize: 12 }}
-            onClick={logout}>Sair</button>
         </div>
       </div>
 
