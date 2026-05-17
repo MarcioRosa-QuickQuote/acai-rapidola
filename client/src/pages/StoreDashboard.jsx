@@ -58,6 +58,7 @@ export default function StoreDashboard() {
   const [payoutMsg, setPayoutMsg] = useState('');
   const [finMonth, setFinMonth] = useState(() => new Date().getMonth() + 1);
   const [finYear, setFinYear] = useState(() => new Date().getFullYear());
+  const [finPeriod, setFinPeriod] = useState('mes');
   const [expandedOrder, setExpandedOrder] = useState(null);
 
   useEffect(() => {
@@ -383,27 +384,48 @@ export default function StoreDashboard() {
   }) : orders;
 
   function FinanceiroTab() {
+    const now = new Date();
     const filteredOrders = orders.filter(o => {
+      if (o.payment_status !== 'paid') return false;
       const d = new Date(o.created_at);
-      return o.payment_status === 'paid' && d.getMonth() + 1 === finMonth && d.getFullYear() === finYear;
+      if (finPeriod === 'hoje') return d.toDateString() === now.toDateString();
+      if (finPeriod === 'semana') {
+        const weekAgo = new Date(now); weekAgo.setDate(now.getDate() - 7);
+        return d >= weekAgo;
+      }
+      return d.getMonth() + 1 === finMonth && d.getFullYear() === finYear;
     });
     const finTotal = filteredOrders.reduce((s, o) => s + o.total, 0);
     const months = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
     const years = [];
-    for (let y = 2025; y <= new Date().getFullYear(); y++) years.push(y);
+    for (let y = 2025; y <= now.getFullYear(); y++) years.push(y);
     
     return (
       <div>
         <div className="page-title" style={{ fontSize: 20 }}>Financeiro</div>
-        <div className="flex-row" style={{ marginBottom: 16 }}>
-          <select className="input" value={finMonth} onChange={e => setFinMonth(parseInt(e.target.value))}
-            style={{ width: 'auto', flex: 1, fontSize: 14 }}>
-            {months.map((m, i) => <option key={i} value={i+1}>{m}</option>)}
-          </select>
-          <select className="input" value={finYear} onChange={e => setFinYear(parseInt(e.target.value))}
-            style={{ width: 100, fontSize: 14 }}>
-            {years.map(y => <option key={y} value={y}>{y}</option>)}
-          </select>
+        <div className="flex-row" style={{ marginBottom: 12, overflowX: 'auto', WebkitOverflowScrolling: 'touch', paddingBottom: 4 }}>
+          {[
+            { key: 'hoje', label: 'Hoje' },
+            { key: 'semana', label: 'Semana' },
+            { key: 'mes', label: 'Mês' },
+          ].map(p => (
+            <button key={p.key} className={`btn btn-sm ${finPeriod === p.key ? 'btn-primary' : 'btn-outline'}`}
+              onClick={() => setFinPeriod(p.key)} style={{ flexShrink: 0, fontSize: 13 }}>
+              {p.label}
+            </button>
+          ))}
+          {finPeriod === 'mes' && (
+            <>
+              <select className="input" value={finMonth} onChange={e => setFinMonth(parseInt(e.target.value))}
+                style={{ width: 'auto', flexShrink: 0, fontSize: 13, padding: '8px 12px' }}>
+                {months.map((m, i) => <option key={i} value={i+1}>{m}</option>)}
+              </select>
+              <select className="input" value={finYear} onChange={e => setFinYear(parseInt(e.target.value))}
+                style={{ width: 90, flexShrink: 0, fontSize: 13, padding: '8px 12px' }}>
+                {years.map(y => <option key={y} value={y}>{y}</option>)}
+              </select>
+            </>
+          )}
         </div>
         <div style={{ display: 'flex', gap: 12, marginBottom: 16 }}>
           <div className="card text-center" style={{ flex: 1, background: 'linear-gradient(135deg, #E8F5E9, #C8E6C9)', padding: 16 }}>
@@ -492,26 +514,30 @@ export default function StoreDashboard() {
     <div>
       <div className="header">
         <div className="header-left">
-          {storeData?.logo && (
-            <img src={storeData.logo} alt="Logo" style={{ width: 56, height: 56, borderRadius: 8, objectFit: 'contain', flexShrink: 0 }} onError={e => { e.target.style.display = 'none'; }} />
-          )}
-          <div style={{ minWidth: 0 }}>
-            <div className="header-title">{storeData?.name || 'Loja'}</div>
-            <div style={{ fontSize: 10, color: 'var(--text-light)' }}>Loja</div>
-          </div>
-        </div>
-        <div className="header-right">
-          <span style={{
-            fontSize: 11, fontWeight: 700,
-            color: open ? 'var(--success)' : 'var(--danger)',
-            marginRight: 6
-          }}>
-            {open ? 'ABERTA - Aceitando' : 'FECHADA'}
-          </span>
           <div className="toggle-switch" onClick={toggleOpen} title={open ? 'Fechar loja' : 'Abrir loja'}>
             <input type="checkbox" checked={open} readOnly />
             <span className="toggle-slider" />
           </div>
+          <span style={{
+            fontSize: 11, fontWeight: 700,
+            color: open ? 'var(--success)' : 'var(--danger)',
+          }}>
+            {open ? 'ABERTA' : 'FECHADA'}
+          </span>
+          {storeData?.logo && (
+            <img src={storeData.logo} alt="Logo"
+              onClick={() => { setView('settings'); setSettingsTab('conta'); }}
+              style={{ width: 36, height: 36, borderRadius: 8, objectFit: 'contain', flexShrink: 0, cursor: 'pointer' }}
+              onError={e => { e.target.style.display = 'none'; }} />
+          )}
+          <div style={{ minWidth: 0 }} className="hide-mobile">
+            <div className="header-title">{storeData?.name || 'Loja'}</div>
+            <div style={{ fontSize: 10, color: 'var(--text-light)' }}>Loja</div>
+          </div>
+        </div>
+        <div style={{ display: 'none' }} className="hide-mobile">
+        </div>
+        <div className="header-right">
           <button className="btn btn-sm"
             style={{ background: view !== 'orders' ? 'var(--primary)' : 'var(--border)', color: view !== 'orders' ? 'white' : 'var(--text)', fontSize: 12 }}
             onClick={() => setView(view === 'settings' ? 'orders' : 'settings')}>
@@ -526,7 +552,7 @@ export default function StoreDashboard() {
       <div className="container">
         {view === 'settings' ? (
           <>
-            <div className="flex-row" style={{ marginBottom: 16 }}>
+            <div className="swipe-row" style={{ marginBottom: 16 }}>
               <button className={`btn btn-sm ${settingsTab === 'produtos' ? 'btn-primary' : 'btn-outline'}`}
                 onClick={() => setSettingsTab('produtos')}>
                 Produtos
@@ -945,17 +971,15 @@ export default function StoreDashboard() {
                 <div style={{ fontSize: 32, fontWeight: 800, color: 'var(--primary)' }}>{pendingOrders.length}</div>
                 <div className="text-sm font-bold">Pedidos ativos</div>
               </div>
-              <div className="card text-center" style={{ background: 'linear-gradient(135deg, #E8F5E9, #C8E6C9)' }}>
-                <div style={{ fontSize: 32, fontWeight: 800, color: 'var(--secondary)' }}>
-                  R$ {paidOrders.reduce((s, o) => s + o.total, 0).toFixed(0)}
-                </div>
-                <div className="text-sm font-bold">Total vendido</div>
+              <div className="card text-center" style={{ background: 'linear-gradient(135deg, #FFF3E0, #FFE0B2)' }}>
+                <div style={{ fontSize: 32, fontWeight: 800, color: '#E65100' }}>{unpaidOrders.filter(o => (Date.now() - new Date(o.created_at).getTime()) <= 2*60*60*1000).length}</div>
+                <div className="text-sm font-bold">Pendentes</div>
               </div>
             </div>
 
             <div className="page-title">Pedidos</div>
 
-            <div className="flex-row" style={{ marginBottom: 14 }}>
+            <div className="swipe-row" style={{ marginBottom: 14 }}>
               <button className={`btn btn-sm ${orderFilter === 'ativos' ? 'btn-primary' : 'btn-outline'}`}
                 onClick={() => setOrderFilter('ativos')}>
                 Ativos ({pendingOrders.length})

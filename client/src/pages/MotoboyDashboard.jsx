@@ -222,7 +222,7 @@ export default function MotoboyDashboard() {
           </div>
         )}
 
-        <div className="flex-row" style={{ marginBottom: 16, justifyContent: 'space-between' }}>
+        <div className="flex-row" style={{ marginBottom: 16, justifyContent: 'space-between', overflowX: 'auto', WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none' }}>
           <div className="flex-row">
             <button className={`btn btn-sm ${selectedTab === 'available' ? 'btn-primary' : 'btn-outline'}`}
               onClick={() => setSelectedTab('available')}>

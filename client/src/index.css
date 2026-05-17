@@ -252,6 +252,19 @@ body {
   gap: 12px;
 }
 
+.swipe-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  padding-bottom: 4px;
+}
+.swipe-row::-webkit-scrollbar { display: none; }
+.swipe-row > * { flex-shrink: 0; }
+
 .flex-between {
   display: flex;
   align-items: center;
