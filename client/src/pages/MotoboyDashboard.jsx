@@ -12,35 +12,6 @@ L.Icon.Default.mergeOptions({
   shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
 });
 
-const statusLabels = {
-  assigned: 'Aguardando retirada', picked_up: 'A caminho',
-  arriving: 'Chegando', delivered: 'Entregue'
-};
-
-const statusColors = {
-  assigned: 'badge-primary', picked_up: 'badge-info',
-  arriving: 'badge-accent', delivered: 'badge-success'
-};
-
-const nextStatus = {
-  assigned: 'picked_up',
-  picked_up: 'arriving',
-  arriving: 'delivered'
-};
-
-const nextStatusLabel = {
-  assigned: 'Retirei o pedido',
-  picked_up: 'Chegando',
-  arriving: 'Entregue'
-};
-
-const navItems = [
-  { key: 'available', icon: '🏠', label: 'Início' },
-  { key: 'mine', icon: '📋', label: 'Pedidos' },
-  { key: 'route', icon: '🗺️', label: 'Rota' },
-  { key: 'profile', icon: '👤', label: 'Perfil' },
-];
-
 export default function MotoboyDashboard() {
   const { user, apiFetch, logout } = useAuth();
   const { socket, setToast } = useSocket();
@@ -165,27 +136,26 @@ export default function MotoboyDashboard() {
 
   if (loading) return <div className="loading"><div className="spinner" /></div>;
 
+  const tabKeys = [
+    { key: 'available', icon: '🏠', label: 'Início' },
+    { key: 'mine', icon: '📋', label: 'Pedidos' },
+    { key: 'route', icon: '🗺️', label: 'Rota' },
+    { key: 'profile', icon: '👤', label: 'Perfil' },
+  ];
+
   return (
-    <div style={{ paddingBottom: 80, background: '#f7f4fb', minHeight: '100vh' }}>
+    <div style={{ paddingBottom: 70, background: '#f7f4fb', minHeight: '100vh' }}>
       {/* Header */}
-      <div className="header" style={{ padding: '10px 16px' }}>
-        <div className="header-left" style={{ gap: 10 }}>
+        <div className="header" style={{ padding: '10px 16px' }}>
+        <div className="header-left" style={{ gap: 8 }}>
           <img src="/logomarca.png" alt="Pé de Açaí"
             style={{ width: 40, height: 40, borderRadius: 10, objectFit: 'contain', flexShrink: 0 }} />
           <div>
             <div style={{ fontSize: 15, fontWeight: 800, color: 'var(--primary-dark)', letterSpacing: '-0.02em' }}>Pé de Açaí</div>
-            <div style={{ fontSize: 11, color: 'var(--text-light)' }}>Olá, {user?.name?.split(' ')[0]}</div>
           </div>
         </div>
         <div className="header-right" style={{ gap: 8 }}>
-          <div className="toggle-switch" onClick={() => {
-            setOnline(!online);
-            if (!online) sendLocation();
-          }}>
-            <input type="checkbox" checked={online} readOnly />
-            <span className="toggle-slider" />
-          </div>
-          <div onClick={() => setSelectedTab('profile')} style={{ cursor: 'pointer' }}>
+          <div onClick={() => setSelectedTab('profile')} style={{ display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer' }}>
             {user?.photo_url ? (
               <img src={user.photo_url} alt="Foto"
                 style={{ width: 32, height: 32, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }}
@@ -200,6 +170,7 @@ export default function MotoboyDashboard() {
                 {user?.name?.charAt(0)?.toUpperCase()}
               </div>
             )}
+            <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)' }}>Olá, {user?.name?.split(' ')[0]}</span>
           </div>
         </div>
       </div>
@@ -541,7 +512,7 @@ export default function MotoboyDashboard() {
         padding: '8px 0', zIndex: 200,
         boxShadow: '0 -2px 10px rgba(0,0,0,0.04)'
       }}>
-        {navItems.map(item => (
+        {tabKeys.map(item => (
           <div key={item.key}
             onClick={() => {
               setSelectedTab(item.key);
