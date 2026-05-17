@@ -12,6 +12,11 @@ L.Icon.Default.mergeOptions({
   shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
 });
 
+const statusColors = {
+  assigned: 'badge-primary', picked_up: 'badge-info',
+  arriving: 'badge-accent', delivered: 'badge-success'
+};
+
 export default function MotoboyDashboard() {
   const { user, apiFetch, logout } = useAuth();
   const { socket, setToast } = useSocket();
