@@ -129,3 +129,4 @@ CREATE POLICY IF NOT EXISTS "Auth insert uploads" ON storage.objects
 -- Colunas adicionadas posteriormente (rodar se necessario):
 -- ALTER TABLE users ADD COLUMN IF NOT EXISTS pix_key TEXT DEFAULT '';
 -- ALTER TABLE stores ADD COLUMN IF NOT EXISTS pix_key TEXT DEFAULT '';
+-- ALTER TABLE users ADD COLUMN IF NOT EXISTS whatsapp TEXT DEFAULT '';
