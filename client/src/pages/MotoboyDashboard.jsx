@@ -47,6 +47,7 @@ export default function MotoboyDashboard() {
   const [loading, setLoading] = useState(true);
   const [online, setOnline] = useState(true);
   const [selectedTab, setSelectedTab] = useState('available');
+  const [pageTab, setPageTab] = useState('inicio');
   const [isEmployee, setIsEmployee] = useState(false);
   const [earnings, setEarnings] = useState({ total: 0, pending: 0, list: [] });
 
@@ -162,52 +163,236 @@ export default function MotoboyDashboard() {
 
   if (loading) return <div className="loading"><div className="spinner" /></div>;
 
+  const tabs = [
+    { key: 'inicio', label: 'Início', icon: '🏠' },
+    { key: 'pedidos', label: 'Pedidos', icon: '📋' },
+    { key: 'saldo', label: 'Saldo', icon: '💰' },
+    { key: 'perfil', label: 'Perfil', icon: '👤' },
+  ];
+
+  function renderInicio() {
+    if (isEmployee) {
+      return (
+        <div className="card" style={{ background: '#E8F5E9', border: '1px solid #C8E6C9', textAlign: 'center', padding: 10, marginBottom: 12 }}>
+          <span style={{ fontWeight: 600, color: '#2E7D32', fontSize: 13 }}>
+            Você é parceiro desta loja — os pedidos chegam automaticamente, sem precisar aceitar
+          </span>
+        </div>
+      );
+    }
+    if (availableOrders.length === 0) {
+      return (
+        <div className="empty-state" style={{ paddingTop: 40 }}>
+          <div className="empty-state-icon">
+            <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
+              <circle cx="32" cy="28" r="16" stroke="var(--border)" strokeWidth="2"/>
+              <path d="M32 20v8l5 5" stroke="var(--border)" strokeWidth="2" strokeLinecap="round"/>
+            </svg>
+          </div>
+          <p>Nenhum pedido disponível no momento</p>
+        </div>
+      );
+    }
+    return availableOrders.map(order => (
+      <div key={order.id} className="card">
+        <div className="flex-between" style={{ marginBottom: 6 }}>
+          <div>
+            <span className="font-bold">#{order.id.slice(0, 8)}</span>
+            <span className="text-sm text-muted" style={{ marginLeft: 8 }}>{order.customer_name}</span>
+          </div>
+          <span className="badge badge-success">R$ {order.total.toFixed(2)}</span>
+        </div>
+        <div className="text-sm text-muted" style={{ marginBottom: 6 }}>Loja: {order.store_name} | {order.store_address}</div>
+        <div className="text-sm text-muted" style={{ marginBottom: 8 }}>Entrega: {order.customer_address}</div>
+        <div className="flex-between">
+          <span className={`badge ${statusColors[order.status] || 'badge-primary'}`}>{statusLabels[order.status] || order.status}</span>
+          {!isEmployee && (
+            <button className="btn btn-sm btn-primary" onClick={() => acceptOrder(order.id)}>Aceitar Entrega</button>
+          )}
+        </div>
+      </div>
+    ));
+  }
+
+  function renderPedidos() {
+    if (myOrders.length === 0) {
+      return (
+        <div className="empty-state" style={{ paddingTop: 40 }}>
+          <div className="empty-state-icon">
+            <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
+              <path d="M20 48V24l8-12h8l8 12v24" stroke="var(--border)" strokeWidth="2" strokeLinejoin="round"/>
+              <circle cx="32" cy="36" r="4" stroke="var(--border)" strokeWidth="2"/>
+            </svg>
+          </div>
+          <p>Nenhum pedido ainda</p>
+        </div>
+      );
+    }
+    return myOrders.map(order => (
+      <div key={order.id} className="card" style={{ cursor: 'pointer' }}
+        onClick={() => setSelectedTab(order.id === selectedTab ? null : order.id)}>
+        <div className="flex-between" style={{ marginBottom: 6 }}>
+          <div>
+            <span className="font-bold">#{order.id.slice(0, 8)}</span>
+            <span className="text-sm text-muted" style={{ marginLeft: 8 }}>{order.customer_name}</span>
+          </div>
+          <span className={`badge ${statusColors[order.status] || 'badge-primary'}`}>{statusLabels[order.status] || order.status}</span>
+        </div>
+        <div className="text-sm text-muted" style={{ marginBottom: 6 }}>Retirar: {order.store_name}</div>
+        <div className="text-sm text-muted" style={{ marginBottom: 8 }}>Entregar: {order.customer_address}</div>
+        {selectedTab === order.id && order.store_lat && order.customer_lat && (
+          <div style={{ height: 200, borderRadius: 8, overflow: 'hidden', border: '1px solid var(--border)', marginBottom: 8 }}>
+            <MapContainer center={[(order.store_lat + order.customer_lat) / 2, ((order.store_lng || 0) + (order.customer_lng || 0)) / 2]}
+              zoom={13} style={{ height: '100%', width: '100%' }} scrollWheelZoom={false}>
+              <TileLayer attribution='&copy; OSM' url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+              {order.store_lat && order.store_lng && <Marker position={[order.store_lat, order.store_lng]} />}
+              {order.customer_lat && order.customer_lng && <Marker position={[order.customer_lat, order.customer_lng]} />}
+              {order.store_lat && order.store_lng && order.customer_lat && order.customer_lng && (
+                <Polyline positions={[[order.store_lat, order.store_lng], [order.customer_lat, order.customer_lng]]}
+                  pathOptions={{ color: '#1565C0', weight: 3, dashArray: '8 4' }} />
+              )}
+            </MapContainer>
+          </div>
+        )}
+        <div className="flex-between" style={{ marginTop: 8 }}>
+          <span className="badge badge-success">R$ {order.total.toFixed(2)}</span>
+          {nextStatus[order.status] && (
+            <button className="btn btn-sm btn-primary" onClick={(e) => { e.stopPropagation(); updateStatus(order.id); }}>
+              {nextStatusLabel[order.status]}
+            </button>
+          )}
+        </div>
+      </div>
+    ));
+  }
+
+  function renderSaldo() {
+    const dailyTotal = earnings?.list?.reduce((s, e) => s + e.amount, 0) || earnings.total || 0;
+    return (
+      <div style={{ textAlign: 'center' }}>
+        <div className="card" style={{
+          background: 'linear-gradient(135deg, #1565C0, #0D47A1)',
+          color: 'white', borderRadius: 20, padding: 28, marginBottom: 16
+        }}>
+          <div style={{ fontSize: 13, opacity: 0.8, marginBottom: 4 }}>Seus ganhos</div>
+          <div style={{ fontSize: 42, fontWeight: 800, marginBottom: 4 }}>R$ {dailyTotal.toFixed(2)}</div>
+          <div style={{ fontSize: 12, opacity: 0.7 }}>Total acumulado</div>
+          {earnings.pending > 0 && (
+            <div style={{ marginTop: 12, background: 'rgba(255,255,255,0.15)', borderRadius: 12, padding: '10px 16px', display: 'inline-block' }}>
+              <span style={{ fontSize: 12, opacity: 0.8 }}>A receber: </span>
+              <span style={{ fontWeight: 700 }}>R$ {earnings.pending.toFixed(2)}</span>
+            </div>
+          )}
+        </div>
+        {earnings?.list?.length > 0 && (
+          <div className="card" style={{ textAlign: 'left' }}>
+            <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 12, color: '#1565C0' }}>Histórico</div>
+            {earnings.list.slice(-10).reverse().map((e, i) => (
+              <div key={i} className="flex-between" style={{ padding: '8px 0', borderBottom: '1px solid #F5F5F5', fontSize: 13 }}>
+                <span>R$ {e.amount.toFixed(2)}</span>
+                <span className={e.status === 'paid' ? 'badge badge-success' : 'badge badge-warning'}>
+                  {e.status === 'paid' ? 'Pago' : 'Pendente'}
+                </span>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  function renderPerfil() {
+    return (
+      <div className="card" style={{ textAlign: 'left' }}>
+        <div className="page-title" style={{ fontSize: 20 }}>Meu Perfil</div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
+          <label style={{ cursor: 'pointer', position: 'relative' }}>
+            {user?.photo_url ? (
+              <img src={user.photo_url} alt="Foto" style={{ width: 56, height: 56, borderRadius: '50%', objectFit: 'cover' }}
+                onError={e => { e.target.style.display = 'none'; }} />
+            ) : (
+              <div style={{ width: 56, height: 56, borderRadius: '50%', background: 'linear-gradient(135deg, #42A5F5, #1565C0)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 700, fontSize: 24 }}>
+                {user?.name?.charAt(0)?.toUpperCase()}
+              </div>
+            )}
+            <input type="file" accept="image/*" style={{ display: 'none' }}
+              onChange={async (e) => {
+                const file = e.target.files?.[0];
+                if (!file) return;
+                const formData = new FormData();
+                formData.append('image', file);
+                const res = await fetch('/api/products/upload-image', {
+                  method: 'POST',
+                  headers: { Authorization: 'Bearer ' + localStorage.getItem('token') },
+                  body: formData
+                });
+                const data = await res.json();
+                if (data.url) {
+                  await apiFetch('/auth/profile', { method: 'PATCH', body: JSON.stringify({ photo_url: data.url }) });
+                  window.location.reload();
+                }
+              }} />
+            <div style={{ fontSize: 9, color: '#888', textAlign: 'center', marginTop: 2 }}>Alterar foto</div>
+          </label>
+          <div>
+            <div style={{ fontWeight: 800, fontSize: 16 }}>{user?.name}</div>
+            <div style={{ fontSize: 12, color: '#888' }}>Motoboy</div>
+          </div>
+        </div>
+        <div className="form-group"><label className="label">Telefone</label><div style={{ fontWeight: 600 }}>{user?.phone}</div></div>
+        <div className="form-group">
+          <label className="label">Chave PIX</label>
+          <input className="input" type="text" value={pixKey} onChange={e => setPixKey(e.target.value)}
+            placeholder="CPF, telefone, e-mail ou chave aleatoria" />
+        </div>
+        <div className="form-group">
+          <label className="label">CPF</label>
+          <input className="input" type="text" placeholder="000.000.000-00" />
+        </div>
+        <div className="form-group">
+          <label className="label">Placa da moto</label>
+          <input className="input" type="text" placeholder="ABC-1234" />
+        </div>
+        {pixMsg && <div style={{ fontSize: 13, fontWeight: 600, padding: '10px 14px', borderRadius: 8, marginBottom: 12,
+          background: pixMsg.includes('Erro') ? '#FFEBEE' : '#E8F5E9', color: pixMsg.includes('Erro') ? '#C62828' : '#2E7D32' }}>{pixMsg}</div>}
+        <button className="btn btn-primary" onClick={async () => {
+          setPixSaving(true);
+          try {
+            localStorage.setItem('motoboy_pix_key', pixKey);
+            const res = await apiFetch('/motoboy/profile', { method: 'PATCH', body: JSON.stringify({ pix_key: pixKey }) });
+            setPixMsg(res.ok ? 'Chave PIX salva!' : (res.error || 'Salvo localmente'));
+          } catch { localStorage.setItem('motoboy_pix_key', pixKey); setPixMsg('Chave PIX salva localmente!'); }
+          setPixSaving(false);
+          setTimeout(() => setPixMsg(''), 3000);
+        }} disabled={pixSaving}>{pixSaving ? 'Salvando...' : 'Salvar'}</button>
+      </div>
+    );
+  }
+
   return (
-    <div>
+    <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
       <div className="header">
         <div className="header-left" style={{ gap: 10 }}>
-          <img src="/logomarca.png" alt="Pé de Açaí"
-            style={{ width: 64, height: 64, borderRadius: 14, objectFit: 'contain', flexShrink: 0 }} />
+          <img src="/logomarca.png" alt="Pé de Açaí" style={{ width: 64, height: 64, borderRadius: 14, objectFit: 'contain', flexShrink: 0 }} />
           <div>
             <div className="header-title" style={{ fontSize: 18 }}>Pé de Açaí</div>
             <div style={{ fontSize: 11, color: 'var(--text-light)' }}>Motoboy</div>
           </div>
         </div>
         <div className="header-right">
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}
-            onClick={() => setSelectedTab('profile')}>
-            {user?.photo_url ? (
-              <img src={user.photo_url} alt="Foto"
-                style={{ width: 40, height: 40, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }}
-                onError={e => { e.target.style.display = 'none'; }} />
-            ) : (
-              <div style={{
-                width: 40, height: 40, borderRadius: '50%',
-                background: 'linear-gradient(135deg, #42A5F5, #1565C0)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                color: 'white', fontWeight: 700, fontSize: 17, flexShrink: 0
-              }}>
-                {user?.name?.charAt(0)?.toUpperCase()}
-              </div>
-            )}
-            <div>
-              <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text)' }}>{user?.name?.split(' ')[0]}</div>
-              <div onClick={(e) => { e.stopPropagation(); logout(); }}
-                style={{ fontSize: 10, color: 'var(--text-light)', cursor: 'pointer' }}>
-                Sair
-              </div>
-            </div>
+          <div onClick={() => logout()} style={{ fontSize: 12, color: 'var(--text-light)', cursor: 'pointer', fontWeight: 600 }}>
+            Sair
           </div>
         </div>
       </div>
 
-      <div className="container" style={{ paddingTop: 8 }}>
+      <div className="container" style={{ flex: 1, paddingBottom: 80 }}>
         <div style={{
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
           background: online ? 'linear-gradient(135deg, #E8F5E9, #C8E6C9)' : 'linear-gradient(135deg, #F5F5F5, #EEEEEE)',
           borderRadius: 14, padding: '12px 16px', marginBottom: 16,
-          border: online ? '1px solid #A5D6A7' : '1px solid #E0E0E0',
-          transition: 'all 0.3s'
+          border: online ? '1px solid #A5D6A7' : '1px solid #E0E0E0', transition: 'all 0.3s'
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
             <div style={{
@@ -217,7 +402,7 @@ export default function MotoboyDashboard() {
               transition: 'all 0.3s'
             }} />
             <div>
-              <div style={{ fontSize: 15, fontWeight: 700, color: online ? '#1B5E20' : '#757575', transition: 'color 0.3s' }}>
+              <div style={{ fontSize: 15, fontWeight: 700, color: online ? '#1B5E20' : '#757575' }}>
                 {online ? 'Online - Aceitando entregas' : 'Offline'}
               </div>
               <div style={{ fontSize: 11, color: online ? '#2E7D32' : '#999', marginTop: 1 }}>
@@ -225,326 +410,40 @@ export default function MotoboyDashboard() {
               </div>
             </div>
           </div>
-          <div className="toggle-switch" onClick={() => {
-            setOnline(!online);
-            if (!online) sendLocation();
-          }}>
+          <div className="toggle-switch" onClick={() => { setOnline(!online); if (!online) sendLocation(); }}>
             <input type="checkbox" checked={online} readOnly />
             <span className="toggle-slider" />
           </div>
         </div>
 
-        {isEmployee && (
-          <div className="card" style={{ background: '#E8F5E9', border: '1px solid #C8E6C9', textAlign: 'center', padding: 10, marginBottom: 12 }}>
-            <span style={{ fontWeight: 600, color: '#2E7D32', fontSize: 13 }}>
-              Você é parceiro desta loja — os pedidos chegam automaticamente, sem precisar aceitar
-            </span>
-          </div>
-        )}
-
-        {earnings.total > 0 && (
-          <div className="card" style={{ background: 'linear-gradient(135deg, #E3F2FD, #BBDEFB)', border: '1px solid #90CAF9', textAlign: 'center', padding: 14, marginBottom: 12 }}>
-            <div className="text-xs text-muted" style={{ marginBottom: 4 }}>Seus ganhos</div>
-            <div style={{ fontSize: 28, fontWeight: 800, color: '#1565C0' }}>R$ {earnings.total.toFixed(2)}</div>
-            {earnings.pending > 0 && (
-              <div className="text-xs" style={{ color: '#E65100', marginTop: 4 }}>
-                R$ {earnings.pending.toFixed(2)} a receber
-              </div>
-            )}
-          </div>
-        )}
-
-        <div className="flex-row" style={{ marginBottom: 16, justifyContent: 'space-between', overflowX: 'auto', WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none' }}>
-          <div className="flex-row">
-            <button className={`btn btn-sm ${selectedTab === 'available' ? 'btn-primary' : 'btn-outline'}`}
-              onClick={() => setSelectedTab('available')}>
-              {isEmployee ? 'Pedidos da Loja' : 'Disponiveis'}
-            </button>
-            <button className={`btn btn-sm ${selectedTab === 'mine' ? 'btn-primary' : 'btn-outline'}`}
-              onClick={() => setSelectedTab('mine')}>
-              Minhas
-            </button>
-            <button className={`btn btn-sm ${selectedTab === 'route' ? 'btn-primary' : 'btn-outline'}`}
-              onClick={() => {
-                setSelectedTab('route');
-                optimizeRoute();
-            }}>
-            Rota
-          </button>
-        </div>
+        {pageTab === 'inicio' && renderInicio()}
+        {pageTab === 'pedidos' && renderPedidos()}
+        {pageTab === 'saldo' && renderSaldo()}
+        {pageTab === 'perfil' && renderPerfil()}
       </div>
 
-        {selectedTab === 'available' && (
-          <>
-            <div className="page-title" style={{ color: '#1565C0' }}>Pedidos Disponíveis</div>
-            {availableOrders.length === 0 ? (
-              <div className="empty-state">
-                <div className="empty-state-icon">
-                  <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
-                    <circle cx="32" cy="28" r="16" stroke="var(--border)" strokeWidth="2"/>
-                    <path d="M32 20v8l5 5" stroke="var(--border)" strokeWidth="2" strokeLinecap="round"/>
-                  </svg>
-                </div>
-                <p>{isEmployee ? 'Nenhum pedido pendente da loja' : 'Nenhum pedido disponível no momento'}</p>
-              </div>
-            ) : (
-              availableOrders.map(order => (
-                <div key={order.id} className="card">
-                  <div className="flex-between" style={{ marginBottom: 6 }}>
-                    <div>
-                      <span className="font-bold">#{order.id.slice(0, 8)}</span>
-                      <span className="text-sm text-muted" style={{ marginLeft: 8 }}>
-                        {order.customer_name}
-                      </span>
-                    </div>
-                    <span className="badge badge-success">R$ {order.total.toFixed(2)}</span>
-                  </div>
-                  <div className="text-sm text-muted" style={{ marginBottom: 6 }}>
-                    Loja: {order.store_name} | {order.store_address}
-                  </div>
-                  <div className="text-sm text-muted" style={{ marginBottom: 8 }}>
-                    Entrega: {order.customer_address}
-                  </div>
-                  <div className="flex-between">
-                    <span className={`badge ${statusColors[order.status] || 'badge-primary'}`}>
-                      {statusLabels[order.status] || order.status}
-                    </span>
-                    {!isEmployee && (
-                      <button className="btn btn-sm btn-primary" onClick={() => acceptOrder(order.id)}>
-                        Aceitar Entrega
-                      </button>
-                    )}
-                  </div>
-                </div>
-              ))
-            )}
-          </>
-        )}
-
-        {selectedTab === 'mine' && (
-          <>
-            <div className="page-title" style={{ color: '#1565C0' }}>Minhas Entregas</div>
-            {myOrders.length === 0 ? (
-              <div className="empty-state">
-                <div className="empty-state-icon">
-                  <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
-                    <path d="M20 48V24l8-12h8l8 12v24" stroke="var(--border)" strokeWidth="2" strokeLinejoin="round"/>
-                    <circle cx="32" cy="36" r="4" stroke="var(--border)" strokeWidth="2"/>
-                  </svg>
-                </div>
-                <p>Aceite pedidos para começar</p>
-              </div>
-            ) : (
-              myOrders.map(order => (
-                <div key={order.id} className="card">
-                  <div className="flex-between" style={{ marginBottom: 6 }}>
-                    <div>
-                      <span className="font-bold">#{order.id.slice(0, 8)}</span>
-                      <span className="text-sm text-muted" style={{ marginLeft: 8 }}>
-                        {order.customer_name}
-                      </span>
-                    </div>
-                    <span className={`badge ${statusColors[order.status] || 'badge-primary'}`}>
-                      {statusLabels[order.status] || order.status}
-                    </span>
-                  </div>
-                  <div className="text-sm text-muted" style={{ marginBottom: 6 }}>
-                    Retirar: {order.store_name}
-                  </div>
-                  <div className="text-sm text-muted" style={{ marginBottom: 8 }}>
-                    Entregar: {order.customer_address}
-                  </div>
-
-                  {(order.store_lat || order.customer_lat) && (
-                    <div style={{ height: 200, borderRadius: 8, overflow: 'hidden', border: '1px solid var(--border)', marginBottom: 8 }}>
-                      <MapContainer
-                        center={[
-                          (order.store_lat + (order.customer_lat || order.store_lat)) / 2,
-                          ((order.store_lng || 0) + (order.customer_lng || order.store_lng || 0)) / 2
-                        ]}
-                        zoom={13}
-                        style={{ height: '100%', width: '100%' }}
-                        key={`order-map-${order.id}`}
-                        scrollWheelZoom={false}
-                      >
-                        <TileLayer attribution='&copy; OSM' url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-                        {order.store_lat && order.store_lng && (
-                          <Marker position={[order.store_lat, order.store_lng]} />
-                        )}
-                        {order.customer_lat && order.customer_lng && (
-                          <Marker position={[order.customer_lat, order.customer_lng]} />
-                        )}
-                        {order.store_lat && order.store_lng && order.customer_lat && order.customer_lng && (
-                          <Polyline
-                            positions={[[order.store_lat, order.store_lng], [order.customer_lat, order.customer_lng]]}
-                            pathOptions={{ color: '#1565C0', weight: 3, dashArray: '8 4' }}
-                          />
-                        )}
-                      </MapContainer>
-                    </div>
-                  )}
-
-                  {order.status === 'in_transit' && (
-                    <div className="card mt-2" style={{ background: '#FFF3E0', border: '1px solid #FFE0B2', padding: 8 }}>
-                      <button className="btn btn-sm btn-accent w-full" onClick={sendLocation}>
-                        Atualizar minha localização (GPS)
-                      </button>
-                    </div>
-                  )}
-
-                  <div className="flex-between" style={{ marginTop: 8 }}>
-                    <span className="badge badge-success">R$ {order.total.toFixed(2)}</span>
-                    {nextStatus[order.status] && (
-                      <button className="btn btn-sm btn-primary"
-                        onClick={() => updateStatus(order.id)}>
-                        {nextStatusLabel[order.status]}
-                      </button>
-                    )}
-                  </div>
-                </div>
-              ))
-            )}
-          </>
-        )}
-
-        {selectedTab === 'route' && (
-          <>
-            <div className="page-title" style={{ color: '#1565C0' }}>Rota Otimizada</div>
-            {route ? (
-              <div>
-                {route.store && (
-                  <div className="card" style={{ background: '#E8F5E9', marginBottom: 12 }}>
-                    <div className="text-sm font-bold" style={{ marginBottom: 4, color: 'var(--secondary)' }}>
-                      Ponto de Partida (Loja)
-                    </div>
-                    <div className="font-bold">{route.store.name}</div>
-                    <div className="text-xs text-muted">{route.store.address}</div>
-                  </div>
-                )}
-
-                <div className="card" style={{ background: '#E3F2FD' }}>
-                  <p className="text-sm font-bold" style={{ marginBottom: 8 }}>
-                    Melhor ordem de entrega (menor distância):
-                  </p>
-                  {route.route.map((r, i) => (
-                    <div key={r.id} className="flex-row card" style={{
-                      padding: 10, marginBottom: 6,
-                      borderLeft: `4px solid ${i === 0 ? 'var(--secondary)' : 'var(--primary)'}`
-                    }}>
-                      <div style={{
-                        width: 28, height: 28, borderRadius: '50%',
-                        background: i === 0 ? 'var(--secondary)' : 'var(--primary)',
-                        color: 'white', display: 'flex', alignItems: 'center',
-                        justifyContent: 'center', fontWeight: 700, fontSize: 13,
-                        flexShrink: 0
-                      }}>
-                        {r.stop}
-                      </div>
-                      <div>
-                        <div className="font-bold text-sm">{r.customer_name}</div>
-                        <div className="text-xs text-muted">{r.customer_address}</div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-
-                <div className="map-container" style={{ height: 200, background: '#E8EAF6', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginBottom: 12 }}>
-                    <div style={{
-                      width: 20, height: 20, borderRadius: '50%', background: '#2E7D32',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      color: 'white', fontSize: 10
-                    }}>L</div>
-                    {route.route.map((r, i) => (
-                      <div key={r.id} className="flex-row" style={{ alignItems: 'center' }}>
-                        <div style={{
-                          width: 30, height: 3, background: i === 0 ? '#2E7D32' : '#6A1B9A'
-                        }} />
-                        <div style={{
-                          width: 20, height: 20, borderRadius: '50%', background: '#6A1B9A',
-                          display: 'flex', alignItems: 'center', justifyContent: 'center',
-                          color: 'white', fontSize: 10
-                        }}>{r.stop}</div>
-                      </div>
-                    ))}
-                  </div>
-                  <p className="text-xs text-muted">Rota visual (simulada)</p>
-                </div>
-              </div>
-            ) : (
-              <div className="card text-center">
-                <p>Aceite pedidos primeiro para gerar a rota otimizada</p>
-                <button className="btn btn-primary mt-2" onClick={optimizeRoute}>
-                  Gerar Rota
-                </button>
-              </div>
-            )}
-          </>
-        )}
-
-        {selectedTab === 'profile' && (
-          <div className="card" style={{ textAlign: 'left' }}>
-            <div className="page-title" style={{ fontSize: 20 }}>Meu Perfil</div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
-              {user?.photo_url ? (
-                <img src={user.photo_url} alt="Foto"
-                  style={{ width: 56, height: 56, borderRadius: '50%', objectFit: 'cover' }}
-                  onError={e => { e.target.style.display = 'none'; }} />
-              ) : (
-                <div style={{
-                  width: 56, height: 56, borderRadius: '50%',
-                  background: 'linear-gradient(135deg, #42A5F5, #1565C0)',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  color: 'white', fontWeight: 700, fontSize: 24
-                }}>
-                  {user?.name?.charAt(0)?.toUpperCase()}
-                </div>
-              )}
-              <div>
-                <div style={{ fontWeight: 800, fontSize: 16 }}>{user?.name}</div>
-                <div style={{ fontSize: 12, color: '#888' }}>Motoboy</div>
-              </div>
-            </div>
-            <div className="form-group">
-              <label className="label">Telefone</label>
-              <div style={{ fontWeight: 600 }}>{user?.phone}</div>
-            </div>
-            <div className="form-group">
-              <label className="label">Chave PIX (para receber entregas)</label>
-              <input className="input" type="text" value={pixKey}
-                onChange={e => setPixKey(e.target.value)}
-                placeholder="CPF, telefone, e-mail ou chave aleatoria" />
-              <span className="text-xs text-muted">Taxa de entrega sera enviada para esta chave</span>
-            </div>
-            {pixMsg && (
-              <div style={{
-                fontSize: 13, fontWeight: 600, padding: '10px 14px', borderRadius: 8, marginBottom: 12,
-                background: pixMsg.includes('Erro') ? '#FFEBEE' : '#E8F5E9',
-                color: pixMsg.includes('Erro') ? '#C62828' : '#2E7D32'
-              }}>
-                {pixMsg}
-              </div>
-            )}
-            <button className="btn btn-primary" onClick={async () => {
-              setPixSaving(true);
-              try {
-                localStorage.setItem('motoboy_pix_key', pixKey);
-                const res = await apiFetch('/motoboy/profile', {
-                  method: 'PATCH',
-                  body: JSON.stringify({ pix_key: pixKey })
-                });
-                setPixMsg(res.ok ? 'Chave PIX salva!' : (res.error || 'Salvo localmente. Execute ALTER TABLE no Supabase.'));
-              } catch {
-                localStorage.setItem('motoboy_pix_key', pixKey);
-                setPixMsg('Chave PIX salva localmente!');
-              }
-              setPixSaving(false);
-              setTimeout(() => setPixMsg(''), 3000);
-            }} disabled={pixSaving}>
-              {pixSaving ? 'Salvando...' : 'Salvar'}
-            </button>
-          </div>
-        )}
+      <div style={{
+        position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 300,
+        background: 'white', borderTop: '1px solid var(--border)',
+        display: 'flex', padding: '6px 0', paddingBottom: 'env(safe-area-inset-bottom, 6px)'
+      }}>
+        {tabs.map(tab => (
+          <button key={tab.key}
+            onClick={() => setPageTab(tab.key)}
+            style={{
+              flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2,
+              padding: '6px 0', border: 'none', background: 'none', cursor: 'pointer',
+              opacity: pageTab === tab.key ? 1 : 0.4, transition: 'opacity 0.2s'
+            }}>
+            <span style={{ fontSize: 22 }}>{tab.icon}</span>
+            <span style={{
+              fontSize: 11, fontWeight: pageTab === tab.key ? 700 : 500,
+              color: pageTab === tab.key ? 'var(--primary)' : '#999'
+            }}>
+              {tab.label}
+            </span>
+          </button>
+        ))}
       </div>
     </div>
   );
