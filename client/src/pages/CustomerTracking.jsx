@@ -65,7 +65,11 @@ export default function CustomerTracking() {
     }
   }
 
-  if (!order) return <div className="loading"><img className="spin" src="/saco_acai.png" /></div>;
+  if (!order) return (
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh' }}>
+      <img className="spin" src="/saco_acai.png" />
+    </div>
+  );
 
   const currentStep = statusSteps.indexOf(order.status);
 

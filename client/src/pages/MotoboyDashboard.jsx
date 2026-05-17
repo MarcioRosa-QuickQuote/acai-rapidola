@@ -171,7 +171,11 @@ export default function MotoboyDashboard() {
     }
   }, [online]);
 
-  if (loading) return <div className="loading"><img className="spin" src="/saco_acai.png" /></div>;
+  if (loading) return (
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh' }}>
+      <img className="spin" src="/saco_acai.png" />
+    </div>
+  );
 
   const tabs = [
     { key: 'inicio', label: 'Início', icon: '🏠' },
@@ -183,10 +187,10 @@ export default function MotoboyDashboard() {
   function renderInicio() {
     return (
       <>
-        <div style={{
-          display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%',
+        <div className="card" style={{
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
           background: online ? 'linear-gradient(135deg, #E8F5E9, #C8E6C9)' : 'linear-gradient(135deg, #F5F5F5, #EEEEEE)',
-          borderRadius: 14, padding: '16px', marginBottom: 16,
+          marginBottom: 16,
           border: online ? '1px solid #A6D7A7' : '1px solid #E0E0E0'
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
@@ -214,7 +218,7 @@ export default function MotoboyDashboard() {
             </span>
           </div>
         ) : availableOrders.length === 0 ? (
-          <div className="empty-state" style={{ paddingTop: 40 }}>
+          <div className="card empty-state" style={{ paddingTop: 40, paddingBottom: 40 }}>
             <div className="empty-state-icon">
               <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
                 <circle cx="32" cy="28" r="16" stroke="var(--border)" strokeWidth="2"/>
@@ -306,7 +310,7 @@ export default function MotoboyDashboard() {
       <div style={{ textAlign: 'center' }}>
         <div className="card" style={{
           background: 'linear-gradient(135deg, #1565C0, #0D47A1)',
-          color: 'white', borderRadius: 20, padding: 28, marginBottom: 16, width: '100%'
+          color: 'white', marginBottom: 16
         }}>
           <div style={{ fontSize: 13, opacity: 0.8, marginBottom: 4 }}>Seus ganhos</div>
           <div style={{ fontSize: 42, fontWeight: 800, marginBottom: 4 }}>R$ {dailyTotal.toFixed(2)}</div>
