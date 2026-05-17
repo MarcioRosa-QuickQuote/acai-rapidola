@@ -50,7 +50,7 @@ body {
 .card {
   background: var(--bg-card);
   border-radius: var(--radius);
-  padding: 20px;
+  padding: 16px;
   box-shadow: var(--shadow);
   margin-bottom: 14px;
   overflow-wrap: break-word;
@@ -444,8 +444,7 @@ body {
 }
 
 @media (max-width: 480px) {
-  .container { padding: 12px; }
-  .card { padding: 16px; }
+  .container { max-width: 100%; padding: 16px; }
   .page-title { font-size: 22px; }
   .header { padding: 12px 14px; }
   .header-title { font-size: 17px; max-width: 130px; }
@@ -456,8 +455,7 @@ body {
 }
 
 @media (max-width: 380px) {
-  .container { padding: 10px; }
-  .card { padding: 12px; }
+  .container { padding: 16px; }
   .header { padding: 10px; }
   .header-title { font-size: 15px; max-width: 110px; }
   .header-left { gap: 4px; }
