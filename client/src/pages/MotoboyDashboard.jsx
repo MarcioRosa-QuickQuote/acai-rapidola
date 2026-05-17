@@ -201,7 +201,39 @@ export default function MotoboyDashboard() {
         </div>
       </div>
 
-      <div className="container">
+      <div className="container" style={{ paddingTop: 8 }}>
+        <div style={{
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          background: online ? 'linear-gradient(135deg, #E8F5E9, #C8E6C9)' : 'linear-gradient(135deg, #F5F5F5, #EEEEEE)',
+          borderRadius: 14, padding: '12px 16px', marginBottom: 16,
+          border: online ? '1px solid #A5D6A7' : '1px solid #E0E0E0',
+          transition: 'all 0.3s'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <div style={{
+              width: 12, height: 12, borderRadius: '50%',
+              background: online ? '#2E7D32' : '#BDBDBD',
+              boxShadow: online ? '0 0 0 3px rgba(46,125,50,0.2), 0 0 8px rgba(46,125,50,0.3)' : 'none',
+              transition: 'all 0.3s'
+            }} />
+            <div>
+              <div style={{ fontSize: 15, fontWeight: 700, color: online ? '#1B5E20' : '#757575', transition: 'color 0.3s' }}>
+                {online ? 'Online - Aceitando entregas' : 'Offline'}
+              </div>
+              <div style={{ fontSize: 11, color: online ? '#2E7D32' : '#999', marginTop: 1 }}>
+                {online ? 'Você está disponível para receber corridas' : 'Ative para receber pedidos'}
+              </div>
+            </div>
+          </div>
+          <div className="toggle-switch" onClick={() => {
+            setOnline(!online);
+            if (!online) sendLocation();
+          }}>
+            <input type="checkbox" checked={online} readOnly />
+            <span className="toggle-slider" />
+          </div>
+        </div>
+
         {isEmployee && (
           <div className="card" style={{ background: '#E8F5E9', border: '1px solid #C8E6C9', textAlign: 'center', padding: 10, marginBottom: 12 }}>
             <span style={{ fontWeight: 600, color: '#2E7D32', fontSize: 13 }}>
@@ -239,18 +271,6 @@ export default function MotoboyDashboard() {
             }}>
             Rota
           </button>
-        </div>
-        <div className="flex-row" style={{ gap: 8 }}>
-          <span style={{ fontSize: 11, fontWeight: 600, color: online ? 'var(--success)' : 'var(--text-light)' }}>
-            {online ? 'Online' : 'Offline'}
-          </span>
-          <div className="toggle-switch" onClick={() => {
-            setOnline(!online);
-            if (!online) sendLocation();
-          }}>
-            <input type="checkbox" checked={online} readOnly />
-            <span className="toggle-slider" />
-          </div>
         </div>
       </div>
 
