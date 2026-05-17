@@ -47,6 +47,7 @@ export default function MotoboyDashboard() {
   const [editName, setEditName] = useState('');
   const [editCpf, setEditCpf] = useState('');
   const [editPlate, setEditPlate] = useState('');
+  const [editWhatsapp, setEditWhatsapp] = useState('');
 
   function maskCpf(v) {
     const nums = v.replace(/\D/g, '').slice(0, 11);
@@ -385,6 +386,12 @@ export default function MotoboyDashboard() {
         </div>
         <div className="form-group"><label className="label">Telefone</label><div style={{ fontWeight: 600 }}>{user?.phone}</div></div>
         <div className="form-group">
+          <label className="label">WhatsApp</label>
+          <input className="input" type="tel" value={editWhatsapp}
+            onChange={e => setEditWhatsapp(e.target.value.replace(/\D/g, '').slice(0, 11))}
+            placeholder="(99) 99999-9999" />
+        </div>
+        <div className="form-group">
           <label className="label">CPF</label>
           <input className="input" type="text" value={editCpf}
             onChange={e => setEditCpf(maskCpf(e.target.value))} placeholder="000.000.000-00" maxLength={14} />
@@ -399,14 +406,6 @@ export default function MotoboyDashboard() {
           <input className="input" type="text" value={pixKey} onChange={e => setPixKey(e.target.value)}
             placeholder="CPF, telefone, e-mail ou chave aleatoria" />
         </div>
-        <div className="form-group">
-          <label className="label">CPF</label>
-          <input className="input" type="text" placeholder="000.000.000-00" />
-        </div>
-        <div className="form-group">
-          <label className="label">Placa da moto</label>
-          <input className="input" type="text" placeholder="ABC-1234" />
-        </div>
         {pixMsg && <div style={{ fontSize: 13, fontWeight: 600, padding: '10px 14px', borderRadius: 8, marginBottom: 12,
           background: pixMsg.includes('Erro') ? '#FFEBEE' : '#E8F5E9', color: pixMsg.includes('Erro') ? '#C62828' : '#2E7D32' }}>{pixMsg}</div>}
         <button className="btn btn-primary" onClick={async () => {
@@ -416,6 +415,8 @@ export default function MotoboyDashboard() {
             const body = { pix_key: pixKey };
             if (editName) body.name = editName;
             if (editCpf.replace(/\D/g, '').length === 11) body.cpf = editCpf;
+            if (editPlate) body.vehicle_type = editPlate;
+            if (editWhatsapp) body.whatsapp = editWhatsapp;
             const res = await apiFetch('/motoboy/profile', { method: 'PATCH', body: JSON.stringify(body) });
             setPixMsg(res.ok ? 'Salvo com sucesso!' : (res.error || 'Erro ao salvar'));
             if (res.ok && editName) { user.name = editName; window.location.reload(); }

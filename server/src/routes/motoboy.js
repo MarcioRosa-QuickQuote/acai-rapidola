@@ -131,14 +131,20 @@ router.post('/optimize-route', authMiddleware, roleMiddleware('motoboy'), async 
 });
 
 router.patch('/profile', authMiddleware, roleMiddleware('motoboy'), async (req, res) => {
-  const { pix_key } = req.body;
+  const { pix_key, name, cpf, vehicle_type, whatsapp } = req.body;
+  const update = {};
+  if (pix_key !== undefined) update.pix_key = pix_key;
+  if (name !== undefined) update.name = name;
+  if (cpf !== undefined) update.cpf = cpf;
+  if (vehicle_type !== undefined) update.vehicle_type = vehicle_type;
+  if (whatsapp !== undefined) update.whatsapp = whatsapp;
   try {
-    const { error } = await supabase.from('users').update({ pix_key }).eq('id', req.user.id);
+    const { error } = await supabase.from('users').update(update).eq('id', req.user.id);
     if (error) throw error;
     res.json({ ok: true });
   } catch (err) {
-    console.error('[Motoboy] Erro ao salvar pix_key:', err?.message || err);
-    res.status(500).json({ error: 'Execute o ALTER TABLE no Supabase: ALTER TABLE users ADD COLUMN IF NOT EXISTS pix_key TEXT DEFAULT \'\';' });
+    console.error('[Motoboy] Erro ao salvar perfil:', err?.message || err);
+    res.status(500).json({ error: 'Erro ao salvar perfil' });
   }
 });
 
