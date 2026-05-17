@@ -37,14 +37,9 @@ body {
 #root { min-height: 100vh; }
 
 .container {
-  max-width: 480px;
-  margin: 0 auto;
+  max-width: 100%;
   padding: 16px;
   min-height: 100vh;
-}
-
-@media (min-width: 768px) {
-  .container { max-width: 720px; }
 }
 
 .card {
@@ -444,7 +439,6 @@ body {
 }
 
 @media (max-width: 480px) {
-  .container { max-width: 100%; padding: 16px; }
   .page-title { font-size: 22px; }
   .header { padding: 12px 14px; }
   .header-title { font-size: 17px; max-width: 130px; }
