@@ -184,10 +184,10 @@ export default function MotoboyDashboard() {
     return (
       <>
         <div style={{
-          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%',
           background: online ? 'linear-gradient(135deg, #E8F5E9, #C8E6C9)' : 'linear-gradient(135deg, #F5F5F5, #EEEEEE)',
-          borderRadius: 14, padding: '12px 16px', marginBottom: 16,
-          border: online ? '1px solid #A5D6A7' : '1px solid #E0E0E0'
+          borderRadius: 14, padding: '16px', marginBottom: 16,
+          border: online ? '1px solid #A6D7A7' : '1px solid #E0E0E0'
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
             <div style={{ width: 12, height: 12, borderRadius: '50%',
@@ -208,7 +208,7 @@ export default function MotoboyDashboard() {
           </div>
         </div>
         {isEmployee ? (
-          <div className="card" style={{ background: '#E8F5E9', border: '1px solid #C8E6C9', textAlign: 'center', padding: 10, marginBottom: 12 }}>
+          <div className="card" style={{ background: '#E8F5E9', border: '1px solid #C8E6C9', textAlign: 'center', marginBottom: 12 }}>
             <span style={{ fontWeight: 600, color: '#2E7D32', fontSize: 13 }}>
               Você é parceiro desta loja — os pedidos chegam automaticamente
             </span>
@@ -306,7 +306,7 @@ export default function MotoboyDashboard() {
       <div style={{ textAlign: 'center' }}>
         <div className="card" style={{
           background: 'linear-gradient(135deg, #1565C0, #0D47A1)',
-          color: 'white', borderRadius: 20, padding: 28, marginBottom: 16
+          color: 'white', borderRadius: 20, padding: 28, marginBottom: 16, width: '100%'
         }}>
           <div style={{ fontSize: 13, opacity: 0.8, marginBottom: 4 }}>Seus ganhos</div>
           <div style={{ fontSize: 42, fontWeight: 800, marginBottom: 4 }}>R$ {dailyTotal.toFixed(2)}</div>
@@ -438,22 +438,22 @@ export default function MotoboyDashboard() {
             onClick={() => setPageTab('perfil')}>
             {user?.photo_url ? (
               <img src={user.photo_url} alt="Foto"
-                style={{ width: 34, height: 34, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }}
+                style={{ width: 42, height: 42, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }}
                 onError={e => { e.target.style.display = 'none'; }} />
             ) : (
               <div style={{
-                width: 34, height: 34, borderRadius: '50%',
+                width: 42, height: 42, borderRadius: '50%',
                 background: 'linear-gradient(135deg, #42A5F5, #1565C0)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                color: 'white', fontWeight: 700, fontSize: 15, flexShrink: 0
+                color: 'white', fontWeight: 700, fontSize: 18, flexShrink: 0
               }}>
                 {user?.name?.charAt(0)?.toUpperCase()}
               </div>
             )}
             <div>
-              <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--text)' }}>{user?.name?.split(' ')[0]}</div>
+              <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text)' }}>{user?.name?.split(' ')[0]}</div>
               <div onClick={(e) => { e.stopPropagation(); logout(); }}
-                style={{ fontSize: 9, color: 'var(--text-light)', cursor: 'pointer' }}>
+                style={{ fontSize: 12, color: 'var(--text-light)', cursor: 'pointer' }}>
                 Sair
               </div>
             </div>
