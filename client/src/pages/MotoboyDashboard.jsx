@@ -173,27 +173,27 @@ export default function MotoboyDashboard() {
             <div style={{ fontSize: 11, color: 'var(--text-light)' }}>Motoboy</div>
           </div>
         </div>
-        <div className="header-right" style={{ gap: 6 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer' }}
+        <div className="header-right">
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}
             onClick={() => setSelectedTab('profile')}>
             {user?.photo_url ? (
               <img src={user.photo_url} alt="Foto"
-                style={{ width: 30, height: 30, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }}
+                style={{ width: 40, height: 40, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }}
                 onError={e => { e.target.style.display = 'none'; }} />
             ) : (
               <div style={{
-                width: 30, height: 30, borderRadius: '50%',
+                width: 40, height: 40, borderRadius: '50%',
                 background: 'linear-gradient(135deg, #42A5F5, #1565C0)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                color: 'white', fontWeight: 700, fontSize: 13, flexShrink: 0
+                color: 'white', fontWeight: 700, fontSize: 17, flexShrink: 0
               }}>
                 {user?.name?.charAt(0)?.toUpperCase()}
               </div>
             )}
             <div>
-              <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--text)', lineHeight: 1.2 }}>{user?.name?.split(' ')[0]}</div>
+              <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text)' }}>{user?.name?.split(' ')[0]}</div>
               <div onClick={(e) => { e.stopPropagation(); logout(); }}
-                style={{ fontSize: 9, color: 'var(--text-light)', cursor: 'pointer' }}>
+                style={{ fontSize: 10, color: 'var(--text-light)', cursor: 'pointer' }}>
                 Sair
               </div>
             </div>
@@ -258,11 +258,11 @@ export default function MotoboyDashboard() {
           <div className="flex-row">
             <button className={`btn btn-sm ${selectedTab === 'available' ? 'btn-primary' : 'btn-outline'}`}
               onClick={() => setSelectedTab('available')}>
-              {isEmployee ? 'Pedidos da Loja' : 'Disponiveis'} ({availableOrders.length})
+              {isEmployee ? 'Pedidos da Loja' : 'Disponiveis'}
             </button>
             <button className={`btn btn-sm ${selectedTab === 'mine' ? 'btn-primary' : 'btn-outline'}`}
               onClick={() => setSelectedTab('mine')}>
-              Minhas ({myOrders.length})
+              Minhas
             </button>
             <button className={`btn btn-sm ${selectedTab === 'route' ? 'btn-primary' : 'btn-outline'}`}
               onClick={() => {
