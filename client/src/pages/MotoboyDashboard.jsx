@@ -207,7 +207,8 @@ export default function MotoboyDashboard() {
         </div>
 
         {activeDeliveries.length > 0 && activeDeliveries.map(order => (
-          <div key={order.id} className="card" style={{ marginBottom: 12, border: '2px solid var(--primary)' }}>
+          <div key={order.id} className="card" style={{ marginBottom: 12, border: '2px solid var(--primary)', cursor: 'pointer' }}
+            onClick={() => setFullscreenOrder(order)}>
             <div className="flex-between" style={{ marginBottom: 4 }}>
               <span className="font-bold">#{order.id.slice(0, 8)}</span>
               <span className="badge badge-success">R$ {order.total.toFixed(2)}</span>
@@ -534,7 +535,7 @@ export default function MotoboyDashboard() {
             onChange={e => setEditName(e.target.value)} placeholder="Seu nome" />
         </div>
         <div className="form-group">
-          <label className="label">E-mail (usado para trocar a senha quando esquecer)</label>
+          <label className="label" style={{ textTransform: 'none' }}>E-mail (usado para trocar a senha quando esquecer)</label>
           <input className="input" type="email" value={editEmail || user?.email || ''}
             onChange={e => setEditEmail(e.target.value)} placeholder="seu@email.com" />
         </div>
