@@ -112,7 +112,8 @@ export default function CustomerTracking() {
     </div>
   );
 
-  const currentStep = statusSteps.indexOf(order.status);
+  const stepMap = { pending:0, confirmed:0, preparing:1, ready:1, assigned:1, picked_up:2, in_transit:2, arriving:2, delivered:3 };
+  const currentStep = stepMap[order.status] ?? 0;
 
   return (
     <div>

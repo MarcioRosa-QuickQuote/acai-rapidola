@@ -71,10 +71,10 @@ export default function CustomerStoreList() {
 
   return (
     <div>
-      <div className="header" style={{ padding: '6px 16px' }}>
+      <div className="header" style={{ padding: '8px 16px' }}>
         <div className="header-left" style={{ gap: 10 }}>
           <img src="/logomarca.png" alt="Pé de Açaí"
-            style={{ width: 64, height: 64, borderRadius: 14, objectFit: 'contain', flexShrink: 0 }} />
+            style={{ width: 72, height: 72, borderRadius: 14, objectFit: 'contain', flexShrink: 0 }} />
           <div>
             <div className="header-title" style={{ fontSize: 18 }}>Pé de Açaí</div>
           </div>
@@ -85,33 +85,33 @@ export default function CustomerStoreList() {
               onClick={() => navigate(`/customer/tracking/${activeOrder.id}`)}
               title="Acompanhar pedido"
               style={{
-                background: '#E8F5E9',
-                padding: '4px 8px',
+                background: 'transparent',
+                padding: '2px',
                 border: 'none', borderRadius: 20, width: 'auto', display: 'flex', alignItems: 'center'
               }}>
-              <img src="/saco_acai.png" style={{ width: 28, height: 28, objectFit: 'contain' }} />
+              <img src="/saco_acai.png" style={{ width: 32, height: 32, objectFit: 'contain' }} />
             </button>
           )}
           <div onClick={() => navigate('/customer/conta')}
-            style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
+            style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer' }}>
             {user?.photo_url ? (
               <img src={user.photo_url} alt="Foto"
-                style={{ width: 34, height: 34, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }}
+                style={{ width: 42, height: 42, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }}
                 onError={e => { e.target.style.display = 'none'; }} />
             ) : (
               <div style={{
-                width: 34, height: 34, borderRadius: '50%',
+                width: 42, height: 42, borderRadius: '50%',
                 background: 'linear-gradient(135deg, #CE93D8, #AB47BC)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                color: 'white', fontWeight: 700, fontSize: 15, flexShrink: 0, lineHeight: 1
+                color: 'white', fontWeight: 700, fontSize: 18, flexShrink: 0, lineHeight: 1
               }}>
                 {user?.name?.charAt(0)?.toUpperCase()}
               </div>
             )}
             <div>
-              <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text)', lineHeight: 1.2 }}>{user?.name?.split(' ')[0]}</div>
+              <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text)', lineHeight: 1.2 }}>{user?.name?.split(' ')[0]}</div>
               <div onClick={(e) => { e.stopPropagation(); logout(); }}
-                style={{ fontSize: 10, color: 'var(--text-light)', cursor: 'pointer', lineHeight: 1 }}>
+                style={{ fontSize: 12, color: 'var(--text-light)', cursor: 'pointer', lineHeight: 1 }}>
                 Sair
               </div>
             </div>
