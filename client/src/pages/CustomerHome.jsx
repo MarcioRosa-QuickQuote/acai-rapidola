@@ -225,11 +225,11 @@ export default function CustomerHome() {
               onClick={() => navigate(`/customer/tracking/${activeOrder.id}`)}
               title="Acompanhar pedido"
               style={{
-                background: '#E8F5E9', color: '#2E7D32',
-                fontSize: 16, fontWeight: 700, padding: '4px 8px',
-                border: 'none', borderRadius: 20, width: 'auto'
+                background: 'transparent',
+                padding: '2px',
+                border: 'none', borderRadius: 20, width: 'auto', display: 'flex', alignItems: 'center'
               }}>
-              🏍️
+              <img src="/saco_acai.png" style={{ width: 32, height: 32, objectFit: 'contain' }} />
             </button>
           )}
           {Object.keys(cart).length > 0 && (
