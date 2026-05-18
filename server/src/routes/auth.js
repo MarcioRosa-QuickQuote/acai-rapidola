@@ -119,6 +119,26 @@ router.patch('/profile', authMiddleware, async (req, res) => {
   res.json({ ok: true });
 });
 
+router.get('/setup-password-reset', async (req, res) => {
+  try {
+    const SUPABASE_URL = process.env.SUPABASE_URL;
+    const SUPABASE_SERVICE_ROLE = process.env.SUPABASE_SERVICE_ROLE;
+    if (SUPABASE_URL && SUPABASE_SERVICE_ROLE) {
+      const sql = `CREATE TABLE IF NOT EXISTS password_reset_codes (
+        phone TEXT PRIMARY KEY, code TEXT NOT NULL,
+        expires TIMESTAMPTZ NOT NULL, used INTEGER NOT NULL DEFAULT 0,
+        created_at TIMESTAMPTZ DEFAULT NOW()
+      )`;
+      await supabase.rpc('pg_execute', { query_text: sql }).catch(() => {});
+      res.json({ ok: true, message: 'Tabela criada/verificada!' });
+    } else {
+      res.json({ ok: false, message: 'Vá no Supabase SQL Editor e cole o SQL do setup.sql' });
+    }
+  } catch {
+    res.json({ ok: false, message: 'Vá no Supabase SQL Editor e cole o SQL do setup.sql' });
+  }
+});
+
 router.post('/forgot-password', async (req, res) => {
   const { phone } = req.body;
   if (!phone) return res.status(400).json({ error: 'Telefone obrigatório' });
@@ -129,19 +149,31 @@ router.post('/forgot-password', async (req, res) => {
   const code = String(Math.floor(100000 + Math.random() * 900000));
   const expires = new Date(Date.now() + 10 * 60 * 1000).toISOString();
 
-  await supabase.from('password_reset_codes').upsert(
+  const { error: upsertErr } = await supabase.from('password_reset_codes').upsert(
     { phone, code, expires, used: 0, created_at: new Date().toISOString() },
     { onConflict: 'phone' }
   );
 
-  try {
-    const { sendResetCode } = require('../services/sms');
-    await sendResetCode(phone, code);
-  } catch (err) {
-    console.error('[Auth] Erro ao enviar SMS:', err?.message);
+  if (upsertErr) {
+    return res.status(500).json({
+      error: 'Tabela password_reset_codes não existe. Acesse /api/auth/setup-password-reset primeiro.',
+      code
+    });
   }
 
-  res.json({ ok: true, message: 'Código enviado se o telefone existir' });
+  try {
+    const { sendResetCode, hasSMSProvider } = require('../services/sms');
+    await sendResetCode(phone, code);
+    const result = { ok: true, message: 'Código enviado se o telefone existir' };
+    if (!hasSMSProvider()) {
+      result.code = code;
+      result._test = 'Nenhum provedor SMS configurado. Use este código para testar.';
+    }
+    res.json(result);
+  } catch (err) {
+    console.error('[Auth] Erro ao enviar SMS:', err?.message);
+    res.json({ ok: true, message: 'Código enviado se o telefone existir', code, _test: 'Modo simulado' });
+  }
 });
 
 router.post('/reset-password', async (req, res) => {
