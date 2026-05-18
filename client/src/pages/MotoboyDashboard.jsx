@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useSocket } from '../contexts/SocketContext';
 import { MapContainer, TileLayer, Marker, useMap } from 'react-leaflet';
-import RoutePolyline from '../components/RouteMap';
+import RoutePolyline, { useRoute, NavSteps } from '../components/RouteMap';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 
@@ -32,6 +32,11 @@ const nextStatusLabel = {
   assigned: 'Retirei o pedido',
   picked_up: 'Entregue'
 };
+
+function NavStepsWrapper({ from, to }) {
+  const { steps } = useRoute(from, to);
+  return <NavSteps steps={steps} />;
+}
 
 export default function MotoboyDashboard() {
   const { user, apiFetch, logout } = useAuth();
@@ -672,7 +677,7 @@ export default function MotoboyDashboard() {
               </div>
             </div>
             {fsOrder.store_lat && fsOrder.customer_lat && (
-              <div style={{ height: 350, borderRadius: 12, overflow: 'hidden', border: '1px solid var(--border)' }}>
+              <div style={{ height: 400, borderRadius: 12, overflow: 'hidden', border: '1px solid var(--border)', position: 'relative' }}>
                 <MapContainer
                   center={[(fsOrder.store_lat + fsOrder.customer_lat) / 2,
                     ((fsOrder.store_lng || 0) + (fsOrder.customer_lng || 0)) / 2]}
@@ -682,6 +687,7 @@ export default function MotoboyDashboard() {
                   <Marker position={[fsOrder.customer_lat, fsOrder.customer_lng]} />
                   <RoutePolyline from={{ lat: fsOrder.store_lat, lng: fsOrder.store_lng }} to={{ lat: fsOrder.customer_lat, lng: fsOrder.customer_lng }} />
                 </MapContainer>
+                <NavStepsWrapper from={{ lat: fsOrder.store_lat, lng: fsOrder.store_lng }} to={{ lat: fsOrder.customer_lat, lng: fsOrder.customer_lng }} />
               </div>
             )}
             {nextStatus[fsOrder.status] && (
