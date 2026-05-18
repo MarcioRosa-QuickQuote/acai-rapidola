@@ -219,7 +219,7 @@ router.get('/', authMiddleware, async (req, res) => {
 
 router.get('/:id', authMiddleware, async (req, res) => {
   const { data: order } = await supabase.from('orders')
-    .select('*, stores(name, address), customer:users!orders_customer_id_fkey(name, phone), motoboy:users!orders_motoboy_id_fkey(name)')
+    .select('*, stores(name, address, logo), customer:users!orders_customer_id_fkey(name, phone), motoboy:users!orders_motoboy_id_fkey(name)')
     .eq('id', req.params.id).single();
 
   if (!order) return res.status(404).json({ error: 'Pedido não encontrado' });
@@ -231,6 +231,7 @@ router.get('/:id', authMiddleware, async (req, res) => {
     ...order,
     store_name: order.stores?.name,
     store_address: order.stores?.address,
+    store_logo: order.stores?.logo,
     customer_name: order.customer?.name,
     customer_phone: order.customer?.phone,
     motoboy_name: order.motoboy?.name,

@@ -13,20 +13,22 @@ L.Icon.Default.mergeOptions({
 });
 
 const statusLabels = {
-  pending: 'Aguardando pgto', confirmed: 'Confirmado', preparing: 'Preparando',
-  ready: 'Pronto p/ retirada', assigned: 'Motoboy designado', picked_up: 'A caminho',
-  arriving: 'Chegando', delivered: 'Entregue', cancelled: 'Cancelado'
+  pending: 'Aguardando pgto', confirmed: 'Preparar', preparing: 'Preparando',
+  ready: 'Saiu pra entrega', assigned: 'Saiu pra entrega', picked_up: 'Saiu pra entrega',
+  in_transit: 'Saiu pra entrega', arriving: 'Saiu pra entrega',
+  delivered: 'Entregue', cancelled: 'Cancelado'
 };
 
 const statusColors = {
-  pending: 'badge-warning', confirmed: 'badge-primary', preparing: 'badge-info',
-  ready: 'badge-success', assigned: 'badge-primary', picked_up: 'badge-info',
-  arriving: 'badge-accent', delivered: 'badge-success', cancelled: 'badge-danger'
+  pending: 'badge-warning', confirmed: 'badge-info', preparing: 'badge-info',
+  ready: 'badge-primary', assigned: 'badge-primary', picked_up: 'badge-primary',
+  in_transit: 'badge-primary', arriving: 'badge-primary',
+  delivered: 'badge-success', cancelled: 'badge-danger'
 };
 
 const actionMap = {
   confirmed: { label: 'Preparar', next: 'preparing' },
-  preparing: { label: 'Marcar Pronto', next: 'ready' }
+  preparing: { label: 'Saiu pra entrega', next: 'ready' }
 };
 
 export default function StoreDashboard() {
@@ -71,6 +73,8 @@ export default function StoreDashboard() {
       joinStore(storeData.id);
       setOpen(!!storeData.open);
     }
+    const pollTimer = setInterval(loadOrders, 15000);
+    return () => clearInterval(pollTimer);
   }, [storeData]);
 
   useEffect(() => {
@@ -94,6 +98,7 @@ export default function StoreDashboard() {
     socket.on('notification', (notif) => {
       if (notif.type === 'delivery') setToast(notif.body);
     });
+    if (storeData) joinStore(storeData.id);
     return () => {
       socket.off('new_order');
       socket.off('order_paid');
@@ -389,7 +394,7 @@ export default function StoreDashboard() {
   const displayOrders = orderFilter === 'ativos' ? pendingOrders : orderFilter === 'pendentes' ? unpaidOrders.filter(o => {
     const created = new Date(o.created_at).getTime();
     return (now - created) <= 2 * 60 * 60 * 1000;
-  }) : orders;
+  }) : orders.filter(o => (Date.now() - new Date(o.created_at).getTime()) <= 4 * 60 * 60 * 1000);
 
   function FinanceiroTab() {
     const now = new Date();
@@ -1008,27 +1013,16 @@ export default function StoreDashboard() {
         ) : (
           <>
             <div className="grid-2 mb-4">
-              <div className="card text-center" style={{ background: 'linear-gradient(135deg, #F3E5F5, #E1BEE7)' }}>
+              <div className="card text-center" style={{ background: 'linear-gradient(135deg, #F3E5F5, #E1BEE7)', cursor: 'pointer' }}
+                onClick={() => setOrderFilter(orderFilter === 'ativos' ? 'todos' : 'ativos')}>
                 <div style={{ fontSize: 32, fontWeight: 800, color: 'var(--primary)' }}>{pendingOrders.length}</div>
-                <div className="text-sm font-bold">Pedidos ativos</div>
+                <div className="text-sm font-bold">{orderFilter === 'ativos' ? '▼ Ativos' : 'Ativos'}</div>
               </div>
-              <div className="card text-center" style={{ background: 'linear-gradient(135deg, #FFF3E0, #FFE0B2)' }}>
-                <div style={{ fontSize: 32, fontWeight: 800, color: '#E65100' }}>{unpaidOrders.filter(o => (Date.now() - new Date(o.created_at).getTime()) <= 2*60*60*1000).length}</div>
-                <div className="text-sm font-bold">Pendentes</div>
+              <div className="card text-center" style={{ background: 'linear-gradient(135deg, #FFF3E0, #FFE0B2)', cursor: 'pointer' }}
+                onClick={() => setOrderFilter(orderFilter === 'pendentes' ? 'todos' : 'pendentes')}>
+                <div style={{ fontSize: 32, fontWeight: 800, color: '#E65100' }}>{unpaidOrders.filter(o => (now - new Date(o.created_at).getTime()) <= 2*60*60*1000).length}</div>
+                <div className="text-sm font-bold">{orderFilter === 'pendentes' ? '▼ Pendentes' : 'Pendentes'}</div>
               </div>
-            </div>
-
-            <div className="page-title">Pedidos</div>
-
-            <div className="swipe-row" style={{ marginBottom: 14 }}>
-              <button className={`btn btn-sm ${orderFilter === 'ativos' ? 'btn-primary' : 'btn-outline'}`}
-                onClick={() => setOrderFilter('ativos')}>
-                Ativos ({pendingOrders.length})
-              </button>
-              <button className={`btn btn-sm ${orderFilter === 'pendentes' ? 'btn-primary' : 'btn-outline'}`}
-                onClick={() => setOrderFilter('pendentes')}>
-                Pendentes ({unpaidOrders.filter(o => (now - new Date(o.created_at).getTime()) <= 2*60*60*1000).length})
-              </button>
             </div>
 
             {displayOrders.length === 0 ? (

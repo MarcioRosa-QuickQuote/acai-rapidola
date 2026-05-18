@@ -85,11 +85,11 @@ export default function CustomerStoreList() {
               onClick={() => navigate(`/customer/tracking/${activeOrder.id}`)}
               title="Acompanhar pedido"
               style={{
-                background: '#E8F5E9', color: '#2E7D32',
-                fontSize: 16, fontWeight: 700, padding: '4px 8px',
-                border: 'none', borderRadius: 20, width: 'auto'
+                background: '#E8F5E9',
+                padding: '4px 8px',
+                border: 'none', borderRadius: 20, width: 'auto', display: 'flex', alignItems: 'center'
               }}>
-              🏍️
+              <img src="/saco_acai.png" style={{ width: 28, height: 28, objectFit: 'contain' }} />
             </button>
           )}
           <div onClick={() => navigate('/customer/conta')}

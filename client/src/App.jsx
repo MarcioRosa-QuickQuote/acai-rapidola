@@ -1,4 +1,5 @@
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { useEffect } from 'react';
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from './contexts/AuthContext';
 import Login from './pages/Login';
 import Register from './pages/Register';
@@ -18,6 +19,12 @@ function ProtectedRoute({ role, children }) {
   return children;
 }
 
+function ScrollToTop() {
+  const { pathname } = useLocation();
+  useEffect(() => { window.scrollTo(0, 0); }, [pathname]);
+  return null;
+}
+
 export default function App() {
   const { user, loading } = useAuth();
 
@@ -30,7 +37,9 @@ export default function App() {
   }
 
   return (
-    <Routes>
+    <>
+      <ScrollToTop />
+      <Routes>
       <Route path="/login" element={user ? <Navigate to={`/${user.role}`} /> : <Login />} />
       <Route path="/register" element={user ? <Navigate to={`/${user.role}`} /> : <Register />} />
 
@@ -65,5 +74,6 @@ export default function App() {
         user ? <Navigate to={`/${user.role === 'customer' ? 'customer' : user.role}`} /> : <Navigate to="/login" />
       } />
     </Routes>
+    </>
   );
 }

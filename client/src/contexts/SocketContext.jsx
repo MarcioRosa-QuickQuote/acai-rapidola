@@ -1,57 +1,57 @@
-import { createContext, useContext, useEffect, useRef, useState } from 'react';
+import { createContext, useContext, useEffect, useState } from 'react';
 import { io } from 'socket.io-client';
 import { useAuth } from './AuthContext';
 
 const SocketContext = createContext(null);
 
 export function SocketProvider({ children }) {
-  const { token, user } = useAuth();
-  const socketRef = useRef(null);
+  const { token } = useAuth();
+  const [socket, setSocket] = useState(null);
   const [notifications, setNotifications] = useState([]);
   const [toast, setToast] = useState(null);
 
   useEffect(() => {
     if (!token) return;
 
-    const socket = io('/', { transports: ['websocket', 'polling'] });
-    socketRef.current = socket;
+    const s = io('/', { transports: ['websocket', 'polling'] });
+    setSocket(s);
 
-    socket.on('connect', () => {
-      socket.emit('auth', { token });
+    s.on('connect', () => {
+      s.emit('auth', { token });
     });
 
-    socket.on('notification', (notif) => {
+    s.on('notification', (notif) => {
       setNotifications(prev => [notif, ...prev]);
       setToast(notif.body);
       setTimeout(() => setToast(null), 4000);
     });
 
-    socket.on('new_order', (data) => {
+    s.on('new_order', (data) => {
       setToast(`Novo pedido de ${data.customer}!`);
       setTimeout(() => setToast(null), 4000);
     });
 
     return () => {
-      socket.disconnect();
-      socketRef.current = null;
+      s.disconnect();
+      setSocket(null);
     };
   }, [token]);
 
   function joinOrder(orderId) {
-    socketRef.current?.emit('join_order', orderId);
+    socket?.emit('join_order', orderId);
   }
 
   function leaveOrder(orderId) {
-    socketRef.current?.emit('leave_order', orderId);
+    socket?.emit('leave_order', orderId);
   }
 
   function joinStore(storeId) {
-    socketRef.current?.emit('join_store', storeId);
+    socket?.emit('join_store', storeId);
   }
 
   return (
     <SocketContext.Provider value={{
-      socket: socketRef.current,
+      socket,
       notifications,
       toast,
       setToast,

@@ -11,7 +11,7 @@ function initSocket(httpServer) {
   io.on('connection', (socket) => {
     console.log('[Socket] Conectado:', socket.id);
 
-    socket.on('auth', (data) => {
+    socket.on('auth', async (data) => {
       try {
         const { verifyToken } = require('../auth');
         const user = verifyToken(data.token);
@@ -21,10 +21,12 @@ function initSocket(httpServer) {
         socket.join(`user:${user.id}`);
 
         if (user.role === 'store') {
-          const db = require('../database');
-          const store = db.prepare('SELECT id FROM stores WHERE owner_id = ?').get(user.id);
-          if (store) {
-            socket.join(`store:${store.id}`);
+          try {
+            const { supabase } = require('../database');
+            const { data: store } = await supabase.from('stores').select('id').eq('owner_id', user.id).single();
+            if (store) socket.join(`store:${store.id}`);
+          } catch (e) {
+            console.error('[Socket] Erro ao entrar sala da loja:', e.message);
           }
         }
 

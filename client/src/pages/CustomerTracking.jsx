@@ -1,18 +1,59 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useSocket } from '../contexts/SocketContext';
 
-const statusSteps = ['pending', 'confirmed', 'preparing', 'ready', 'picked_up', 'in_transit', 'arriving', 'delivered'];
+const statusSteps = ['pending', 'preparing', 'picked_up', 'delivered'];
 const statusLabels = {
-  pending: 'Pedido feito', confirmed: 'Confirmado', preparing: 'Preparando',
-  ready: 'Pronto', assigned: 'Motoboy designado', picked_up: 'Saiu da loja',
-  in_transit: 'A caminho', arriving: 'Chegando!', delivered: 'Entregue'
+  pending: 'Pedido feito', confirmed: 'Pedido feito', preparing: 'Preparando',
+  ready: 'Preparando', assigned: 'Preparando',
+  picked_up: 'Saiu pra entrega', in_transit: 'Saiu pra entrega',
+  arriving: 'Saiu pra entrega', delivered: 'Entregue'
 };
+
+function CustomerAvatar({ photo }) {
+  const [showFallback, setShowFallback] = useState(!photo);
+  if (showFallback) {
+    return (
+      <div style={{ width: 36, height: 36, borderRadius: '50%', background: '#1565C0',
+        display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="white">
+          <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
+        </svg>
+      </div>
+    );
+  }
+  return (
+    <div style={{ width: 36, height: 36, borderRadius: '50%', overflow: 'hidden',
+      display: 'inline-flex', alignItems: 'center', justifyContent: 'center', background: '#1565C0' }}>
+      <img src={photo} alt="Você" style={{ width: 36, height: 36, objectFit: 'cover' }}
+        onError={() => setShowFallback(true)} />
+    </div>
+  );
+}
+
+function StoreLogo({ logo }) {
+  const [showFallback, setShowFallback] = useState(!logo);
+  if (showFallback) {
+    return (
+      <div style={{ width: 36, height: 36, borderRadius: '50%', background: '#2E7D32',
+        display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
+        <span style={{ color: 'white', fontSize: 16, fontWeight: 700 }}>L</span>
+      </div>
+    );
+  }
+  return (
+    <div style={{ width: 36, height: 36, borderRadius: '50%', overflow: 'hidden',
+      display: 'inline-flex', alignItems: 'center', justifyContent: 'center', background: '#2E7D32' }}>
+      <img src={logo} alt="Loja" style={{ width: 36, height: 36, objectFit: 'cover' }}
+        onError={() => setShowFallback(true)} />
+    </div>
+  );
+}
 
 export default function CustomerTracking() {
   const { id } = useParams();
-  const { apiFetch } = useAuth();
+  const { user, apiFetch } = useAuth();
   const { socket, joinOrder } = useSocket();
   const navigate = useNavigate();
   const [order, setOrder] = useState(null);
@@ -126,11 +167,7 @@ export default function CustomerTracking() {
               <div style={{ padding: 16, textAlign: 'center' }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, marginBottom: 12 }}>
                   <div style={{ textAlign: 'center' }}>
-                    <div style={{
-                      width: 32, height: 32, borderRadius: '50%', background: '#2E7D32',
-                      display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-                      color: 'white', fontSize: 16, fontWeight: 700
-                    }}>L</div>
+                    <StoreLogo logo={order.store_logo} />
                     <div className="text-xs" style={{ marginTop: 2 }}>Loja</div>
                   </div>
 
@@ -152,11 +189,7 @@ export default function CustomerTracking() {
                   </div>
 
                   <div style={{ textAlign: 'center' }}>
-                    <div style={{
-                      width: 32, height: 32, borderRadius: '50%', background: '#1565C0',
-                      display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-                      color: 'white', fontSize: 14, fontWeight: 700
-                    }}>VC</div>
+                    <CustomerAvatar photo={user?.photo_url} />
                     <div className="text-xs" style={{ marginTop: 2 }}>Você</div>
                   </div>
                 </div>

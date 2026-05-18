@@ -34,22 +34,28 @@ function buildAppUrl(req, path) {
 }
 
 async function confirmOrderPayment(orderId, storeId) {
-  await supabase.from('orders').update({
-    payment_status: 'paid', status: 'confirmed', updated_at: new Date().toISOString()
-  }).eq('id', orderId).neq('payment_status', 'paid');
+  try {
+    const { error: err } = await supabase.from('orders').update({
+      payment_status: 'paid', status: 'confirmed', updated_at: new Date().toISOString()
+    }).eq('id', orderId);
 
-  await supabase.from('orders').update({ status: 'confirmed' })
-    .eq('id', orderId).eq('status', 'pending');
+    if (err) {
+      console.error('[Payment] Erro ao confirmar pagamento:', err);
+      return;
+    }
 
-  const { data: store } = await supabase.from('stores').select('owner_id').eq('id', storeId).single();
-  if (store) {
-    await notifyUser(store.owner_id, 'Pagamento Confirmado!', `Pedido #${orderId.slice(0,8)} pago.`, 'payment');
-  }
+    const { data: store } = await supabase.from('stores').select('owner_id').eq('id', storeId).single();
+    if (store) {
+      await notifyUser(store.owner_id, 'Pagamento Confirmado!', `Pedido #${orderId.slice(0,8)} pago.`, 'payment');
+    }
 
-  const io = getIO();
-  if (io) {
-    io.to(`order:${orderId}`).emit('payment_confirmed', { orderId });
-    if (storeId) io.to(`store:${storeId}`).emit('order_paid', { orderId });
+    const io = getIO();
+    if (io) {
+      io.to(`order:${orderId}`).emit('payment_confirmed', { orderId });
+      if (storeId) io.to(`store:${storeId}`).emit('order_paid', { orderId });
+    }
+  } catch (e) {
+    console.error('[Payment] Erro em confirmOrderPayment:', e.message);
   }
 }
 
@@ -113,13 +119,26 @@ router.post('/create-preference', authMiddleware, async (req, res) => {
 });
 
 router.post('/webhook', async (req, res) => {
-  const signature = req.headers['x-signature'];
   const webhookSecret = process.env.MP_WEBHOOK_SECRET;
 
-  if (webhookSecret && signature) {
-    const crypto = require('crypto');
-    const expected = crypto.createHmac('sha256', webhookSecret).update(JSON.stringify(req.body)).digest('hex');
-    if (signature !== expected) return res.sendStatus(403);
+  if (webhookSecret) {
+    const signature = req.headers['x-signature'] || '';
+    const requestId = req.headers['x-request-id'] || '';
+    const v1Match = signature.match(/v1=([a-f0-9]+)/i);
+    const tsMatch = signature.match(/ts=(\d+)/);
+    const v1 = v1Match ? v1Match[1] : null;
+    const ts = tsMatch ? tsMatch[1] : null;
+    const dataId = req.body?.data?.id;
+
+    if (v1 && ts && dataId) {
+      const crypto = require('crypto');
+      const payload = `id:${dataId};request-id:${requestId};ts:${ts};`;
+      const expected = crypto.createHmac('sha256', webhookSecret).update(payload).digest('hex');
+      if (v1 !== expected) {
+        console.error('[MP] Webhook signature invalida');
+        return res.sendStatus(403);
+      }
+    }
   }
 
   const { type, data } = req.body;
@@ -209,11 +228,19 @@ router.post('/pix/confirm', authMiddleware, async (req, res) => {
         await confirmOrderPayment(order_id, order.store_id);
         return res.json({ success: true, status: 'paid' });
       }
-    } catch {}
+      return res.status(400).json({ error: 'Pagamento ainda não aprovado', status: payment.status });
+    } catch (err) {
+      console.error('[MP] Erro ao verificar pagamento:', err.message);
+      return res.status(500).json({ error: 'Erro ao verificar status do pagamento' });
+    }
   }
 
-  await confirmOrderPayment(order_id, order.store_id);
-  res.json({ success: true, status: 'paid' });
+  if (!mpClient) {
+    await confirmOrderPayment(order_id, order.store_id);
+    return res.json({ success: true, status: 'paid' });
+  }
+
+  res.status(400).json({ error: 'Pagamento não encontrado' });
 });
 
 router.post('/process-card-payment', authMiddleware, async (req, res) => {

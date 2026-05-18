@@ -13,25 +13,23 @@ L.Icon.Default.mergeOptions({
 });
 
 const statusLabels = {
-  assigned: 'Aguardando retirada', picked_up: 'A caminho',
-  arriving: 'Chegando', delivered: 'Entregue'
+  assigned: 'Retirar na loja', picked_up: 'Saiu pra entrega',
+  delivered: 'Entregue'
 };
 
 const statusColors = {
   assigned: 'badge-primary', picked_up: 'badge-info',
-  arriving: 'badge-accent', delivered: 'badge-success'
+  delivered: 'badge-success'
 };
 
 const nextStatus = {
   assigned: 'picked_up',
-  picked_up: 'arriving',
-  arriving: 'delivered'
+  picked_up: 'delivered'
 };
 
 const nextStatusLabel = {
   assigned: 'Retirei o pedido',
-  picked_up: 'Chegando',
-  arriving: 'Entregue'
+  picked_up: 'Entregue'
 };
 
 export default function MotoboyDashboard() {
@@ -121,10 +119,6 @@ export default function MotoboyDashboard() {
       body: JSON.stringify({ status: next })
     });
 
-    if (next === 'arriving') {
-      setToast('Cliente será notificado que você está chegando!');
-    }
-
     loadData();
   }
 
@@ -190,9 +184,37 @@ export default function MotoboyDashboard() {
     { key: 'perfil', label: 'Perfil', icon: '👤' },
   ];
 
+  const activeDeliveries = myOrders.filter(o => o.status !== 'delivered');
+  const completedDeliveries = myOrders.filter(o => o.status === 'delivered');
+
   function renderInicio() {
     return (
       <>
+        {activeDeliveries.length > 0 && (
+          <div style={{ marginBottom: 12 }}>
+            <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--primary)', marginBottom: 8 }}>
+              Suas entregas ativas ({activeDeliveries.length})
+            </div>
+            {activeDeliveries.map(order => (
+              <div key={order.id} className="card" style={{ marginBottom: 8 }}>
+                <div className="flex-between" style={{ marginBottom: 4 }}>
+                  <span className="font-bold">#{order.id.slice(0, 8)}</span>
+                  <span className="badge badge-success">R$ {order.total.toFixed(2)}</span>
+                </div>
+                <div className="text-sm text-muted">Retirar: {order.store_name}</div>
+                <div className="text-sm text-muted" style={{ marginBottom: 8 }}>Entregar: {order.customer_address}</div>
+                <div className="flex-between">
+                  <span className={`badge ${statusColors[order.status] || 'badge-primary'}`}>{statusLabels[order.status] || order.status}</span>
+                  {nextStatus[order.status] && (
+                    <button className="btn btn-sm btn-primary" onClick={() => updateStatus(order.id)}>
+                      {nextStatusLabel[order.status]}
+                    </button>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
         <div className="card" style={{
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
           background: online ? 'linear-gradient(135deg, #E8F5E9, #C8E6C9)' : 'linear-gradient(135deg, #F5F5F5, #EEEEEE)',
@@ -259,7 +281,7 @@ export default function MotoboyDashboard() {
   }
 
   function renderPedidos() {
-    if (myOrders.length === 0) {
+    if (completedDeliveries.length === 0) {
       return (
         <div className="empty-state" style={{ paddingTop: 40 }}>
           <div className="empty-state-icon">
@@ -268,11 +290,11 @@ export default function MotoboyDashboard() {
               <circle cx="32" cy="36" r="4" stroke="var(--border)" strokeWidth="2"/>
             </svg>
           </div>
-          <p>Nenhum pedido ainda</p>
+          <p>Nenhum pedido entregue ainda</p>
         </div>
       );
     }
-    return myOrders.map(order => (
+    return completedDeliveries.map(order => (
       <div key={order.id} className="card" style={{ cursor: 'pointer' }}
         onClick={() => setSelectedTab(order.id === selectedTab ? null : order.id)}>
         <div className="flex-between" style={{ marginBottom: 6 }}>
