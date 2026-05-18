@@ -351,8 +351,6 @@ function NavScreen({ order, onClose, onStatusUpdate, statusLabel }) {
             {pos && (
               <MLMarker longitude={pos.lng} latitude={pos.lat} anchor="center">
                 <div style={{
-                  transform: `rotate(${heading}deg)`,
-                  transition: 'transform 0.7s ease',
                   filter: 'drop-shadow(0 4px 10px rgba(0,180,255,0.6))'
                 }}>
                   <svg width="48" height="64" viewBox="0 0 48 64" xmlns="http://www.w3.org/2000/svg">
