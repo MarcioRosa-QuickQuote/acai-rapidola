@@ -1,10 +1,12 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useSocket } from '../contexts/SocketContext';
 import { MapContainer, TileLayer, Marker, useMap } from 'react-leaflet';
 import RoutePolyline, { useRoute, NavSteps } from '../components/RouteMap';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+import MLMap, { Marker as MLMarker, Source, Layer } from 'react-map-gl/maplibre';
+import 'maplibre-gl/dist/maplibre-gl.css';
 
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
@@ -41,15 +43,27 @@ function FollowMotoboy({ pos, follow }) {
   return null;
 }
 
+function calcBearing(from, to) {
+  const dLng = (to.lng - from.lng) * Math.PI / 180;
+  const lat1 = from.lat * Math.PI / 180;
+  const lat2 = to.lat * Math.PI / 180;
+  const y = Math.sin(dLng) * Math.cos(lat2);
+  const x = Math.cos(lat1) * Math.sin(lat2) - Math.sin(lat1) * Math.cos(lat2) * Math.cos(dLng);
+  return (Math.atan2(y, x) * 180 / Math.PI + 360) % 360;
+}
+
 function NavScreen({ order, onClose, onStatusUpdate, statusLabel }) {
   const [pos, setPos] = useState(null);
+  const [heading, setHeading] = useState(0);
   const [follow, setFollow] = useState(true);
   const [currentStepIdx, setCurrentStepIdx] = useState(0);
   const [navStarted, setNavStarted] = useState(false);
+  const prevPosRef = useRef(null);
+  const mapRef = useRef(null);
 
   const isToStore = order.status === 'assigned';
 
-  const { steps, totalDist, totalDur } = useRoute(
+  const { steps, totalDist, totalDur, coords } = useRoute(
     { lat: order.store_lat, lng: order.store_lng },
     { lat: order.customer_lat, lng: order.customer_lng }
   );
@@ -57,20 +71,49 @@ function NavScreen({ order, onClose, onStatusUpdate, statusLabel }) {
   useEffect(() => {
     if (!navigator.geolocation) return;
     const watch = navigator.geolocation.watchPosition(
-      p => setPos({ lat: p.coords.latitude, lng: p.coords.longitude }),
+      p => {
+        const newPos = { lat: p.coords.latitude, lng: p.coords.longitude };
+        let newHeading = heading;
+        if (p.coords.heading !== null && !isNaN(p.coords.heading)) {
+          newHeading = p.coords.heading;
+        } else if (prevPosRef.current) {
+          newHeading = calcBearing(prevPosRef.current, newPos);
+        }
+        prevPosRef.current = newPos;
+        setPos(newPos);
+        setHeading(newHeading);
+      },
       () => {},
-      { enableHighAccuracy: true, timeout: 10000, maximumAge: 5000 }
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 3000 }
     );
     return () => navigator.geolocation.clearWatch(watch);
   }, []);
 
+  // Segue o motoboy com câmera MapLibre (pitch 60°, bearing = direção de viagem)
+  useEffect(() => {
+    if (!pos || !follow || !navStarted) return;
+    const map = mapRef.current?.getMap?.() ?? mapRef.current;
+    if (!map) return;
+    try {
+      map.easeTo({
+        center: [pos.lng, pos.lat],
+        bearing: heading,
+        pitch: 60,
+        zoom: 17.5,
+        duration: 1000,
+        padding: { top: 0, bottom: 220, left: 0, right: 0 }
+      });
+    } catch (_) {}
+  }, [pos?.lat, pos?.lng, heading, follow, navStarted]);
+
   const step = steps[currentStepIdx];
   const remaining = steps.slice(currentStepIdx).reduce((s, st) => s + st.dist, 0);
   const hasRoute = order.store_lat && order.customer_lat;
-  const mapCenter = pos
+  const mapCenterLeaflet = pos
     ? [pos.lat, pos.lng]
     : [(order.store_lat + order.customer_lat) / 2 || -1.45, (order.store_lng + order.customer_lng) / 2 || -48.5];
 
+  // Ícones Leaflet (usados apenas na tela overview)
   const motoboyIcon = useMemo(() => L.divIcon({
     html: `<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 40 40"><circle cx="20" cy="20" r="18" fill="#1565C0" stroke="white" stroke-width="3"/><polygon points="20,8 28,28 20,23 12,28" fill="white"/></svg>`,
     className: '', iconSize: [40, 40], iconAnchor: [20, 20]
@@ -86,13 +129,22 @@ function NavScreen({ order, onClose, onStatusUpdate, statusLabel }) {
     className: '', iconSize: [28, 36], iconAnchor: [14, 36]
   }), []);
 
+  // GeoJSON da rota para MapLibre (formato [lng, lat])
+  const routeGeoJSON = useMemo(() => {
+    if (!coords || coords.length < 2) return null;
+    return {
+      type: 'Feature',
+      geometry: { type: 'LineString', coordinates: coords.map(([lat, lng]) => [lng, lat]) }
+    };
+  }, [coords]);
+
   // ── OVERVIEW (igual tela 1 do Waze) ──────────────────────────────────────
   if (!navStarted) {
     return (
       <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 1000 }}>
         {hasRoute && (
           <div style={{ position: 'absolute', inset: 0 }}>
-            <MapContainer center={mapCenter} zoom={14} style={{ width: '100%', height: '100%' }}
+            <MapContainer center={mapCenterLeaflet} zoom={14} style={{ width: '100%', height: '100%' }}
               zoomControl={false} key={`ov-${order.id}`}>
               <TileLayer
                 attribution='&copy; <a href="https://carto.com">CARTO</a>'
@@ -165,28 +217,81 @@ function NavScreen({ order, onClose, onStatusUpdate, statusLabel }) {
     );
   }
 
-  // ── NAVEGAÇÃO ATIVA (igual tela 2 do Waze) ───────────────────────────────
+  // ── NAVEGAÇÃO ATIVA — MapLibre GL (visão em primeira pessoa, mapa inclinado) ──
   const instrBg = isToStore ? '#1565C0' : '#4A148C';
+  const initLng = pos?.lng ?? ((order.store_lng + order.customer_lng) / 2) ?? -48.5;
+  const initLat = pos?.lat ?? ((order.store_lat + order.customer_lat) / 2) ?? -1.45;
 
   return (
     <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 1000 }}>
-      {/* Mapa */}
+      {/* Mapa MapLibre GL — perspectiva 3D em primeira pessoa */}
       {hasRoute && (
         <div style={{ position: 'absolute', inset: 0 }}>
-          <MapContainer center={mapCenter} zoom={17} style={{ width: '100%', height: '100%' }}
-            scrollWheelZoom zoomControl={false} key={`nav-${order.id}`}>
-            <TileLayer
-              attribution='&copy; <a href="https://carto.com">CARTO</a>'
-              url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
-            />
-            <Marker position={[order.customer_lat, order.customer_lng]} icon={destIcon} />
-            {order.store_lat && <Marker position={[order.store_lat, order.store_lng]} icon={storeIcon} />}
-            {pos && <Marker position={[pos.lat, pos.lng]} icon={motoboyIcon} />}
-            <RoutePolyline from={{ lat: order.store_lat, lng: order.store_lng }}
-              to={{ lat: order.customer_lat, lng: order.customer_lng }}
-              color="#4A148C" weight={8} />
-            {pos && <FollowMotoboy pos={pos} follow={follow} />}
-          </MapContainer>
+          <MLMap
+            ref={mapRef}
+            initialViewState={{
+              longitude: initLng,
+              latitude: initLat,
+              zoom: 17.5,
+              pitch: 60,
+              bearing: heading
+            }}
+            style={{ width: '100%', height: '100%' }}
+            mapStyle="https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json"
+            attributionControl={false}
+          >
+            {/* Rota com sombra + linha roxa + reflexo */}
+            {routeGeoJSON && (
+              <Source id="route-src" type="geojson" data={routeGeoJSON}>
+                <Layer id="route-shadow" type="line"
+                  paint={{ 'line-color': '#000', 'line-width': 16, 'line-opacity': 0.25, 'line-blur': 6 }}
+                  layout={{ 'line-cap': 'round', 'line-join': 'round' }} />
+                <Layer id="route-line" type="line"
+                  paint={{ 'line-color': '#7B1FA2', 'line-width': 10, 'line-opacity': 1 }}
+                  layout={{ 'line-cap': 'round', 'line-join': 'round' }} />
+                <Layer id="route-edge" type="line"
+                  paint={{ 'line-color': '#CE93D8', 'line-width': 3, 'line-opacity': 0.7 }}
+                  layout={{ 'line-cap': 'round', 'line-join': 'round' }} />
+              </Source>
+            )}
+
+            {/* Pin do destino (cliente) */}
+            <MLMarker longitude={order.customer_lng} latitude={order.customer_lat} anchor="bottom">
+              <svg width="32" height="42" viewBox="0 0 32 42" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="16" cy="16" r="16" fill="#4A148C"/>
+                <line x1="16" y1="30" x2="16" y2="42" stroke="#4A148C" strokeWidth="4"/>
+                <circle cx="16" cy="16" r="7" fill="white"/>
+              </svg>
+            </MLMarker>
+
+            {/* Pin da loja */}
+            {order.store_lat && (
+              <MLMarker longitude={order.store_lng} latitude={order.store_lat} anchor="bottom">
+                <div style={{ fontSize: 30, filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.5))' }}>🏪</div>
+              </MLMarker>
+            )}
+
+            {/* Motoboy — seta ciano rotacionando com a direção de viagem */}
+            {pos && (
+              <MLMarker longitude={pos.lng} latitude={pos.lat} anchor="center">
+                <div style={{
+                  transform: `rotate(${heading}deg)`,
+                  transition: 'transform 0.7s ease',
+                  filter: 'drop-shadow(0 4px 10px rgba(0,180,255,0.6))'
+                }}>
+                  <svg width="48" height="64" viewBox="0 0 48 64" xmlns="http://www.w3.org/2000/svg">
+                    {/* Corpo da seta */}
+                    <path d="M24 2 L44 60 L24 48 L4 60 Z"
+                      fill="#00BFFF" stroke="white" strokeWidth="2.5" strokeLinejoin="round"/>
+                    {/* Roda dianteira (detalhe moto) */}
+                    <ellipse cx="24" cy="18" rx="4" ry="6" fill="white" opacity="0.5"/>
+                    {/* Roda traseira */}
+                    <ellipse cx="24" cy="44" rx="5" ry="7" fill="rgba(0,0,0,0.25)"/>
+                  </svg>
+                </div>
+              </MLMarker>
+            )}
+          </MLMap>
         </div>
       )}
 
@@ -282,31 +387,43 @@ function NavScreen({ order, onClose, onStatusUpdate, statusLabel }) {
         </div>
       )}
 
-      {/* Barra inferior estilo Waze */}
+      {/* Barra inferior — tema escuro para combinar com mapa dark */}
       <div style={{
         position: 'absolute', bottom: 0, left: 0, right: 0, zIndex: 20,
-        background: 'white', padding: '14px 16px 32px',
+        background: 'rgba(15,15,25,0.96)', padding: '14px 16px 32px',
         display: 'flex', alignItems: 'center', gap: 12,
-        boxShadow: '0 -2px 20px rgba(0,0,0,0.15)'
+        boxShadow: '0 -2px 30px rgba(0,0,0,0.5)', backdropFilter: 'blur(16px)'
       }}>
         {/* Re-center */}
-        <div onClick={() => setFollow(f => !f)} style={{
+        <div onClick={() => {
+          setFollow(f => {
+            if (!f) {
+              // reativa follow: move câmera de volta pro motoboy
+              const map = mapRef.current?.getMap?.() ?? mapRef.current;
+              if (map && pos) {
+                map.easeTo({ center: [pos.lng, pos.lat], bearing: heading, pitch: 60, zoom: 17.5, duration: 800, padding: { bottom: 220 } });
+              }
+            }
+            return !f;
+          });
+        }} style={{
           width: 46, height: 46, borderRadius: 23,
-          background: follow ? '#EDE7F6' : '#F5F5F5',
+          background: follow ? 'rgba(0,191,255,0.15)' : 'rgba(255,255,255,0.08)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          cursor: 'pointer', flexShrink: 0
+          cursor: 'pointer', flexShrink: 0,
+          border: follow ? '1.5px solid rgba(0,191,255,0.5)' : '1.5px solid rgba(255,255,255,0.12)'
         }}>
-          <svg width="22" height="22" viewBox="0 0 24 24" fill={follow ? '#4A148C' : '#999'}>
+          <svg width="22" height="22" viewBox="0 0 24 24" fill={follow ? '#00BFFF' : '#666'}>
             <path d="M12 8c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4zm8.94 3c-.46-4.17-3.77-7.48-7.94-7.94V1h-2v2.06C6.83 3.52 3.52 6.83 3.06 11H1v2h2.06c.46 4.17 3.77 7.48 7.94 7.94V23h2v-2.06c4.17-.46 7.48-3.77 7.94-7.94H23v-2h-2.06zM12 19c-3.87 0-7-3.13-7-7s3.13-7 7-7 7 3.13 7 7-3.13 7-7 7z"/>
           </svg>
         </div>
 
         {/* ETA */}
         <div style={{ flex: 1 }}>
-          <div style={{ fontSize: 28, fontWeight: 900, color: '#111', lineHeight: 1 }}>
+          <div style={{ fontSize: 28, fontWeight: 900, color: 'white', lineHeight: 1 }}>
             {totalDur > 0 ? `${totalDur} min` : '-- min'}
           </div>
-          <div style={{ fontSize: 13, color: '#666', marginTop: 3 }}>
+          <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)', marginTop: 3 }}>
             {totalDist > 0 ? `${(totalDist / 1000).toFixed(1)} km` : ''}
             {totalDist > 0 && ' • '}
             {isToStore ? 'Ir à loja' : order.customer_name}
@@ -322,8 +439,9 @@ function NavScreen({ order, onClose, onStatusUpdate, statusLabel }) {
           }} onClick={onStatusUpdate}>{statusLabel}</button>
         ) : (
           <div style={{
-            padding: '13px 18px', borderRadius: 26, background: '#F5F5F5',
-            color: '#333', fontWeight: 700, fontSize: 14,
+            padding: '13px 18px', borderRadius: 26,
+            background: 'rgba(255,255,255,0.08)', border: '1.5px solid rgba(255,255,255,0.15)',
+            color: 'rgba(255,255,255,0.8)', fontWeight: 700, fontSize: 14,
             cursor: 'pointer', flexShrink: 0
           }} onClick={() => setNavStarted(false)}>Overview</div>
         )}
