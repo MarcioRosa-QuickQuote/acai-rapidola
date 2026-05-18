@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useSocket } from '../contexts/SocketContext';
 import { MapContainer, TileLayer, Marker, useMap } from 'react-leaflet';
@@ -45,6 +45,10 @@ function NavScreen({ order, onClose, onStatusUpdate, statusLabel }) {
   const [pos, setPos] = useState(null);
   const [follow, setFollow] = useState(true);
   const [currentStepIdx, setCurrentStepIdx] = useState(0);
+  const [navStarted, setNavStarted] = useState(false);
+
+  const isToStore = order.status === 'assigned';
+
   const { steps, totalDist, totalDur } = useRoute(
     { lat: order.store_lat, lng: order.store_lng },
     { lat: order.customer_lat, lng: order.customer_lng }
@@ -63,128 +67,266 @@ function NavScreen({ order, onClose, onStatusUpdate, statusLabel }) {
   const step = steps[currentStepIdx];
   const remaining = steps.slice(currentStepIdx).reduce((s, st) => s + st.dist, 0);
   const hasRoute = order.store_lat && order.customer_lat;
-  const mapCenter = pos ? [pos.lat, pos.lng] : [order.customer_lat || -23.55, order.customer_lng || -46.63];
+  const mapCenter = pos
+    ? [pos.lat, pos.lng]
+    : [(order.store_lat + order.customer_lat) / 2 || -1.45, (order.store_lng + order.customer_lng) / 2 || -48.5];
+
+  const motoboyIcon = useMemo(() => L.divIcon({
+    html: `<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 40 40"><circle cx="20" cy="20" r="18" fill="#1565C0" stroke="white" stroke-width="3"/><polygon points="20,8 28,28 20,23 12,28" fill="white"/></svg>`,
+    className: '', iconSize: [40, 40], iconAnchor: [20, 20]
+  }), []);
+
+  const destIcon = useMemo(() => L.divIcon({
+    html: `<svg xmlns="http://www.w3.org/2000/svg" width="28" height="36" viewBox="0 0 28 36"><ellipse cx="14" cy="14" rx="14" ry="14" fill="#4A148C"/><line x1="14" y1="26" x2="14" y2="36" stroke="#4A148C" stroke-width="3"/><circle cx="14" cy="14" r="6" fill="white"/></svg>`,
+    className: '', iconSize: [28, 36], iconAnchor: [14, 36]
+  }), []);
+
+  const storeIcon = useMemo(() => L.divIcon({
+    html: `<svg xmlns="http://www.w3.org/2000/svg" width="28" height="36" viewBox="0 0 28 36"><ellipse cx="14" cy="14" rx="14" ry="14" fill="#1565C0"/><line x1="14" y1="26" x2="14" y2="36" stroke="#1565C0" stroke-width="3"/><text x="14" y="19" text-anchor="middle" font-size="14" fill="white">🏪</text></svg>`,
+    className: '', iconSize: [28, 36], iconAnchor: [14, 36]
+  }), []);
+
+  // ── OVERVIEW (igual tela 1 do Waze) ──────────────────────────────────────
+  if (!navStarted) {
+    return (
+      <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 1000 }}>
+        {hasRoute && (
+          <div style={{ position: 'absolute', inset: 0 }}>
+            <MapContainer center={mapCenter} zoom={14} style={{ width: '100%', height: '100%' }}
+              zoomControl={false} key={`ov-${order.id}`}>
+              <TileLayer
+                attribution='&copy; <a href="https://carto.com">CARTO</a>'
+                url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
+              />
+              {pos && <Marker position={[pos.lat, pos.lng]} icon={motoboyIcon} />}
+              <Marker position={[order.customer_lat, order.customer_lng]} icon={destIcon} />
+              {order.store_lat && <Marker position={[order.store_lat, order.store_lng]} icon={storeIcon} />}
+              <RoutePolyline from={{ lat: order.store_lat, lng: order.store_lng }}
+                to={{ lat: order.customer_lat, lng: order.customer_lng }}
+                color="#4A148C" weight={8} />
+            </MapContainer>
+          </div>
+        )}
+
+        {/* Voltar */}
+        <div onClick={onClose} style={{
+          position: 'absolute', top: 48, left: 16, zIndex: 20,
+          width: 40, height: 40, borderRadius: 20, background: 'white',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          cursor: 'pointer', boxShadow: '0 2px 8px rgba(0,0,0,0.2)'
+        }}>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="#333"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+        </div>
+
+        {/* Label de rota */}
+        <div style={{
+          position: 'absolute', top: 48, left: '50%', transform: 'translateX(-50%)', zIndex: 20,
+          background: 'white', borderRadius: 20, padding: '8px 18px',
+          fontSize: 13, fontWeight: 600, whiteSpace: 'nowrap',
+          boxShadow: '0 2px 8px rgba(0,0,0,0.15)', color: '#333'
+        }}>
+          {isToStore ? 'Sua localização' : (order.store_name || 'Loja')} → {isToStore ? (order.store_name || 'Loja') : order.customer_name}
+        </div>
+
+        {/* Painel inferior */}
+        <div style={{
+          position: 'absolute', bottom: 0, left: 0, right: 0, zIndex: 20,
+          background: 'white', borderRadius: '24px 24px 0 0',
+          padding: '20px 20px 40px', boxShadow: '0 -4px 30px rgba(0,0,0,0.2)'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'baseline', gap: 14, marginBottom: 6 }}>
+            <div style={{ fontSize: 42, fontWeight: 900, color: '#111' }}>
+              {totalDur > 0 ? `${totalDur} min` : '-- min'}
+            </div>
+            <div style={{ fontSize: 20, color: '#888', fontWeight: 600 }}>
+              {totalDist > 0 ? `${(totalDist / 1000).toFixed(1)} km` : ''}
+            </div>
+          </div>
+          <div style={{ fontSize: 14, color: '#444', fontWeight: 500, marginBottom: 4, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+            {isToStore
+              ? `Por ${order.store_address || order.store_name || 'loja'}`
+              : `Por ${order.customer_address || order.customer_name}`}
+          </div>
+          <div style={{ fontSize: 13, color: '#888', marginBottom: 24 }}>
+            {isToStore ? 'Retirar pedido na loja' : 'Melhor rota, Trânsito normal'}
+          </div>
+          <div style={{ display: 'flex', gap: 12 }}>
+            <button style={{
+              flex: 1, padding: '15px 0', borderRadius: 32, border: 'none',
+              background: '#F5F5F5', fontSize: 16, fontWeight: 700, color: '#555', cursor: 'pointer'
+            }} onClick={onClose}>Sair depois</button>
+            <button style={{
+              flex: 2, padding: '15px 0', borderRadius: 32, border: 'none',
+              background: '#1565C0', fontSize: 17, fontWeight: 800, color: 'white', cursor: 'pointer'
+            }} onClick={() => setNavStarted(true)}>Ir agora</button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ── NAVEGAÇÃO ATIVA (igual tela 2 do Waze) ───────────────────────────────
+  const instrBg = isToStore ? '#1565C0' : '#4A148C';
 
   return (
-    <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 1000, background: '#111' }}>
+    <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 1000 }}>
+      {/* Mapa */}
       {hasRoute && (
         <div style={{ position: 'absolute', inset: 0 }}>
           <MapContainer center={mapCenter} zoom={17} style={{ width: '100%', height: '100%' }}
-            scrollWheelZoom={true} zoomControl={false} doubleClickZoom={false}
-            key={order.id}>
-            <TileLayer attribution='&copy; OSM' url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-            <Marker position={[order.customer_lat, order.customer_lng]} />
-            {order.store_lat && pos && currentStepIdx < 2 && (
-              <Marker position={[order.store_lat, order.store_lng]} />
-            )}
-            {pos && <Marker position={[pos.lat, pos.lng]} />}
-            <RoutePolyline from={{ lat: order.store_lat, lng: order.store_lng }} to={{ lat: order.customer_lat, lng: order.customer_lng }} color="#9C27B0" weight={5} />
+            scrollWheelZoom zoomControl={false} key={`nav-${order.id}`}>
+            <TileLayer
+              attribution='&copy; <a href="https://carto.com">CARTO</a>'
+              url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
+            />
+            <Marker position={[order.customer_lat, order.customer_lng]} icon={destIcon} />
+            {order.store_lat && <Marker position={[order.store_lat, order.store_lng]} icon={storeIcon} />}
+            {pos && <Marker position={[pos.lat, pos.lng]} icon={motoboyIcon} />}
+            <RoutePolyline from={{ lat: order.store_lat, lng: order.store_lng }}
+              to={{ lat: order.customer_lat, lng: order.customer_lng }}
+              color="#4A148C" weight={8} />
             {pos && <FollowMotoboy pos={pos} follow={follow} />}
           </MapContainer>
         </div>
       )}
 
-      <div onClick={onClose} style={{
-        position: 'absolute', top: 12, left: 12, zIndex: 20,
-        width: 40, height: 40, borderRadius: 12, background: 'rgba(0,0,0,0.7)',
-        display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
-        backdropFilter: 'blur(4px)'
-      }}>
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="white"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
-      </div>
-
+      {/* Barra de instrução no topo (estilo Waze) */}
       <div style={{
-        position: 'absolute', top: 12, right: 12, zIndex: 20,
-        display: 'flex', gap: 8
+        position: 'absolute', top: 0, left: 0, right: 0, zIndex: 25,
+        background: instrBg, padding: '44px 20px 16px'
       }}>
-        <div style={{
-          background: 'rgba(0,0,0,0.7)', borderRadius: 12, padding: '6px 12px',
-          backdropFilter: 'blur(4px)', color: 'white', fontSize: 12, fontWeight: 600
-        }}>
-          #{order.id.slice(0, 8)}
-        </div>
-      </div>
-
-      {step && (
-        <div style={{
-          position: 'absolute', top: 64, left: 12, right: 12, zIndex: 20,
-          background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(12px)',
-          borderRadius: 16, padding: '12px 16px', color: 'white'
-        }}>
+        {isToStore ? (
           <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
             <div style={{
-              width: 48, height: 48, borderRadius: 14,
-              background: '#9C27B0', display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: 24, flexShrink: 0
-            }}>{step.icon}</div>
-            <div style={{ flex: 1 }}>
-              <div style={{ fontSize: 16, fontWeight: 700 }}>{step.text}</div>
-              {step.street && <div style={{ fontSize: 13, color: '#AAA', marginTop: 2 }}>{step.street}</div>}
-            </div>
-            <div style={{ fontSize: 20, fontWeight: 800, color: '#CE93D8' }}>
-              {remaining < 1000 ? `${remaining}m` : `${(remaining/1000).toFixed(1)}km`}
+              width: 52, height: 52, borderRadius: 14, background: 'rgba(255,255,255,0.2)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 26
+            }}>🏪</div>
+            <div>
+              <div style={{ color: 'rgba(255,255,255,0.75)', fontSize: 13 }}>Primeiro, vá até</div>
+              <div style={{ color: 'white', fontWeight: 800, fontSize: 20, lineHeight: 1.2 }}>
+                {order.store_name || 'Loja'} — Retirar pedido
+              </div>
             </div>
           </div>
-          <div style={{ display: 'flex', gap: 4, justifyContent: 'center', marginTop: 10 }}>
+        ) : step ? (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+            <div style={{
+              width: 52, height: 52, borderRadius: 14, background: 'rgba(255,255,255,0.15)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontSize: 26, flexShrink: 0
+            }}>{step.icon}</div>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ color: 'rgba(255,255,255,0.75)', fontSize: 13, marginBottom: 2 }}>
+                {remaining < 1000 ? `${remaining} m` : `${(remaining / 1000).toFixed(1)} km`}
+              </div>
+              <div style={{
+                color: 'white', fontWeight: 800, fontSize: 20, lineHeight: 1.2,
+                overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap'
+              }}>
+                {step.street || step.text}
+              </div>
+              {step.street && step.street !== step.text && (
+                <div style={{ color: 'rgba(255,255,255,0.65)', fontSize: 13, marginTop: 2 }}>{step.text}</div>
+              )}
+            </div>
+          </div>
+        ) : (
+          <div style={{ color: 'white', fontWeight: 800, fontSize: 18 }}>
+            Chegando em {order.customer_name}…
+          </div>
+        )}
+
+        {/* Bolinhas de progresso */}
+        {!isToStore && steps.length > 1 && (
+          <div style={{ display: 'flex', gap: 4, marginTop: 12, justifyContent: 'center' }}>
             {steps.map((_, i) => (
               <div key={i} style={{
                 width: i === currentStepIdx ? 20 : 6, height: 4, borderRadius: 2,
-                background: i === currentStepIdx ? '#9C27B0' : 'rgba(255,255,255,0.2)',
+                background: i === currentStepIdx ? 'white' : 'rgba(255,255,255,0.3)',
                 transition: 'all 0.3s'
               }} />
             ))}
           </div>
-          <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
-            {currentStepIdx > 0 && (
-              <div style={{ flex: 1, textAlign: 'center', padding: 6, borderRadius: 8, background: 'rgba(255,255,255,0.1)', cursor: 'pointer', fontSize: 13 }}
-                onClick={() => setCurrentStepIdx(i => Math.max(0, i - 1))}>Anterior</div>
-            )}
-            {currentStepIdx < steps.length - 1 && (
-              <div style={{ flex: 1, textAlign: 'center', padding: 6, borderRadius: 8, background: 'rgba(255,255,255,0.1)', cursor: 'pointer', fontSize: 13 }}
-                onClick={() => setCurrentStepIdx(i => Math.min(steps.length - 1, i + 1))}>Próxima</div>
-            )}
-          </div>
+        )}
+      </div>
+
+      {/* Botão voltar (dentro da barra colorida) */}
+      <div onClick={() => setNavStarted(false)} style={{
+        position: 'absolute', top: 10, left: 12, zIndex: 30,
+        width: 34, height: 34, borderRadius: 17, background: 'rgba(255,255,255,0.22)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer'
+      }}>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+      </div>
+
+      {/* Navegação passo (botões ↑↓ laterais, só ao entregar) */}
+      {!isToStore && steps.length > 1 && (
+        <div style={{
+          position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)',
+          zIndex: 22, display: 'flex', flexDirection: 'column', gap: 8
+        }}>
+          {currentStepIdx > 0 && (
+            <div style={{
+              width: 38, height: 38, borderRadius: 19, background: 'rgba(255,255,255,0.92)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              cursor: 'pointer', boxShadow: '0 2px 6px rgba(0,0,0,0.2)', fontSize: 16
+            }} onClick={() => setCurrentStepIdx(i => Math.max(0, i - 1))}>↑</div>
+          )}
+          {currentStepIdx < steps.length - 1 && (
+            <div style={{
+              width: 38, height: 38, borderRadius: 19, background: 'rgba(255,255,255,0.92)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              cursor: 'pointer', boxShadow: '0 2px 6px rgba(0,0,0,0.2)', fontSize: 16
+            }} onClick={() => setCurrentStepIdx(i => Math.min(steps.length - 1, i + 1))}>↓</div>
+          )}
         </div>
       )}
 
+      {/* Barra inferior estilo Waze */}
       <div style={{
-        position: 'absolute', bottom: 24, left: 12, right: 12, zIndex: 20
+        position: 'absolute', bottom: 0, left: 0, right: 0, zIndex: 20,
+        background: 'white', padding: '14px 16px 32px',
+        display: 'flex', alignItems: 'center', gap: 12,
+        boxShadow: '0 -2px 20px rgba(0,0,0,0.15)'
       }}>
-        <div style={{
-          background: 'rgba(255,255,255,0.95)', backdropFilter: 'blur(12px)',
-          borderRadius: 20, padding: 16, boxShadow: '0 -4px 24px rgba(0,0,0,0.15)'
+        {/* Re-center */}
+        <div onClick={() => setFollow(f => !f)} style={{
+          width: 46, height: 46, borderRadius: 23,
+          background: follow ? '#EDE7F6' : '#F5F5F5',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          cursor: 'pointer', flexShrink: 0
         }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-            <div>
-              <div style={{ fontSize: 28, fontWeight: 800, color: 'var(--primary)' }}>
-                {totalDur > 0 ? `${totalDur} min` : '-- min'}
-              </div>
-              <div style={{ fontSize: 14, color: '#888' }}>
-                {totalDist > 0 ? `${(totalDist/1000).toFixed(1)} km` : '-- km'}
-              </div>
-            </div>
-            <div style={{ textAlign: 'right', flex: 1, marginLeft: 16 }}>
-              <div style={{ fontWeight: 700, fontSize: 15 }}>{order.customer_name}</div>
-              <div style={{ fontSize: 13, color: '#888' }}>{order.customer_address}</div>
-            </div>
+          <svg width="22" height="22" viewBox="0 0 24 24" fill={follow ? '#4A148C' : '#999'}>
+            <path d="M12 8c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4zm8.94 3c-.46-4.17-3.77-7.48-7.94-7.94V1h-2v2.06C6.83 3.52 3.52 6.83 3.06 11H1v2h2.06c.46 4.17 3.77 7.48 7.94 7.94V23h2v-2.06c4.17-.46 7.48-3.77 7.94-7.94H23v-2h-2.06zM12 19c-3.87 0-7-3.13-7-7s3.13-7 7-7 7 3.13 7 7-3.13 7-7 7z"/>
+          </svg>
+        </div>
+
+        {/* ETA */}
+        <div style={{ flex: 1 }}>
+          <div style={{ fontSize: 28, fontWeight: 900, color: '#111', lineHeight: 1 }}>
+            {totalDur > 0 ? `${totalDur} min` : '-- min'}
           </div>
-          <div style={{ display: 'flex', gap: 8 }}>
-            <div style={{
-              flex: 1, padding: 12, borderRadius: 14, background: follow ? '#F3E5F5' : '#FFE0B2',
-              textAlign: 'center', cursor: 'pointer', fontWeight: 700, color: 'var(--primary)', fontSize: 14
-            }} onClick={() => setFollow(f => !f)}>
-              {follow ? '🧭 Seguindo' : '🧭 Centralizar'}
-            </div>
-            {statusLabel && (
-              <div style={{
-                flex: 2, padding: 12, borderRadius: 14, background: '#9C27B0',
-                textAlign: 'center', cursor: 'pointer', fontWeight: 700, color: 'white', fontSize: 14
-              }} onClick={onStatusUpdate}>
-                {statusLabel}
-              </div>
-            )}
+          <div style={{ fontSize: 13, color: '#666', marginTop: 3 }}>
+            {totalDist > 0 ? `${(totalDist / 1000).toFixed(1)} km` : ''}
+            {totalDist > 0 && ' • '}
+            {isToStore ? 'Ir à loja' : order.customer_name}
           </div>
         </div>
+
+        {/* Ação ou Overview */}
+        {statusLabel ? (
+          <button style={{
+            padding: '13px 20px', borderRadius: 26, border: 'none',
+            background: instrBg, color: 'white', fontWeight: 800, fontSize: 14,
+            cursor: 'pointer', flexShrink: 0, lineHeight: 1.3
+          }} onClick={onStatusUpdate}>{statusLabel}</button>
+        ) : (
+          <div style={{
+            padding: '13px 18px', borderRadius: 26, background: '#F5F5F5',
+            color: '#333', fontWeight: 700, fontSize: 14,
+            cursor: 'pointer', flexShrink: 0
+          }} onClick={() => setNavStarted(false)}>Overview</div>
+        )}
       </div>
     </div>
   );
