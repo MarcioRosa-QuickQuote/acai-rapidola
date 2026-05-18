@@ -371,53 +371,11 @@ export default function MotoboyDashboard() {
           </div>
         ))}
 
-        {fullscreenOrder && (
-          <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 1000,
-            background: 'white', display: 'flex', flexDirection: 'column' }}>
-            <div className="header">
-              <div className="header-left">
-                <button className="btn btn-sm"
-                  style={{ background: 'var(--border)', color: 'var(--primary-dark)', fontSize: 13, fontWeight: 700 }}
-                  onClick={() => setFullscreenOrder(null)}>
-                  Voltar
-                </button>
-              </div>
-              <div className="header-title">#{fullscreenOrder.id.slice(0, 8)}</div>
-              <div className="header-right" />
-            </div>
-            <div className="container" style={{ flex: 1, overflow: 'auto' }}>
-              <div className="card" style={{ marginBottom: 12 }}>
-                <div className="page-title">{fullscreenOrder.customer_name}</div>
-                <div className="text-sm text-muted" style={{ marginTop: 4 }}>{fullscreenOrder.customer_address}</div>
-                <div className="text-sm text-muted" style={{ marginTop: 4 }}>Loja: {fullscreenOrder.store_name}</div>
-                <div style={{ marginTop: 8 }}>
-                  <span className={`badge ${statusColors[fullscreenOrder.status] || 'badge-primary'}`}>
-                    {statusLabels[fullscreenOrder.status] || fullscreenOrder.status}
-                  </span>
-                  <span className="badge badge-success" style={{ marginLeft: 8 }}>
-                    R$ {fullscreenOrder.total.toFixed(2)}
-                  </span>
-                </div>
-              </div>
-              {fullscreenOrder.store_lat && fullscreenOrder.customer_lat && (
-                <div style={{ height: 300, borderRadius: 12, overflow: 'hidden', border: '1px solid var(--border)' }}>
-                  <MapContainer
-                    center={[(fullscreenOrder.store_lat + fullscreenOrder.customer_lat) / 2,
-                      ((fullscreenOrder.store_lng || 0) + (fullscreenOrder.customer_lng || 0)) / 2]}
-                    zoom={14} style={{ height: '100%', width: '100%' }} scrollWheelZoom={false}>
-                    <TileLayer attribution='&copy; OSM' url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-                    <Marker position={[fullscreenOrder.store_lat, fullscreenOrder.store_lng]} />
-                    <Marker position={[fullscreenOrder.customer_lat, fullscreenOrder.customer_lng]} />
-                    <RoutePolyline from={{ lat: fullscreenOrder.store_lat, lng: fullscreenOrder.store_lng }} to={{ lat: fullscreenOrder.customer_lat, lng: fullscreenOrder.customer_lng }} />
-                  </MapContainer>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
       </>
     );
   }
+
+  const fsOrder = fullscreenOrder;
 
   function filterEarnings() {
     const list = earnings?.list || [];
@@ -684,6 +642,57 @@ export default function MotoboyDashboard() {
           </button>
         ))}
       </div>
+
+      {fsOrder && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 1000,
+          background: 'white', display: 'flex', flexDirection: 'column' }}>
+          <div className="header">
+            <div className="header-left">
+              <button className="btn btn-sm"
+                style={{ background: 'var(--border)', color: 'var(--primary-dark)', fontSize: 13, fontWeight: 700 }}
+                onClick={() => setFullscreenOrder(null)}>
+                Voltar
+              </button>
+            </div>
+            <div className="header-title">#{fsOrder.id.slice(0, 8)}</div>
+            <div className="header-right" />
+          </div>
+          <div className="container" style={{ flex: 1, overflow: 'auto' }}>
+            <div className="card" style={{ marginBottom: 12 }}>
+              <div className="page-title">{fsOrder.customer_name}</div>
+              <div className="text-sm text-muted" style={{ marginTop: 4 }}>{fsOrder.customer_address}</div>
+              <div className="text-sm text-muted" style={{ marginTop: 4 }}>Loja: {fsOrder.store_name}</div>
+              <div style={{ marginTop: 8 }}>
+                <span className={`badge ${statusColors[fsOrder.status] || 'badge-primary'}`}>
+                  {statusLabels[fsOrder.status] || fsOrder.status}
+                </span>
+                <span className="badge badge-success" style={{ marginLeft: 8 }}>
+                  R$ {fsOrder.total.toFixed(2)}
+                </span>
+              </div>
+            </div>
+            {fsOrder.store_lat && fsOrder.customer_lat && (
+              <div style={{ height: 350, borderRadius: 12, overflow: 'hidden', border: '1px solid var(--border)' }}>
+                <MapContainer
+                  center={[(fsOrder.store_lat + fsOrder.customer_lat) / 2,
+                    ((fsOrder.store_lng || 0) + (fsOrder.customer_lng || 0)) / 2]}
+                  zoom={14} style={{ height: '100%', width: '100%' }} scrollWheelZoom={false}>
+                  <TileLayer attribution='&copy; OSM' url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+                  <Marker position={[fsOrder.store_lat, fsOrder.store_lng]} />
+                  <Marker position={[fsOrder.customer_lat, fsOrder.customer_lng]} />
+                  <RoutePolyline from={{ lat: fsOrder.store_lat, lng: fsOrder.store_lng }} to={{ lat: fsOrder.customer_lat, lng: fsOrder.customer_lng }} />
+                </MapContainer>
+              </div>
+            )}
+            {nextStatus[fsOrder.status] && (
+              <button className="btn btn-primary mt-4" style={{ width: '100%', padding: 16, fontSize: 16 }}
+                onClick={() => { updateStatus(fsOrder.id); setFullscreenOrder(null); }}>
+                {nextStatusLabel[fsOrder.status]}
+              </button>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
