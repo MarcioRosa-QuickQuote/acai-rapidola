@@ -33,9 +33,161 @@ const nextStatusLabel = {
   picked_up: 'Entregue'
 };
 
-function NavStepsWrapper({ from, to }) {
-  const { steps } = useRoute(from, to);
-  return <NavSteps steps={steps} />;
+function FollowMotoboy({ pos, follow }) {
+  const map = useMap();
+  useEffect(() => {
+    if (follow && pos) map.setView([pos.lat, pos.lng], map.getZoom(), { animate: true });
+  }, [pos?.lat, pos?.lng, follow]);
+  return null;
+}
+
+function NavScreen({ order, onClose, onStatusUpdate, statusLabel }) {
+  const [pos, setPos] = useState(null);
+  const [follow, setFollow] = useState(true);
+  const [currentStepIdx, setCurrentStepIdx] = useState(0);
+  const { steps, totalDist, totalDur } = useRoute(
+    { lat: order.store_lat, lng: order.store_lng },
+    { lat: order.customer_lat, lng: order.customer_lng }
+  );
+
+  useEffect(() => {
+    if (!navigator.geolocation) return;
+    const watch = navigator.geolocation.watchPosition(
+      p => setPos({ lat: p.coords.latitude, lng: p.coords.longitude }),
+      () => {},
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 5000 }
+    );
+    return () => navigator.geolocation.clearWatch(watch);
+  }, []);
+
+  const step = steps[currentStepIdx];
+  const remaining = steps.slice(currentStepIdx).reduce((s, st) => s + st.dist, 0);
+  const hasRoute = order.store_lat && order.customer_lat;
+  const mapCenter = pos ? [pos.lat, pos.lng] : [order.customer_lat || -23.55, order.customer_lng || -46.63];
+
+  return (
+    <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 1000, background: '#111' }}>
+      {hasRoute && (
+        <div style={{ position: 'absolute', inset: 0 }}>
+          <MapContainer center={mapCenter} zoom={17} style={{ width: '100%', height: '100%' }}
+            scrollWheelZoom={true} zoomControl={false} doubleClickZoom={false}
+            key={order.id}>
+            <TileLayer attribution='&copy; OSM' url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+            <Marker position={[order.customer_lat, order.customer_lng]} />
+            {order.store_lat && pos && currentStepIdx < 2 && (
+              <Marker position={[order.store_lat, order.store_lng]} />
+            )}
+            {pos && <Marker position={[pos.lat, pos.lng]} />}
+            <RoutePolyline from={{ lat: order.store_lat, lng: order.store_lng }} to={{ lat: order.customer_lat, lng: order.customer_lng }} color="#9C27B0" weight={5} />
+            {pos && <FollowMotoboy pos={pos} follow={follow} />}
+          </MapContainer>
+        </div>
+      )}
+
+      <div onClick={onClose} style={{
+        position: 'absolute', top: 12, left: 12, zIndex: 20,
+        width: 40, height: 40, borderRadius: 12, background: 'rgba(0,0,0,0.7)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
+        backdropFilter: 'blur(4px)'
+      }}>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="white"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+      </div>
+
+      <div style={{
+        position: 'absolute', top: 12, right: 12, zIndex: 20,
+        display: 'flex', gap: 8
+      }}>
+        <div style={{
+          background: 'rgba(0,0,0,0.7)', borderRadius: 12, padding: '6px 12px',
+          backdropFilter: 'blur(4px)', color: 'white', fontSize: 12, fontWeight: 600
+        }}>
+          #{order.id.slice(0, 8)}
+        </div>
+      </div>
+
+      {step && (
+        <div style={{
+          position: 'absolute', top: 64, left: 12, right: 12, zIndex: 20,
+          background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(12px)',
+          borderRadius: 16, padding: '12px 16px', color: 'white'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+            <div style={{
+              width: 48, height: 48, borderRadius: 14,
+              background: '#9C27B0', display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontSize: 24, flexShrink: 0
+            }}>{step.icon}</div>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: 16, fontWeight: 700 }}>{step.text}</div>
+              {step.street && <div style={{ fontSize: 13, color: '#AAA', marginTop: 2 }}>{step.street}</div>}
+            </div>
+            <div style={{ fontSize: 20, fontWeight: 800, color: '#CE93D8' }}>
+              {remaining < 1000 ? `${remaining}m` : `${(remaining/1000).toFixed(1)}km`}
+            </div>
+          </div>
+          <div style={{ display: 'flex', gap: 4, justifyContent: 'center', marginTop: 10 }}>
+            {steps.map((_, i) => (
+              <div key={i} style={{
+                width: i === currentStepIdx ? 20 : 6, height: 4, borderRadius: 2,
+                background: i === currentStepIdx ? '#9C27B0' : 'rgba(255,255,255,0.2)',
+                transition: 'all 0.3s'
+              }} />
+            ))}
+          </div>
+          <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
+            {currentStepIdx > 0 && (
+              <div style={{ flex: 1, textAlign: 'center', padding: 6, borderRadius: 8, background: 'rgba(255,255,255,0.1)', cursor: 'pointer', fontSize: 13 }}
+                onClick={() => setCurrentStepIdx(i => Math.max(0, i - 1))}>Anterior</div>
+            )}
+            {currentStepIdx < steps.length - 1 && (
+              <div style={{ flex: 1, textAlign: 'center', padding: 6, borderRadius: 8, background: 'rgba(255,255,255,0.1)', cursor: 'pointer', fontSize: 13 }}
+                onClick={() => setCurrentStepIdx(i => Math.min(steps.length - 1, i + 1))}>Próxima</div>
+            )}
+          </div>
+        </div>
+      )}
+
+      <div style={{
+        position: 'absolute', bottom: 24, left: 12, right: 12, zIndex: 20
+      }}>
+        <div style={{
+          background: 'rgba(255,255,255,0.95)', backdropFilter: 'blur(12px)',
+          borderRadius: 20, padding: 16, boxShadow: '0 -4px 24px rgba(0,0,0,0.15)'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+            <div>
+              <div style={{ fontSize: 28, fontWeight: 800, color: 'var(--primary)' }}>
+                {totalDur > 0 ? `${totalDur} min` : '-- min'}
+              </div>
+              <div style={{ fontSize: 14, color: '#888' }}>
+                {totalDist > 0 ? `${(totalDist/1000).toFixed(1)} km` : '-- km'}
+              </div>
+            </div>
+            <div style={{ textAlign: 'right', flex: 1, marginLeft: 16 }}>
+              <div style={{ fontWeight: 700, fontSize: 15 }}>{order.customer_name}</div>
+              <div style={{ fontSize: 13, color: '#888' }}>{order.customer_address}</div>
+            </div>
+          </div>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <div style={{
+              flex: 1, padding: 12, borderRadius: 14, background: follow ? '#F3E5F5' : '#FFE0B2',
+              textAlign: 'center', cursor: 'pointer', fontWeight: 700, color: 'var(--primary)', fontSize: 14
+            }} onClick={() => setFollow(f => !f)}>
+              {follow ? '🧭 Seguindo' : '🧭 Centralizar'}
+            </div>
+            {statusLabel && (
+              <div style={{
+                flex: 2, padding: 12, borderRadius: 14, background: '#9C27B0',
+                textAlign: 'center', cursor: 'pointer', fontWeight: 700, color: 'white', fontSize: 14
+              }} onClick={onStatusUpdate}>
+                {statusLabel}
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 }
 
 export default function MotoboyDashboard() {
@@ -649,55 +801,9 @@ export default function MotoboyDashboard() {
       </div>
 
       {fsOrder && (
-        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 1000,
-          background: 'white', display: 'flex', flexDirection: 'column' }}>
-          <div className="header">
-            <div className="header-left">
-              <button className="btn btn-sm"
-                style={{ background: 'var(--border)', color: 'var(--primary-dark)', fontSize: 13, fontWeight: 700 }}
-                onClick={() => setFullscreenOrder(null)}>
-                Voltar
-              </button>
-            </div>
-            <div className="header-title">#{fsOrder.id.slice(0, 8)}</div>
-            <div className="header-right" />
-          </div>
-          <div className="container" style={{ flex: 1, overflow: 'auto' }}>
-            <div className="card" style={{ marginBottom: 12 }}>
-              <div className="page-title">{fsOrder.customer_name}</div>
-              <div className="text-sm text-muted" style={{ marginTop: 4 }}>{fsOrder.customer_address}</div>
-              <div className="text-sm text-muted" style={{ marginTop: 4 }}>Loja: {fsOrder.store_name}</div>
-              <div style={{ marginTop: 8 }}>
-                <span className={`badge ${statusColors[fsOrder.status] || 'badge-primary'}`}>
-                  {statusLabels[fsOrder.status] || fsOrder.status}
-                </span>
-                <span className="badge badge-success" style={{ marginLeft: 8 }}>
-                  R$ {fsOrder.total.toFixed(2)}
-                </span>
-              </div>
-            </div>
-            {fsOrder.store_lat && fsOrder.customer_lat && (
-              <div style={{ height: 400, borderRadius: 12, overflow: 'hidden', border: '1px solid var(--border)', position: 'relative' }}>
-                <MapContainer
-                  center={[(fsOrder.store_lat + fsOrder.customer_lat) / 2,
-                    ((fsOrder.store_lng || 0) + (fsOrder.customer_lng || 0)) / 2]}
-                  zoom={14} style={{ height: '100%', width: '100%' }} scrollWheelZoom={false}>
-                  <TileLayer attribution='&copy; OSM' url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-                  <Marker position={[fsOrder.store_lat, fsOrder.store_lng]} />
-                  <Marker position={[fsOrder.customer_lat, fsOrder.customer_lng]} />
-                  <RoutePolyline from={{ lat: fsOrder.store_lat, lng: fsOrder.store_lng }} to={{ lat: fsOrder.customer_lat, lng: fsOrder.customer_lng }} />
-                </MapContainer>
-                <NavStepsWrapper from={{ lat: fsOrder.store_lat, lng: fsOrder.store_lng }} to={{ lat: fsOrder.customer_lat, lng: fsOrder.customer_lng }} />
-              </div>
-            )}
-            {nextStatus[fsOrder.status] && (
-              <button className="btn btn-primary mt-4" style={{ width: '100%', padding: 16, fontSize: 16 }}
-                onClick={() => { updateStatus(fsOrder.id); setFullscreenOrder(null); }}>
-                {nextStatusLabel[fsOrder.status]}
-              </button>
-            )}
-          </div>
-        </div>
+        <NavScreen order={fsOrder} onClose={() => setFullscreenOrder(null)}
+          onStatusUpdate={() => { updateStatus(fsOrder.id); setFullscreenOrder(null); }}
+          statusLabel={nextStatus[fsOrder.status] ? nextStatusLabel[fsOrder.status] : null} />
       )}
     </div>
   );
