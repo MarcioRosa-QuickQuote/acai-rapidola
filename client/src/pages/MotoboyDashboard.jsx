@@ -64,6 +64,8 @@ export default function MotoboyDashboard() {
   const [pageTab, setPageTab] = useState('inicio');
   const [isEmployee, setIsEmployee] = useState(false);
   const [earnings, setEarnings] = useState({ total: 0, pending: 0, list: [] });
+  const [fullscreenOrder, setFullscreenOrder] = useState(null);
+  const [finPeriod, setFinPeriod] = useState('dia');
 
   useEffect(() => {
     loadData();
@@ -268,8 +270,6 @@ export default function MotoboyDashboard() {
     );
   }
 
-  const [fullscreenOrder, setFullscreenOrder] = useState(null);
-
   function formatTime(d) {
     if (!d) return '--:--';
     return new Date(d).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
@@ -413,8 +413,6 @@ export default function MotoboyDashboard() {
       </>
     );
   }
-
-  const [finPeriod, setFinPeriod] = useState('dia');
 
   function filterEarnings() {
     const list = earnings?.list || [];
