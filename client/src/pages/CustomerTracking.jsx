@@ -113,6 +113,7 @@ export default function CustomerTracking() {
   );
 
   const stepMap = { pending:0, confirmed:0, preparing:1, ready:1, assigned:1, picked_up:2, in_transit:2, arriving:2, delivered:3 };
+  const arrivingText = order.status === 'arriving' ? 'O motoboy está chegando! Fique atento!' : '';
   const currentStep = stepMap[order.status] ?? 0;
 
   return (

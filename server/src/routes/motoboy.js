@@ -57,6 +57,14 @@ router.post('/accept/:orderId', authMiddleware, roleMiddleware('motoboy'), async
   res.json({ success: true });
 });
 
+function calcDistance(lat1, lng1, lat2, lng2) {
+  const R = 6371;
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLng = (lng2 - lng1) * Math.PI / 180;
+  const a = Math.sin(dLat / 2) ** 2 + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLng / 2) ** 2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
 router.post('/location', authMiddleware, roleMiddleware('motoboy'), async (req, res) => {
   const { lat, lng, online } = req.body;
   if (lat == null || lng == null) {
@@ -70,13 +78,38 @@ router.post('/location', authMiddleware, roleMiddleware('motoboy'), async (req, 
   const io = require('../services/socket').getIO();
   if (io) {
     const { data: activeOrders } = await supabase.from('orders')
-      .select('id').eq('motoboy_id', req.user.id)
+      .select('id, customer_lat, customer_lng, status').eq('motoboy_id', req.user.id)
       .in('status', ['assigned', 'picked_up', 'in_transit', 'arriving']);
 
     for (const o of (activeOrders || [])) {
       io.to(`order:${o.id}`).emit('motoboy_location', {
         orderId: o.id, motoboyId: req.user.id, motoboyName: req.user.name, lat, lng
       });
+
+      if (o.status === 'picked_up' && o.customer_lat && o.customer_lng) {
+        const km = calcDistance(lat, lng, o.customer_lat, o.customer_lng);
+        if (km < 0.2) {
+          await supabase.from('orders').update({
+            status: 'arriving', updated_at: new Date().toISOString()
+          }).eq('id', o.id).eq('status', 'picked_up');
+
+          io.to(`order:${o.id}`).emit('order_status', { orderId: o.id, status: 'arriving' });
+
+          const { data: orderData } = await supabase.from('orders').select('customer_id').eq('id', o.id).single();
+          if (orderData) {
+            const id = require('uuid').v4();
+            await supabase.from('notifications').insert({
+              id, user_id: orderData.customer_id, title: 'Motoboy chegando!',
+              body: 'Seu açaí está quase aí! Abra o portão!', type: 'delivery'
+            });
+            for (const [sid, sock] of io.sockets.sockets) {
+              if (sock.userId === orderData.customer_id) {
+                sock.emit('notification', { id, title: 'Motoboy chegando!', body: 'Seu açaí está quase aí! Abra o portão!', type: 'delivery' });
+              }
+            }
+          }
+        }
+      }
     }
   }
 

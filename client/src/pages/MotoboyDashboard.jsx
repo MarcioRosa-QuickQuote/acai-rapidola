@@ -14,12 +14,12 @@ L.Icon.Default.mergeOptions({
 
 const statusLabels = {
   assigned: 'Retirar na loja', picked_up: 'Saiu pra entrega',
-  delivered: 'Entregue'
+  arriving: 'Chegando!', delivered: 'Entregue'
 };
 
 const statusColors = {
   assigned: 'badge-primary', picked_up: 'badge-info',
-  delivered: 'badge-success'
+  arriving: 'badge-accent', delivered: 'badge-success'
 };
 
 const nextStatus = {
@@ -135,12 +135,7 @@ export default function MotoboyDashboard() {
 
   async function sendLocation() {
     if (!navigator.geolocation) {
-      const lat = -23.5505 + (Math.random() - 0.5) * 0.02;
-      const lng = -46.6333 + (Math.random() - 0.5) * 0.02;
-      await apiFetch('/motoboy/location', {
-        method: 'POST',
-        body: JSON.stringify({ lat, lng, online: online ? 1 : 0 })
-      });
+      console.warn('[GPS] Geolocalização não disponível');
       return;
     }
 
@@ -153,14 +148,9 @@ export default function MotoboyDashboard() {
           online: online ? 1 : 0
         })
       });
-    }, async () => {
-      const lat = -23.5505 + (Math.random() - 0.5) * 0.02;
-      const lng = -46.6333 + (Math.random() - 0.5) * 0.02;
-      await apiFetch('/motoboy/location', {
-        method: 'POST',
-        body: JSON.stringify({ lat, lng, online: online ? 1 : 0 })
-      });
-    });
+    }, (err) => {
+      console.warn('[GPS] Erro ao obter posição:', err.message);
+    }, { enableHighAccuracy: true, timeout: 10000, maximumAge: 5000 });
   }
 
   useEffect(() => {
