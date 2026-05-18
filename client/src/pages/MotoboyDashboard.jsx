@@ -60,6 +60,35 @@ function haversineKm(from, to) {
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
+// Pé perpendicular do ponto p sobre o segmento a→b (em lat/lng 2D, válido para distâncias pequenas)
+function closestPointOnSegment(p, a, b) {
+  const dx = b.lng - a.lng;
+  const dy = b.lat - a.lat;
+  const lenSq = dx * dx + dy * dy;
+  if (lenSq === 0) return a;
+  const t = Math.max(0, Math.min(1, ((p.lng - a.lng) * dx + (p.lat - a.lat) * dy) / lenSq));
+  return { lat: a.lat + t * dy, lng: a.lng + t * dx };
+}
+
+// Projeta a posição GPS no segmento mais próximo da rota (map matching simplificado)
+// Retorna { snappedPos, routeBearing } — pos sobre a rua + direção do trecho
+function snapToRoute(pos, coords) {
+  if (!coords || coords.length < 2) return { snappedPos: pos, routeBearing: 0 };
+  let minDist = Infinity, snappedPos = pos, routeBearing = 0;
+  for (let i = 0; i < coords.length - 1; i++) {
+    const a = { lat: coords[i][0], lng: coords[i][1] };
+    const b = { lat: coords[i + 1][0], lng: coords[i + 1][1] };
+    const foot = closestPointOnSegment(pos, a, b);
+    const dist = haversineKm(pos, foot);
+    if (dist < minDist) {
+      minDist = dist;
+      snappedPos = foot;
+      routeBearing = calcBearing(a, b);
+    }
+  }
+  return { snappedPos, routeBearing };
+}
+
 function NavScreen({ order, onClose, onStatusUpdate, statusLabel }) {
   const [pos, setPos] = useState(null);
   const [heading, setHeading] = useState(0);
@@ -67,7 +96,8 @@ function NavScreen({ order, onClose, onStatusUpdate, statusLabel }) {
   const [currentStepIdx, setCurrentStepIdx] = useState(0);
   const [navStarted, setNavStarted] = useState(false);
   const prevPosRef = useRef(null);
-  const headingRef = useRef(0); // ref para evitar stale closure no callback GPS
+  const headingRef = useRef(0);
+  const coordsRef = useRef(null); // ref atualizada com a rota para o callback GPS
   const mapRef = useRef(null);
 
   const isToStore = order.status === 'assigned';
@@ -77,25 +107,56 @@ function NavScreen({ order, onClose, onStatusUpdate, statusLabel }) {
     { lat: order.customer_lat, lng: order.customer_lng }
   );
 
+  // Quando a rota carrega: seta heading inicial pelo 1º segmento e guarda coords na ref
+  useEffect(() => {
+    if (!coords || coords.length < 2) return;
+    coordsRef.current = coords;
+    // Heading inicial = direção do primeiro segmento da rota (funciona mesmo parado)
+    const a = { lat: coords[0][0], lng: coords[0][1] };
+    const b = { lat: coords[1][0], lng: coords[1][1] };
+    const initBearing = calcBearing(a, b);
+    headingRef.current = initBearing;
+    setHeading(initBearing);
+  }, [coords]);
+
+  // Quando nav inicia: posiciona câmera no ponto inicial da rota com bearing correto
+  useEffect(() => {
+    if (!navStarted) return;
+    const timer = setTimeout(() => {
+      const map = mapRef.current?.getMap?.() ?? mapRef.current;
+      const c = coordsRef.current;
+      if (!map || !c || c.length < 2) return;
+      // Usa posição snapped se GPS disponível, senão usa início da rota
+      const center = pos
+        ? (() => { const { snappedPos } = snapToRoute(pos, c); return [snappedPos.lng, snappedPos.lat]; })()
+        : [c[0][1], c[0][0]];
+      try {
+        map.easeTo({ center, bearing: headingRef.current, pitch: 60, zoom: 17.5, duration: 700, padding: { bottom: 220 } });
+      } catch (_) {}
+    }, 400); // aguarda mapa montar
+    return () => clearTimeout(timer);
+  }, [navStarted]);
+
+  // GPS: snap à rota + heading pelo segmento atual (não pelo magnetômetro)
   useEffect(() => {
     if (!navigator.geolocation) return;
     const watch = navigator.geolocation.watchPosition(
       p => {
-        const newPos = { lat: p.coords.latitude, lng: p.coords.longitude };
-        setPos(newPos);
+        const rawPos = { lat: p.coords.latitude, lng: p.coords.longitude };
+        prevPosRef.current = rawPos;
+        const c = coordsRef.current;
 
-        // Heading sempre calculado por diferença de posição (ignora magnetômetro do celular)
-        // Só atualiza se motoboy se moveu ao menos 8m (evita ruído GPS parado)
-        if (prevPosRef.current && haversineKm(prevPosRef.current, newPos) >= 0.008) {
-          const raw = calcBearing(prevPosRef.current, newPos);
-          // Suavização exponencial 30% para evitar jitter
-          const diff = ((raw - headingRef.current + 540) % 360) - 180;
+        if (c && c.length >= 2) {
+          // Snap to route: projeta GPS no segmento mais próximo
+          const { snappedPos, routeBearing } = snapToRoute(rawPos, c);
+          setPos(snappedPos);
+          // Suavização 30% no bearing da rota
+          const diff = ((routeBearing - headingRef.current + 540) % 360) - 180;
           const smoothed = (headingRef.current + diff * 0.3 + 360) % 360;
           headingRef.current = smoothed;
           setHeading(smoothed);
-          prevPosRef.current = newPos;
-        } else if (!prevPosRef.current) {
-          prevPosRef.current = newPos;
+        } else {
+          setPos(rawPos);
         }
       },
       () => {},
@@ -115,7 +176,7 @@ function NavScreen({ order, onClose, onStatusUpdate, statusLabel }) {
         bearing: heading,
         pitch: 60,
         zoom: 17.5,
-        duration: 1000,
+        duration: 900,
         padding: { top: 0, bottom: 220, left: 0, right: 0 }
       });
     } catch (_) {}
