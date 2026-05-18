@@ -178,13 +178,14 @@ router.get('/', authMiddleware, async (req, res) => {
   }
 
   if (req.user.role === 'store') {
-    const { data: store } = await supabase.from('stores').select('id').eq('owner_id', req.user.id).single();
-    if (!store) return res.json([]);
+    const { data: storeData } = await supabase.from('stores').select('id, lat, lng, logo, name').eq('owner_id', req.user.id).single();
+    if (!storeData) return res.json([]);
     const { data } = await supabase.from('orders')
       .select('*, users!orders_customer_id_fkey(name, phone), motoboy:users!orders_motoboy_id_fkey(name)')
-      .eq('store_id', store.id).order('created_at', { ascending: false });
+      .eq('store_id', storeData.id).order('created_at', { ascending: false });
     return res.json((data || []).map(o => ({
-      ...o, customer_name: o.users?.name, customer_phone: o.users?.phone, motoboy_name: o.motoboy?.name
+      ...o, customer_name: o.users?.name, customer_phone: o.users?.phone, motoboy_name: o.motoboy?.name,
+      store_name: storeData.name, store_lat: storeData.lat, store_lng: storeData.lng, store_logo: storeData.logo
     })));
   }
 
@@ -205,7 +206,7 @@ router.get('/', authMiddleware, async (req, res) => {
 
 router.get('/:id', authMiddleware, async (req, res) => {
   const { data: order } = await supabase.from('orders')
-    .select('*, stores(name, address, logo), customer:users!orders_customer_id_fkey(name, phone), motoboy:users!orders_motoboy_id_fkey(name)')
+    .select('*, stores(name, address, logo, lat, lng), customer:users!orders_customer_id_fkey(name, phone), motoboy:users!orders_motoboy_id_fkey(name)')
     .eq('id', req.params.id).single();
 
   if (!order) return res.status(404).json({ error: 'Pedido não encontrado' });
@@ -218,6 +219,8 @@ router.get('/:id', authMiddleware, async (req, res) => {
     store_name: order.stores?.name,
     store_address: order.stores?.address,
     store_logo: order.stores?.logo,
+    store_lat: order.stores?.lat,
+    store_lng: order.stores?.lng,
     customer_name: order.customer?.name,
     customer_phone: order.customer?.phone,
     motoboy_name: order.motoboy?.name,

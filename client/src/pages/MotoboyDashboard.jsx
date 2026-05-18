@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useSocket } from '../contexts/SocketContext';
-import { MapContainer, TileLayer, Marker, Polyline, useMap } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, useMap } from 'react-leaflet';
+import RoutePolyline from '../components/RouteMap';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 
@@ -389,6 +390,17 @@ export default function MotoboyDashboard() {
                   </span>
                 </div>
               </div>
+              {fullscreenOrder.customer_lat && fullscreenOrder.customer_lng && (
+                <div className="card" style={{ textAlign: 'center', marginBottom: 12 }}>
+                  <a href={`https://waze.com/ul?ll=${fullscreenOrder.customer_lat},${fullscreenOrder.customer_lng}&navigate=yes`}
+                    target="_blank" rel="noopener noreferrer"
+                    className="btn btn-primary"
+                    style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '12px 24px', fontSize: 15, textDecoration: 'none' }}>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="white"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 15l-4-4 1.41-1.41L11 14.17l6.59-6.59L19 9l-8 8z"/></svg>
+                    Abrir no Waze
+                  </a>
+                </div>
+              )}
               {fullscreenOrder.store_lat && fullscreenOrder.customer_lat && (
                 <div style={{ height: 300, borderRadius: 12, overflow: 'hidden', border: '1px solid var(--border)' }}>
                   <MapContainer
@@ -396,15 +408,9 @@ export default function MotoboyDashboard() {
                       ((fullscreenOrder.store_lng || 0) + (fullscreenOrder.customer_lng || 0)) / 2]}
                     zoom={14} style={{ height: '100%', width: '100%' }} scrollWheelZoom={false}>
                     <TileLayer attribution='&copy; OSM' url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-                    {fullscreenOrder.store_lat && fullscreenOrder.store_lng &&
-                      <Marker position={[fullscreenOrder.store_lat, fullscreenOrder.store_lng]} />}
-                    {fullscreenOrder.customer_lat && fullscreenOrder.customer_lng &&
-                      <Marker position={[fullscreenOrder.customer_lat, fullscreenOrder.customer_lng]} />}
-                    {fullscreenOrder.store_lat && fullscreenOrder.store_lng && fullscreenOrder.customer_lat && fullscreenOrder.customer_lng && (
-                      <Polyline positions={[[fullscreenOrder.store_lat, fullscreenOrder.store_lng],
-                        [fullscreenOrder.customer_lat, fullscreenOrder.customer_lng]]}
-                        pathOptions={{ color: '#1565C0', weight: 3, dashArray: '8 4' }} />
-                    )}
+                    <Marker position={[fullscreenOrder.store_lat, fullscreenOrder.store_lng]} />
+                    <Marker position={[fullscreenOrder.customer_lat, fullscreenOrder.customer_lng]} />
+                    <RoutePolyline from={{ lat: fullscreenOrder.store_lat, lng: fullscreenOrder.store_lng }} to={{ lat: fullscreenOrder.customer_lat, lng: fullscreenOrder.customer_lng }} />
                   </MapContainer>
                 </div>
               )}

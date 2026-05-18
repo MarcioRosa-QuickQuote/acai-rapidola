@@ -2,6 +2,17 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useSocket } from '../contexts/SocketContext';
+import { MapContainer, TileLayer, Marker } from 'react-leaflet';
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
+import RoutePolyline from '../components/RouteMap';
+
+delete L.Icon.Default.prototype._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon-2x.png',
+  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
+});
 
 const statusSteps = ['pending', 'preparing', 'picked_up', 'delivered'];
 const statusLabels = {
@@ -159,65 +170,48 @@ export default function CustomerTracking() {
           </div>
         </div>
 
-        {motoboyPos && order.status !== 'delivered' && (
+        {(motoboyPos || order.status === 'picked_up' || order.status === 'arriving') && order.status !== 'delivered' && (
           <div className="card">
-            <h3 style={{ color: 'var(--primary)', marginBottom: 8, fontSize: 16 }}>
-              Seu Motoboy: {motoboyPos.name || 'A caminho'}
-            </h3>
+            <div className="flex-between" style={{ marginBottom: 8 }}>
+              <h3 style={{ color: 'var(--primary)', fontSize: 16 }}>
+                {motoboyPos?.name || 'Motoboy'}
+              </h3>
+              {eta !== null && (
+                <span style={{ background: '#E3F2FD', padding: '4px 10px', borderRadius: 8, fontWeight: 700, color: '#1565C0', fontSize: 13 }}>
+                  ~{eta} min
+                </span>
+              )}
+            </div>
 
-            <div className="map-container" style={{ position: 'relative', background: '#E8F5E9' }}>
-              <div style={{ padding: 16, textAlign: 'center' }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, marginBottom: 12 }}>
-                  <div style={{ textAlign: 'center' }}>
-                    <StoreLogo logo={order.store_logo} />
-                    <div className="text-xs" style={{ marginTop: 2 }}>Loja</div>
-                  </div>
+            {order.store_lat && order.customer_lat && (
+              <div style={{ height: 220, borderRadius: 12, overflow: 'hidden', border: '1px solid var(--border)', marginBottom: 8 }}>
+                <MapContainer
+                  center={[(order.store_lat + order.customer_lat) / 2, ((order.store_lng || 0) + (order.customer_lng || 0)) / 2]}
+                  zoom={14} style={{ height: '100%', width: '100%' }} scrollWheelZoom={false}>
+                  <TileLayer attribution='&copy; OSM' url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+                  <Marker position={[order.store_lat, order.store_lng]} />
+                  <Marker position={[order.customer_lat, order.customer_lng]} />
+                  <RoutePolyline from={{ lat: order.store_lat, lng: order.store_lng }} to={{ lat: order.customer_lat, lng: order.customer_lng }} />
+                </MapContainer>
+              </div>
+            )}
 
-                  <div style={{
-                    flex: 1, height: 3, background: 'var(--border)',
-                    position: 'relative', maxWidth: 150
-                  }}>
-                    {motoboyPos && (
-                      <div style={{
-                        position: 'absolute', top: '50%',
-                        left: `${Math.min(90, Math.max(10, Math.random() * 100))}%`,
-                        transform: 'translate(-50%, -50%)'
-                      }}>
-                        <img src="/saco_acai.png" style={{
-                          width: 32, height: 32, objectFit: 'contain'
-                        }} />
-                      </div>
-                    )}
-                  </div>
-
-                  <div style={{ textAlign: 'center' }}>
-                    <CustomerAvatar photo={user?.photo_url} />
-                    <div className="text-xs" style={{ marginTop: 2 }}>Você</div>
-                  </div>
-                </div>
-
-                {eta !== null && (
-                  <div style={{
-                    background: '#E3F2FD', padding: '8px 16px', borderRadius: 8,
-                    display: 'inline-block', marginTop: 4
-                  }}>
-                    <span className="font-bold" style={{ color: '#1565C0' }}>
-                      ~{eta} min
-                    </span>
-                    <span className="text-sm text-muted"> para chegar</span>
-                  </div>
-                )}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <StoreLogo logo={order.store_logo} />
+                <span className="text-xs" style={{ color: '#888' }}>Loja</span>
+              </div>
+              <span className="text-xs" style={{ color: '#888' }}>↓ {order.customer_address}</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <CustomerAvatar photo={user?.photo_url} />
+                <span className="text-xs" style={{ color: '#888' }}>Você</span>
               </div>
             </div>
 
-            <div className="text-center mt-2">
-              <p className="text-sm text-muted">
-                {order.status === 'picked_up' && 'Motoboy saiu da loja com seu açaí!'}
-                {order.status === 'in_transit' && 'Seu açaí está a caminho!'}
-                {order.status === 'arriving' && 'O motoboy está chegando! Fique atento!'}
-                {order.status === 'picked_up' || order.status === 'in_transit' || order.status === 'arriving'
-                  ? '' : 'Aguardando motoboy retirar o pedido...'}
-              </p>
+            <div style={{ marginTop: 8, fontSize: 13, color: '#888' }}>
+              {order.status === 'picked_up' && 'Motoboy saiu da loja com seu açaí!'}
+              {order.status === 'arriving' && 'O motoboy está chegando! Fique atento!'}
+              {order.status === 'picked_up' || order.status === 'arriving' ? '' : 'Aguardando...'}
             </div>
           </div>
         )}

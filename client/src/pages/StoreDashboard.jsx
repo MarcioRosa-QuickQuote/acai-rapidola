@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useSocket } from '../contexts/SocketContext';
 import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
+import RoutePolyline from '../components/RouteMap';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 
@@ -1039,7 +1040,8 @@ export default function StoreDashboard() {
               </div>
             ) : (
               displayOrders.map(order => (
-                <div key={order.id} className="card">
+                <div key={order.id} className="card" style={{ cursor: 'pointer' }}
+                  onClick={() => setSelectedOrder(selectedOrder === order.id ? null : order.id)}>
                   <div className="flex-between" style={{ marginBottom: 6 }}>
                     <div>
                       <span className="font-bold">#{order.id.slice(0, 8)}</span>
@@ -1073,7 +1075,7 @@ export default function StoreDashboard() {
 
                       {order.payment_status === 'paid' && actionMap[order.status] && (
                         <button className="btn btn-sm btn-primary"
-                          onClick={() => updateStatus(order.id, actionMap[order.status].next)}>
+                          onClick={(e) => { e.stopPropagation(); updateStatus(order.id, actionMap[order.status].next); }}>
                           {actionMap[order.status].label}
                         </button>
                       )}
@@ -1085,6 +1087,19 @@ export default function StoreDashboard() {
                       )}
                     </div>
                   </div>
+
+                  {selectedOrder === order.id && order.customer_lat && order.store_lat && (
+                    <div style={{ height: 200, borderRadius: 8, overflow: 'hidden', border: '1px solid var(--border)', marginTop: 10 }}>
+                      <MapContainer
+                        center={[(order.customer_lat + order.store_lat) / 2, ((order.customer_lng || 0) + (order.store_lng || 0)) / 2]}
+                        zoom={13} style={{ height: '100%', width: '100%' }} scrollWheelZoom={false}>
+                        <TileLayer attribution='&copy; OSM' url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+                        <Marker position={[order.store_lat, order.store_lng]} />
+                        <Marker position={[order.customer_lat, order.customer_lng]} />
+                        <RoutePolyline from={{ lat: order.store_lat, lng: order.store_lng }} to={{ lat: order.customer_lat, lng: order.customer_lng }} color="#4A148C" />
+                      </MapContainer>
+                    </div>
+                  )}
                 </div>
               ))
             )}
