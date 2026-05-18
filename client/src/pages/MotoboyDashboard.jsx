@@ -108,7 +108,16 @@ export default function MotoboyDashboard() {
   async function acceptOrder(orderId) {
     await apiFetch(`/motoboy/accept/${orderId}`, { method: 'POST' });
     setToast('Pedido aceito!');
-    loadData();
+    const [, mine] = await Promise.all([
+      apiFetch('/motoboy/available'),
+      apiFetch('/orders')
+    ]);
+    if (mine.data) {
+      setMyOrders(mine.data.filter(o => o.motoboy_id === user?.id));
+      const accepted = mine.data.find(o => o.id === orderId);
+      if (accepted) setFullscreenOrder(accepted);
+    }
+    setLoading(false);
   }
 
   async function updateStatus(orderId) {

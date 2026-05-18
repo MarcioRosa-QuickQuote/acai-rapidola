@@ -1,5 +1,13 @@
 import { useState, useEffect } from 'react';
-import { Polyline } from 'react-leaflet';
+import { Polyline, useMap } from 'react-leaflet';
+
+function FitBounds({ bounds }) {
+  const map = useMap();
+  useEffect(() => {
+    if (bounds) map.fitBounds(bounds, { padding: [40, 40], maxZoom: 16 });
+  }, [bounds]);
+  return null;
+}
 
 export default function RoutePolyline({ from, to, color = '#1565C0', weight = 3 }) {
   const [positions, setPositions] = useState(null);
@@ -19,6 +27,14 @@ export default function RoutePolyline({ from, to, color = '#1565C0', weight = 3 
     return () => { cancelled = true; };
   }, [from?.lat, from?.lng, to?.lat, to?.lng]);
 
-  if (!positions) return null;
-  return <Polyline positions={positions} pathOptions={{ color, weight, opacity: 0.7 }} />;
+  return (
+    <>
+      {positions && (
+        <>
+          <FitBounds bounds={positions} />
+          <Polyline positions={positions} pathOptions={{ color, weight, opacity: 0.7 }} />
+        </>
+      )}
+    </>
+  );
 }
