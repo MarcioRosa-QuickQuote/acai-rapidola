@@ -52,6 +52,14 @@ function calcBearing(from, to) {
   return (Math.atan2(y, x) * 180 / Math.PI + 360) % 360;
 }
 
+function haversineKm(from, to) {
+  const R = 6371;
+  const dLat = (to.lat - from.lat) * Math.PI / 180;
+  const dLng = (to.lng - from.lng) * Math.PI / 180;
+  const a = Math.sin(dLat / 2) ** 2 + Math.cos(from.lat * Math.PI / 180) * Math.cos(to.lat * Math.PI / 180) * Math.sin(dLng / 2) ** 2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
 function NavScreen({ order, onClose, onStatusUpdate, statusLabel }) {
   const [pos, setPos] = useState(null);
   const [heading, setHeading] = useState(0);
@@ -59,6 +67,7 @@ function NavScreen({ order, onClose, onStatusUpdate, statusLabel }) {
   const [currentStepIdx, setCurrentStepIdx] = useState(0);
   const [navStarted, setNavStarted] = useState(false);
   const prevPosRef = useRef(null);
+  const headingRef = useRef(0); // ref para evitar stale closure no callback GPS
   const mapRef = useRef(null);
 
   const isToStore = order.status === 'assigned';
@@ -73,15 +82,21 @@ function NavScreen({ order, onClose, onStatusUpdate, statusLabel }) {
     const watch = navigator.geolocation.watchPosition(
       p => {
         const newPos = { lat: p.coords.latitude, lng: p.coords.longitude };
-        let newHeading = heading;
-        if (p.coords.heading !== null && !isNaN(p.coords.heading)) {
-          newHeading = p.coords.heading;
-        } else if (prevPosRef.current) {
-          newHeading = calcBearing(prevPosRef.current, newPos);
-        }
-        prevPosRef.current = newPos;
         setPos(newPos);
-        setHeading(newHeading);
+
+        // Heading sempre calculado por diferença de posição (ignora magnetômetro do celular)
+        // Só atualiza se motoboy se moveu ao menos 8m (evita ruído GPS parado)
+        if (prevPosRef.current && haversineKm(prevPosRef.current, newPos) >= 0.008) {
+          const raw = calcBearing(prevPosRef.current, newPos);
+          // Suavização exponencial 30% para evitar jitter
+          const diff = ((raw - headingRef.current + 540) % 360) - 180;
+          const smoothed = (headingRef.current + diff * 0.3 + 360) % 360;
+          headingRef.current = smoothed;
+          setHeading(smoothed);
+          prevPosRef.current = newPos;
+        } else if (!prevPosRef.current) {
+          prevPosRef.current = newPos;
+        }
       },
       () => {},
       { enableHighAccuracy: true, timeout: 10000, maximumAge: 3000 }
