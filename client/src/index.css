@@ -32,6 +32,22 @@ body {
   -moz-osx-font-smoothing: grayscale;
   line-height: 1.5;
   letter-spacing: -0.01em;
+  background-image:
+    radial-gradient(circle at 15% 25%, rgba(106,27,154,0.06) 3px, transparent 3px),
+    radial-gradient(circle at 75% 10%, rgba(106,27,154,0.05) 4px, transparent 4px),
+    radial-gradient(circle at 40% 60%, rgba(106,27,154,0.04) 3px, transparent 3px),
+    radial-gradient(circle at 85% 70%, rgba(106,27,154,0.06) 5px, transparent 5px),
+    radial-gradient(circle at 10% 85%, rgba(106,27,154,0.05) 3px, transparent 3px),
+    radial-gradient(circle at 55% 40%, rgba(106,27,154,0.04) 4px, transparent 4px),
+    radial-gradient(circle at 90% 45%, rgba(106,27,154,0.03) 3px, transparent 3px),
+    radial-gradient(circle at 30% 90%, rgba(106,27,154,0.05) 3px, transparent 3px),
+    radial-gradient(circle at 65% 80%, rgba(106,27,154,0.04) 4px, transparent 4px),
+    radial-gradient(circle at 5% 50%, rgba(106,27,154,0.06) 3px, transparent 3px),
+    radial-gradient(circle at 50% 5%, rgba(106,27,154,0.05) 3px, transparent 3px),
+    radial-gradient(circle at 20% 40%, rgba(106,27,154,0.04) 5px, transparent 5px),
+    radial-gradient(circle at 70% 55%, rgba(106,27,154,0.03) 3px, transparent 3px),
+    radial-gradient(circle at 45% 75%, rgba(106,27,154,0.05) 3px, transparent 3px),
+    radial-gradient(circle at 95% 15%, rgba(106,27,154,0.04) 4px, transparent 4px);
 }
 
 #root { min-height: 100vh; }

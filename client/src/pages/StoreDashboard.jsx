@@ -525,33 +525,35 @@ export default function StoreDashboard() {
 
   return (
     <div>
-      <div className="header">
+      <div className="header" style={{ padding: '8px 16px' }}>
         <div className="header-left">
-          <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-light)' }}>Loja</span>
-          <div className="toggle-switch" onClick={toggleOpen} title={open ? 'Fechar loja' : 'Abrir loja'}>
-            <input type="checkbox" checked={open} readOnly />
-            <span className="toggle-slider" />
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-light)' }}>Loja</span>
+            <div className="toggle-switch" onClick={toggleOpen} title={open ? 'Fechar loja' : 'Abrir loja'}>
+              <input type="checkbox" checked={open} readOnly />
+              <span className="toggle-slider" />
+            </div>
+            <span style={{
+              fontSize: 12, fontWeight: 700,
+              color: open ? 'var(--success)' : 'var(--danger)',
+            }}>
+              {open ? 'ABERTA' : 'FECHADA'}
+            </span>
           </div>
-          <span style={{
-            fontSize: 11, fontWeight: 700,
-            color: open ? 'var(--success)' : 'var(--danger)',
-          }}>
-            {open ? 'ABERTA' : 'FECHADA'}
-          </span>
         </div>
-        <div className="header-right" style={{ gap: 8 }}>
+        <div className="header-right" style={{ gap: 10 }}>
           <div onClick={() => { setView(view === 'settings' ? 'orders' : 'settings'); if (view === 'orders') setSettingsTab('conta'); }}
-            style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
+            style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer' }}>
             {storeData?.logo ? (
               <img src={storeData.logo} alt="Logo"
-                style={{ width: 34, height: 34, borderRadius: 8, objectFit: 'contain', flexShrink: 0 }}
+                style={{ width: 42, height: 42, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }}
                 onError={e => { e.target.style.display = 'none'; }} />
             ) : (
               <div style={{
-                width: 34, height: 34, borderRadius: 8,
+                width: 42, height: 42, borderRadius: '50%',
                 background: 'linear-gradient(135deg, var(--primary), var(--primary-dark))',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                color: 'white', fontWeight: 800, fontSize: 16, flexShrink: 0
+                color: 'white', fontWeight: 800, fontSize: 18, flexShrink: 0
               }}>
                 {(storeData?.name || 'L').charAt(0)}
               </div>
@@ -559,7 +561,7 @@ export default function StoreDashboard() {
             <div>
               <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text)', lineHeight: 1.2 }}>{storeData?.name || 'Loja'}</div>
               <div onClick={(e) => { e.stopPropagation(); logout(); }}
-                style={{ fontSize: 10, color: 'var(--text-light)', cursor: 'pointer' }}>
+                style={{ fontSize: 12, color: 'var(--text-light)', cursor: 'pointer' }}>
                 Sair
               </div>
             </div>
