@@ -163,24 +163,10 @@ router.get('/reverse-geocode', async (req, res) => {
 });
 
 router.get('/cep/:cep', async (req, res) => {
-  const cep = req.params.cep.replace(/\D/g, '');
-  if (cep.length !== 8) return res.json({ error: 'CEP inválido' });
-  try {
-    const resp = await fetch(`https://brasilapi.com.br/api/cep/v2/${cep}`);
-    if (!resp.ok) return res.json({ error: 'CEP não encontrado' });
-    const data = await resp.json();
-    if (data.erro) return res.json({ error: 'CEP não encontrado' });
-    res.json({
-      cep: data.cep,
-      street: data.street,
-      neighborhood: data.neighborhood,
-      city: data.city,
-      state: data.state,
-      display_name: `${data.street}, ${data.neighborhood} - ${data.city}/${data.state}`
-    });
-  } catch {
-    res.json({ error: 'Erro ao consultar CEP' });
-  }
+  const { lookupCep } = require('../helpers');
+  const result = await lookupCep(req.params.cep);
+  if (!result) return res.json({ error: 'CEP não encontrado' });
+  res.json(result);
 });
 
 router.get('/', authMiddleware, async (req, res) => {

@@ -15,23 +15,29 @@ router.get('/', async (req, res) => {
 });
 
 router.post('/', authMiddleware, roleMiddleware('store'), async (req, res) => {
+  const { sanitize, sanitizeNum } = require('../helpers');
   const { data: store } = await supabase.from('stores').select('*').eq('owner_id', req.user.id).single();
   if (!store) return res.status(403).json({ error: 'Loja não encontrada' });
 
-  const { name, description, price, size_ml, image } = req.body;
+  const name = sanitize(req.body.name, 100);
+  const description = sanitize(req.body.description, 500);
+  const price = sanitizeNum(req.body.price);
+  const size_ml = sanitizeNum(req.body.size_ml);
+  const image = sanitize(req.body.image, 500);
   if (!name || !price || !size_ml) {
     return res.status(400).json({ error: 'Nome, preço e tamanho são obrigatórios' });
   }
 
   const id = uuid();
   await supabase.from('products').insert({
-    id, store_id: store.id, name, description: description || '', price, size_ml, image: image || ''
+    id, store_id: store.id, name, description, price, size_ml, image: image || ''
   });
 
   res.json({ id, store_id: store.id, name, description, price, size_ml, image });
 });
 
 router.put('/:id', authMiddleware, roleMiddleware('store'), async (req, res) => {
+  const { sanitize, sanitizeNum } = require('../helpers');
   const { data: store } = await supabase.from('stores').select('*').eq('owner_id', req.user.id).single();
   if (!store) return res.status(403).json({ error: 'Loja não encontrada' });
 
@@ -39,14 +45,13 @@ router.put('/:id', authMiddleware, roleMiddleware('store'), async (req, res) => 
     .select('*').eq('id', req.params.id).eq('store_id', store.id).single();
   if (!product) return res.status(404).json({ error: 'Produto não encontrado' });
 
-  const { name, description, price, size_ml, active, image } = req.body;
   const update = {};
-  if (name !== undefined) update.name = name;
-  if (description !== undefined) update.description = description;
-  if (price !== undefined) update.price = price;
-  if (size_ml !== undefined) update.size_ml = size_ml;
-  if (active !== undefined) update.active = active;
-  if (image !== undefined && image !== null && image !== '') update.image = image;
+  if (req.body.name !== undefined) update.name = sanitize(req.body.name, 100);
+  if (req.body.description !== undefined) update.description = sanitize(req.body.description, 500);
+  if (req.body.price !== undefined) update.price = sanitizeNum(req.body.price);
+  if (req.body.size_ml !== undefined) update.size_ml = sanitizeNum(req.body.size_ml);
+  if (req.body.active !== undefined) update.active = req.body.active ? 1 : 0;
+  if (req.body.image !== undefined && req.body.image !== null && req.body.image !== '') update.image = sanitize(req.body.image, 500);
 
   if (Object.keys(update).length > 0) {
     await supabase.from('products').update(update).eq('id', req.params.id);

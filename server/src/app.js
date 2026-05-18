@@ -2,6 +2,7 @@ const express = require('express');
 const http = require('http');
 const cors = require('cors');
 const path = require('path');
+const rateLimit = require('express-rate-limit');
 
 const isVercel = !!process.env.VERCEL;
 
@@ -19,7 +20,15 @@ const { supabase } = require('./database');
 const app = express();
 
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: '500kb' }));
+
+const limiterApi = rateLimit({ windowMs: 60000, max: 100, message: { error: 'Muitas requisições. Tente novamente em instantes.' } });
+const limiterAuth = rateLimit({ windowMs: 60000, max: 20, message: { error: 'Muitas tentativas. Aguarde um momento.' } });
+const limiterWebhook = rateLimit({ windowMs: 60000, max: 60 });
+
+app.use('/api/auth', limiterAuth);
+app.use('/api', limiterApi);
+app.use('/api/webhook', limiterWebhook);
 
 app.use('/api/auth', authRoutes);
 app.use('/api/products', productRoutes);
@@ -90,8 +99,9 @@ app.use('/api/motoboy', motoboyRoutes);
 app.use('/api', paymentRoutes);
 
 app.use((err, req, res, next) => {
-  console.error('[Server] Unhandled error:', err?.message || err);
-  res.status(500).json({ error: 'Erro interno do servidor' });
+  console.error('[Server] Erro:', err?.message || err);
+  const msg = err?.type === 'entity.parse.failed' ? 'Formato de dados inválido. Envie JSON válido.' : err?.message?.includes('rate limit') ? 'Muitas requisições.' : null;
+  res.status(err?.status || 500).json({ error: msg || 'Erro interno. Tente novamente.' });
 });
 
 if (!isVercel) {

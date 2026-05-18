@@ -7,8 +7,13 @@ const { signToken, authMiddleware } = require('../auth');
 const router = Router();
 
 router.post('/register', async (req, res) => {
-  const { name, phone, password, role, inviteToken, extra } = req.body;
-  const email = (extra?.email) || '';
+  const { sanitize } = require('../helpers');
+  const name = sanitize(req.body.name, 100);
+  const phone = sanitize(req.body.phone, 20);
+  const password = req.body.password || '';
+  const role = sanitize(req.body.role, 20);
+  const extra = req.body.extra || {};
+  const email = sanitize(extra.email, 200);
   if (!name || !phone || !password || !role) {
     return res.status(400).json({ error: 'Nome, telefone, senha e perfil são obrigatórios' });
   }
@@ -17,6 +22,9 @@ router.post('/register', async (req, res) => {
   }
   if (!['customer', 'store', 'motoboy'].includes(role)) {
     return res.status(400).json({ error: 'Perfil inválido' });
+  }
+  if (password.length < 4) {
+    return res.status(400).json({ error: 'Senha deve ter no mínimo 4 caracteres' });
   }
 
   const { data: existing } = await supabase.from('users').select('id').eq('phone', phone).single();
@@ -27,7 +35,7 @@ router.post('/register', async (req, res) => {
 
   await supabase.from('users').insert({
     id, name, phone, password_hash: hash, role,
-    email: email, cpf: (extra?.cpf) || '',
+    email: email, cpf: (extra?.cpf || '').replace(/\D/g, '').slice(0, 11),
     vehicle_type: (extra?.vehicle_type) || '',
     pix_key: (extra?.pix_key) || ''
   });
