@@ -21,7 +21,7 @@ export default function Login() {
   const [showTest, setShowTest] = useState(false);
   const [recovery, setRecovery] = useState(false);
   const [recoveryStep, setRecoveryStep] = useState(1);
-  const [recoveryPhone, setRecoveryPhone] = useState('');
+  const [recoveryEmail, setRecoveryEmail] = useState('');
   const [recoveryCode, setRecoveryCode] = useState('');
   const [recoveryPassword, setRecoveryPassword] = useState('');
   const [recoveryMsg, setRecoveryMsg] = useState('');
@@ -237,10 +237,10 @@ export default function Login() {
               {recoveryStep === 1 && (
                 <div>
                   <div className="form-group">
-                    <label className="label">Telefone</label>
-                    <input className="input" type="text" value={recoveryPhone}
-                      onChange={e => setRecoveryPhone(e.target.value)}
-                      placeholder="(99) 99999-9999" />
+                    <label className="label">Email cadastrado</label>
+                    <input className="input" type="email" value={recoveryEmail}
+                      onChange={e => setRecoveryEmail(e.target.value)}
+                      placeholder="seu@email.com" />
                   </div>
                   {recoveryMsg && <div style={{ fontSize: 13, padding: '8px 12px', borderRadius: 8, marginBottom: 10,
                     background: recoveryMsg.includes('sucesso') || recoveryMsg.includes('enviado') ? '#E8F5E9' : '#FFF3E0',
@@ -248,12 +248,12 @@ export default function Login() {
                   <button className="btn btn-primary" onClick={async () => {
                     setRecoveryLoading(true); setRecoveryMsg('');
                     const res = await apiFetch('/auth/forgot-password', {
-                      method: 'POST', body: JSON.stringify({ phone: recoveryPhone })
+                      method: 'POST', body: JSON.stringify({ email: recoveryEmail })
                     });
-                    setRecoveryMsg(res.message || 'Código enviado!');
+                    setRecoveryMsg(res.message || (res._test ? `Código: ${res.code}` : 'Código enviado!'));
                     if (res.ok !== false) setRecoveryStep(2);
                     setRecoveryLoading(false);
-                  }} disabled={recoveryLoading || !recoveryPhone}>
+                  }} disabled={recoveryLoading || !recoveryEmail}>
                     {recoveryLoading ? 'Enviando...' : 'Enviar código'}
                   </button>
                 </div>
@@ -293,13 +293,12 @@ export default function Login() {
                     setRecoveryLoading(true); setRecoveryMsg('');
                     const res = await apiFetch('/auth/reset-password', {
                       method: 'POST',
-                      body: JSON.stringify({ phone: recoveryPhone, code: recoveryCode, new_password: recoveryPassword })
+                      body: JSON.stringify({ email: recoveryEmail, code: recoveryCode, new_password: recoveryPassword })
                     });
                     setRecoveryMsg(res.message || (res.error || 'Erro ao redefinir'));
                     if (res.ok) {
                       setTimeout(() => {
-                        setRecovery(false); setPhone(recoveryPhone); setPassword('');
-                        setRecoveryStep(1); setRecoveryCode(''); setRecoveryPassword(''); setRecoveryMsg('');
+                        setRecovery(false); setRecoveryMsg('Senha redefinida! Faça login.');
                       }, 2000);
                     }
                     setRecoveryLoading(false);

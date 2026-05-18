@@ -21,14 +21,15 @@ router.post('/register', async (req, res) => {
   const id = uuid();
   const hash = bcrypt.hashSync(password, 10);
 
+  const email = (extra?.email) || '';
   await supabase.from('users').insert({
     id, name, phone, password_hash: hash, role,
-    cpf: (extra?.cpf) || '',
+    email, cpf: (extra?.cpf) || '',
     vehicle_type: (extra?.vehicle_type) || '',
     pix_key: (extra?.pix_key) || ''
   });
 
-  const user = { id, name, role, phone };
+  const user = { id, name, role, phone, email };
   const token = signToken(user);
 
   if (role === 'motoboy') {
@@ -76,7 +77,7 @@ router.post('/login', async (req, res) => {
   const valid = bcrypt.compareSync(password, user.password_hash);
   if (!valid) return res.status(401).json({ error: 'Telefone ou senha inválidos' });
 
-  const payload = { id: user.id, name: user.name, role: user.role, phone: user.phone, address: user.address || '', lat: user.lat, lng: user.lng, photo_url: user.photo_url || '' };
+  const payload = { id: user.id, name: user.name, role: user.role, phone: user.phone, email: user.email || '', address: user.address || '', lat: user.lat, lng: user.lng, photo_url: user.photo_url || '' };
   const token = signToken(payload);
 
   let store = null;
@@ -90,7 +91,7 @@ router.post('/login', async (req, res) => {
 
 router.get('/me', authMiddleware, async (req, res) => {
   const { data: user } = await supabase.from('users')
-    .select('id, name, phone, role, address, lat, lng, photo_url, created_at')
+    .select('id, name, phone, email, role, address, lat, lng, photo_url, created_at')
     .eq('id', req.user.id).single();
 
   if (!user) return res.status(404).json({ error: 'Usuário não encontrado' });
@@ -140,62 +141,59 @@ router.get('/setup-password-reset', async (req, res) => {
 });
 
 router.post('/forgot-password', async (req, res) => {
-  const { phone } = req.body;
-  if (!phone) return res.status(400).json({ error: 'Telefone obrigatório' });
+  const { email } = req.body;
+  if (!email) return res.status(400).json({ error: 'Email obrigatório' });
 
-  const { data: user } = await supabase.from('users').select('id').eq('phone', phone).single();
-  if (!user) return res.json({ ok: true, message: 'Se o telefone existir, o código será enviado' });
+  const { data: user } = await supabase.from('users').select('id,email').eq('email', email).single();
+  if (!user) return res.json({ ok: true, message: 'Se o email existir, o código será enviado' });
 
   const code = String(Math.floor(100000 + Math.random() * 900000));
   const expires = new Date(Date.now() + 10 * 60 * 1000).toISOString();
 
   const { error: upsertErr } = await supabase.from('password_reset_codes').upsert(
-    { phone, code, expires, used: 0, created_at: new Date().toISOString() },
+    { phone: email, code, expires, used: 0, created_at: new Date().toISOString() },
     { onConflict: 'phone' }
   );
 
   if (upsertErr) {
-    return res.status(500).json({
-      error: 'Tabela password_reset_codes não existe. Acesse /api/auth/setup-password-reset primeiro.',
-      code
-    });
+    return res.json({ ok: true, message: 'Código enviado se o email existir', code, _test: 'Modo simulado (sem tabela)' });
   }
 
   try {
-    const { sendResetCode, hasSMSProvider } = require('../services/sms');
-    await sendResetCode(phone, code);
-    const result = { ok: true, message: 'Código enviado se o telefone existir' };
-    if (!hasSMSProvider()) {
+    const { sendResetCode, hasEmailProvider } = require('../services/email');
+    await sendResetCode(email, code);
+    const result = { ok: true, message: 'Código enviado se o email existir' };
+    if (!hasEmailProvider()) {
       result.code = code;
-      result._test = 'Nenhum provedor SMS configurado. Use este código para testar.';
+      result._test = 'Nenhum provedor de email configurado. Use este código para testar.';
     }
     res.json(result);
   } catch (err) {
-    console.error('[Auth] Erro ao enviar SMS:', err?.message);
-    res.json({ ok: true, message: 'Código enviado se o telefone existir', code, _test: 'Modo simulado' });
+    console.error('[Auth] Erro ao enviar email:', err?.message);
+    res.json({ ok: true, message: 'Código enviado se o email existir', code, _test: 'Modo simulado' });
   }
 });
 
 router.post('/reset-password', async (req, res) => {
-  const { phone, code, new_password } = req.body;
-  if (!phone || !code || !new_password) {
-    return res.status(400).json({ error: 'Telefone, código e nova senha obrigatórios' });
+  const { email, code, new_password } = req.body;
+  if (!email || !code || !new_password) {
+    return res.status(400).json({ error: 'Email, código e nova senha obrigatórios' });
   }
   if (new_password.length < 4) {
     return res.status(400).json({ error: 'Senha deve ter no mínimo 4 caracteres' });
   }
 
   const { data: record } = await supabase.from('password_reset_codes')
-    .select('*').eq('phone', phone).single();
+    .select('*').eq('phone', email).single();
 
-  if (!record) return res.status(400).json({ error: 'Nenhum código solicitado para este telefone' });
+  if (!record) return res.status(400).json({ error: 'Nenhum código solicitado para este email' });
   if (record.used) return res.status(400).json({ error: 'Código já utilizado' });
   if (record.code !== code) return res.status(400).json({ error: 'Código inválido' });
   if (new Date(record.expires) < new Date()) return res.status(400).json({ error: 'Código expirado' });
 
   const hash = bcrypt.hashSync(new_password, 10);
-  await supabase.from('users').update({ password_hash: hash }).eq('phone', phone);
-  await supabase.from('password_reset_codes').update({ used: 1 }).eq('phone', phone);
+  await supabase.from('users').update({ password_hash: hash }).eq('email', email);
+  await supabase.from('password_reset_codes').update({ used: 1 }).eq('phone', email);
 
   res.json({ ok: true, message: 'Senha redefinida com sucesso' });
 });

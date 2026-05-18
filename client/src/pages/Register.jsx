@@ -17,6 +17,7 @@ export default function Register() {
   const [searchParams] = useSearchParams();
   const inviteToken = searchParams.get('token');
   const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
   const [role, setRole] = useState('customer');
@@ -58,7 +59,7 @@ export default function Register() {
     setError('');
     setLoading(true);
     try {
-      await register(name, phone, password, role, inviteToken, { cpf, vehicle_type: vehicleType, pix_key: pixKey });
+      await register(name, phone, password, role, inviteToken, { email, cpf, vehicle_type: vehicleType, pix_key: pixKey });
     } catch (err) {
       setError(err.message);
     } finally {
@@ -133,6 +134,16 @@ export default function Register() {
               <input
                 type="text" value={name} onChange={e => setName(e.target.value)}
                 placeholder="Seu nome" required
+                style={inputStyle}
+                onFocus={onFocus} onBlur={onBlur}
+              />
+            </div>
+
+            <div style={{ marginBottom: 12 }}>
+              <label style={{ fontSize: 12, fontWeight: 600, color: '#555', marginBottom: 4, display: 'block' }}>Email</label>
+              <input
+                type="email" value={email} onChange={e => setEmail(e.target.value)}
+                placeholder="seu@email.com" required
                 style={inputStyle}
                 onFocus={onFocus} onBlur={onBlur}
               />
