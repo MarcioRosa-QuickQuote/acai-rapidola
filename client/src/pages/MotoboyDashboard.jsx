@@ -44,6 +44,10 @@ export default function MotoboyDashboard() {
   const [pixKey, setPixKey] = useState(() => localStorage.getItem('motoboy_pix_key') || '');
   const [pixSaving, setPixSaving] = useState(false);
   const [pixMsg, setPixMsg] = useState('');
+  const [pwCurrent, setPwCurrent] = useState('');
+  const [pwNew, setPwNew] = useState('');
+  const [pwMsg, setPwMsg] = useState('');
+  const [pwSaving, setPwSaving] = useState(false);
   const [editName, setEditName] = useState('');
   const [editCpf, setEditCpf] = useState('');
   const [editPlate, setEditPlate] = useState('');
@@ -424,6 +428,34 @@ export default function MotoboyDashboard() {
           setPixSaving(false);
           setTimeout(() => setPixMsg(''), 4000);
         }} disabled={pixSaving}>{pixSaving ? 'Salvando...' : 'Salvar'}</button>
+
+        <div style={{ borderTop: '1px solid var(--border)', marginTop: 20, paddingTop: 16 }}>
+          <div className="page-title" style={{ fontSize: 16, marginBottom: 12 }}>Alterar Senha</div>
+          <div className="form-group">
+            <label className="label">Senha atual</label>
+            <input className="input" type="password" value={pwCurrent}
+              onChange={e => setPwCurrent(e.target.value)} placeholder="Senha atual" />
+          </div>
+          <div className="form-group">
+            <label className="label">Nova senha</label>
+            <input className="input" type="password" value={pwNew}
+              onChange={e => setPwNew(e.target.value)} placeholder="Nova senha (min 4 caracteres)" />
+          </div>
+          {pwMsg && <div style={{ fontSize: 13, fontWeight: 600, padding: '10px 14px', borderRadius: 8, marginBottom: 12,
+            background: pwMsg.includes('sucesso') ? '#E8F5E9' : '#FFEBEE',
+            color: pwMsg.includes('sucesso') ? '#2E7D32' : '#C62828' }}>{pwMsg}</div>}
+          <button className="btn btn-outline" onClick={async () => {
+            setPwSaving(true);
+            const res = await apiFetch('/auth/password', {
+              method: 'PATCH',
+              body: JSON.stringify({ current_password: pwCurrent, new_password: pwNew })
+            });
+            setPwMsg(res.ok ? 'Senha alterada com sucesso!' : (res.error || 'Erro ao alterar senha'));
+            if (res.ok) { setPwCurrent(''); setPwNew(''); }
+            setPwSaving(false);
+            setTimeout(() => setPwMsg(''), 4000);
+          }} disabled={pwSaving}>{pwSaving ? 'Salvando...' : 'Alterar Senha'}</button>
+        </div>
       </div>
     );
   }

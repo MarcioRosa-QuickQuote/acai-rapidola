@@ -119,4 +119,74 @@ router.patch('/profile', authMiddleware, async (req, res) => {
   res.json({ ok: true });
 });
 
+router.post('/forgot-password', async (req, res) => {
+  const { phone } = req.body;
+  if (!phone) return res.status(400).json({ error: 'Telefone obrigatório' });
+
+  const { data: user } = await supabase.from('users').select('id').eq('phone', phone).single();
+  if (!user) return res.json({ ok: true, message: 'Se o telefone existir, o código será enviado' });
+
+  const code = String(Math.floor(100000 + Math.random() * 900000));
+  const expires = new Date(Date.now() + 10 * 60 * 1000).toISOString();
+
+  await supabase.from('password_reset_codes').upsert(
+    { phone, code, expires, used: 0, created_at: new Date().toISOString() },
+    { onConflict: 'phone' }
+  );
+
+  try {
+    const { sendResetCode } = require('../services/sms');
+    await sendResetCode(phone, code);
+  } catch (err) {
+    console.error('[Auth] Erro ao enviar SMS:', err?.message);
+  }
+
+  res.json({ ok: true, message: 'Código enviado se o telefone existir' });
+});
+
+router.post('/reset-password', async (req, res) => {
+  const { phone, code, new_password } = req.body;
+  if (!phone || !code || !new_password) {
+    return res.status(400).json({ error: 'Telefone, código e nova senha obrigatórios' });
+  }
+  if (new_password.length < 4) {
+    return res.status(400).json({ error: 'Senha deve ter no mínimo 4 caracteres' });
+  }
+
+  const { data: record } = await supabase.from('password_reset_codes')
+    .select('*').eq('phone', phone).single();
+
+  if (!record) return res.status(400).json({ error: 'Nenhum código solicitado para este telefone' });
+  if (record.used) return res.status(400).json({ error: 'Código já utilizado' });
+  if (record.code !== code) return res.status(400).json({ error: 'Código inválido' });
+  if (new Date(record.expires) < new Date()) return res.status(400).json({ error: 'Código expirado' });
+
+  const hash = bcrypt.hashSync(new_password, 10);
+  await supabase.from('users').update({ password_hash: hash }).eq('phone', phone);
+  await supabase.from('password_reset_codes').update({ used: 1 }).eq('phone', phone);
+
+  res.json({ ok: true, message: 'Senha redefinida com sucesso' });
+});
+
+router.patch('/password', authMiddleware, async (req, res) => {
+  const { current_password, new_password } = req.body;
+  if (!current_password || !new_password) {
+    return res.status(400).json({ error: 'Senha atual e nova senha obrigatórias' });
+  }
+  if (new_password.length < 4) {
+    return res.status(400).json({ error: 'Nova senha deve ter no mínimo 4 caracteres' });
+  }
+
+  const { data: user } = await supabase.from('users').select('password_hash').eq('id', req.user.id).single();
+  if (!user) return res.status(404).json({ error: 'Usuário não encontrado' });
+
+  const valid = bcrypt.compareSync(current_password, user.password_hash);
+  if (!valid) return res.status(401).json({ error: 'Senha atual incorreta' });
+
+  const hash = bcrypt.hashSync(new_password, 10);
+  await supabase.from('users').update({ password_hash: hash }).eq('id', req.user.id);
+
+  res.json({ ok: true, message: 'Senha alterada com sucesso' });
+});
+
 module.exports = router;

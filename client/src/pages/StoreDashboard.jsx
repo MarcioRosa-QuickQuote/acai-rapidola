@@ -56,6 +56,10 @@ export default function StoreDashboard() {
   const [productImg, setProductImg] = useState(null);
   const [earnings, setEarnings] = useState({ store: { pending: 0, paid: 0 }, motoboy: { pending: 0, paid: 0 } });
   const [payoutMsg, setPayoutMsg] = useState('');
+  const [pwCurrent, setPwCurrent] = useState('');
+  const [pwNew, setPwNew] = useState('');
+  const [pwMsg, setPwMsg] = useState('');
+  const [pwSaving, setPwSaving] = useState(false);
   const [finMonth, setFinMonth] = useState(() => new Date().getMonth() + 1);
   const [finYear, setFinYear] = useState(() => new Date().getFullYear());
   const [finPeriod, setFinPeriod] = useState('mes');
@@ -810,6 +814,34 @@ export default function StoreDashboard() {
                 <span>Assinatura:</span>
                 <span className="badge badge-success">R$ 89/mês</span>
               </div>
+            </div>
+
+            <div className="card">
+              <div className="page-title" style={{ fontSize: 16, marginBottom: 12 }}>Alterar Senha</div>
+              <div className="form-group">
+                <label className="label">Senha atual</label>
+                <input className="input" type="password" value={pwCurrent}
+                  onChange={e => setPwCurrent(e.target.value)} placeholder="Senha atual" />
+              </div>
+              <div className="form-group">
+                <label className="label">Nova senha</label>
+                <input className="input" type="password" value={pwNew}
+                  onChange={e => setPwNew(e.target.value)} placeholder="Nova senha (min 4 caracteres)" />
+              </div>
+              {pwMsg && <div style={{ fontSize: 13, fontWeight: 600, padding: '10px 14px', borderRadius: 8, marginBottom: 12,
+                background: pwMsg.includes('sucesso') ? '#E8F5E9' : '#FFEBEE',
+                color: pwMsg.includes('sucesso') ? '#2E7D32' : '#C62828' }}>{pwMsg}</div>}
+              <button className="btn btn-primary" onClick={async () => {
+                setPwSaving(true);
+                const res = await apiFetch('/auth/password', {
+                  method: 'PATCH',
+                  body: JSON.stringify({ current_password: pwCurrent, new_password: pwNew })
+                });
+                setPwMsg(res.ok ? 'Senha alterada com sucesso!' : (res.error || 'Erro ao alterar senha'));
+                if (res.ok) { setPwCurrent(''); setPwNew(''); }
+                setPwSaving(false);
+                setTimeout(() => setPwMsg(''), 4000);
+              }} disabled={pwSaving}>{pwSaving ? 'Salvando...' : 'Alterar Senha'}</button>
             </div>
             </>
             )}
