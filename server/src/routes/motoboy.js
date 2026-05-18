@@ -131,10 +131,11 @@ router.post('/optimize-route', authMiddleware, roleMiddleware('motoboy'), async 
 });
 
 router.patch('/profile', authMiddleware, roleMiddleware('motoboy'), async (req, res) => {
-  const { pix_key, name, cpf, vehicle_type, whatsapp } = req.body;
+  const { pix_key, name, email, cpf, vehicle_type, whatsapp } = req.body;
   const update = {};
   if (pix_key !== undefined) update.pix_key = pix_key;
   if (name !== undefined) update.name = name;
+  if (email !== undefined) update.email = email;
   if (cpf !== undefined) update.cpf = cpf;
   if (vehicle_type !== undefined) update.vehicle_type = vehicle_type;
   if (whatsapp !== undefined) update.whatsapp = whatsapp;

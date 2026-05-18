@@ -8,8 +8,12 @@ const router = Router();
 
 router.post('/register', async (req, res) => {
   const { name, phone, password, role, inviteToken, extra } = req.body;
+  const email = (extra?.email) || '';
   if (!name || !phone || !password || !role) {
     return res.status(400).json({ error: 'Nome, telefone, senha e perfil são obrigatórios' });
+  }
+  if (!email) {
+    return res.status(400).json({ error: 'Email é obrigatório para recuperação de senha' });
   }
   if (!['customer', 'store', 'motoboy'].includes(role)) {
     return res.status(400).json({ error: 'Perfil inválido' });
@@ -21,10 +25,9 @@ router.post('/register', async (req, res) => {
   const id = uuid();
   const hash = bcrypt.hashSync(password, 10);
 
-  const email = (extra?.email) || '';
   await supabase.from('users').insert({
     id, name, phone, password_hash: hash, role,
-    email, cpf: (extra?.cpf) || '',
+    email: email, cpf: (extra?.cpf) || '',
     vehicle_type: (extra?.vehicle_type) || '',
     pix_key: (extra?.pix_key) || ''
   });

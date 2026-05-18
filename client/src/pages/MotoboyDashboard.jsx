@@ -49,6 +49,7 @@ export default function MotoboyDashboard() {
   const [pwMsg, setPwMsg] = useState('');
   const [pwSaving, setPwSaving] = useState(false);
   const [editName, setEditName] = useState('');
+  const [editEmail, setEditEmail] = useState('');
   const [editCpf, setEditCpf] = useState('');
   const [editPlate, setEditPlate] = useState('');
   const [editWhatsapp, setEditWhatsapp] = useState('');
@@ -388,6 +389,11 @@ export default function MotoboyDashboard() {
           <input className="input" type="text" value={editName || user?.name || ''}
             onChange={e => setEditName(e.target.value)} placeholder="Seu nome" />
         </div>
+        <div className="form-group">
+          <label className="label">Email</label>
+          <input className="input" type="email" value={editEmail || user?.email || ''}
+            onChange={e => setEditEmail(e.target.value)} placeholder="seu@email.com" />
+        </div>
         <div className="form-group"><label className="label">Telefone</label><div style={{ fontWeight: 600 }}>{user?.phone}</div></div>
         <div className="form-group">
           <label className="label">WhatsApp</label>
@@ -418,6 +424,7 @@ export default function MotoboyDashboard() {
             localStorage.setItem('motoboy_pix_key', pixKey);
             const body = { pix_key: pixKey };
             if (editName) body.name = editName;
+            if (editEmail) body.email = editEmail;
             if (editCpf.replace(/\D/g, '').length === 11) body.cpf = editCpf;
             if (editPlate) body.vehicle_type = editPlate;
             if (editWhatsapp) body.whatsapp = editWhatsapp;
