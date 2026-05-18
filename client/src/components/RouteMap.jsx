@@ -12,14 +12,16 @@ function FitBounds({ bounds }) {
 export default function RoutePolyline({ from, to, color = '#1565C0', weight = 3 }) {
   const [positions, setPositions] = useState(null);
   const [failed, setFailed] = useState(false);
+  const fLat = Number(from?.lat), fLng = Number(from?.lng), tLat = Number(to?.lat), tLng = Number(to?.lng);
+  const valid = !isNaN(fLat) && !isNaN(fLng) && !isNaN(tLat) && !isNaN(tLng);
 
   useEffect(() => {
-    if (!from || !to || from.lat == null || from.lng == null || to.lat == null || to.lng == null) return;
+    if (!valid) return;
     let cancelled = false;
-    setFailed(false);
     setPositions(null);
+    setFailed(false);
 
-    fetch(`https://router.project-osrm.org/route/v1/driving/${from.lng},${from.lat};${to.lng},${to.lat}?geometries=geojson&overview=full`)
+    fetch(`https://router.project-osrm.org/route/v1/driving/${fLng},${fLat};${tLng},${tLat}?geometries=geojson&overview=full`)
       .then(r => r.json())
       .then(data => {
         if (cancelled) return;
@@ -31,19 +33,19 @@ export default function RoutePolyline({ from, to, color = '#1565C0', weight = 3 
       })
       .catch(() => { if (!cancelled) setFailed(true); });
     return () => { cancelled = true; };
-  }, [from?.lat, from?.lng, to?.lat, to?.lng]);
+  }, [fLat, fLng, tLat, tLng]);
 
-  const bounds = positions || (failed ? [[from.lat, from.lng], [to.lat, to.lng]] : null);
+  const straightLine = [[fLat, fLng], [tLat, tLng]];
+  const bounds = positions || straightLine;
 
   return (
     <>
-      {positions && (
-        <Polyline positions={positions} pathOptions={{ color, weight, opacity: 0.7 }} />
-      )}
-      {failed && (
-        <Polyline positions={[[from.lat, from.lng], [to.lat, to.lng]]} pathOptions={{ color: '#999', weight: 2, dashArray: '8 4', opacity: 0.5 }} />
-      )}
       {bounds && <FitBounds bounds={bounds} />}
+      {positions ? (
+        <Polyline positions={positions} pathOptions={{ color, weight, opacity: 0.8 }} />
+      ) : valid ? (
+        <Polyline positions={straightLine} pathOptions={{ color: '#999', weight: 2, dashArray: '6 4', opacity: 0.6 }} />
+      ) : null}
     </>
   );
 }
