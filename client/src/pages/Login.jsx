@@ -223,7 +223,7 @@ export default function Login() {
               </Link>
             </p>
             <p style={{ textAlign: 'center', marginTop: 4, fontSize: 12 }}>
-              <button onClick={() => { setRecovery(true); setRecoveryStep(1); setRecoveryMsg(''); }}
+              <button type="button" onClick={() => { setRecovery(true); setRecoveryStep(1); setRecoveryMsg(''); }}
                 style={{ background: 'none', border: 'none', color: '#999', cursor: 'pointer', fontSize: 12, textDecoration: 'underline' }}>
                 Esqueci minha senha
               </button>
