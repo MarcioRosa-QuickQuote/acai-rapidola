@@ -362,51 +362,50 @@ function NavScreen({ order, onClose, onStatusUpdate, statusLabel }) {
               </MLMarker>
             )}
 
-            {/* Motoboy — seta ciano rotacionando com a direção de viagem */}
+            {/* Motoboy — seta ciano + balão de rua abaixo (estilo Waze) */}
             {pos && (
-              <MLMarker longitude={pos.lng} latitude={pos.lat} anchor="center">
-                <div style={{
-                  filter: 'drop-shadow(0 4px 10px rgba(0,180,255,0.6))'
-                }}>
-                  <svg width="48" height="64" viewBox="0 0 48 64" xmlns="http://www.w3.org/2000/svg">
-                    {/* Corpo da seta */}
-                    <path d="M24 2 L44 60 L24 48 L4 60 Z"
-                      fill="#00BFFF" stroke="white" strokeWidth="2.5" strokeLinejoin="round"/>
-                    {/* Roda dianteira (detalhe moto) */}
-                    <ellipse cx="24" cy="18" rx="4" ry="6" fill="white" opacity="0.5"/>
-                    {/* Roda traseira */}
-                    <ellipse cx="24" cy="44" rx="5" ry="7" fill="rgba(0,0,0,0.25)"/>
-                  </svg>
+              <MLMarker longitude={pos.lng} latitude={pos.lat} anchor="center" offset={[0, 16]}>
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                  <div style={{ filter: 'drop-shadow(0 4px 10px rgba(0,180,255,0.6))' }}>
+                    <svg width="48" height="64" viewBox="0 0 48 64" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M24 2 L44 60 L24 48 L4 60 Z"
+                        fill="#00BFFF" stroke="white" strokeWidth="2.5" strokeLinejoin="round"/>
+                      <ellipse cx="24" cy="18" rx="4" ry="6" fill="white" opacity="0.5"/>
+                      <ellipse cx="24" cy="44" rx="5" ry="7" fill="rgba(0,0,0,0.25)"/>
+                    </svg>
+                  </div>
+                  {(step?.street || step?.text) && (
+                    <div style={{ position: 'relative', marginTop: 0, pointerEvents: 'none' }}>
+                      <div style={{
+                        position: 'absolute', top: -5, left: '50%',
+                        transform: 'translateX(-50%)',
+                        width: 0, height: 0,
+                        borderLeft: '6px solid transparent',
+                        borderRight: '6px solid transparent',
+                        borderBottom: isDaytime ? '6px solid white' : '6px solid rgba(28,28,44,0.97)'
+                      }} />
+                      <div style={{
+                        background: isDaytime ? 'white' : 'rgba(28,28,44,0.97)',
+                        color: isDaytime ? '#1a1a2e' : 'white',
+                        fontWeight: 700,
+                        fontSize: 11,
+                        padding: '5px 12px',
+                        borderRadius: 20,
+                        whiteSpace: 'nowrap',
+                        maxWidth: 160,
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        boxShadow: '0 2px 10px rgba(0,0,0,0.35)',
+                        letterSpacing: 0.1
+                      }}>
+                        {step.street || step.text}
+                      </div>
+                    </div>
+                  )}
                 </div>
               </MLMarker>
             )}
           </MLMap>
-        </div>
-      )}
-
-      {/* Placa de rua atual — aparece atrás da seta (zIndex 1 < mapa zIndex 2) */}
-      {pos && (step?.street || step?.text) && (
-        <div style={{
-          position: 'absolute',
-          top: 'calc(50% + 148px)',
-          left: '50%',
-          transform: 'translateX(-50%)',
-          zIndex: 1,
-          background: 'rgba(15,15,25,0.82)',
-          backdropFilter: 'blur(10px)',
-          borderRadius: 12,
-          padding: '6px 18px',
-          color: 'white',
-          fontWeight: 700,
-          fontSize: 14,
-          whiteSpace: 'nowrap',
-          maxWidth: '65%',
-          overflow: 'hidden',
-          textOverflow: 'ellipsis',
-          boxShadow: '0 2px 12px rgba(0,0,0,0.5)',
-          pointerEvents: 'none'
-        }}>
-          {step.street || step.text}
         </div>
       )}
 
