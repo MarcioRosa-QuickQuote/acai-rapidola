@@ -77,7 +77,7 @@ router.get('/register/check-invite', async (req, res) => {
 });
 
 router.post('/google', async (req, res) => {
-  const { userInfo } = req.body;
+  const { userInfo, role: reqRole, cpf, vehicle_type, pix_key } = req.body;
   if (!userInfo?.email) return res.status(400).json({ error: 'Dados Google inválidos' });
   try {
     const { email, name, picture, sub: googleId } = userInfo;
@@ -86,14 +86,24 @@ router.post('/google', async (req, res) => {
 
     if (!user) {
       const id = uuid();
+      const role = ['customer', 'store', 'motoboy'].includes(reqRole) ? reqRole : 'customer';
       const { error: insertErr } = await supabase.from('users').insert({
         id, name: name || email.split('@')[0], phone: null, email,
-        password_hash: '', role: 'customer',
-        google_id: googleId, photo_url: picture || ''
+        password_hash: '', role,
+        google_id: googleId, photo_url: picture || '',
+        cpf: cpf ? cpf.replace(/\D/g, '').slice(0, 11) : '',
+        vehicle_type: vehicle_type || '',
+        pix_key: pix_key || ''
       });
       if (insertErr) {
         console.error('[Auth] Google insert error:', insertErr);
         return res.status(500).json({ error: 'Erro ao criar usuário: ' + insertErr.message });
+      }
+      if (role === 'motoboy') {
+        await supabase.from('motoboy_locations').upsert(
+          { motoboy_id: id, lat: -23.5505, lng: -46.6333, online: 1 },
+          { onConflict: 'motoboy_id' }
+        );
       }
       ({ data: user } = await supabase.from('users').select('*').eq('id', id).single());
     } else if (!user.google_id) {

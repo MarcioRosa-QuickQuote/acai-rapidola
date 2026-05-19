@@ -32,6 +32,10 @@ export default function Register() {
 
   const googleLogin = useGoogleLogin({
     onSuccess: async (tokenResponse) => {
+      if (role === 'motoboy' && (!cpf || !pixKey)) {
+        setError('Preencha CPF e Chave Pix antes de continuar com Google');
+        return;
+      }
       setGoogleLoading(true);
       try {
         const infoRes = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
@@ -41,7 +45,7 @@ export default function Register() {
         const res = await fetch('/api/auth/google', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ userInfo: info })
+          body: JSON.stringify({ userInfo: info, role, cpf, vehicle_type: vehicleType, pix_key: pixKey })
         });
         const data = await res.json();
         if (data.token) loginWithToken(data.token, data.user);
@@ -248,7 +252,7 @@ export default function Register() {
               </div>
             </div>
 
-            {!inviteToken && role === 'customer' && (
+            {!inviteToken && (
               <>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10, margin: '4px 0 10px' }}>
                   <div style={{ flex: 1, height: 1, background: '#E8E0F0' }} />
@@ -271,7 +275,7 @@ export default function Register() {
                       <path fill="none" d="M0 0h48v48H0z"/>
                     </svg>
                   )}
-                  {googleLoading ? 'Aguarde...' : 'Cadastrar com Google'}
+                  {googleLoading ? 'Aguarde...' : role === 'motoboy' ? 'Cadastrar Motoboy com Google' : role === 'store' ? 'Cadastrar Loja com Google' : 'Cadastrar com Google'}
                 </button>
               </>
             )}
