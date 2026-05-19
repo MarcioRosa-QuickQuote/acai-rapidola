@@ -129,11 +129,25 @@ router.get('/geocode', async (req, res) => {
   const { q } = req.query;
   if (!q || q.length < 3) return res.json([]);
   try {
-    const resp = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(q)}&limit=5&countrycodes=BR&addressdetails=1`, {
-      headers: { 'User-Agent': 'PedeAcai/1.0' }
-    });
+    const resp = await fetch(
+      `https://photon.komoot.io/api/?q=${encodeURIComponent(q)}&lang=pt&limit=7&countrycodes=br&lat=-1.4558&lon=-48.5044`,
+      { headers: { 'User-Agent': 'PedeAcai/1.0' } }
+    );
     const data = await resp.json();
-    res.json(data);
+    const results = (data.features || []).map(f => {
+      const p = f.properties;
+      const [lon, lat] = f.geometry.coordinates;
+      const parts = [];
+      if (p.street || p.name) {
+        const street = p.street || p.name;
+        parts.push(p.housenumber ? `${street}, ${p.housenumber}` : street);
+      }
+      if (p.district) parts.push(p.district);
+      if (p.city || p.town || p.village) parts.push(p.city || p.town || p.village);
+      if (p.state) parts.push(p.state);
+      return { display_name: parts.length ? parts.join(', ') : (p.name || 'Endereço'), lat: String(lat), lon: String(lon) };
+    });
+    res.json(results);
   } catch {
     res.json([]);
   }

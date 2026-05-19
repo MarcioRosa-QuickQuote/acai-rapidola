@@ -35,7 +35,7 @@ export default function CustomerHome() {
   const [activeOrder, setActiveOrder] = useState(null);
   const [view, setView] = useState('menu');
   const [mainTab, setMainTab] = useState('menu');
-  const [contaTab, setContaTab] = useState('enderecos');
+  const [contaTab, setContaTab] = useState('perfil');
   const [showCepConta, setShowCepConta] = useState(false);
   const [showCart, setShowCart] = useState(false);
   const [contaMapLat, setContaMapLat] = useState(null);
@@ -126,6 +126,7 @@ export default function CustomerHome() {
   const [cep, setCep] = useState('');
   const [cepLoading, setCepLoading] = useState(false);
   const photoRef = useRef(null);
+  const searchDebounceRef = useRef(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -229,7 +230,7 @@ export default function CustomerHome() {
                 padding: '2px',
                 border: 'none', borderRadius: 20, width: 'auto', display: 'flex', alignItems: 'center'
               }}>
-              <img src="/saco_acai.png" style={{ width: 32, height: 32, objectFit: 'contain' }} />
+              <img src="/saco_acai.png" style={{ width: 52, height: 52, objectFit: 'contain' }} />
             </button>
           )}
           {Object.keys(cart).length > 0 && (
@@ -363,14 +364,17 @@ export default function CustomerHome() {
       setSavingAddr(false);
     }
 
-    async function searchAddress(q) {
-      if (q.length < 5) { setAddressSuggestions([]); setShowSuggestions(false); return; }
-      try {
-        const res = await fetch(`/api/orders/geocode?q=${encodeURIComponent(q)}`);
-        const data = await res.json();
-        setAddressSuggestions(data || []);
-        setShowSuggestions(data?.length > 0);
-      } catch { setShowSuggestions(false); }
+    function searchAddress(q) {
+      if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);
+      if (q.length < 3) { setAddressSuggestions([]); setShowSuggestions(false); return; }
+      searchDebounceRef.current = setTimeout(async () => {
+        try {
+          const res = await fetch(`/api/orders/geocode?q=${encodeURIComponent(q)}`);
+          const data = await res.json();
+          setAddressSuggestions(data || []);
+          setShowSuggestions(data?.length > 0);
+        } catch { setShowSuggestions(false); }
+      }, 280);
     }
 
     async function lookupCep() {
@@ -445,36 +449,9 @@ export default function CustomerHome() {
       <>
         <div className="page-title" style={{ fontWeight: 800 }}>Minha Conta</div>
         <div className="card" style={{ textAlign: 'left', padding: 0, overflow: 'hidden' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '16px 20px', borderBottom: '1px solid var(--border)' }}>
-            <label style={{ cursor: 'pointer', position: 'relative' }}>
-              {user?.photo_url ? (
-                <img src={user.photo_url} alt="Foto"
-                  style={{ width: 56, height: 56, borderRadius: '50%', objectFit: 'cover' }}
-                  onError={e => { e.target.style.display = 'none'; }} />
-              ) : (
-                <div style={{
-                  width: 56, height: 56, borderRadius: '50%',
-                  background: 'linear-gradient(135deg, #CE93D8, #AB47BC)',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  color: 'white', fontWeight: 700, fontSize: 24
-                }}>
-                  {user?.name?.charAt(0)?.toUpperCase()}
-                </div>
-              )}
-              <input type="file" accept="image/*" ref={photoRef}
-                onChange={e => { if (e.target.files?.[0]) uploadPhoto(e.target.files[0]); }}
-                style={{ display: 'none' }} />
-              <div style={{ fontSize: 9, color: '#888', textAlign: 'center', marginTop: 2 }}>Alterar foto</div>
-            </label>
-            <div>
-              <div style={{ fontWeight: 800, fontSize: 16 }}>{user?.name}</div>
-              <div style={{ fontSize: 12, color: '#888' }}>{user?.phone}</div>
-            </div>
-          </div>
-
           <div style={{ display: 'flex', borderBottom: '1px solid var(--border)' }}>
             {[
-              { key: 'enderecos', label: 'Endereços', icon: '📍' },
+              { key: 'perfil', label: 'Perfil', icon: '👤' },
               { key: 'pagamentos', label: 'Pagamentos', icon: '💳' },
               { key: 'conversas', label: 'Conversas', icon: '💬' },
               { key: 'notificacoes', label: 'Notificações', icon: '🔔' },
@@ -497,8 +474,35 @@ export default function CustomerHome() {
           </div>
 
           <div style={{ padding: 20 }}>
-            {contaTab === 'enderecos' && (
+            {contaTab === 'perfil' && (
               <div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20, paddingBottom: 16, borderBottom: '1px solid var(--border)' }}>
+                  <label style={{ cursor: 'pointer', position: 'relative' }}>
+                    {user?.photo_url ? (
+                      <img src={user.photo_url} alt="Foto"
+                        style={{ width: 56, height: 56, borderRadius: '50%', objectFit: 'cover' }}
+                        onError={e => { e.target.style.display = 'none'; }} />
+                    ) : (
+                      <div style={{
+                        width: 56, height: 56, borderRadius: '50%',
+                        background: 'linear-gradient(135deg, #CE93D8, #AB47BC)',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        color: 'white', fontWeight: 700, fontSize: 24
+                      }}>
+                        {user?.name?.charAt(0)?.toUpperCase()}
+                      </div>
+                    )}
+                    <input type="file" accept="image/*" ref={photoRef}
+                      onChange={e => { if (e.target.files?.[0]) uploadPhoto(e.target.files[0]); }}
+                      style={{ display: 'none' }} />
+                    <div style={{ fontSize: 9, color: '#888', textAlign: 'center', marginTop: 2 }}>Alterar foto</div>
+                  </label>
+                  <div>
+                    <div style={{ fontWeight: 800, fontSize: 16 }}>{user?.name}</div>
+                    <div style={{ fontSize: 12, color: '#888' }}>{user?.phone}</div>
+                  </div>
+                </div>
+
                 {savedAddresses.length > 0 && (
                   <div style={{ marginBottom: 16 }}>
                     {savedAddresses.map(addr => (
@@ -627,6 +631,34 @@ export default function CustomerHome() {
                   </div>
                 )}
                 {addrMsg && <div style={{ fontSize: 13, fontWeight: 600, color: addrMsg.includes('Erro') ? '#C62828' : '#2E7D32', marginTop: 8 }}>{addrMsg}</div>}
+
+                <div style={{ borderTop: '1px solid var(--border)', marginTop: 20, paddingTop: 16 }}>
+                  <div className="page-title" style={{ fontSize: 16, marginBottom: 12 }}>Alterar Senha</div>
+                  <div className="form-group">
+                    <label className="label">Senha atual</label>
+                    <input className="input" type="password" value={pwCurrent}
+                      onChange={e => setPwCurrent(e.target.value)} placeholder="Senha atual" />
+                  </div>
+                  <div className="form-group">
+                    <label className="label">Nova senha</label>
+                    <input className="input" type="password" value={pwNew}
+                      onChange={e => setPwNew(e.target.value)} placeholder="Nova senha (min 4 caracteres)" />
+                  </div>
+                  {pwMsg && <div style={{ fontSize: 13, fontWeight: 600, padding: '10px 14px', borderRadius: 8, marginBottom: 12,
+                    background: pwMsg.includes('sucesso') ? '#E8F5E9' : '#FFEBEE',
+                    color: pwMsg.includes('sucesso') ? '#2E7D32' : '#C62828' }}>{pwMsg}</div>}
+                  <button className="btn btn-primary" onClick={async () => {
+                    setPwSaving(true);
+                    const res = await apiFetch('/auth/password', {
+                      method: 'PATCH',
+                      body: JSON.stringify({ current_password: pwCurrent, new_password: pwNew })
+                    });
+                    setPwMsg(res.ok ? 'Senha alterada com sucesso!' : (res.error || 'Erro ao alterar senha'));
+                    if (res.ok) { setPwCurrent(''); setPwNew(''); }
+                    setPwSaving(false);
+                    setTimeout(() => setPwMsg(''), 4000);
+                  }} disabled={pwSaving}>{pwSaving ? 'Salvando...' : 'Alterar Senha'}</button>
+                </div>
               </div>
             )}
 
@@ -661,34 +693,6 @@ export default function CustomerHome() {
                 <div style={{ fontSize: 13, color: '#999' }}>Favorite lojas e produtos</div>
               </div>
             )}
-
-            <div style={{ borderTop: '1px solid var(--border)', marginTop: 20, paddingTop: 16 }}>
-              <div className="page-title" style={{ fontSize: 16, marginBottom: 12 }}>Alterar Senha</div>
-              <div className="form-group">
-                <label className="label">Senha atual</label>
-                <input className="input" type="password" value={pwCurrent}
-                  onChange={e => setPwCurrent(e.target.value)} placeholder="Senha atual" />
-              </div>
-              <div className="form-group">
-                <label className="label">Nova senha</label>
-                <input className="input" type="password" value={pwNew}
-                  onChange={e => setPwNew(e.target.value)} placeholder="Nova senha (min 4 caracteres)" />
-              </div>
-              {pwMsg && <div style={{ fontSize: 13, fontWeight: 600, padding: '10px 14px', borderRadius: 8, marginBottom: 12,
-                background: pwMsg.includes('sucesso') ? '#E8F5E9' : '#FFEBEE',
-                color: pwMsg.includes('sucesso') ? '#2E7D32' : '#C62828' }}>{pwMsg}</div>}
-              <button className="btn btn-primary" onClick={async () => {
-                setPwSaving(true);
-                const res = await apiFetch('/auth/password', {
-                  method: 'PATCH',
-                  body: JSON.stringify({ current_password: pwCurrent, new_password: pwNew })
-                });
-                setPwMsg(res.ok ? 'Senha alterada com sucesso!' : (res.error || 'Erro ao alterar senha'));
-                if (res.ok) { setPwCurrent(''); setPwNew(''); }
-                setPwSaving(false);
-                setTimeout(() => setPwMsg(''), 4000);
-              }} disabled={pwSaving}>{pwSaving ? 'Salvando...' : 'Alterar Senha'}</button>
-            </div>
           </div>
         </div>
       </>
