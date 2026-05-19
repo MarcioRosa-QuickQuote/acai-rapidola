@@ -131,7 +131,7 @@ function NavScreen({ order, onClose, onStatusUpdate, statusLabel }) {
         ? (() => { const { snappedPos } = snapToRoute(pos, c); return [snappedPos.lng, snappedPos.lat]; })()
         : [c[0][1], c[0][0]];
       try {
-        map.easeTo({ center, bearing: headingRef.current, pitch: 60, zoom: 17.5, duration: 700, padding: { bottom: 220 } });
+        map.easeTo({ center, bearing: headingRef.current, pitch: 60, zoom: 17.5, duration: 700, padding: { top: 320, bottom: 0 } });
       } catch (_) {}
     }, 400); // aguarda mapa montar
     return () => clearTimeout(timer);
@@ -177,7 +177,7 @@ function NavScreen({ order, onClose, onStatusUpdate, statusLabel }) {
         pitch: 60,
         zoom: 17.5,
         duration: 900,
-        padding: { top: 0, bottom: 220, left: 0, right: 0 }
+        padding: { top: 320, bottom: 0, left: 0, right: 0 }
       });
     } catch (_) {}
   }, [pos?.lat, pos?.lng, heading, follow, navStarted]);
@@ -264,7 +264,7 @@ function NavScreen({ order, onClose, onStatusUpdate, statusLabel }) {
         }}>
           <div style={{ display: 'flex', alignItems: 'baseline', gap: 14, marginBottom: 6 }}>
             <div style={{ fontSize: 42, fontWeight: 900, color: '#111' }}>
-              {totalDur > 0 ? `${totalDur} min` : '-- min'}
+              {totalDist > 0 ? (totalDur > 0 ? `${totalDur} min` : '< 1 min') : '-- min'}
             </div>
             <div style={{ fontSize: 20, color: '#888', fontWeight: 600 }}>
               {totalDist > 0 ? `${(totalDist / 1000).toFixed(1)} km` : ''}
@@ -395,18 +395,15 @@ function NavScreen({ order, onClose, onStatusUpdate, statusLabel }) {
               fontSize: 26, flexShrink: 0
             }}>{step.icon}</div>
             <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ color: 'rgba(255,255,255,0.75)', fontSize: 13, marginBottom: 2 }}>
+              <div style={{ color: 'rgba(255,255,255,0.75)', fontSize: 15, marginBottom: 4, fontWeight: 600 }}>
                 {remaining < 1000 ? `${remaining} m` : `${(remaining / 1000).toFixed(1)} km`}
               </div>
               <div style={{
-                color: 'white', fontWeight: 800, fontSize: 20, lineHeight: 1.2,
+                color: 'white', fontWeight: 800, fontSize: 22, lineHeight: 1.2,
                 overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap'
               }}>
                 {step.street || step.text}
               </div>
-              {step.street && step.street !== step.text && (
-                <div style={{ color: 'rgba(255,255,255,0.65)', fontSize: 13, marginTop: 2 }}>{step.text}</div>
-              )}
             </div>
           </div>
         ) : (
@@ -429,37 +426,6 @@ function NavScreen({ order, onClose, onStatusUpdate, statusLabel }) {
         )}
       </div>
 
-      {/* Botão voltar (dentro da barra colorida) */}
-      <div onClick={() => setNavStarted(false)} style={{
-        position: 'absolute', top: 10, left: 12, zIndex: 30,
-        width: 34, height: 34, borderRadius: 17, background: 'rgba(255,255,255,0.22)',
-        display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer'
-      }}>
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
-      </div>
-
-      {/* Navegação passo (botões ↑↓ laterais, só ao entregar) */}
-      {!isToStore && steps.length > 1 && (
-        <div style={{
-          position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)',
-          zIndex: 22, display: 'flex', flexDirection: 'column', gap: 8
-        }}>
-          {currentStepIdx > 0 && (
-            <div style={{
-              width: 38, height: 38, borderRadius: 19, background: 'rgba(255,255,255,0.92)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              cursor: 'pointer', boxShadow: '0 2px 6px rgba(0,0,0,0.2)', fontSize: 16
-            }} onClick={() => setCurrentStepIdx(i => Math.max(0, i - 1))}>↑</div>
-          )}
-          {currentStepIdx < steps.length - 1 && (
-            <div style={{
-              width: 38, height: 38, borderRadius: 19, background: 'rgba(255,255,255,0.92)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              cursor: 'pointer', boxShadow: '0 2px 6px rgba(0,0,0,0.2)', fontSize: 16
-            }} onClick={() => setCurrentStepIdx(i => Math.min(steps.length - 1, i + 1))}>↓</div>
-          )}
-        </div>
-      )}
 
       {/* Barra inferior — tema escuro para combinar com mapa dark */}
       <div style={{
@@ -475,7 +441,7 @@ function NavScreen({ order, onClose, onStatusUpdate, statusLabel }) {
               // reativa follow: move câmera de volta pro motoboy
               const map = mapRef.current?.getMap?.() ?? mapRef.current;
               if (map && pos) {
-                map.easeTo({ center: [pos.lng, pos.lat], bearing: heading, pitch: 60, zoom: 17.5, duration: 800, padding: { bottom: 220 } });
+                map.easeTo({ center: [pos.lng, pos.lat], bearing: heading, pitch: 60, zoom: 17.5, duration: 800, padding: { top: 320, bottom: 0 } });
               }
             }
             return !f;
@@ -495,7 +461,7 @@ function NavScreen({ order, onClose, onStatusUpdate, statusLabel }) {
         {/* ETA */}
         <div style={{ flex: 1 }}>
           <div style={{ fontSize: 28, fontWeight: 900, color: 'white', lineHeight: 1 }}>
-            {totalDur > 0 ? `${totalDur} min` : '-- min'}
+            {totalDist > 0 ? (totalDur > 0 ? `${totalDur} min` : '< 1 min') : '-- min'}
           </div>
           <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)', marginTop: 3 }}>
             {totalDist > 0 ? `${(totalDist / 1000).toFixed(1)} km` : ''}
@@ -517,7 +483,7 @@ function NavScreen({ order, onClose, onStatusUpdate, statusLabel }) {
             background: 'rgba(255,255,255,0.08)', border: '1.5px solid rgba(255,255,255,0.15)',
             color: 'rgba(255,255,255,0.8)', fontWeight: 700, fontSize: 14,
             cursor: 'pointer', flexShrink: 0
-          }} onClick={() => setNavStarted(false)}>Overview</div>
+          }} onClick={() => setNavStarted(false)}>Fechar</div>
         )}
       </div>
     </div>
