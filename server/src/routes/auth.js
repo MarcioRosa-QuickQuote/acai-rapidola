@@ -86,11 +86,15 @@ router.post('/google', async (req, res) => {
 
     if (!user) {
       const id = uuid();
-      await supabase.from('users').insert({
-        id, name: name || email.split('@')[0], phone: '', email,
+      const { error: insertErr } = await supabase.from('users').insert({
+        id, name: name || email.split('@')[0], phone: null, email,
         password_hash: '', role: 'customer',
         google_id: googleId, photo_url: picture || ''
       });
+      if (insertErr) {
+        console.error('[Auth] Google insert error:', insertErr);
+        return res.status(500).json({ error: 'Erro ao criar usuário: ' + insertErr.message });
+      }
       ({ data: user } = await supabase.from('users').select('*').eq('id', id).single());
     } else if (!user.google_id) {
       await supabase.from('users').update({

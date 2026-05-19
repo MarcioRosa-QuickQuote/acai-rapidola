@@ -20,6 +20,10 @@ const { supabase } = require('./database');
 const app = express();
 
 app.use(cors());
+app.use((req, res, next) => {
+  res.setHeader('Cross-Origin-Opener-Policy', 'same-origin-allow-popups');
+  next();
+});
 app.use(express.json({ limit: '500kb' }));
 
 const limiterApi = rateLimit({ windowMs: 60000, max: 100, message: { error: 'Muitas requisições. Tente novamente em instantes.' } });
