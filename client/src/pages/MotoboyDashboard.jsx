@@ -101,6 +101,7 @@ function NavScreen({ order, onClose, onStatusUpdate, statusLabel }) {
   const mapRef = useRef(null);
   const lastRouteOriginRef = useRef(null);
   const [routeOrigin, setRouteOrigin] = useState(null);
+  const [showOverview, setShowOverview] = useState(false);
 
   const isToStore = order.status === 'assigned';
 
@@ -409,6 +410,37 @@ function NavScreen({ order, onClose, onStatusUpdate, statusLabel }) {
         </div>
       )}
 
+      {/* Overlay: mapa overview durante navegação ativa */}
+      {showOverview && (
+        <div style={{ position: 'absolute', inset: 0, zIndex: 30 }}>
+          {hasRoute && (
+            <MapContainer center={mapCenterLeaflet} zoom={14} style={{ width: '100%', height: '100%' }}
+              zoomControl={false} key={`ov-active-${order.id}`}>
+              <TileLayer
+                attribution='&copy; <a href="https://carto.com">CARTO</a>'
+                url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
+              />
+              {pos && <Marker position={[pos.lat, pos.lng]} icon={motoboyIcon} />}
+              <Marker position={[order.customer_lat, order.customer_lng]} icon={destIcon} />
+              {order.store_lat && <Marker position={[order.store_lat, order.store_lng]} icon={storeIcon} />}
+              <RoutePolyline from={routeOrigin || storeCoords} to={routeDest} color="#4A148C" weight={8} />
+            </MapContainer>
+          )}
+          {/* Botão voltar à primeira pessoa */}
+          <div onClick={() => setShowOverview(false)} style={{
+            position: 'absolute', bottom: 40, right: 20, zIndex: 40,
+            width: 54, height: 54, borderRadius: 27,
+            background: '#1565C0',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            cursor: 'pointer', boxShadow: '0 4px 18px rgba(0,0,0,0.4)'
+          }}>
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="white">
+              <path d="M12 8c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4zm8.94 3c-.46-4.17-3.77-7.48-7.94-7.94V1h-2v2.06C6.83 3.52 3.52 6.83 3.06 11H1v2h2.06c.46 4.17 3.77 7.48 7.94 7.94V23h2v-2.06c4.17-.46 7.48-3.77 7.94-7.94H23v-2h-2.06zM12 19c-3.87 0-7-3.13-7-7s3.13-7 7-7 7 3.13 7 7-3.13 7-7 7z"/>
+            </svg>
+          </div>
+        </div>
+      )}
+
       {/* Barra de instrução no topo (estilo Waze) */}
       <div style={{
         position: 'absolute', top: 0, left: 0, right: 0, zIndex: 25,
@@ -514,21 +546,33 @@ function NavScreen({ order, onClose, onStatusUpdate, statusLabel }) {
           </div>
         </div>
 
-        {/* Ação ou Overview */}
-        {statusLabel ? (
-          <button style={{
-            padding: '13px 20px', borderRadius: 26, border: 'none',
-            background: instrBg, color: 'white', fontWeight: 800, fontSize: 14,
-            cursor: 'pointer', flexShrink: 0, lineHeight: 1.3
-          }} onClick={onStatusUpdate}>{statusLabel}</button>
-        ) : (
-          <div style={{
-            padding: '13px 18px', borderRadius: 26,
-            background: 'rgba(255,255,255,0.08)', border: '1.5px solid rgba(255,255,255,0.15)',
-            color: 'rgba(255,255,255,0.8)', fontWeight: 700, fontSize: 14,
-            cursor: 'pointer', flexShrink: 0
-          }} onClick={() => setNavStarted(false)}>Fechar</div>
-        )}
+        {/* Botão mapa overview + Ação/Fechar */}
+        <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexShrink: 0 }}>
+          <div onClick={() => setShowOverview(true)} style={{
+            width: 46, height: 46, borderRadius: 23,
+            background: 'rgba(255,255,255,0.08)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            cursor: 'pointer', border: '1.5px solid rgba(255,255,255,0.15)'
+          }}>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="#CCC">
+              <path d="M20.5 3l-.16.03L15 5.1 9 3 3.36 4.9c-.21.07-.36.25-.36.48V20.5c0 .28.22.5.5.5l.16-.03L9 18.9l6 2.1 5.64-1.9c.21-.07.36-.25.36-.48V3.5c0-.28-.22-.5-.5-.5zM15 19l-6-2.11V5l6 2.11V19z"/>
+            </svg>
+          </div>
+          {statusLabel ? (
+            <button style={{
+              padding: '13px 20px', borderRadius: 26, border: 'none',
+              background: instrBg, color: 'white', fontWeight: 800, fontSize: 14,
+              cursor: 'pointer', lineHeight: 1.3
+            }} onClick={onStatusUpdate}>{statusLabel}</button>
+          ) : (
+            <div style={{
+              padding: '13px 18px', borderRadius: 26,
+              background: 'rgba(255,255,255,0.08)', border: '1.5px solid rgba(255,255,255,0.15)',
+              color: 'rgba(255,255,255,0.8)', fontWeight: 700, fontSize: 14,
+              cursor: 'pointer'
+            }} onClick={() => setNavStarted(false)}>Fechar</div>
+          )}
+        </div>
       </div>
     </div>
   );
