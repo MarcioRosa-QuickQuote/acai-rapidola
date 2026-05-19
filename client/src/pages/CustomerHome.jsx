@@ -503,134 +503,89 @@ export default function CustomerHome() {
                   </div>
                 </div>
 
-                {savedAddresses.length > 0 && (
-                  <div style={{ marginBottom: 16 }}>
-                    {savedAddresses.map(addr => (
-                      <div key={addr.id} className="card" style={{
-                        padding: 14, marginBottom: 8, cursor: 'pointer',
-                        background: addrForm === addr.address ? '#F3E5F5' : 'white',
-                        border: addrForm === addr.address ? '2px solid var(--primary)' : '1px solid var(--border)'
-                      }} onClick={() => setPrimaryAddress(addr)}>
-                        <div className="flex-between">
-                          <div style={{ flex: 1, minWidth: 0 }}>
-                            <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 2 }}>{addr.label}</div>
-                            <div style={{ fontSize: 12, color: '#888', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                              {addr.address}
-                            </div>
-                          </div>
-                          <button className="btn btn-sm"
-                            onClick={e => { e.stopPropagation(); removeAddress(addr.id); }}
-                            style={{ color: '#C62828', fontSize: 11, padding: '4px 8px', background: 'transparent' }}>
-                            ✕
-                          </button>
-                        </div>
-                        {addr.lat && addr.lng && addrForm === addr.address && (
-                          <div style={{ height: 160, borderRadius: 8, overflow: 'hidden', border: '1px solid var(--border)', marginTop: 8 }}>
-                            <MapContainer
-                              center={[addr.lat, addr.lng]} zoom={16}
-                              style={{ height: '100%', width: '100%' }}
-                              key={`addr-${addr.id}`} scrollWheelZoom={false}>
-                              <TileLayer attribution='&copy; OSM' url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-                              <Marker position={[addr.lat, addr.lng]} />
-                            </MapContainer>
-                          </div>
-                        )}
-                      </div>
-                    ))}
+                {/* Endereço de entrega — sempre visível */}
+                <div style={{ marginBottom: 4 }}>
+                  <div style={{ fontWeight: 700, fontSize: 12, color: '#888', marginBottom: 10, textTransform: 'uppercase', letterSpacing: 0.5 }}>
+                    Endereço de entrega
                   </div>
-                )}
 
-                {!showAddrForm ? (
-                  <button className="btn btn-outline" onClick={() => setShowAddrForm(true)}
-                    style={{ width: '100%', justifyContent: 'flex-start', gap: 8, padding: '12px 16px', marginBottom: 8 }}>
-                    <span style={{ fontSize: 18, lineHeight: 1 }}>+</span>
-                    Adicionar novo endereço
+                  <button type="button" className="btn btn-outline btn-sm"
+                    onClick={useMyLocationConta} disabled={savingAddr}
+                    style={{ width: '100%', justifyContent: 'flex-start', gap: 8, marginBottom: 10, padding: '10px 14px' }}>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/>
+                      <line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/>
+                    </svg>
+                    {savingAddr ? 'Obtendo localização...' : 'Usar minha localização'}
                   </button>
-                ) : (
-                  <div className="card" style={{ marginBottom: 12, padding: 16 }}>
-                    <div className="form-group">
-                      <label className="label">Nome do endereço</label>
-                      <input className="input" type="text" value={addrLabel}
-                        onChange={e => setAddrLabel(e.target.value)}
-                        placeholder="Ex: Casa, Trabalho, Praia..."
-                        style={{ marginBottom: 8 }} />
-                    </div>
-                    <button type="button" className="btn btn-outline btn-sm"
-                      onClick={useMyLocationConta} disabled={savingAddr}
-                      style={{ width: '100%', justifyContent: 'flex-start', gap: 8, marginBottom: 8, padding: '10px 14px' }}>
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/>
-                        <line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/>
-                      </svg>
-                      {savingAddr ? 'Obtendo localização...' : 'Usar minha localização'}
-                    </button>
-                    <div className="flex-row" style={{ gap: 8, marginBottom: 8 }}>
-                      <input className="input" type="text" value={currentAddr}
-                        onChange={e => { setAddrForm(e.target.value); searchAddress(e.target.value); }}
-                        onFocus={() => { if (addressSuggestions.length > 0) setShowSuggestions(true); }}
-                        onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
-                        placeholder="Rua, número, bairro - Cidade"
-                        style={{ flex: 1 }} />
-                      <button type="button" className="btn btn-sm btn-secondary"
-                        onClick={geocodeConta} disabled={savingAddr}
-                        style={{ width: 'auto', whiteSpace: 'nowrap' }}>
-                        Buscar
-                      </button>
-                    </div>
+
+                  <div style={{ position: 'relative', marginBottom: 8 }}>
+                    <input className="input" type="text" value={currentAddr}
+                      onChange={e => { setAddrForm(e.target.value); searchAddress(e.target.value); }}
+                      onFocus={() => { if (addressSuggestions.length > 0) setShowSuggestions(true); }}
+                      onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
+                      placeholder="Buscar rua, número, bairro…" />
                     {showSuggestions && addressSuggestions.length > 0 && (
                       <div style={{
-                        background: 'white', border: '1px solid #DDD', borderRadius: 8, maxHeight: 160, overflow: 'auto',
-                        boxShadow: '0 4px 12px rgba(0,0,0,0.1)', marginBottom: 8
+                        position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 50,
+                        background: 'white', border: '1px solid #DDD', borderRadius: 8,
+                        maxHeight: 220, overflow: 'auto',
+                        boxShadow: '0 4px 16px rgba(0,0,0,0.15)'
                       }}>
                         {addressSuggestions.map((s, i) => (
                           <div key={i} onMouseDown={() => selectAddress(s)}
-                            style={{ padding: '10px 14px', cursor: 'pointer', fontSize: 13, borderBottom: '1px solid #F0F0F0' }}>
-                            {s.display_name}
+                            style={{ padding: '10px 14px', cursor: 'pointer', fontSize: 13, borderBottom: '1px solid #F5F5F5', display: 'flex', alignItems: 'flex-start', gap: 8 }}>
+                            <span style={{ color: 'var(--primary)', flexShrink: 0, marginTop: 1 }}>📍</span>
+                            <span>{s.display_name}</span>
                           </div>
                         ))}
                       </div>
                     )}
-                    {(contaMapLat || user?.lat) && (contaMapLng || user?.lng) && (
-                      <div style={{ height: 180, borderRadius: 8, overflow: 'hidden', border: '1px solid var(--border)', marginBottom: 8 }}>
+                  </div>
+
+                  {/* Mapa para ajuste fino — aparece automaticamente ao selecionar endereço */}
+                  {(contaMapLat || user?.lat) && (contaMapLng || user?.lng) && (
+                    <div style={{ marginBottom: 12 }}>
+                      <div style={{ fontSize: 11, color: '#888', marginBottom: 4 }}>
+                        Use o mapa para ajustar o ponto exato
+                      </div>
+                      <div style={{ height: 200, borderRadius: 10, overflow: 'hidden', border: '1px solid var(--border)' }}>
                         <MapContainer
                           center={[contaMapLat || user.lat, contaMapLng || user.lng]} zoom={16}
                           style={{ height: '100%', width: '100%' }}
-                          key={`conta-new-${contaMapLat || 0}-${contaMapLng || 0}`} scrollWheelZoom={false}>
+                          key={`conta-map-${contaMapLat || 0}-${contaMapLng || 0}`} scrollWheelZoom={false}>
                           <TileLayer attribution='&copy; OSM' url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
                           <Marker position={[contaMapLat || user.lat, contaMapLng || user.lng]} />
                         </MapContainer>
                       </div>
-                    )}
-                    <div className="flex-row" style={{ gap: 8 }}>
-                      <button className="btn btn-primary btn-sm" onClick={addAddress}>
-                        Salvar Endereço
-                      </button>
-                      <button className="btn btn-sm" onClick={() => { setShowAddrForm(false); setAddrLabel(''); }}
-                        style={{ background: '#F5F5F5', color: '#666' }}>
-                        Cancelar
+                    </div>
+                  )}
+
+                  {!showCepConta ? (
+                    <button type="button" onClick={() => setShowCepConta(true)}
+                      style={{ background: 'none', border: 'none', color: 'var(--primary)', fontSize: 12, fontWeight: 600, cursor: 'pointer', padding: '2px 0', textDecoration: 'underline' }}>
+                      Buscar por CEP
+                    </button>
+                  ) : (
+                    <div className="flex-row" style={{ gap: 8, marginBottom: 8 }}>
+                      <input className="input" type="text" value={cep}
+                        onChange={e => { setCep(e.target.value.replace(/\D/g, '').slice(0, 8)); }}
+                        placeholder="CEP (ex: 01001000)" maxLength={8}
+                        style={{ width: 140, flexShrink: 0 }} />
+                      <button type="button" className="btn btn-sm btn-secondary"
+                        onClick={lookupCep} disabled={cepLoading || cep.replace(/\D/g, '').length !== 8}
+                        style={{ whiteSpace: 'nowrap' }}>
+                        {cepLoading ? '...' : 'Buscar CEP'}
                       </button>
                     </div>
-                  </div>
-                )}
-                {!showCepConta ? (
-                  <button type="button" onClick={() => setShowCepConta(true)}
-                    style={{ background: 'none', border: 'none', color: 'var(--primary)', fontSize: 13, fontWeight: 600, cursor: 'pointer', padding: '4px 0', textDecoration: 'underline' }}>
-                    Buscar por CEP
+                  )}
+
+                  {addrMsg && <div style={{ fontSize: 13, fontWeight: 600, color: addrMsg.includes('Erro') ? '#C62828' : '#2E7D32', marginTop: 8 }}>{addrMsg}</div>}
+
+                  <button className="btn btn-primary" style={{ marginTop: 14, width: '100%' }} onClick={saveAddress} disabled={savingAddr}>
+                    {savingAddr ? 'Salvando…' : 'Salvar Endereço'}
                   </button>
-                ) : (
-                  <div className="flex-row" style={{ gap: 8, marginBottom: 8 }}>
-                    <input className="input" type="text" value={cep}
-                      onChange={e => { setCep(e.target.value.replace(/\D/g, '').slice(0, 8)); }}
-                      placeholder="CEP (ex: 01001000)" maxLength={8}
-                      style={{ width: 140, flexShrink: 0 }} />
-                    <button type="button" className="btn btn-sm btn-secondary"
-                      onClick={lookupCep} disabled={cepLoading || cep.replace(/\D/g, '').length !== 8}
-                      style={{ whiteSpace: 'nowrap' }}>
-                      {cepLoading ? '...' : 'Buscar CEP'}
-                    </button>
-                  </div>
-                )}
-                {addrMsg && <div style={{ fontSize: 13, fontWeight: 600, color: addrMsg.includes('Erro') ? '#C62828' : '#2E7D32', marginTop: 8 }}>{addrMsg}</div>}
+                </div>
 
                 <div style={{ borderTop: '1px solid var(--border)', marginTop: 20, paddingTop: 16 }}>
                   <div className="page-title" style={{ fontSize: 16, marginBottom: 12 }}>Alterar Senha</div>
