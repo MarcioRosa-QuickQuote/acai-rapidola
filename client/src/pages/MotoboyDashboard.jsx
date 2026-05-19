@@ -1076,10 +1076,6 @@ export default function MotoboyDashboard() {
       <div className="header" style={{ padding: '8px 16px' }}>
         <div className="header-left" style={{ gap: 10 }}>
           <img src="/logo_placa.png" alt="Pé de Açaí" style={{ width: 90, height: 90, objectFit: 'contain', flexShrink: 0 }} />
-          <div>
-            <div className="header-title" style={{ fontSize: 18 }}>Pé de Açaí</div>
-            <div style={{ fontSize: 11, color: 'var(--text-light)' }}>Motoboy</div>
-          </div>
         </div>
         <div className="header-right" style={{ gap: 10 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer' }}

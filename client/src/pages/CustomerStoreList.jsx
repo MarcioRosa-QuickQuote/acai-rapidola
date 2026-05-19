@@ -75,9 +75,6 @@ export default function CustomerStoreList() {
         <div className="header-left" style={{ gap: 10 }}>
           <img src="/logo_placa.png" alt="Pé de Açaí"
             style={{ width: 90, height: 90, objectFit: 'contain', flexShrink: 0 }} />
-          <div>
-            <div className="header-title" style={{ fontSize: 18 }}>Pé de Açaí</div>
-          </div>
         </div>
         <div className="header-right" style={{ gap: 6 }}>
           {activeOrder && activeOrder.payment_status === 'paid' && !['delivered','cancelled'].includes(activeOrder.status) && (
@@ -89,7 +86,7 @@ export default function CustomerStoreList() {
                 padding: '2px',
                 border: 'none', borderRadius: 20, width: 'auto', display: 'flex', alignItems: 'center'
               }}>
-              <img src="/saco_acai.png" style={{ width: 32, height: 32, objectFit: 'contain' }} />
+              <img src="/saco_acai.png" style={{ width: 52, height: 52, objectFit: 'contain' }} />
             </button>
           )}
           <div onClick={() => navigate('/customer/conta')}
