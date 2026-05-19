@@ -102,7 +102,7 @@ function NavScreen({ order, onClose, onStatusUpdate, statusLabel }) {
 
   const isToStore = order.status === 'assigned';
 
-  const { steps, totalDist, totalDur, coords } = useRoute(
+  const { steps, totalDist, totalDur, coords, loading: routeLoading } = useRoute(
     { lat: order.store_lat, lng: order.store_lng },
     { lat: order.customer_lat, lng: order.customer_lng }
   );
@@ -285,8 +285,14 @@ function NavScreen({ order, onClose, onStatusUpdate, statusLabel }) {
             }} onClick={onClose}>Sair depois</button>
             <button style={{
               flex: 2, padding: '15px 0', borderRadius: 32, border: 'none',
-              background: '#1565C0', fontSize: 17, fontWeight: 800, color: 'white', cursor: 'pointer'
-            }} onClick={() => setNavStarted(true)}>Ir agora</button>
+              background: routeLoading ? '#90A4AE' : '#1565C0',
+              fontSize: 17, fontWeight: 800, color: 'white',
+              cursor: routeLoading ? 'default' : 'pointer',
+              opacity: routeLoading ? 0.8 : 1,
+              transition: 'background 0.3s'
+            }} onClick={() => { if (!routeLoading) setNavStarted(true); }}>
+              {routeLoading ? 'Calculando rota…' : 'Ir agora'}
+            </button>
           </div>
         </div>
       </div>
@@ -372,13 +378,15 @@ function NavScreen({ order, onClose, onStatusUpdate, statusLabel }) {
       {/* Barra de instrução no topo (estilo Waze) */}
       <div style={{
         position: 'absolute', top: 0, left: 0, right: 0, zIndex: 25,
-        background: instrBg, padding: '44px 20px 16px'
+        background: instrBg,
+        paddingTop: 'max(10px, env(safe-area-inset-top, 10px))',
+        paddingBottom: 10, paddingLeft: 16, paddingRight: 16
       }}>
         {isToStore ? (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
             <div style={{
-              width: 52, height: 52, borderRadius: 14, background: 'rgba(255,255,255,0.2)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 26
+              width: 44, height: 44, borderRadius: 12, background: 'rgba(255,255,255,0.2)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22
             }}>🏪</div>
             <div>
               <div style={{ color: 'rgba(255,255,255,0.75)', fontSize: 13 }}>Primeiro, vá até</div>
@@ -388,18 +396,18 @@ function NavScreen({ order, onClose, onStatusUpdate, statusLabel }) {
             </div>
           </div>
         ) : step ? (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
             <div style={{
-              width: 52, height: 52, borderRadius: 14, background: 'rgba(255,255,255,0.15)',
+              width: 44, height: 44, borderRadius: 12, background: 'rgba(255,255,255,0.15)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: 26, flexShrink: 0
+              fontSize: 22, flexShrink: 0
             }}>{step.icon}</div>
             <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ color: 'rgba(255,255,255,0.75)', fontSize: 15, marginBottom: 4, fontWeight: 600 }}>
+              <div style={{ color: 'rgba(255,255,255,0.75)', fontSize: 13, marginBottom: 2, fontWeight: 600 }}>
                 {remaining < 1000 ? `${remaining} m` : `${(remaining / 1000).toFixed(1)} km`}
               </div>
               <div style={{
-                color: 'white', fontWeight: 800, fontSize: 22, lineHeight: 1.2,
+                color: 'white', fontWeight: 800, fontSize: 20, lineHeight: 1.2,
                 overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap'
               }}>
                 {step.street || step.text}
