@@ -126,53 +126,84 @@ router.post('/estimate-fee', authMiddleware, async (req, res) => {
   res.json({ fee, distance_km: parseFloat(km.toFixed(2)) });
 });
 
+const BR_STATES = {
+  'Acre':'AC','Alagoas':'AL','Amapá':'AP','Amazonas':'AM','Bahia':'BA','Ceará':'CE',
+  'Distrito Federal':'DF','Espírito Santo':'ES','Goiás':'GO','Maranhão':'MA',
+  'Mato Grosso':'MT','Mato Grosso do Sul':'MS','Minas Gerais':'MG','Pará':'PA',
+  'Paraíba':'PB','Paraná':'PR','Pernambuco':'PE','Piauí':'PI','Rio de Janeiro':'RJ',
+  'Rio Grande do Norte':'RN','Rio Grande do Sul':'RS','Rondônia':'RO','Roraima':'RR',
+  'Santa Catarina':'SC','São Paulo':'SP','Sergipe':'SE','Tocantins':'TO'
+};
+
+function formatPhotonAddress(p) {
+  const stateAbbr = BR_STATES[p.state] || '';
+  const street = p.street || p.name || '';
+  const number = p.housenumber ? `, ${p.housenumber}` : '';
+  const neighborhood = p.district || p.suburb || p.quarter || '';
+  const city = p.city || p.town || p.village || p.municipality || '';
+  let addr = street + number;
+  if (neighborhood) addr += ` - ${neighborhood}`;
+  if (city) addr += `, ${city}`;
+  if (stateAbbr) addr += ` - ${stateAbbr}`;
+  return addr.trim() || p.name || '';
+}
+
+function formatNominatimAddress(a) {
+  const stateAbbr = BR_STATES[a.state] || '';
+  const road = a.road || a.pedestrian || a.footway || a.path || '';
+  const number = a.house_number || '';
+  const neighborhood = a.suburb || a.neighbourhood || a.quarter || a.district || '';
+  const city = a.city || a.town || a.municipality || '';
+  let addr = road;
+  if (number) addr += `, ${number}`;
+  if (neighborhood) addr += ` - ${neighborhood}`;
+  if (city) addr += `, ${city}`;
+  if (stateAbbr) addr += ` - ${stateAbbr}`;
+  return addr.trim();
+}
+
+async function photonSearch(q) {
+  const resp = await fetch(
+    `https://photon.komoot.io/api/?q=${encodeURIComponent(q)}&lang=pt&limit=7&countrycodes=br&lat=-1.4558&lon=-48.5044`,
+    { headers: { 'User-Agent': 'PedeAcai/1.0' }, signal: AbortSignal.timeout(5000) }
+  );
+  const data = await resp.json();
+  return (data.features || [])
+    .map(f => {
+      const p = f.properties;
+      const [lon, lat] = f.geometry.coordinates;
+      const display_name = formatPhotonAddress(p);
+      return display_name ? { display_name, lat: String(lat), lon: String(lon) } : null;
+    })
+    .filter(Boolean);
+}
+
 router.get('/geocode', async (req, res) => {
   const { q } = req.query;
   if (!q || q.length < 3) return res.json([]);
-  try {
-    const resp = await fetch(
-      `https://photon.komoot.io/api/?q=${encodeURIComponent(q)}&lang=pt&limit=7&countrycodes=br&lat=-1.4558&lon=-48.5044`,
-      { headers: { 'User-Agent': 'PedeAcai/1.0' } }
-    );
-    const data = await resp.json();
-    const results = (data.features || []).map(f => {
-      const p = f.properties;
-      const [lon, lat] = f.geometry.coordinates;
-      const parts = [];
-      if (p.street || p.name) {
-        const street = p.street || p.name;
-        parts.push(p.housenumber ? `${street}, ${p.housenumber}` : street);
-      }
-      if (p.district) parts.push(p.district);
-      if (p.city || p.town || p.village) parts.push(p.city || p.town || p.village);
-      if (p.state) parts.push(p.state);
-      return { display_name: parts.length ? parts.join(', ') : (p.name || 'Endereço'), lat: String(lat), lon: String(lon) };
-    });
-    res.json(results);
-  } catch {
-    res.json([]);
-  }
+  try { res.json(await photonSearch(q)); }
+  catch { res.json([]); }
 });
 
 router.get('/places-autocomplete', async (req, res) => {
   const { q } = req.query;
   if (!q || q.length < 3) return res.json([]);
   const key = process.env.GOOGLE_PLACES_KEY;
-  if (!key) return res.json([]);
-  try {
-    const url = `https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${encodeURIComponent(q)}&key=${key}&language=pt-BR&components=country:br&location=-1.4558,-48.5044&radius=50000&types=address`;
-    const resp = await fetch(url);
-    const data = await resp.json();
-    const results = (data.predictions || []).map(p => ({
-      display_name: p.description,
-      place_id: p.place_id,
-      main_text: p.structured_formatting?.main_text,
-      secondary_text: p.structured_formatting?.secondary_text
-    }));
-    res.json(results);
-  } catch {
-    res.json([]);
+  if (key) {
+    try {
+      const url = `https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${encodeURIComponent(q)}&key=${key}&language=pt-BR&components=country:br&location=-1.4558,-48.5044&radius=50000&types=address`;
+      const resp = await fetch(url);
+      const data = await resp.json();
+      const results = (data.predictions || []).map(p => ({
+        display_name: p.description,
+        place_id: p.place_id
+      }));
+      if (results.length > 0) return res.json(results);
+    } catch {}
   }
+  // Fallback: Photon (gratuito)
+  try { res.json(await photonSearch(q)); }
+  catch { res.json([]); }
 });
 
 router.get('/place-details', async (req, res) => {
@@ -185,11 +216,7 @@ router.get('/place-details', async (req, res) => {
     const resp = await fetch(url);
     const data = await resp.json();
     const loc = data.result?.geometry?.location;
-    res.json({
-      display_name: data.result?.formatted_address,
-      lat: loc?.lat,
-      lon: loc?.lng
-    });
+    res.json({ display_name: data.result?.formatted_address, lat: loc?.lat, lon: loc?.lng });
   } catch {
     res.status(500).json({ error: 'Erro ao buscar detalhes' });
   }
@@ -199,20 +226,14 @@ router.get('/reverse-geocode', async (req, res) => {
   const { lat, lng } = req.query;
   if (!lat || !lng) return res.json({ error: 'lat e lng obrigatorios' });
   try {
-    const resp = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&addressdetails=1&countrycodes=BR&zoom=18`, {
-      headers: { 'User-Agent': 'PedeAcai/1.0' }
-    });
+    const resp = await fetch(
+      `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&addressdetails=1&countrycodes=BR&zoom=18`,
+      { headers: { 'User-Agent': 'PedeAcai/1.0' }, signal: AbortSignal.timeout(6000) }
+    );
     const data = await resp.json();
     if (data.error) return res.json({ error: data.error });
-    res.json({
-      display_name: data.display_name,
-      road: data.address?.road || '',
-      suburb: data.address?.suburb || '',
-      city: data.address?.city || data.address?.town || '',
-      state: data.address?.state || '',
-      lat: parseFloat(data.lat),
-      lon: parseFloat(data.lon)
-    });
+    const display_name = formatNominatimAddress(data.address || {});
+    res.json({ display_name, lat: parseFloat(data.lat), lon: parseFloat(data.lon) });
   } catch {
     res.json({ error: 'Erro ao buscar endereco' });
   }

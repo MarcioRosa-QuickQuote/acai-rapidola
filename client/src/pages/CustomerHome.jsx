@@ -93,15 +93,7 @@ export default function CustomerHome() {
   }
 
   function cleanNominatimAddress(displayName) {
-    if (!displayName) return '';
-    const parts = displayName.split(',').map(p => p.trim());
-    const skip = ['Região Norte', 'Região Nordeste', 'Região Sudeste', 'Região Sul', 'Região Centro-Oeste', 'Brazil', 'Brasil'];
-    const filtered = parts.filter((p, i) => {
-      if (skip.includes(p)) return false;
-      if (/^\d{5}-\d{3}$/.test(p)) return false;
-      return true;
-    });
-    return filtered.join(', ');
+    return displayName || '';
   }
   const [searchParams] = useSearchParams();
   const [cart, setCart] = useState(() => {
@@ -371,17 +363,10 @@ export default function CustomerHome() {
         try {
           const res = await fetch(`/api/orders/places-autocomplete?q=${encodeURIComponent(q)}`);
           const data = await res.json();
-          if (data?.length > 0) {
-            setAddressSuggestions(data);
-            setShowSuggestions(true);
-          } else {
-            const fallback = await fetch(`/api/orders/geocode?q=${encodeURIComponent(q)}`);
-            const fb = await fallback.json();
-            setAddressSuggestions(fb || []);
-            setShowSuggestions((fb || []).length > 0);
-          }
+          setAddressSuggestions(data || []);
+          setShowSuggestions((data || []).length > 0);
         } catch { setShowSuggestions(false); }
-      }, 280);
+      }, 350);
     }
 
     async function lookupCep() {
