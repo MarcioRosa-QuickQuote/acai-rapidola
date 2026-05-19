@@ -99,16 +99,15 @@ function NavScreen({ order, onClose, onStatusUpdate, statusLabel }) {
   const headingRef = useRef(0);
   const coordsRef = useRef(null);
   const mapRef = useRef(null);
-  const initialPosSetRef = useRef(false);
-  const [initialPos, setInitialPos] = useState(null);
+  const lastRouteOriginRef = useRef(null);
+  const [routeOrigin, setRouteOrigin] = useState(null);
 
   const isToStore = order.status === 'assigned';
 
   const storeCoords = { lat: order.store_lat, lng: order.store_lng };
   const customerCoords = { lat: order.customer_lat, lng: order.customer_lng };
-  const routeToStore = useRoute(initialPos || {}, storeCoords);
-  const routeToCustomer = useRoute(storeCoords, customerCoords);
-  const { steps, totalDist, totalDur, coords, loading: routeLoading } = isToStore ? routeToStore : routeToCustomer;
+  const routeDest = isToStore ? storeCoords : customerCoords;
+  const { steps, totalDist, totalDur, coords, loading: routeLoading } = useRoute(routeOrigin || {}, routeDest);
 
   // Quando a rota carrega: seta heading inicial pelo 1º segmento e guarda coords na ref
   useEffect(() => {
@@ -147,9 +146,10 @@ function NavScreen({ order, onClose, onStatusUpdate, statusLabel }) {
       p => {
         const rawPos = { lat: p.coords.latitude, lng: p.coords.longitude };
         prevPosRef.current = rawPos;
-        if (!initialPosSetRef.current) {
-          initialPosSetRef.current = true;
-          setInitialPos({ lat: rawPos.lat, lng: rawPos.lng });
+        const lastOrigin = lastRouteOriginRef.current;
+        if (!lastOrigin || haversineKm(rawPos, lastOrigin) > 0.08) {
+          lastRouteOriginRef.current = rawPos;
+          setRouteOrigin({ lat: rawPos.lat, lng: rawPos.lng });
         }
         const c = coordsRef.current;
 
@@ -237,8 +237,8 @@ function NavScreen({ order, onClose, onStatusUpdate, statusLabel }) {
               <Marker position={[order.customer_lat, order.customer_lng]} icon={destIcon} />
               {order.store_lat && <Marker position={[order.store_lat, order.store_lng]} icon={storeIcon} />}
               <RoutePolyline
-                from={isToStore ? (initialPos || storeCoords) : storeCoords}
-                to={isToStore ? storeCoords : customerCoords}
+                from={routeOrigin || storeCoords}
+                to={routeDest}
                 color="#4A148C" weight={8} />
             </MapContainer>
           </div>
@@ -289,13 +289,13 @@ function NavScreen({ order, onClose, onStatusUpdate, statusLabel }) {
           <div style={{ display: 'flex' }}>
             <button style={{
               flex: 1, padding: '15px 0', borderRadius: 32, border: 'none',
-              background: (routeLoading || (isToStore && !initialPos)) ? '#90A4AE' : '#1565C0',
+              background: (routeLoading || !routeOrigin) ? '#90A4AE' : '#1565C0',
               fontSize: 17, fontWeight: 800, color: 'white',
-              cursor: (routeLoading || (isToStore && !initialPos)) ? 'default' : 'pointer',
-              opacity: (routeLoading || (isToStore && !initialPos)) ? 0.8 : 1,
+              cursor: (routeLoading || !routeOrigin) ? 'default' : 'pointer',
+              opacity: (routeLoading || !routeOrigin) ? 0.8 : 1,
               transition: 'background 0.3s'
-            }} onClick={() => { if (!routeLoading && !(isToStore && !initialPos)) setNavStarted(true); }}>
-              {isToStore && !initialPos ? 'Aguardando GPS…' : routeLoading ? 'Calculando rota…' : 'Iniciar corrida'}
+            }} onClick={() => { if (!routeLoading && routeOrigin) setNavStarted(true); }}>
+              {!routeOrigin ? 'Aguardando GPS…' : routeLoading ? 'Calculando rota…' : 'Iniciar corrida'}
             </button>
           </div>
         </div>
@@ -307,9 +307,14 @@ function NavScreen({ order, onClose, onStatusUpdate, statusLabel }) {
   const instrBg = isToStore ? '#1565C0' : '#4A148C';
   const initLng = pos?.lng ?? ((order.store_lng + order.customer_lng) / 2) ?? -48.5;
   const initLat = pos?.lat ?? ((order.store_lat + order.customer_lat) / 2) ?? -1.45;
+  const navHour = new Date().getHours();
+  const isDaytime = navHour >= 6 && navHour < 19;
+  const mapTileStyle = isDaytime
+    ? 'https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json'
+    : 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json';
 
   return (
-    <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 1000, background: '#0f0f19' }}>
+    <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 1000, background: isDaytime ? '#e8e8e0' : '#0f0f19' }}>
       {/* Mapa MapLibre GL — perspectiva 3D em primeira pessoa */}
       {hasRoute && (
         <div style={{ position: 'absolute', inset: 0, zIndex: 2 }}>
@@ -323,7 +328,7 @@ function NavScreen({ order, onClose, onStatusUpdate, statusLabel }) {
               bearing: heading
             }}
             style={{ width: '100%', height: '100%' }}
-            mapStyle="https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json"
+            mapStyle={mapTileStyle}
             attributionControl={false}
           >
             {/* Rota com sombra + linha roxa + reflexo */}
