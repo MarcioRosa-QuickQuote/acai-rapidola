@@ -22,9 +22,6 @@ export default function Register() {
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
   const [role, setRole] = useState('customer');
-  const [cpf, setCpf] = useState('');
-  const [vehicleType, setVehicleType] = useState('moto');
-  const [pixKey, setPixKey] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
@@ -32,10 +29,6 @@ export default function Register() {
 
   const googleLogin = useGoogleLogin({
     onSuccess: async (tokenResponse) => {
-      if (role === 'motoboy' && (!cpf || !pixKey)) {
-        setError('Preencha CPF e Chave Pix antes de continuar com Google');
-        return;
-      }
       setGoogleLoading(true);
       try {
         const infoRes = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
@@ -45,7 +38,7 @@ export default function Register() {
         const res = await fetch('/api/auth/google', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ userInfo: info, role, cpf, vehicle_type: vehicleType, pix_key: pixKey })
+          body: JSON.stringify({ userInfo: info, role })
         });
         const data = await res.json();
         if (data.token) loginWithToken(data.token, data.user);
@@ -87,7 +80,7 @@ export default function Register() {
     setError('');
     setLoading(true);
     try {
-      await register(name, phone, password, role, inviteToken, { email, cpf, vehicle_type: vehicleType, pix_key: pixKey });
+      await register(name, phone, password, role, inviteToken, { email });
     } catch (err) {
       setError(err.message);
     } finally {
@@ -203,28 +196,14 @@ export default function Register() {
             </div>
 
             {role === 'motoboy' && (
-              <>
-                <div style={{ marginBottom: 16 }}>
-                  <label style={{ fontSize: 13, fontWeight: 600, color: '#555', marginBottom: 6, display: 'block' }}>CPF</label>
-                  <input type="text" value={cpf} onChange={e => setCpf(e.target.value)}
-                    placeholder="000.000.000-00" required
-                    style={inputStyle} onFocus={onFocus} onBlur={onBlur} />
-                </div>
-                <div style={{ marginBottom: 16 }}>
-                  <label style={{ fontSize: 13, fontWeight: 600, color: '#555', marginBottom: 6, display: 'block' }}>Tipo de Veiculo</label>
-                  <select value={vehicleType} onChange={e => setVehicleType(e.target.value)}
-                    style={{ ...inputStyle, background: 'white' }}>
-                    <option value="moto">Moto</option>
-                    <option value="bike">Bicicleta</option>
-                  </select>
-                </div>
-                <div style={{ marginBottom: 20 }}>
-                  <label style={{ fontSize: 13, fontWeight: 600, color: '#555', marginBottom: 6, display: 'block' }}>Chave Pix (para receber)</label>
-                  <input type="text" value={pixKey} onChange={e => setPixKey(e.target.value)}
-                    placeholder="CPF, telefone ou e-mail" required
-                    style={inputStyle} onFocus={onFocus} onBlur={onBlur} />
-                </div>
-              </>
+              <div style={{
+                background: '#F3E5F5', borderRadius: 10, padding: '10px 14px',
+                marginBottom: 14, fontSize: 12, color: '#6A1B9A',
+                display: 'flex', alignItems: 'center', gap: 8
+              }}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="#9C27B0"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
+                CPF e chave Pix serão solicitados quando você ativar o modo online pela primeira vez.
+              </div>
             )}
 
             <div style={{ marginBottom: 14 }}>

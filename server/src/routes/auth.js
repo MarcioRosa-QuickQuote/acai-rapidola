@@ -33,12 +33,13 @@ router.post('/register', async (req, res) => {
   const id = uuid();
   const hash = bcrypt.hashSync(password, 10);
 
-  await supabase.from('users').insert({
-    id, name, phone, password_hash: hash, role,
-    email: email, cpf: (extra?.cpf || '').replace(/\D/g, '').slice(0, 11),
-    vehicle_type: (extra?.vehicle_type) || '',
-    pix_key: (extra?.pix_key) || ''
+  const { error: regInsertErr } = await supabase.from('users').insert({
+    id, name, phone, password_hash: hash, role, email: email
   });
+  if (regInsertErr) {
+    console.error('[Auth] Register insert error:', regInsertErr);
+    return res.status(500).json({ error: 'Erro ao criar conta: ' + regInsertErr.message });
+  }
 
   const user = { id, name, role, phone, email };
   const token = signToken(user);
@@ -90,10 +91,7 @@ router.post('/google', async (req, res) => {
       const { error: insertErr } = await supabase.from('users').insert({
         id, name: name || email.split('@')[0], phone: null, email,
         password_hash: '', role,
-        google_id: googleId, photo_url: picture || '',
-        cpf: cpf ? cpf.replace(/\D/g, '').slice(0, 11) : '',
-        vehicle_type: vehicle_type || '',
-        pix_key: pix_key || ''
+        google_id: googleId, photo_url: picture || ''
       });
       if (insertErr) {
         console.error('[Auth] Google insert error:', insertErr);
@@ -170,12 +168,15 @@ router.get('/me', authMiddleware, async (req, res) => {
 });
 
 router.patch('/profile', authMiddleware, async (req, res) => {
-  const { address, lat, lng, photo_url } = req.body;
+  const { address, lat, lng, photo_url, cpf, vehicle_type, pix_key } = req.body;
   const update = {};
   if (address !== undefined) update.address = address;
   if (lat !== undefined) update.lat = lat;
   if (lng !== undefined) update.lng = lng;
   if (photo_url !== undefined) update.photo_url = photo_url;
+  if (cpf !== undefined) update.cpf = cpf.replace(/\D/g, '').slice(0, 11);
+  if (vehicle_type !== undefined) update.vehicle_type = vehicle_type;
+  if (pix_key !== undefined) update.pix_key = pix_key;
 
   if (Object.keys(update).length > 0) {
     await supabase.from('users').update(update).eq('id', req.user.id);

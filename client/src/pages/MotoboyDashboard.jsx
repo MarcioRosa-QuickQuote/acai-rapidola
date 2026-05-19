@@ -606,6 +606,11 @@ export default function MotoboyDashboard() {
   }
   const [loading, setLoading] = useState(true);
   const [online, setOnline] = useState(true);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [modalCpf, setModalCpf] = useState('');
+  const [modalVehicle, setModalVehicle] = useState('moto');
+  const [modalPix, setModalPix] = useState('');
+  const [modalSaving, setModalSaving] = useState(false);
   const [selectedTab, setSelectedTab] = useState('available');
   const [pageTab, setPageTab] = useState('inicio');
   const [isEmployee, setIsEmployee] = useState(false);
@@ -755,7 +760,11 @@ export default function MotoboyDashboard() {
               </div>
             </div>
           </div>
-          <div className="toggle-switch" onClick={() => { setOnline(!online); if (!online) sendLocation(); }}>
+          <div className="toggle-switch" onClick={() => {
+            if (online) { setOnline(false); return; }
+            if (!user?.cpf || !user?.pix_key) { setShowPaymentModal(true); return; }
+            setOnline(true); sendLocation();
+          }}>
             <input type="checkbox" checked={online} readOnly />
             <span className="toggle-slider" />
           </div>
@@ -1188,6 +1197,84 @@ export default function MotoboyDashboard() {
         <NavScreen order={fsOrder} onClose={() => setFullscreenOrder(null)}
           onStatusUpdate={() => { updateStatus(fsOrder.id); setFullscreenOrder(null); }}
           statusLabel={nextStatus[fsOrder.status] ? nextStatusLabel[fsOrder.status] : null} />
+      )}
+
+      {showPaymentModal && (
+        <div style={{
+          position: 'fixed', inset: 0, zIndex: 500,
+          background: 'rgba(0,0,0,0.55)', display: 'flex', alignItems: 'flex-end'
+        }} onClick={() => setShowPaymentModal(false)}>
+          <div onClick={e => e.stopPropagation()} style={{
+            background: 'white', borderRadius: '20px 20px 0 0',
+            padding: '24px 20px 40px', width: '100%'
+          }}>
+            <div style={{ width: 40, height: 4, background: '#E0E0E0', borderRadius: 2, margin: '0 auto 20px' }} />
+            <div style={{ fontSize: 18, fontWeight: 800, color: '#1a1a2e', marginBottom: 4 }}>Dados de pagamento</div>
+            <div style={{ fontSize: 13, color: '#888', marginBottom: 20 }}>
+              Necessário para ficar online e receber pagamentos.
+            </div>
+
+            <div style={{ marginBottom: 14 }}>
+              <label style={{ fontSize: 12, fontWeight: 600, color: '#555', marginBottom: 4, display: 'block' }}>CPF</label>
+              <input
+                type="text" value={modalCpf}
+                onChange={e => {
+                  const n = e.target.value.replace(/\D/g, '').slice(0, 11);
+                  setModalCpf(n.replace(/^(\d{3})(\d{3})?(\d{3})?(\d{2})?$/, (_, a, b, c, d) =>
+                    a + (b ? '.' + b : '') + (c ? '.' + c : '') + (d ? '-' + d : '')));
+                }}
+                placeholder="000.000.000-00"
+                style={{ width: '100%', padding: '12px 14px', fontSize: 15, border: '2px solid #E8E0F0', borderRadius: 10, outline: 'none', boxSizing: 'border-box' }}
+              />
+            </div>
+
+            <div style={{ marginBottom: 14 }}>
+              <label style={{ fontSize: 12, fontWeight: 600, color: '#555', marginBottom: 4, display: 'block' }}>Tipo de veículo</label>
+              <select value={modalVehicle} onChange={e => setModalVehicle(e.target.value)}
+                style={{ width: '100%', padding: '12px 14px', fontSize: 15, border: '2px solid #E8E0F0', borderRadius: 10, outline: 'none', boxSizing: 'border-box', background: 'white' }}>
+                <option value="moto">Moto</option>
+                <option value="bike">Bicicleta</option>
+              </select>
+            </div>
+
+            <div style={{ marginBottom: 20 }}>
+              <label style={{ fontSize: 12, fontWeight: 600, color: '#555', marginBottom: 4, display: 'block' }}>Chave Pix</label>
+              <input
+                type="text" value={modalPix} onChange={e => setModalPix(e.target.value)}
+                placeholder="CPF, telefone ou e-mail"
+                style={{ width: '100%', padding: '12px 14px', fontSize: 15, border: '2px solid #E8E0F0', borderRadius: 10, outline: 'none', boxSizing: 'border-box' }}
+              />
+            </div>
+
+            <button
+              disabled={modalSaving || !modalCpf || !modalPix}
+              onClick={async () => {
+                setModalSaving(true);
+                const res = await apiFetch('/auth/profile', {
+                  method: 'PATCH',
+                  body: JSON.stringify({ cpf: modalCpf, vehicle_type: modalVehicle, pix_key: modalPix })
+                });
+                if (res.ok) {
+                  user.cpf = modalCpf.replace(/\D/g, '');
+                  user.pix_key = modalPix;
+                  user.vehicle_type = modalVehicle;
+                  setShowPaymentModal(false);
+                  setOnline(true);
+                  sendLocation();
+                }
+                setModalSaving(false);
+              }}
+              style={{
+                width: '100%', padding: 14,
+                background: 'linear-gradient(135deg, #2E7D32, #43A047)',
+                color: 'white', border: 'none', borderRadius: 12,
+                fontSize: 15, fontWeight: 700, cursor: modalSaving || !modalCpf || !modalPix ? 'default' : 'pointer',
+                opacity: modalSaving || !modalCpf || !modalPix ? 0.6 : 1
+              }}>
+              {modalSaving ? 'Salvando...' : 'Salvar e ficar online'}
+            </button>
+          </div>
+        </div>
       )}
     </div>
   );
