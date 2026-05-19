@@ -239,6 +239,12 @@ export default function Register() {
               Já tem conta?{' '}
               <Link to="/login" style={{ color: '#6A1B9A', fontWeight: 700, textDecoration: 'none' }}>Entrar</Link>
             </p>
+            <p style={{ textAlign: 'center', marginTop: 8, fontSize: 11, color: '#BBB', lineHeight: 1.6 }}>
+              Ao se cadastrar você concorda com nossa{' '}
+              <Link to="/privacidade" style={{ color: '#9C27B0', textDecoration: 'underline' }}>Política de Privacidade</Link>
+              {' '}e os{' '}
+              <Link to="/termos" style={{ color: '#9C27B0', textDecoration: 'underline' }}>Termos de Uso</Link>
+            </p>
           </form>
         </div>
       </div>
@@ -250,8 +256,11 @@ export default function Register() {
         }
       `}</style>
 
-      <p style={{ marginTop: 20, fontSize: 11, color: 'rgba(255,255,255,0.35)', zIndex: 1 }}>
-        Pé de Açaí © 2026 — Delivery de açaí
+      <p style={{ marginTop: 16, fontSize: 11, color: 'rgba(255,255,255,0.35)', zIndex: 1, textAlign: 'center' }}>
+        Pé de Açaí © 2026 —{' '}
+        <Link to="/privacidade" style={{ color: 'rgba(255,255,255,0.45)', textDecoration: 'underline' }}>Privacidade</Link>
+        {' · '}
+        <Link to="/termos" style={{ color: 'rgba(255,255,255,0.45)', textDecoration: 'underline' }}>Termos</Link>
       </p>
     </div>
   );

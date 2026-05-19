@@ -350,8 +350,11 @@ export default function Login() {
         }
       `}</style>
 
-      <p style={{ marginTop: 24, fontSize: 11, color: 'rgba(255,255,255,0.35)', zIndex: 1 }}>
-        Pé de Açaí © 2026 — v303
+      <p style={{ marginTop: 16, fontSize: 11, color: 'rgba(255,255,255,0.35)', zIndex: 1, textAlign: 'center' }}>
+        Pé de Açaí © 2026 —{' '}
+        <Link to="/privacidade" style={{ color: 'rgba(255,255,255,0.45)', textDecoration: 'underline' }}>Privacidade</Link>
+        {' · '}
+        <Link to="/termos" style={{ color: 'rgba(255,255,255,0.45)', textDecoration: 'underline' }}>Termos</Link>
       </p>
     </div>
   );
