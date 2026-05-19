@@ -248,7 +248,7 @@ export default function Register() {
               </div>
             </div>
 
-            {!inviteToken && (
+            {!inviteToken && role === 'customer' && (
               <>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10, margin: '4px 0 10px' }}>
                   <div style={{ flex: 1, height: 1, background: '#E8E0F0' }} />
