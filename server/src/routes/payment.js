@@ -385,16 +385,21 @@ router.post('/payout', authMiddleware, async (req, res) => {
       
       res.json({ ok: true, message: `R$ ${total.toFixed(2)} enviado para ${store.pix_key}`, amount: total });
     } else if (type === 'motoboy') {
-      if (!req.user.pix_key) return res.status(400).json({ error: 'Cadastre sua chave PIX no seu perfil' });
-      
+      const { data: mbUser } = await supabase.from('users').select('pix_key').eq('id', req.user.id).single();
+      if (!mbUser?.pix_key) return res.status(400).json({ error: 'Cadastre sua chave PIX no seu perfil' });
+
       const { data: pending } = await supabase.from('motoboy_earnings').select('*').eq('motoboy_id', req.user.id).eq('status', 'pending');
-      if (!pending.length) return res.status(400).json({ error: 'Sem valores pendentes' });
-      
+      if (!pending?.length) return res.status(400).json({ error: 'Sem valores pendentes' });
+
       const total = pending.reduce((s, e) => s + e.amount, 0);
-      
-      await supabase.from('motoboy_earnings').update({ status: 'paid', paid_at: new Date().toISOString() }).eq('motoboy_id', req.user.id).eq('status', 'pending');
-      
-      res.json({ ok: true, message: `R$ ${total.toFixed(2)} enviado para ${req.user.pix_key}`, amount: total });
+      const { sendPixTransfer: spx } = require('../services/pixTransfer');
+      const ok = await spx(total, mbUser.pix_key, `Repasse motoboy`);
+      if (ok) {
+        await supabase.from('motoboy_earnings').update({ status: 'paid', paid_at: new Date().toISOString() }).eq('motoboy_id', req.user.id).eq('status', 'pending');
+        res.json({ ok: true, message: `R$ ${total.toFixed(2)} enviado para ${mbUser.pix_key}`, amount: total });
+      } else {
+        res.status(500).json({ error: 'Falha ao transferir. Valores ficam pendentes para nova tentativa.' });
+      }
     } else {
       res.status(400).json({ error: 'Tipo inválido' });
     }

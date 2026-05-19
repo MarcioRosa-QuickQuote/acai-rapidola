@@ -2,6 +2,7 @@ const { Router } = require('express');
 const { v4: uuid } = require('uuid');
 const { supabase } = require('../database');
 const { authMiddleware, roleMiddleware } = require('../auth');
+const { sendPixTransfer } = require('../services/pixTransfer');
 
 const router = Router();
 
@@ -328,28 +329,47 @@ router.patch('/:id/status', authMiddleware, async (req, res) => {
     return res.status(500).json({ error: 'Erro ao atualizar pedido' });
   }
 
-  try {
-    if (status === 'delivered' && order.motoboy_id) {
+  if (status === 'delivered') {
+    const motoboyAmount = parseFloat((order.delivery_fee || order.total * 0.2).toFixed(2));
+    const storeAmount = parseFloat((order.total - motoboyAmount).toFixed(2));
+
+    // Motoboy: registra e tenta transferir
+    if (order.motoboy_id) {
       await supabase.from('motoboy_earnings').insert({
         id: uuid(), motoboy_id: order.motoboy_id, order_id: req.params.id,
-        amount: order.delivery_fee || parseFloat((order.total * 0.2).toFixed(2)), status: 'paid', paid_at: new Date().toISOString()
-      });
-    }
+        amount: motoboyAmount, status: 'pending'
+      }).catch(() => {});
 
-    if (status === 'delivered') {
-      const storeAmount = order.total - (order.delivery_fee || 0);
-      try {
-        await supabase.from('store_earnings').insert({
-          id: uuid(), store_id: order.store_id, order_id: req.params.id,
-          amount: parseFloat(storeAmount.toFixed(2)), status: 'paid', paid_at: new Date().toISOString()
-        });
-      } catch {}
-      const { data: store } = await supabase.from('stores').select('owner_id').eq('id', order.store_id).single();
-      if (store) {
-        await notifyUser(store.owner_id, 'Pedido Entregue!', `Pedido #${req.params.id.slice(0,8)} — R$ ${storeAmount.toFixed(2)} creditado.`, 'delivery');
+      const { data: motoboy } = await supabase.from('users').select('pix_key, name').eq('id', order.motoboy_id).single();
+      if (motoboy?.pix_key) {
+        const ok = await sendPixTransfer(motoboyAmount, motoboy.pix_key, `Entrega #${req.params.id.slice(0, 8)}`);
+        if (ok) {
+          await supabase.from('motoboy_earnings').update({ status: 'paid', paid_at: new Date().toISOString() })
+            .eq('order_id', req.params.id).eq('motoboy_id', order.motoboy_id);
+          await notifyUser(order.motoboy_id, 'Pagamento enviado!', `R$ ${motoboyAmount.toFixed(2)} enviado para sua chave Pix.`, 'payment');
+        }
       }
     }
-  } catch {}
+
+    // Loja: registra e tenta transferir
+    await supabase.from('store_earnings').insert({
+      id: uuid(), store_id: order.store_id, order_id: req.params.id,
+      amount: storeAmount, status: 'pending'
+    }).catch(() => {});
+
+    const { data: store } = await supabase.from('stores').select('owner_id, pix_key').eq('id', order.store_id).single();
+    if (store?.pix_key) {
+      const ok = await sendPixTransfer(storeAmount, store.pix_key, `Pedido #${req.params.id.slice(0, 8)}`);
+      if (ok) {
+        await supabase.from('store_earnings').update({ status: 'paid', paid_at: new Date().toISOString() })
+          .eq('order_id', req.params.id).eq('store_id', order.store_id);
+        if (store.owner_id) await notifyUser(store.owner_id, 'Pagamento enviado!', `R$ ${storeAmount.toFixed(2)} enviado para sua chave Pix.`, 'payment');
+      }
+    }
+    if (store?.owner_id && !store?.pix_key) {
+      await notifyUser(store.owner_id, 'Pedido Entregue!', `R$ ${storeAmount.toFixed(2)} a receber — cadastre sua chave Pix para receber automaticamente.`, 'delivery');
+    }
+  }
 
   if (status === 'ready') {
     const { data: motoboys } = await supabase.from('store_motoboys')
