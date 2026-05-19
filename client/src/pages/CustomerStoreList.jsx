@@ -74,7 +74,7 @@ export default function CustomerStoreList() {
       <div className="header" style={{ padding: '8px 16px' }}>
         <div className="header-left" style={{ gap: 10 }}>
           <img src="/logo_placa.png" alt="Pé de Açaí"
-            style={{ width: 72, height: 72, borderRadius: 14, objectFit: 'contain', flexShrink: 0 }} />
+            style={{ width: 90, height: 90, objectFit: 'contain', flexShrink: 0 }} />
           <div>
             <div className="header-title" style={{ fontSize: 18 }}>Pé de Açaí</div>
           </div>

@@ -133,11 +133,11 @@ export default function Login() {
             src="/logo_placa.png"
             alt="Pé de Açaí"
             style={{
-              width: 100, height: 100, borderRadius: 20,
+              width: 160, height: 160,
               objectFit: 'contain',
               position: 'relative', zIndex: 1,
               marginBottom: 2,
-              filter: 'drop-shadow(0 4px 12px rgba(0,0,0,0.25))'
+              filter: 'drop-shadow(0 4px 16px rgba(0,0,0,0.3))'
             }}
           />
           <p style={{

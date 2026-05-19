@@ -201,8 +201,8 @@ function NavScreen({ order, onClose, onStatusUpdate, statusLabel }) {
   }), []);
 
   const storeIcon = useMemo(() => L.divIcon({
-    html: `<div style="width:36px;height:36px;border-radius:50%;background:#6A1B9A;border:2px solid white;overflow:hidden;box-shadow:0 2px 6px rgba(0,0,0,0.4);display:flex;align-items:center;justify-content:center"><img src="/logo_placa.png" style="width:100%;height:100%;object-fit:contain"/></div>`,
-    className: '', iconSize: [36, 36], iconAnchor: [18, 18]
+    html: `<img src="/logo_placa.png" style="width:44px;height:44px;object-fit:contain;filter:drop-shadow(0 2px 6px rgba(0,0,0,0.5))"/>`,
+    className: '', iconSize: [44, 44], iconAnchor: [22, 22]
   }), []);
 
   // GeoJSON da rota para MapLibre (formato [lng, lat])
@@ -349,9 +349,7 @@ function NavScreen({ order, onClose, onStatusUpdate, statusLabel }) {
             {/* Pin da loja */}
             {order.store_lat && (
               <MLMarker longitude={order.store_lng} latitude={order.store_lat} anchor="center">
-                <div style={{ width: 36, height: 36, borderRadius: '50%', background: '#6A1B9A', border: '2px solid white', overflow: 'hidden', boxShadow: '0 2px 8px rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <img src="/logo_placa.png" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
-                </div>
+                <img src="/logo_placa.png" style={{ width: 44, height: 44, objectFit: 'contain', filter: 'drop-shadow(0 2px 6px rgba(0,0,0,0.5))' }} />
               </MLMarker>
             )}
 
@@ -1047,7 +1045,7 @@ export default function MotoboyDashboard() {
     <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
       <div className="header" style={{ padding: '8px 16px' }}>
         <div className="header-left" style={{ gap: 10 }}>
-          <img src="/logo_placa.png" alt="Pé de Açaí" style={{ width: 72, height: 72, borderRadius: 14, objectFit: 'contain', flexShrink: 0 }} />
+          <img src="/logo_placa.png" alt="Pé de Açaí" style={{ width: 90, height: 90, objectFit: 'contain', flexShrink: 0 }} />
           <div>
             <div className="header-title" style={{ fontSize: 18 }}>Pé de Açaí</div>
             <div style={{ fontSize: 11, color: 'var(--text-light)' }}>Motoboy</div>

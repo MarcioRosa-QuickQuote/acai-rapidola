@@ -103,6 +103,7 @@ export default function Register() {
           background: 'linear-gradient(135deg, #4A148C 0%, #6A1B9A 50%, #9C27B0 100%)',
           padding: '20px 30px 18px', textAlign: 'center', color: 'white'
         }}>
+          <img src="/logo_placa.png" alt="Pé de Açaí" style={{ width: 120, height: 120, objectFit: 'contain', marginBottom: 8, filter: 'drop-shadow(0 4px 12px rgba(0,0,0,0.3))' }} />
           <h1 style={{ fontSize: 24, fontWeight: 800, marginBottom: 2 }}>Pé de Açaí</h1>
           <p style={{ opacity: 0.8, fontSize: 13 }}>Crie sua conta</p>
           {inviteToken && (
