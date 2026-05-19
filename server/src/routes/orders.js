@@ -187,23 +187,35 @@ router.get('/geocode', async (req, res) => {
 
 router.get('/places-autocomplete', async (req, res) => {
   const { q } = req.query;
-  if (!q || q.length < 3) return res.json([]);
+  if (!q || q.length < 3) return res.json({ results: [], source: 'none' });
   const key = process.env.GOOGLE_PLACES_KEY;
   if (key) {
     try {
       const url = `https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${encodeURIComponent(q)}&key=${key}&language=pt-BR&components=country:br&location=-1.4558,-48.5044&radius=50000&types=address`;
-      const resp = await fetch(url);
+      const resp = await fetch(url, { signal: AbortSignal.timeout(5000) });
       const data = await resp.json();
-      const results = (data.predictions || []).map(p => ({
-        display_name: p.description,
-        place_id: p.place_id
-      }));
-      if (results.length > 0) return res.json(results);
-    } catch {}
+      if (data.status === 'REQUEST_DENIED' || data.status === 'INVALID_REQUEST') {
+        console.error('[Places] Google API error:', data.status, data.error_message);
+        // cai no fallback Photon
+      } else {
+        const results = (data.predictions || []).map(p => ({
+          display_name: p.description,
+          place_id: p.place_id
+        }));
+        if (results.length > 0) return res.json({ results, source: 'google' });
+      }
+    } catch (err) {
+      console.error('[Places] Google fetch error:', err.message);
+    }
   }
-  // Fallback: Photon (gratuito)
-  try { res.json(await photonSearch(q)); }
-  catch { res.json([]); }
+  // Fallback: Photon
+  try {
+    const results = await photonSearch(q);
+    const source = key ? 'photon_fallback' : 'photon_no_key';
+    res.json({ results, source });
+  } catch {
+    res.json({ results: [], source: 'error' });
+  }
 });
 
 router.get('/place-details', async (req, res) => {
