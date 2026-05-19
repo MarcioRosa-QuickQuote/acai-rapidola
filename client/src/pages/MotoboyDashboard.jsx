@@ -201,8 +201,8 @@ function NavScreen({ order, onClose, onStatusUpdate, statusLabel }) {
   }), []);
 
   const storeIcon = useMemo(() => L.divIcon({
-    html: `<svg xmlns="http://www.w3.org/2000/svg" width="28" height="36" viewBox="0 0 28 36"><ellipse cx="14" cy="14" rx="14" ry="14" fill="#1565C0"/><line x1="14" y1="26" x2="14" y2="36" stroke="#1565C0" stroke-width="3"/><text x="14" y="19" text-anchor="middle" font-size="14" fill="white">🏪</text></svg>`,
-    className: '', iconSize: [28, 36], iconAnchor: [14, 36]
+    html: `<div style="width:36px;height:36px;border-radius:50%;background:#6A1B9A;border:2px solid white;overflow:hidden;box-shadow:0 2px 6px rgba(0,0,0,0.4);display:flex;align-items:center;justify-content:center"><img src="/logo_placa.png" style="width:100%;height:100%;object-fit:contain"/></div>`,
+    className: '', iconSize: [36, 36], iconAnchor: [18, 18]
   }), []);
 
   // GeoJSON da rota para MapLibre (formato [lng, lat])
@@ -348,8 +348,10 @@ function NavScreen({ order, onClose, onStatusUpdate, statusLabel }) {
 
             {/* Pin da loja */}
             {order.store_lat && (
-              <MLMarker longitude={order.store_lng} latitude={order.store_lat} anchor="bottom">
-                <div style={{ fontSize: 30, filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.5))' }}>🏪</div>
+              <MLMarker longitude={order.store_lng} latitude={order.store_lat} anchor="center">
+                <div style={{ width: 36, height: 36, borderRadius: '50%', background: '#6A1B9A', border: '2px solid white', overflow: 'hidden', boxShadow: '0 2px 8px rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <img src="/logo_placa.png" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                </div>
               </MLMarker>
             )}
 
@@ -386,8 +388,10 @@ function NavScreen({ order, onClose, onStatusUpdate, statusLabel }) {
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
             <div style={{
               width: 44, height: 44, borderRadius: 12, background: 'rgba(255,255,255,0.2)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22
-            }}>🏪</div>
+              display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden'
+            }}>
+              <img src="/logo_placa.png" style={{ width: 36, height: 36, objectFit: 'contain' }} />
+            </div>
             <div>
               <div style={{ color: 'rgba(255,255,255,0.75)', fontSize: 13 }}>Primeiro, vá até</div>
               <div style={{ color: 'white', fontWeight: 800, fontSize: 20, lineHeight: 1.2 }}>
@@ -1043,7 +1047,7 @@ export default function MotoboyDashboard() {
     <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
       <div className="header" style={{ padding: '8px 16px' }}>
         <div className="header-left" style={{ gap: 10 }}>
-          <img src="/logomarca.png" alt="Pé de Açaí" style={{ width: 72, height: 72, borderRadius: 14, objectFit: 'contain', flexShrink: 0 }} />
+          <img src="/logo_placa.png" alt="Pé de Açaí" style={{ width: 72, height: 72, borderRadius: 14, objectFit: 'contain', flexShrink: 0 }} />
           <div>
             <div className="header-title" style={{ fontSize: 18 }}>Pé de Açaí</div>
             <div style={{ fontSize: 11, color: 'var(--text-light)' }}>Motoboy</div>

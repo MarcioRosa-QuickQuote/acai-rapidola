@@ -1094,7 +1094,7 @@ export default function StoreDashboard() {
                         center={[(order.customer_lat + order.store_lat) / 2, ((order.customer_lng || 0) + (order.store_lng || 0)) / 2]}
                         zoom={13} style={{ height: '100%', width: '100%' }} scrollWheelZoom={false}>
                         <TileLayer attribution='&copy; OSM' url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-                        <Marker position={[order.store_lat, order.store_lng]} />
+                        <Marker position={[order.store_lat, order.store_lng]} icon={L.divIcon({ html: '<div style="width:36px;height:36px;border-radius:50%;background:#6A1B9A;border:2px solid white;overflow:hidden;box-shadow:0 2px 6px rgba(0,0,0,0.4);display:flex;align-items:center;justify-content:center"><img src=\'/logo_placa.png\' style=\'width:100%;height:100%;object-fit:contain\'/></div>', className: '', iconSize: [36, 36], iconAnchor: [18, 18] })} />
                         <Marker position={[order.customer_lat, order.customer_lng]} />
                         <RoutePolyline from={{ lat: order.store_lat, lng: order.store_lng }} to={{ lat: order.customer_lat, lng: order.customer_lng }} color="#4A148C" />
                       </MapContainer>
