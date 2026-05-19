@@ -153,6 +153,47 @@ router.get('/geocode', async (req, res) => {
   }
 });
 
+router.get('/places-autocomplete', async (req, res) => {
+  const { q } = req.query;
+  if (!q || q.length < 3) return res.json([]);
+  const key = process.env.GOOGLE_PLACES_KEY;
+  if (!key) return res.json([]);
+  try {
+    const url = `https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${encodeURIComponent(q)}&key=${key}&language=pt-BR&components=country:br&location=-1.4558,-48.5044&radius=50000&types=address`;
+    const resp = await fetch(url);
+    const data = await resp.json();
+    const results = (data.predictions || []).map(p => ({
+      display_name: p.description,
+      place_id: p.place_id,
+      main_text: p.structured_formatting?.main_text,
+      secondary_text: p.structured_formatting?.secondary_text
+    }));
+    res.json(results);
+  } catch {
+    res.json([]);
+  }
+});
+
+router.get('/place-details', async (req, res) => {
+  const { place_id } = req.query;
+  if (!place_id) return res.status(400).json({ error: 'place_id obrigatorio' });
+  const key = process.env.GOOGLE_PLACES_KEY;
+  if (!key) return res.status(500).json({ error: 'Chave nao configurada' });
+  try {
+    const url = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${place_id}&key=${key}&fields=geometry,formatted_address&language=pt-BR`;
+    const resp = await fetch(url);
+    const data = await resp.json();
+    const loc = data.result?.geometry?.location;
+    res.json({
+      display_name: data.result?.formatted_address,
+      lat: loc?.lat,
+      lon: loc?.lng
+    });
+  } catch {
+    res.status(500).json({ error: 'Erro ao buscar detalhes' });
+  }
+});
+
 router.get('/reverse-geocode', async (req, res) => {
   const { lat, lng } = req.query;
   if (!lat || !lng) return res.json({ error: 'lat e lng obrigatorios' });

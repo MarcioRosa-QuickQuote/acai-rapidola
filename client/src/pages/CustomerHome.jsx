@@ -369,10 +369,17 @@ export default function CustomerHome() {
       if (q.length < 3) { setAddressSuggestions([]); setShowSuggestions(false); return; }
       searchDebounceRef.current = setTimeout(async () => {
         try {
-          const res = await fetch(`/api/orders/geocode?q=${encodeURIComponent(q)}`);
+          const res = await fetch(`/api/orders/places-autocomplete?q=${encodeURIComponent(q)}`);
           const data = await res.json();
-          setAddressSuggestions(data || []);
-          setShowSuggestions(data?.length > 0);
+          if (data?.length > 0) {
+            setAddressSuggestions(data);
+            setShowSuggestions(true);
+          } else {
+            const fallback = await fetch(`/api/orders/geocode?q=${encodeURIComponent(q)}`);
+            const fb = await fallback.json();
+            setAddressSuggestions(fb || []);
+            setShowSuggestions((fb || []).length > 0);
+          }
         } catch { setShowSuggestions(false); }
       }, 280);
     }
@@ -399,10 +406,20 @@ export default function CustomerHome() {
       }
     }
 
-    function selectAddress(suggestion) {
+    async function selectAddress(suggestion) {
       setAddrForm(suggestion.display_name);
       setShowSuggestions(false);
-      if (suggestion.lat && suggestion.lon) {
+      if (suggestion.place_id) {
+        try {
+          const res = await fetch(`/api/orders/place-details?place_id=${suggestion.place_id}`);
+          const data = await res.json();
+          if (data.lat && data.lon) {
+            setContaMapLat(parseFloat(data.lat));
+            setContaMapLng(parseFloat(data.lon));
+            if (data.display_name) setAddrForm(data.display_name);
+          }
+        } catch {}
+      } else if (suggestion.lat && suggestion.lon) {
         setContaMapLat(parseFloat(suggestion.lat));
         setContaMapLng(parseFloat(suggestion.lon));
       }
