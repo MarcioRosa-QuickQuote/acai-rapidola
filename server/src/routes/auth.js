@@ -76,6 +76,45 @@ router.get('/register/check-invite', async (req, res) => {
   res.json({ valid: true, phone: invite.phone });
 });
 
+router.post('/google', async (req, res) => {
+  const { userInfo } = req.body;
+  if (!userInfo?.email) return res.status(400).json({ error: 'Dados Google inválidos' });
+  try {
+    const { email, name, picture, sub: googleId } = userInfo;
+
+    let { data: user } = await supabase.from('users').select('*').eq('email', email).single();
+
+    if (!user) {
+      const id = uuid();
+      await supabase.from('users').insert({
+        id, name: name || email.split('@')[0], phone: '', email,
+        password_hash: '', role: 'customer',
+        google_id: googleId, photo_url: picture || ''
+      });
+      ({ data: user } = await supabase.from('users').select('*').eq('id', id).single());
+    } else if (!user.google_id) {
+      await supabase.from('users').update({
+        google_id: googleId,
+        photo_url: user.photo_url || picture || ''
+      }).eq('id', user.id);
+    }
+
+    if (!user) return res.status(500).json({ error: 'Erro ao criar usuário' });
+
+    const payload = {
+      id: user.id, name: user.name, role: user.role,
+      phone: user.phone || '', email: user.email || '',
+      address: user.address || '', lat: user.lat, lng: user.lng,
+      photo_url: user.photo_url || picture || ''
+    };
+    const token = signToken(payload);
+    res.json({ user: payload, token });
+  } catch (err) {
+    console.error('[Auth] Google login error:', err);
+    res.status(500).json({ error: 'Erro ao autenticar com Google' });
+  }
+});
+
 router.post('/login', async (req, res) => {
   const { phone, password } = req.body;
   if (!phone || !password) {

@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { useGoogleLogin } from '@react-oauth/google';
 
 const berries = Array.from({ length: 18 }, (_, i) => ({
   id: i,
@@ -13,11 +14,34 @@ const berries = Array.from({ length: 18 }, (_, i) => ({
 }));
 
 export default function Login() {
-  const { login, apiFetch } = useAuth();
+  const { login, loginWithToken, apiFetch } = useAuth();
   const [phone, setPhone] = useState('admin');
   const [password, setPassword] = useState('123456');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
+
+  const googleLogin = useGoogleLogin({
+    onSuccess: async (tokenResponse) => {
+      setGoogleLoading(true);
+      try {
+        const infoRes = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+          headers: { Authorization: `Bearer ${tokenResponse.access_token}` }
+        });
+        const info = await infoRes.json();
+        const res = await fetch('/api/auth/google', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ credential: tokenResponse.access_token, userInfo: info })
+        });
+        const data = await res.json();
+        if (data.token) loginWithToken(data.token, data.user);
+        else setError(data.error || 'Erro ao entrar com Google');
+      } catch { setError('Erro ao conectar com Google'); }
+      setGoogleLoading(false);
+    },
+    onError: () => setError('Login com Google cancelado')
+  });
   const [showTest, setShowTest] = useState(false);
   const [recovery, setRecovery] = useState(false);
   const [recoveryStep, setRecoveryStep] = useState(1);
@@ -214,6 +238,36 @@ export default function Login() {
               onMouseOut={e => !loading && (e.target.style.boxShadow = '0 4px 14px rgba(106,27,154,0.4)')}
             >
               {loading ? 'Entrando...' : 'Entrar'}
+            </button>
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, margin: '14px 0 2px' }}>
+              <div style={{ flex: 1, height: 1, background: '#E8E0F0' }} />
+              <span style={{ fontSize: 11, color: '#BBB', whiteSpace: 'nowrap' }}>ou continue com</span>
+              <div style={{ flex: 1, height: 1, background: '#E8E0F0' }} />
+            </div>
+
+            <button type="button" onClick={() => googleLogin()} disabled={googleLoading} style={{
+              width: '100%', padding: '11px', marginTop: 10,
+              background: 'white', color: '#333', border: '2px solid #E8E0F0', borderRadius: 10,
+              fontSize: 14, fontWeight: 600, cursor: googleLoading ? 'default' : 'pointer',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
+              opacity: googleLoading ? 0.7 : 1,
+              transition: 'border-color 0.2s, box-shadow 0.2s',
+              boxSizing: 'border-box'
+            }}
+              onMouseOver={e => !googleLoading && (e.currentTarget.style.borderColor = '#BDBDBD')}
+              onMouseOut={e => !googleLoading && (e.currentTarget.style.borderColor = '#E8E0F0')}
+            >
+              {!googleLoading && (
+                <svg width="18" height="18" viewBox="0 0 48 48">
+                  <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+                  <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+                  <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+                  <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.31-8.16 2.31-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+                  <path fill="none" d="M0 0h48v48H0z"/>
+                </svg>
+              )}
+              {googleLoading ? 'Entrando...' : 'Entrar com Google'}
             </button>
 
             <p style={{ textAlign: 'center', marginTop: 12, fontSize: 13, color: '#888' }}>
