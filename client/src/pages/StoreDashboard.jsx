@@ -392,10 +392,11 @@ export default function StoreDashboard() {
     return (now - created) > 2 * 60 * 60 * 1000;
   });
   
+  const concludedOrders = orders.filter(o => ['delivered', 'cancelled'].includes(o.status) && (now - new Date(o.created_at).getTime()) <= 24 * 60 * 60 * 1000);
   const displayOrders = orderFilter === 'ativos' ? pendingOrders : orderFilter === 'pendentes' ? unpaidOrders.filter(o => {
     const created = new Date(o.created_at).getTime();
     return (now - created) <= 2 * 60 * 60 * 1000;
-  }) : orders.filter(o => (Date.now() - new Date(o.created_at).getTime()) <= 4 * 60 * 60 * 1000);
+  }) : orderFilter === 'concluidos' ? concludedOrders : orders.filter(o => (Date.now() - new Date(o.created_at).getTime()) <= 4 * 60 * 60 * 1000);
 
   function FinanceiroTab() {
     const now = new Date();
@@ -1015,16 +1016,21 @@ export default function StoreDashboard() {
           </>
         ) : (
           <>
-            <div className="grid-2 mb-4">
-              <div className="card text-center" style={{ background: 'linear-gradient(135deg, #F3E5F5, #E1BEE7)', cursor: 'pointer' }}
+            <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
+              <div className="card text-center" style={{ flex: 1, padding: '12px 6px', background: 'linear-gradient(135deg, #F3E5F5, #E1BEE7)', cursor: 'pointer' }}
                 onClick={() => setOrderFilter(orderFilter === 'ativos' ? 'todos' : 'ativos')}>
-                <div style={{ fontSize: 32, fontWeight: 800, color: 'var(--primary)' }}>{pendingOrders.length}</div>
+                <div style={{ fontSize: 28, fontWeight: 800, color: 'var(--primary)' }}>{pendingOrders.length}</div>
                 <div className="text-sm font-bold">{orderFilter === 'ativos' ? '▼ Ativos' : 'Ativos'}</div>
               </div>
-              <div className="card text-center" style={{ background: 'linear-gradient(135deg, #FFF3E0, #FFE0B2)', cursor: 'pointer' }}
+              <div className="card text-center" style={{ flex: 1, padding: '12px 6px', background: 'linear-gradient(135deg, #FFF3E0, #FFE0B2)', cursor: 'pointer' }}
                 onClick={() => setOrderFilter(orderFilter === 'pendentes' ? 'todos' : 'pendentes')}>
-                <div style={{ fontSize: 32, fontWeight: 800, color: '#E65100' }}>{unpaidOrders.filter(o => (now - new Date(o.created_at).getTime()) <= 2*60*60*1000).length}</div>
+                <div style={{ fontSize: 28, fontWeight: 800, color: '#E65100' }}>{unpaidOrders.filter(o => (now - new Date(o.created_at).getTime()) <= 2*60*60*1000).length}</div>
                 <div className="text-sm font-bold">{orderFilter === 'pendentes' ? '▼ Pendentes' : 'Pendentes'}</div>
+              </div>
+              <div className="card text-center" style={{ flex: 1, padding: '12px 6px', background: 'linear-gradient(135deg, #E8F5E9, #C8E6C9)', cursor: 'pointer' }}
+                onClick={() => setOrderFilter(orderFilter === 'concluidos' ? 'todos' : 'concluidos')}>
+                <div style={{ fontSize: 28, fontWeight: 800, color: '#2E7D32' }}>{concludedOrders.length}</div>
+                <div className="text-sm font-bold">{orderFilter === 'concluidos' ? '▼ Concluídos' : 'Concluídos'}</div>
               </div>
             </div>
 
