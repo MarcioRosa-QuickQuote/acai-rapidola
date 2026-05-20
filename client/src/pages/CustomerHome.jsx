@@ -232,24 +232,16 @@ export default function CustomerHome() {
           </div>
           <div className="header-right" style={{ gap: 6 }}>
             {activeOrder && activeOrder.payment_status === 'paid' && !['delivered','cancelled'].includes(activeOrder.status) && (
-              <img src="/saco_acai.png" onClick={() => navigate(`/customer/tracking/${activeOrder.id}`)}
+              <img src="/saco_acai.png" onClick={() => navigate('/customer/tracking/' + activeOrder.id)}
                 style={{ width: 32, height: 32, objectFit: 'contain', cursor: 'pointer' }} />
             )}
             {Object.keys(cart).length > 0 && (
               <button className="btn btn-sm" onClick={() => setShowCart(!showCart)}
                 style={{ background: '#FFF3E0', color: '#E65100', fontSize: 14, fontWeight: 700, padding: '4px 8px', border: 'none', borderRadius: 20, width: 'auto', position: 'relative' }}>
-                🛒
+                {'🛒'}
                 <span style={{ position: 'absolute', top: -4, right: -6, background: '#C62828', color: 'white', fontSize: 10, width: 18, height: 18, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700 }}>
                   {Object.values(cart).reduce((a, b) => a + b, 0)}
                 </span>
-              </button>
-            )}
-            {storeId && (
-              <button onClick={toggleFavorite}
-                style={{ background: 'rgba(106,27,154,0.08)', border: 'none', borderRadius: 20, padding: 7, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <svg width="20" height="20" viewBox="0 0 24 24" fill={isFavorited ? '#E53935' : '#999'}>
-                  <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
-                </svg>
               </button>
             )}
             <button onClick={() => navigate('/customer/notificacoes')}
@@ -259,6 +251,18 @@ export default function CustomerHome() {
               </svg>
             </button>
           </div>
+        </div>
+      )}
+
+      {storeId && (
+        <div style={{ display: 'flex', justifyContent: 'center', padding: '4px 16px 0', background: 'var(--bg)' }}>
+          <button onClick={toggleFavorite}
+            style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4, fontSize: 12, fontWeight: 600, color: isFavorited ? '#E53935' : '#999' }}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill={isFavorited ? '#E53935' : 'none'} stroke={isFavorited ? '#E53935' : '#999'} strokeWidth="2">
+              <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+            </svg>
+            {isFavorited ? 'Favorita' : 'Favoritar'}
+          </button>
         </div>
       )}
 
