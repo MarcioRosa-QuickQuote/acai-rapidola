@@ -400,19 +400,19 @@ export default function CustomerTracking() {
     <div style={{ minHeight: '100vh', paddingBottom: 80 }}>
       <CustomerHeader title="Acompanhar Pedido" />
 
-      <div className="container" style={{ paddingTop: 12 }}>
-        <div className="card">
-          <div style={{ marginBottom: 8, display: 'flex', justifyContent: 'flex-end' }}>
-            <span className={`badge ${order.payment_status === 'paid' ? 'badge-success' : 'badge-warning'}`}>
-              {order.payment_status === 'paid' ? 'Pago' : 'Pendente'}
-            </span>
-          </div>
+      <div style={{ position: 'sticky', top: 0, zIndex: 50, background: 'var(--bg)', padding: '8px 16px', display: 'flex', justifyContent: 'flex-end' }}>
+        <span className={`badge ${order.payment_status === 'paid' ? 'badge-success' : 'badge-warning'}`}>
+          {order.payment_status === 'paid' ? 'Pago' : 'Pendente'}
+        </span>
+      </div>
 
+      <div className="container" style={{ paddingTop: 4 }}>
+        <div className="card">
           <div className="order-status-bar">
             {/* Logo da loja no início */}
             <div className="order-status-step">
-              <div style={{ height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <img src="/logo_placa.png" style={{ width: 32, height: 32, objectFit: 'contain', opacity: 0.6 }} />
+              <div style={{ height: 52, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <img src="/logo_placa.png" style={{ width: 36, height: 36, objectFit: 'contain', opacity: 0.6 }} />
               </div>
               <span className="text-xs" style={{ color: 'var(--text-light)', textAlign: 'center' }}> </span>
             </div>
@@ -422,9 +422,11 @@ export default function CustomerTracking() {
               const isCurrent = i === currentStep;
               return (
                 <div key={step} className="order-status-step">
-                  <div style={{ height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <div style={{ height: 52, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     {isCurrent ? (
-                      <div style={{ width: 18, height: 18, borderRadius: '50%', background: 'var(--primary)', animation: 'glow-saco 2s ease-in-out infinite' }} />
+                      <div style={{ width: 52, height: 52, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', animation: 'glow-saco 2s ease-in-out infinite' }}>
+                        <img src="/saco_acai.png" style={{ width: 36, height: 36, objectFit: 'contain' }} />
+                      </div>
                     ) : done ? (
                       <div style={{ width: 16, height: 16, borderRadius: '50%', background: 'var(--secondary)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                         <svg width="10" height="10" viewBox="0 0 24 24" fill="white"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
@@ -446,8 +448,8 @@ export default function CustomerTracking() {
 
             {/* Tigela de açaí no fim */}
             <div className="order-status-step">
-              <div style={{ height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <img src="/tigela.png" style={{ width: 36, height: 36, objectFit: 'contain', opacity: order.status === 'delivered' ? 1 : 0.25 }} onError={(e) => { e.target.style.display = 'none'; }} />
+              <div style={{ height: 52, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <img src="/tigela.png" style={{ width: 40, height: 40, objectFit: 'contain', opacity: order.status === 'delivered' ? 1 : 0.25 }} onError={(e) => { e.target.style.display = 'none'; }} />
               </div>
               <span className="text-xs" style={{ color: order.status === 'delivered' ? 'var(--secondary)' : 'var(--text-light)', textAlign: 'center', fontWeight: order.status === 'delivered' ? 700 : 400 }}>
                 {order.status === 'delivered' ? 'Bom aprov!' : ' '}
