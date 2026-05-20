@@ -311,7 +311,8 @@ body {
 .order-status-bar {
   display: flex;
   align-items: center;
-  gap: 4px;
+  justify-content: center;
+  gap: 6px;
   margin: 16px 0;
   overflow-x: auto;
   padding: 8px 0;

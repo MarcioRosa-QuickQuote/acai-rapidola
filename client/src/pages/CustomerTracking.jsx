@@ -412,7 +412,7 @@ export default function CustomerTracking() {
             {/* Logo da loja no início */}
             <div className="order-status-step">
               <div style={{ height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <img src="/logo_placa.png" style={{ width: 22, height: 22, objectFit: 'contain', opacity: 0.55 }} />
+                <img src="/logo_placa.png" style={{ width: 32, height: 32, objectFit: 'contain', opacity: 0.6 }} />
               </div>
               <span className="text-xs" style={{ color: 'var(--text-light)', textAlign: 'center' }}> </span>
             </div>
@@ -447,7 +447,7 @@ export default function CustomerTracking() {
             {/* Tigela de açaí no fim */}
             <div className="order-status-step">
               <div style={{ height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <img src="/tigela.png" style={{ width: 28, height: 28, objectFit: 'contain', opacity: order.status === 'delivered' ? 1 : 0.22 }} onError={(e) => { e.target.style.display = 'none'; }} />
+                <img src="/tigela.png" style={{ width: 36, height: 36, objectFit: 'contain', opacity: order.status === 'delivered' ? 1 : 0.25 }} onError={(e) => { e.target.style.display = 'none'; }} />
               </div>
               <span className="text-xs" style={{ color: order.status === 'delivered' ? 'var(--secondary)' : 'var(--text-light)', textAlign: 'center', fontWeight: order.status === 'delivered' ? 700 : 400 }}>
                 {order.status === 'delivered' ? 'Bom aprov!' : ' '}
