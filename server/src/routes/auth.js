@@ -153,7 +153,7 @@ router.post('/login', async (req, res) => {
 
 router.get('/me', authMiddleware, async (req, res) => {
   const { data: user } = await supabase.from('users')
-    .select('id, name, phone, email, role, address, lat, lng, photo_url, created_at')
+    .select('id, name, phone, email, role, address, lat, lng, photo_url, cpf, created_at')
     .eq('id', req.user.id).single();
 
   if (!user) return res.status(404).json({ error: 'Usuário não encontrado' });
