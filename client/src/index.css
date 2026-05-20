@@ -312,19 +312,28 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  margin: 8px 0;
-  overflow-x: auto;
-  padding: 8px 0;
+  gap: 2px;
+  margin: 4px 0;
+  padding: 6px 0;
+  width: 100%;
 }
 
 .order-status-step {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
-  min-width: 72px;
-  flex-shrink: 0;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+  padding: 0 2px;
+}
+
+.order-status-step .text-xs {
+  font-size: 9px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
 }
 
 .order-status-dot {
