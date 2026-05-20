@@ -105,6 +105,166 @@ const GIRIAS_QUESTIONS = [
   { q: '"Num tô nem aí" quer dizer:', ops: ['Estou muito interessado', 'Não me importo nada com isso', 'Estou perto', 'Concordo plenamente'], a: 1 },
   { q: '"Rachar" no linguajar informal paraense pode ser:', ops: ['Somente quebrar algo', 'Dividir o custo ou a conta', 'Correr muito rápido', 'Brigar feio'], a: 1 },
   { q: '"Deixa de ser palha!" significa:', ops: ['Pare de trabalhar com palha', 'Para de ser chato/sem graça', 'Joga fora a palha', 'Seja mais trabalhador'], a: 1 },
+  { q: '"Mocorongo" no Pará significa:', ops: ['Pessoa do interior, caipira', 'Muito inteligente', 'Rico, abastado', 'Turista'], a: 0 },
+  { q: '"Poraquê" é um:', ops: ['Peixe elétrico da Amazônia', 'Tipo de dança', 'Pássaro noturno', 'Instrumento musical'], a: 0 },
+  { q: '"Tucupi" é:', ops: ['Dança típica', 'Caldo amarelo extraído da mandioca', 'Fruta amazônica', 'Tipo de artesanato'], a: 1 },
+  { q: '"Jambu" é:', ops: ['Uma fruta doce', 'Erva que causa dormência na boca', 'Peixe de água doce', 'Cidade do Pará'], a: 1 },
+  { q: '"Maniva" é o mesmo que:', ops: ['Fruta madura', 'Folha da mandioca moída', 'Tipo de peixe', 'Bairro de Belém'], a: 1 },
+  { q: '"Vatapá" é:', ops: ['Bebida fermentada', 'Prato típico paraense', 'Tipo de rede de dormir', 'Cobra amazônica'], a: 1 },
+  { q: '"Carimbó" é:', ops: ['Peixe de escama', 'Ritmo musical e dança típica', 'Bairro de Belém', 'Tipo de canoa'], a: 1 },
+  { q: '"Tapioca" no Pará é feita com:', ops: ['Farinha de trigo', 'Goma extraída da mandioca', 'Milho moído', 'Arroz triturado'], a: 1 },
+  { q: '"Açaí" no Pará é tradicionalmente consumido com:', ops: ['Leite condensado e granola', 'Farinha d\'água e peixe', 'Açúcar e frutas', 'Leite em pó'], a: 1 },
+  { q: '"Pupunha" é:', ops: ['Uma fruta/legume típico da região', 'Uma dança indígena', 'Tipo de barco', 'Peixe ornamental'], a: 0 },
+  { q: '"Cupuaçu" é:', ops: ['Fruta amazônica de casca marrom', 'Tipo de mandioca', 'Peixe de rio', 'Ave regional'], a: 0 },
+  { q: '"Bacuri" é:', ops: ['Fruta amazônica de casca dura', 'Tipo de rede', 'Dança típica', 'Rio do Pará'], a: 0 },
+  { q: '"Tucumã" é:', ops: ['Fruta de palmeira amazônica', 'Peixe elétrico', 'Cidade do Pará', 'Tipo de artesanato'], a: 0 },
+  { q: '"Muruci" é:', ops: ['Fruta amarela usada em sucos', 'Peixe pequeno', 'Bairro de Belém', 'Ferramenta agrícola'], a: 0 },
+  { q: '"Graviola" no Pará é usada para:', ops: ['Fazer remédio caseiro', 'Fazer suco e sorvete', 'Temperar peixe', ' tingir roupas'], a: 1 },
+  { q: '"Farinha d\'água" é:', ops: ['Farinha de trigo industrializada', 'Farinha de mandioca molhada', 'Farinha de milho', 'Farinha de arroz'], a: 1 },
+  { q: '"Pirarucu" é:', ops: ['Um dos maiores peixes de água doce', 'Dança típica', 'Cidade paraense', 'Planta medicinal'], a: 0 },
+  { q: '"Tambaqui" é:', ops: ['Peixe amazônico muito apreciado', 'Fruta típica', 'Tipo de canoa', 'Ave regional'], a: 0 },
+  { q: '"Filhote" no Pará é um:', ops: ['Filho mais novo', 'Peixe da família do pirarucu', 'Filhote de cachorro', 'Aprendiz de pescador'], a: 1 },
+  { q: '"Mapará" é:', ops: ['Peixe escalado típico do Pará', 'Tipo de árvore', 'Dança folclórica', 'Utensílio de cozinha'], a: 0 },
+  { q: '"Acari" é:', ops: ['Peixe de couro da Amazônia', 'Fruta silvestre', 'Inseto voador', 'Tipo de cerâmica'], a: 0 },
+  { q: '"Surubim" é:', ops: ['Peixe de couro de rio', 'Árvore frutífera', 'Dança regional', 'Tipo de remo'], a: 0 },
+  { q: '"Dourada" no Pará é:', ops: ['Peixe de escama dourada', 'Mulher muito bonita', 'Moeda antiga', 'Planta ornamental'], a: 0 },
+  { q: '"Pescada" é um peixe:', ops: ['De água salgada apenas', 'De escama muito comum no Pará', 'Peixe elétrico', 'Peixe ornamental'], a: 1 },
+  { q: '"Tucunaré" é:', ops: ['Peixe esportivo da Amazônia', 'Fruta amazônica', 'Dança típica', 'Cobra d\'água'], a: 0 },
+  { q: '"Baiacu" no Pará é:', ops: ['Peixe que infla', 'Pessoa irritada', 'Tipo de balão', 'Brinquedo infantil'], a: 0 },
+  { q: '"Matrinxã" é:', ops: ['Peixe de escama do Amazonas', 'Fruta típica', 'Árvore frutífera', 'Tipo de abano'], a: 0 },
+  { q: '"Aruanã" é:', ops: ['Peixe amazônico de aquário', 'Ave de rapina', 'Cobra aquática', 'Planta flutuante'], a: 0 },
+  { q: '"Boto" no imaginário paraense é:', ops: ['Apenas um golfinho de rio', 'Ser que vira gente e engravida as moças', 'Peixe perigoso', 'Divindade indígena'], a: 1 },
+  { q: '"Uirapuru" é:', ops: ['Pássaro lendário da Amazônia', 'Peixe pequeno', 'Árvore frutífera', 'Tipo de artesanato'], a: 0 },
+  { q: '"Curupira" é:', ops: ['Protetor das florestas com pés virados', 'Peixe elétrico', 'Assombração de rio', 'Fantasma de igreja'], a: 0 },
+  { q: '"Iara" ou "Mãe d\'água" é:', ops: ['Sereia dos rios amazônicos', 'Cobra grande', 'Fada da floresta', 'Ondina do mar'], a: 0 },
+  { q: '"Matinta Perera" é:', ops: ['Assombração que assobia', 'Peixe boi', 'Árvore gigante', 'Dança indígena'], a: 0 },
+  { q: '"Cobra-grande" ou "Boiuna" é:', ops: ['Cobra gigante lendária dos rios', 'Cascavel', 'Jiboia comum', 'Sucuri comum'], a: 0 },
+  { q: '"Mãe-do-ouro" é:', ops: ['Entidade que protege tesouros enterrados', 'Planta que produz ouro', 'Mineradora famosa', 'Rocha preciosa'], a: 0 },
+  { q: '"Tapera" no Pará significa:', ops: ['Cidade grande', 'Sítio abandonado, casa velha', 'Templo religioso', 'Mercado público'], a: 1 },
+  { q: '"Igarapé" é:', ops: ['Canal estreito de rio, braço d\'água', 'Grande lago', 'Cachoeira alta', 'Montanha verde'], a: 0 },
+  { q: '"Furo" na Amazônia significa:', ops: ['Buraco no chão', 'Canal estreito que liga dois rios', 'Furo de bala', 'Defeito em embarcação'], a: 1 },
+  { q: '"Várzea" na região é:', ops: ['Terreno seco e alto', 'Área alagada às margens dos rios', 'Planalto rochoso', 'Deserto amazônico'], a: 1 },
+  { q: '"Terra firme" na Amazônia é:', ops: ['Área que nunca alaga', 'Propriedade rural', 'Cimento queimado', 'Chão batido'], a: 0 },
+  { q: '"Barranco" no Pará é:', ops: ['Margem alta de rio', 'Buraco no chão', 'Depósito de mercadorias', 'Tipo de madeira'], a: 0 },
+  { q: '"Ressaca" no linguajar paraense é:', ops: ['Efeito do álcool', 'Área alagada, pantanosa', 'Vento forte', 'Onda do mar'], a: 1 },
+  { q: '"Enseada" no Pará é:', ops: ['Praia de rio', 'Entrada do mar', 'Grande lago', 'Cachoeira'], a: 0 },
+  { q: '"Boca do rio" significa:', ops: ['Foz, lugar onde o rio deságua', 'Nascente do rio', 'Margem rasa', 'Cachoeira'], a: 0 },
+  { q: '"Montaria" no Pará é:', ops: ['Carro antigo', 'Canoa pequena feita de um tronco só', 'Cavalo de monta', 'Moto usada'], a: 1 },
+  { q: '"Rabeta" é:', ops: ['Canoa com motor de popa', 'Barco grande', 'Tipo de peixe', 'Rabo de animal'], a: 0 },
+  { q: '"Bajara" é:', ops: ['Jangada paraense', 'Rede de pesca', 'Fruta silvestre', 'Tipo de dança'], a: 0 },
+  { q: '"Vigia" no vocabulário paraense é:', ops: ['Sentinelas', 'Cidade do Pará', 'Observatório', 'Farol'], a: 1 },
+  { q: '"Bragança" é:', ops: ['Cidade do nordeste paraense', 'Tipo de barco', 'Peixe de couro', 'Planta medicinal'], a: 0 },
+  { q: '"Santarém" é:', ops: ['Cidade do oeste do Pará', 'Bairro de Belém', 'Rio afluente', 'Tipo de artesanato'], a: 0 },
+  { q: '"Marajó" é conhecido por:', ops: ['Suas praias oceânicas', 'Suas ilhas e búfalos', 'Suas montanhas', 'Seu deserto'], a: 1 },
+  { q: '"Ilha do Combu" é famosa por:', ops: ['Suas praias de areia branca', 'Seu chocolate e cacau', 'Suas montanhas', 'Seu cassino'], a: 1 },
+  { q: '"Ver-o-Peso" é:', ops: ['Mercado histórico de Belém', 'Feira de artesanato', 'Praia fluvial', 'Porto de navios'], a: 0 },
+  { q: '"Estação das Docas" é:', ops: ['Complexo turístico e gastronômico', 'Estação de trem', 'Porto industrial', 'Museu naval'], a: 0 },
+  { q: '"Mangal das Garças" é:', ops: ['Parque ecológico em Belém', 'Feira livre', 'Criadouro de garças', 'Restaurante'], a: 0 },
+  { q: '"Basílica de Nazaré" é:', ops: ['Principal igreja de Belém', 'Mercado municipal', 'Teatro famoso', 'Praça central'], a: 0 },
+  { q: '"Círio de Nazaré" é:', ops: ['Dança típica paraense', 'Maior procissão religiosa do Brasil', 'Festa junina', 'Torneio de pesca'], a: 1 },
+  { q: '"Arraial do Pavulagem" é:', ops: ['Bloco de carnaval', 'Arrastão musical que toca em Belém', 'Feira agropecuária', 'Festa religiosa'], a: 1 },
+  { q: '"Guitarrada" é:', ops: ['Estilo musical paraense com guitarra', 'Loja de instrumentos', 'Técnica de violão', 'Banda de rock'], a: 0 },
+  { q: '"Brega" no Pará é:', ops: ['Música popular romântica e dançante', 'Estilo musical brega', 'Programa de TV', 'Tipo de festa'], a: 0 },
+  { q: '"Tecnobrega" é:', ops: ['Fusão de brega com música eletrônica', 'Aparelho de som', 'Técnica de gravação', 'Estilo de dança'], a: 0 },
+  { q: '"Calypso" é:', ops: ['Banda musical paraense famosa', 'Música caribenha', 'Dança havaiana', 'Tipo de ritmo'], a: 0 },
+  { q: '"Banho de cheiro" no Pará é:', ops: ['Perfume tradicional com ervas cheirosas', 'Banho no rio', ['Produto de limpeza'], 'Tipo de sabonete'], a: 0 },
+  { q: '"Cheiro-do-pará" é:', ops: ['Perfume típico com alfazema e cumaru', 'Prato típico', 'Planta ornamental', 'Dança folclórica'], a: 0 },
+  { q: '"Pajé" no Pará significa:', ops: ['Xamã, curandeiro indígena', 'Tipo de dança', ['Pássaro preto'], 'Chefe militar'], a: 0 },
+  { q: '"Puxirum" no Pará é:', ops: ['Mutirão, trabalho coletivo', 'Festa particular', 'Tipo de dança', 'Sistema de pesca'], a: 0 },
+  { q: '"Paneiro" no Pará é:', ops: ['Cesto trançado de palha', 'Tipo de fogão', 'Panela de barro', 'Utensílio de pesca'], a: 0 },
+  { q: '"Tipiti" é:', ops: ['Esmagador de mandioca', 'Tipo de cesto', 'Rede de pesca', 'Armadilha de caça'], a: 0 },
+  { q: '"Cuia" no Pará é usada para:', ops: ['Tomar açaí', 'Guardar dinheiro', 'Enfeitar a casa', 'Cozinhar alimentos'], a: 0 },
+  { q: '"Rede" na cultura paraense é:', ops: ['Objeto para dormir descansar', 'Rede de pesca', 'Internet', 'Teia de aranha'], a: 0 },
+  { q: '"Abano" no Pará é:', ops: ['Ventilador manual de palha', ['Toldo de janela'], 'Telhado de casa', 'Tipo de saia'], a: 0 },
+  { q: '"Urucubaca" no Pará quer dizer:', ops: ['Dança típica', 'Azar, má sorte', 'Fartura, abundância', 'Bairro famoso'], a: 1 },
+  { q: '"Arredar" no Pará significa:', ops: ['Chegar mais para lá, sair do lugar', ['Aproximar'], 'Empurrar', 'Puxar'], a: 0 },
+  { q: '"Arriar" no Pará quer dizer:', ops: ['Descer, abaixar', 'Cansar muito', 'Reclamar', 'Chorar'], a: 0 },
+  { q: '"Botar" no sentido paraense:', ops: ['Colocar, pôr', 'Expulsar', 'Vestir', 'Fabricar'], a: 0 },
+  { q: '"Catar" no Pará significa:', ops: ['Juntar, recolher', 'Procurar piolho', 'Limpar', 'Varrer'], a: 0 },
+  { q: '"Cochilar" no Pará é:', ops: ['Dormir leve, tirar um sono', 'Conversar', 'Comer', 'Trabalhar'], a: 0 },
+  { q: '"Destombar" no Pará significa:', ops: ['Desanimar, desistir', 'Cair no chão', 'Quebrar objeto', 'Perder documento'], a: 0 },
+  { q: '"Embarafustar" é:', ops: ['Entrar em lugar apertado', 'Sair correndo', 'Discutir bravo', 'Navegar contra a corrente'], a: 0 },
+  { q: '"Ensebar" no Pará significa:', ops: ['Atrapalhar, dificultar', 'Ensaboar', 'Lavar roupa', 'Escorregar'], a: 0 },
+  { q: '"Esculhambar" significa:', ops: ['Criticar severamente, xingar', 'Quebrar pedaços', 'Espalhar coisas', 'Desorganizar'], a: 0 },
+  { q: '"Espia" no Pará quer dizer:', ops: ['Olha, veja', 'Agente secreto', 'Vigilante', 'Criança arteira'], a: 0 },
+  { q: '"Jegue" no Pará é:', ops: ['Pessoa lerda, burro', 'Animal de carga', 'Carro velho', 'Moto fraca'], a: 0 },
+  { q: '"Mamar" no sentido paraense:', ops: ['Tirar vantagem', 'Amamentar', 'Beber muito', 'Dormir'], a: 0 },
+  { q: '"Mangar" no Pará significa:', ops: ['Zombar, caçoar de alguém', 'Comer manga', 'Colher fruta', 'Admirar'], a: 0 },
+  { q: '"Pitar" no Pará é:', ops: ['Fumar cachimbo ou cigarro', 'Comer pitanga', 'Cantar baixo', 'Andar devagar'], a: 0 },
+  { q: '"Puxa" no vocabulário paraense:', ops: ['Puxar, arrastar', 'Atrair namorado', 'Tirar sorteio', 'Chupar canudo'], a: 0 },
+  { q: '"Relar" no Pará significa:', ops: ['Ralar, raspar de leve', 'Contar fofoca', 'Falar demais', 'Reclamar'], a: 0 },
+  { q: '"Rengar" no Pará quer dizer:', ops: ['Teimar, insistir', 'Rezar muito', 'Cantar mal', 'Andar em fila'], a: 0 },
+  { q: '"Ribanceira" é:', ops: ['Barranco íngreme', 'Ribeirão', 'Cachoeira pequena', 'Margem de rio'], a: 0 },
+  { q: '"Sambir" no Pará significa:', ops: ['Andar sem destino, vagar', 'Dançar samba', 'Baloiçar', 'Navegar'], a: 0 },
+  { q: '"Tombar" no Pará pode ser:', ops: ['Virar, cair', 'Pagar imposto', 'Registrar documento', 'Comemorar'], a: 0 },
+  { q: '"Tupiniquim" é:', ops: ['Indígena brasileiro', 'Peixe ornamental', 'Planta rasteira', 'Doce regional'], a: 0 },
+  { q: '"Uruá" é o nome de:', ops: ['Caramujo comestível da Amazônia', 'Pássaro preto', 'Peixe de couro', 'Fruta do mato'], a: 0 },
+  { q: '"Mingau" no Pará é feito de:', ops: ['Farinha d\'água ou tapioca', 'Aveia', 'Trigo', 'Milho'], a: 0 },
+  { q: '"Pato no tucupi" é:', ops: ['Prato típico paraense famoso', 'Dança folclórica', 'Lenda amazônica', 'Peixe preparado'], a: 0 },
+  { q: '"Tacacá" é servido em:', ops: ['Cuia', 'Prato fundo', 'Copo de vidro', 'Panela de barro'], a: 0 },
+  { q: '"Maniçoba" é feita com:', ops: ['Folhas de maniva moída', 'Farinha de trigo', 'Arroz', 'Milho verde'], a: 0 },
+  { q: '"Mugunzá" no Pará é:', ops: ['Mingau de milho com leite de coco', 'Bolo de mandioca', 'Doce de cupuaçu', 'Suco de fruta'], a: 0 },
+  { q: '"Beiju" é feito de:', ops: ['Goma de tapioca', 'Farinha de trigo', 'Milho', 'Arroz'], a: 0 },
+  { q: '"Bolo de macaxeira" é feito com:', ops: ['Mandioca (macaxeira)', 'Milho', 'Trigo', 'Batata'], a: 0 },
+  { q: '"Cuscuz" no Pará é de:', ops: ['Milho ou tapioca', 'Arroz', 'Trigo', 'Mandioca'], a: 0 },
+  { q: '"Caranguejo" no Pará é comido com:', ops: ['Arroz e feijão', 'Farinha d\'água', 'Pão', 'Macarrão'], a: 1 },
+  { q: '"Caldeirada" é:', ops: ['Ensopado de peixe', ['Sopa de legumes'], 'Assado de carne', 'Fritura mista'], a: 0 },
+  { q: '"Pesada" no Pará é:', ops: ['Marca de farinha típica', 'Balança antiga', 'Rede de dormir grossa', 'Cestão pesado'], a: 0 },
+  { q: '"Amazônia" tem qual sentido no Pará:', ops: ['Região e identidade cultural', 'Apenas floresta', 'Nome de loja', ['Marca de produto']], a: 0 },
+  { q: '"Cabano" no Pará é:', ops: ['Natural do Pará, paraense', 'Rebelde histórico', 'Pescador', 'Agricultor'], a: 0 },
+  { q: '"Caboclo" na região é:', ops: ['Mestiço de índio com branco', 'Índio puro', 'Branco europeu', 'Negro'], a: 0 },
+  { q: '"Tapioqueiro" é:', ops: ['Vendedor de tapioca', 'Fabricante de farinha', 'Pescador artesanal', 'Artesão de cerâmica'], a: 0 },
+  { q: '"Padeiro" no Pará é:', ops: ['Pescador de camarão', 'Fabricante de pão', 'Vendedor ambulante', 'Dono de padaria'], a: 0 },
+  { q: '"Açaizeiro" é:', ops: ['Pé de açaí, a palmeira', 'Vendedor de açaí', 'Batedor de açaí', 'Frequentador de batedeiras'], a: 0 },
+  { q: '"Batedeira de açaí" é:', ops: ['Máquina que bate o açaí', 'Loja que vende açaí', 'Festa do açaí', ['Dança do açaí']], a: 0 },
+  { q: '"Farol" em Belém se refere ao:', ops: ['Bairro do Farol (Cidade Velha)', 'Farol da Barra', ['Luz de navio'], 'Torre de igreja'], a: 0 },
+  { q: '"Reduto" em Belém é:', ops: ['Bairro histórico (Reduto)', 'Fortificação militar', 'Esconderijo', 'Área restrita'], a: 0 },
+  { q: '"Nazaré" é:', ops: ['Bairro de Belém onde fica a Basílica', 'Cidade do Pará', 'Rio do Pará', 'Ilha'], a: 0 },
+  { q: '"Guamá" é:', ops: ['Rio e bairro de Belém', 'Cidade do interior', 'Tipo de peixe', 'Planta medicinal'], a: 0 },
+  { q: '"Pedreira" é:', ops: ['Bairro de Belém', 'Profissão', 'Ferramenta', ['Tipo de pedra']], a: 0 },
+  { q: '"Jurunas" é:', ops: ['Bairro tradicional de Belém', 'Tribo indígena extinta', 'Peixe ornamental', 'Tipo de artesanato'], a: 0 },
+  { q: '"Cremação" em Belém é:', ops: ['Bairro (antigo matadouro)', 'Processo funerário', 'Queimada', 'Incinerador'], a: 0 },
+  { q: '"Cidade Velha" é:', ops: ['Bairro mais antigo de Belém', 'Centro histórico', 'Bairro antigo', 'Zona rural'], a: 0 },
+  { q: '"Umarizal" é:', ops: ['Bairro nobre de Belém', 'Tipo de árvore', 'Fruta exótica', 'Rio do Pará'], a: 0 },
+  { q: '"Batista Campos" é:', ops: ['Bairro residencial de Belém', 'Herói da pátria', 'Médico famoso', ['Político paraense']], a: 0 },
+  { q: '"Nossa Senhora do Ó" é:', ops: ['Bairro de Belém', 'Igreja famosa', 'Santo padroeiro', ['Festa religiosa']], a: 0 },
+  { q: '"Tapanã" é:', ops: ['Bairro de Belém', 'Tipo de índio', 'Peixe de rio', 'Planta típica'], a: 0 },
+  { q: '"Águas Lindas" é:', ops: ['Bairro de Belém', 'Cidade do Pará', 'Praia fluvial', 'Reserva ecológica'], a: 0 },
+  { q: '"Coqueiro" em Belém é:', ops: ['Bairro e praia fluvial', 'Tipo de palmeira', 'Fruta tropical', ['Vendedor de coco']], a: 0 },
+  { q: '"Outeiro" é:', ops: ['Ilha/distrito de Belém', 'Colina', 'Mirante', 'Forte militar'], a: 0 },
+  { q: '"Mosqueiro" é:', ops: ['Ilha turística de Belém', 'Templo islâmico', 'Tipo de barco', 'Cemitério'], a: 0 },
+  { q: '"Cotijuba" é:', ops: ['Ilha de Belém com praias fluviais', 'Fruta típica', 'Dança regional', 'Pássaro preto'], a: 0 },
+  { q: '"Caratateua" é outro nome para:', ops: ['Ilha de Outeiro', 'Praia do Pará', 'Cidade paraense', 'Reserva indígena'], a: 0 },
+  { q: '"Tatu" no Pará pode ser:', ops: ['Animal e também comida típica', 'Apenas animal silvestre', 'Tatuagem', 'Bicho de estimação'], a: 0 },
+  { q: '"Cutia" na culinária paraense:', ops: ['Animal de caça consumido como alimento', 'Fruta silvestre', 'Planta medicinal', 'Peixe de rio'], a: 0 },
+  { q: '"Paca" é:', ops: ['Animal roedor muito caçado para comida', 'Fruta exótica', 'Planta aquática', 'Peixe ornamental'], a: 0 },
+  { q: '"Porco do mato" ou "queixada" é:', ops: ['Porco selvagem da Amazônia', 'Animal doméstico', 'Raça de porco', 'Mito amazônico'], a: 0 },
+  { q: '"Veado" no Pará se refere a:', ops: ['Animal e xingamento (dependendo do tom)', 'Apenas animal', 'Apenas xingamento', 'Bairro'], a: 0 },
+  { q: '"Arraia" no Pará é:', ops: ['Peixe de rio (raia) e também pipa', 'Apenas um peixe', 'Símbolo de festa', 'Tipo de rede'], a: 0 },
+  { q: '"Jacaré" na Amazônia é:', ops: ['Réptil abundante nos rios', 'Animal extinto', 'Raro na região', 'Apenas em cativeiro'], a: 0 },
+  { q: '"Tartaruga da Amazônia" é:', ops: ['Quelônio muito apreciado como alimento', 'Animal protegido', ['Espécie invasora'], 'Animal de estimação'], a: 0 },
+  { q: '"Pato-mergulhão" é:', ops: ['Tipo de pato que mergulha', 'Pato de borracha', 'Brinquedo infantil', ['Ave migratória']], a: 0 },
+  { q: '"Gavião-real" ou "harpia" é:', ops: ['Maior ave de rapina do Brasil', 'Gavião comum', 'Águia pescadora', 'Urubu-rei'], a: 0 },
+  { q: '"Arara" na Amazônia é:', ops: ['Ave colorida de grande porte', 'Peixe colorido', ['Flor silvestre'], 'Tipo de dança'], a: 0 },
+  { q: '"Papagaio" no Pará é:', ops: ['Ave falante e também pipa', 'Apenas ave', 'Apenas brinquedo', 'Apelido carinhoso'], a: 0 },
+  { q: '"Tucano" é:', ops: ['Ave de bico grande e colorido', 'Peixe de bico longo', 'Planta epífita', 'Inseto voador'], a: 0 },
+  { q: '"Beija-flor" no Pará é chamado de:', ops: ['Beija-flor ou colibri', 'Pica-flor', 'Chupa-mel', 'Flor-do-sol'], a: 0 },
+  { q: '"Sabiá" no Pará é:', ops: ['Ave canora presente na região', 'Peixe cantador', 'Inseto barulhento', 'Sapo'], a: 0 },
+  { q: '"Inseto" mais temido no Pará:', ops: ['Carapanã (mosquito)', 'Barata', 'Formiga', 'Abelha'], a: 0 },
+  { q: '"Muriçoca" é:', ops: ['Pequeno mosquito que irrita', 'Mosquito grande', 'Tipo de mosca', 'Mariposa'], a: 0 },
+  { q: '"Pium" é:', ops: ['Mosquito muito pequeno e agressivo', 'Peixe pequeno', 'Inseto luminoso', 'Fruta miúda'], a: 0 },
+  { q: '"Vitória-régia" é:', ops: ['Planta aquática gigante da Amazônia', 'Flor nacional', 'Árvore frutífera', 'Lírio d\'água'], a: 0 },
+  { q: '"Andiroba" é:', ops: ['Árvore medicinal amazônica', 'Fruta comestível', 'Peixe de couro', 'Tipo de artesanato'], a: 0 },
+  { q: '"Copaíba" é conhecida por:', ops: ['Seu óleo medicinal', 'Sua madeira nobre', 'Sua fruta doce', 'Suas flores ornamentais'], a: 0 },
+  { q: '"Muiraquitã" é:', ops: ['Amuleto de pedra em forma de sapo', 'Planta alucinógena', 'Instrumento musical', 'Dança indígena'], a: 0 },
+  { q: '"Cumaru" é:', ops: ['Árvore que produz cheiro de baunilha', 'Fruta ácida', 'Peixe ornamental', 'Cerâmica indígena'], a: 0 },
+  { q: '"Pau-rosa" é:', ops: ['Árvore amazônica de perfume', 'Tipo de madeira', 'Flor vermelha', 'Fruta nativa'], a: 0 },
+  { q: '"Seringueira" é a árvore que produz:', ops: ['Látex (borracha natural)', 'Leite vegetal', 'Resina medicinal', 'Fruta comestível'], a: 0 },
+  { q: '"Castanheira" produz:', ops: ['Castanha-do-pará', 'Fruta doce', 'Óleo essencial', 'Madeira nobre'], a: 0 },
+  { q: '"Açaizeiro" produz:', ops: ['Açaí (fruto roxo)', 'Palmito', 'Coco', 'Óleo de palma'], a: 0 },
+  { q: '"Dendê" no Pará produz:', ops: ['Óleo de palma (azeite de dendê)', 'Fruta doce', 'Madeira nobre', 'Carvão vegetal'], a: 0 },
+  { q: '"Babaçu" é:', ops: ['Palmeira que produz coco e óleo', 'Fruta pequena', 'Planta rasteira', 'Árvore frutífera'], a: 0 },
+  { q: '"Buriti" é:', ops: ['Palmeira de fruto alaranjado', 'Tipo de peixe', 'Rede de dormir', 'Instrumento musical'], a: 0 },
 ];
 
 function GiriasParaenses() {
@@ -139,7 +299,7 @@ function GiriasParaenses() {
     <div className="card" style={{ marginBottom: 12 }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <img src="/bandeira.png" alt="Bandeira do Pará" style={{ width: 32, height: 22, borderRadius: 3, flexShrink: 0, border: '0.5px solid #CCC', objectFit: 'cover' }} />
+          <img src="/bandeira.png" alt="Bandeira do Pará" style={{ width: 32, height: 22, borderRadius: 3, flexShrink: 0, border: '0.5px solid #CCC', objectFit: 'cover' }} onError={(e) => { e.target.style.display = 'none'; }} />
           <span style={{ fontWeight: 800, fontSize: 16, color: 'var(--primary)' }}>Gírias Paraenses</span>
         </div>
         <span style={{ fontSize: 12, color: 'var(--text-light)', fontWeight: 600 }}>
@@ -271,10 +431,10 @@ export default function CustomerTracking() {
           </div>
 
           <div className="order-status-bar">
-            {/* Saco_acai de início (antes do primeiro passo) */}
+            {/* Logo da loja no início (antes do primeiro passo) */}
             <div className="order-status-step">
               <div style={{ height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <img src="/saco_acai.png" style={{ width: 24, height: 24, objectFit: 'contain', opacity: 0.55 }} />
+                <img src="/logo_placa.png" style={{ width: 22, height: 22, objectFit: 'contain', opacity: 0.55 }} />
               </div>
               <span className="text-xs" style={{ color: 'var(--text-light)', textAlign: 'center' }}> </span>
             </div>
@@ -286,7 +446,9 @@ export default function CustomerTracking() {
                 <div key={step} className="order-status-step">
                   <div style={{ height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     {isCurrent ? (
-                      <img src="/saco_acai.png" style={{ width: 32, height: 32, objectFit: 'contain', animation: 'blink-saco 0.85s ease-in-out infinite' }} />
+                      <div style={{ width: 40, height: 40, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', animation: 'glow-saco 2s ease-in-out infinite' }}>
+                        <img src="/saco_acai.png" style={{ width: 28, height: 28, objectFit: 'contain' }} />
+                      </div>
                     ) : done ? (
                       <div style={{ width: 16, height: 16, borderRadius: '50%', background: 'var(--secondary)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                         <svg width="10" height="10" viewBox="0 0 24 24" fill="white"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
@@ -309,7 +471,7 @@ export default function CustomerTracking() {
             {/* Cuia ao final (após Entregue) */}
             <div className="order-status-step">
               <div style={{ height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <img src="/cuia.png" style={{ width: 28, height: 28, objectFit: 'contain', opacity: order.status === 'delivered' ? 1 : 0.22 }} />
+                <img src="/cuia.png" style={{ width: 28, height: 28, objectFit: 'contain', opacity: order.status === 'delivered' ? 1 : 0.22 }} onError={(e) => { e.target.style.display = 'none'; }} />
               </div>
               <span className="text-xs" style={{ color: order.status === 'delivered' ? 'var(--secondary)' : 'var(--text-light)', textAlign: 'center', fontWeight: order.status === 'delivered' ? 700 : 400 }}>
                 {order.status === 'delivered' ? 'Bom aprov!' : ' '}

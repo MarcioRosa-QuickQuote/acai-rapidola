@@ -384,9 +384,9 @@ body {
   to { transform: translateY(0); opacity: 1; }
 }
 
-@keyframes blink-saco {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.25; transform: scale(0.85); }
+@keyframes glow-saco {
+  0%, 100% { box-shadow: 0 0 8px 2px rgba(106,27,154,0.15); }
+  50% { box-shadow: 0 0 24px 10px rgba(106,27,154,0.35); }
 }
 
 .empty-state {
