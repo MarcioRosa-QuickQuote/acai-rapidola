@@ -245,17 +245,17 @@ export default function CustomerHome() {
       )}
 
       {storeId && store && (
-        <div style={{ textAlign: 'center', padding: '20px 20px 0', background: 'var(--bg)' }}>
-          <div style={{ width: 80, height: 80, borderRadius: '50%', overflow: 'hidden', margin: '0 auto 10px', border: '3px solid var(--border)', background: `linear-gradient(135deg, ${store.color_primary || '#6A1B9A'}, ${store.color_secondary || '#4A148C'})`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+        <div style={{ textAlign: 'center', padding: '14px 20px 0', background: 'var(--bg)' }}>
+          <div style={{ width: 72, height: 72, borderRadius: '50%', overflow: 'hidden', margin: '0 auto 8px', border: '3px solid var(--border)', background: `linear-gradient(135deg, ${store.color_primary || '#6A1B9A'}, ${store.color_secondary || '#4A148C'})`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
             {store.logo ? (
               <img src={store.logo} alt={store.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={e => { e.target.style.display = 'none'; }} />
             ) : (
               <span style={{ color: 'white', fontWeight: 800, fontSize: 32 }}>{store.name.charAt(0).toUpperCase()}</span>
             )}
           </div>
-          <div style={{ fontWeight: 800, fontSize: 18, color: 'var(--text)', marginBottom: 12 }}>{store.name}</div>
-          <div style={{ height: 1, background: '#E0E0E0', marginBottom: 10, marginLeft: -20, marginRight: -20 }} />
-          <div style={{ fontSize: 13, color: '#555', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, paddingBottom: 12 }}>
+          <div style={{ fontWeight: 800, fontSize: 18, color: 'var(--text)', marginBottom: 6 }}>{store.name}</div>
+          <div style={{ height: 1, background: '#E0E0E0', marginBottom: 6, marginLeft: -20, marginRight: -20 }} />
+          <div style={{ fontSize: 13, color: '#555', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, paddingBottom: 8 }}>
             Entrega
             <span style={{ width: 5, height: 5, borderRadius: '50%', background: '#333', display: 'inline-block' }} />
             24-35 min
