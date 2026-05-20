@@ -437,7 +437,7 @@ export default function CustomerTracking() {
                 <div key={step} className="order-status-step">
                   <div style={{ height: 52, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     {isCurrent ? (
-                      <img src="/saco_acai.png" style={{ width: 44, height: 44, objectFit: 'contain', animation: 'glow-saco 2s ease-in-out infinite', borderRadius: '50%' }} />
+                      <img src="/saco_acai.png" style={{ width: 44, height: 44, objectFit: 'contain', animation: 'glow-saco 2s ease-in-out infinite' }} />
                     ) : done ? (
                       <div style={{ width: 16, height: 16, borderRadius: '50%', background: 'var(--secondary)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                         <svg width="10" height="10" viewBox="0 0 24 24" fill="white"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
@@ -460,7 +460,7 @@ export default function CustomerTracking() {
             {/* Tigela de açaí no fim */}
             <div className="order-status-step">
               <div style={{ height: 52, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <img src="/tigela.png" style={{ width: 44, height: 44, objectFit: 'contain', opacity: order.status === 'delivered' ? 1 : 0.5 }} onError={(e) => { e.target.style.display = 'none'; }} />
+                <img src="/tigela.png" style={{ width: 44, height: 44, objectFit: 'contain', opacity: order.status === 'delivered' ? 1 : 0.5 }} />
               </div>
               <span className="text-xs" style={{ color: order.status === 'delivered' ? 'var(--secondary)' : 'var(--text-light)', textAlign: 'center', fontWeight: order.status === 'delivered' ? 700 : 400 }}>
                 {order.status === 'delivered' ? 'Bom aprov!' : ' '}
