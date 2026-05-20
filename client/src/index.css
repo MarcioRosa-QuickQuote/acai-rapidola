@@ -61,7 +61,7 @@ body {
 .card {
   background: var(--bg-card);
   border-radius: var(--radius);
-  padding: 16px;
+  padding: 20px;
   box-shadow: var(--shadow);
   margin-bottom: 14px;
   overflow-wrap: break-word;
