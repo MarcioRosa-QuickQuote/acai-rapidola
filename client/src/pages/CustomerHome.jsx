@@ -36,6 +36,8 @@ export default function CustomerHome() {
   const [view, setView] = useState('menu');
   const [mainTab, setMainTab] = useState('menu');
   const [contaTab, setContaTab] = useState('perfil');
+  const [perfilExpanded, setPerfilExpanded] = useState(false);
+  const [perfilSection, setPerfilSection] = useState(null);
   const [showCepConta, setShowCepConta] = useState(false);
   const [showCart, setShowCart] = useState(false);
   const [contaMapLat, setContaMapLat] = useState(null);
@@ -450,228 +452,213 @@ export default function CustomerHome() {
       }
     }
 
+    function CardRow({ icon, label, onClick, children, expanded }) {
+      return (
+        <div style={{ borderBottom: '1px solid var(--border)' }}>
+          <div onClick={onClick} style={{
+            display: 'flex', alignItems: 'center', gap: 14, padding: '16px 20px',
+            cursor: 'pointer', background: 'white'
+          }}>
+            <div style={{ width: 40, height: 40, borderRadius: 12, background: '#F3E5F5', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              {icon}
+            </div>
+            <span style={{ flex: 1, fontWeight: 600, fontSize: 15 }}>{label}</span>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="#BBB" style={{ transform: expanded ? 'rotate(90deg)' : 'none', transition: 'transform 0.2s' }}>
+              <path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6z"/>
+            </svg>
+          </div>
+          {expanded && <div style={{ background: '#FAFAFA', padding: '4px 0 8px' }}>{children}</div>}
+        </div>
+      );
+    }
+
+    function SubCard({ label, onClick, active }) {
+      return (
+        <div onClick={onClick} style={{
+          display: 'flex', alignItems: 'center', gap: 12, padding: '13px 20px 13px 34px',
+          cursor: 'pointer', background: active ? '#F3E5F5' : 'transparent',
+          borderLeft: active ? '3px solid var(--primary)' : '3px solid transparent'
+        }}>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill={active ? 'var(--primary)' : '#999'}>
+            <path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6z"/>
+          </svg>
+          <span style={{ fontSize: 14, fontWeight: active ? 700 : 500, color: active ? 'var(--primary)' : '#555' }}>{label}</span>
+        </div>
+      );
+    }
+
     return (
       <>
-        <div className="page-title" style={{ fontWeight: 800 }}>Minha Conta</div>
-        <div className="card" style={{ textAlign: 'left', padding: 0, overflow: 'hidden' }}>
-          <div style={{ display: 'flex', borderBottom: '1px solid var(--border)' }}>
-            {[
-              { key: 'perfil', label: 'Perfil', icon: '👤' },
-              { key: 'pagamentos', label: 'Pagamentos', icon: '💳' },
-              { key: 'conversas', label: 'Conversas', icon: '💬' },
-              { key: 'notificacoes', label: 'Notificações', icon: '🔔' },
-              { key: 'favoritos', label: 'Favoritos', icon: '❤️' },
-            ].map(tab => (
-              <button key={tab.key}
-                onClick={() => setContaTab(tab.key)}
-                style={{
-                  flex: 1, padding: '10px 4px', border: 'none', background: 'none',
-                  fontSize: 11, fontWeight: contaTab === tab.key ? 700 : 500,
-                  color: contaTab === tab.key ? 'var(--primary)' : '#999',
-                  borderBottom: contaTab === tab.key ? '2px solid var(--primary)' : '2px solid transparent',
-                  cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4,
-                  transition: 'all 0.2s'
-                }}>
-                <span style={{ fontSize: 16 }}>{tab.icon}</span>
-                {tab.label}
+        {/* Cabeçalho com avatar */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '20px 20px 16px', borderBottom: '1px solid var(--border)' }}>
+          <label style={{ cursor: 'pointer', position: 'relative', flexShrink: 0 }}>
+            {user?.photo_url ? (
+              <img src={user.photo_url} alt="Foto"
+                style={{ width: 60, height: 60, borderRadius: '50%', objectFit: 'cover' }}
+                onError={e => { e.target.style.display = 'none'; }} />
+            ) : (
+              <div style={{ width: 60, height: 60, borderRadius: '50%', background: 'linear-gradient(135deg, #CE93D8, #AB47BC)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 700, fontSize: 26 }}>
+                {user?.name?.charAt(0)?.toUpperCase()}
+              </div>
+            )}
+            <input type="file" accept="image/*" ref={photoRef}
+              onChange={e => { if (e.target.files?.[0]) uploadPhoto(e.target.files[0]); }}
+              style={{ display: 'none' }} />
+          </label>
+          <div>
+            <div style={{ fontWeight: 800, fontSize: 17 }}>{user?.name}</div>
+            <div style={{ fontSize: 13, color: '#888', marginTop: 2 }}>{user?.email || user?.phone}</div>
+          </div>
+        </div>
+
+        {/* Card: Perfil */}
+        <div className="card" style={{ padding: 0, overflow: 'hidden', marginBottom: 12 }}>
+          <CardRow
+            label="Perfil"
+            expanded={perfilExpanded}
+            onClick={() => { setPerfilExpanded(v => !v); setPerfilSection(null); }}
+            icon={<svg width="20" height="20" viewBox="0 0 24 24" fill="var(--primary)"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>}
+          >
+            <SubCard label="Dados" active={perfilSection === 'dados'} onClick={() => setPerfilSection(s => s === 'dados' ? null : 'dados')} />
+            <SubCard label="Endereço" active={perfilSection === 'endereco'} onClick={() => setPerfilSection(s => s === 'endereco' ? null : 'endereco')} />
+            <SubCard label="Trocar Senha" active={perfilSection === 'senha'} onClick={() => setPerfilSection(s => s === 'senha' ? null : 'senha')} />
+          </CardRow>
+
+          {/* Dados */}
+          {perfilExpanded && perfilSection === 'dados' && (
+            <div style={{ padding: '16px 20px', borderTop: '1px solid var(--border)', background: 'white' }}>
+              <div style={{ fontSize: 14, marginBottom: 6 }}><span style={{ color: '#888' }}>Nome: </span><span style={{ fontWeight: 600 }}>{user?.name}</span></div>
+              <div style={{ fontSize: 14, marginBottom: 6 }}><span style={{ color: '#888' }}>Email: </span><span>{user?.email}</span></div>
+              <div style={{ fontSize: 14 }}><span style={{ color: '#888' }}>Telefone: </span><span>{user?.phone || '—'}</span></div>
+            </div>
+          )}
+
+          {/* Endereço */}
+          {perfilExpanded && perfilSection === 'endereco' && (
+            <div style={{ padding: '16px 20px', borderTop: '1px solid var(--border)', background: 'white' }}>
+              <button type="button" className="btn btn-outline btn-sm"
+                onClick={useMyLocationConta} disabled={savingAddr}
+                style={{ width: '100%', justifyContent: 'flex-start', gap: 8, marginBottom: 10, padding: '10px 14px' }}>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/>
+                  <line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/>
+                </svg>
+                {savingAddr ? 'Obtendo localização...' : 'Usar minha localização'}
               </button>
-            ))}
-          </div>
-
-          <div style={{ padding: 20 }}>
-            {contaTab === 'perfil' && (
-              <div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20, paddingBottom: 16, borderBottom: '1px solid var(--border)' }}>
-                  <label style={{ cursor: 'pointer', position: 'relative' }}>
-                    {user?.photo_url ? (
-                      <img src={user.photo_url} alt="Foto"
-                        style={{ width: 56, height: 56, borderRadius: '50%', objectFit: 'cover' }}
-                        onError={e => { e.target.style.display = 'none'; }} />
-                    ) : (
-                      <div style={{
-                        width: 56, height: 56, borderRadius: '50%',
-                        background: 'linear-gradient(135deg, #CE93D8, #AB47BC)',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        color: 'white', fontWeight: 700, fontSize: 24
-                      }}>
-                        {user?.name?.charAt(0)?.toUpperCase()}
+              {placesSource && placesSource !== 'google' && (
+                <div style={{ background: '#FFF3E0', border: '1px solid #FFB74D', borderRadius: 8, padding: '8px 12px', marginBottom: 8, fontSize: 12, color: '#E65100', display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="#E65100" style={{ flexShrink: 0 }}><path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/></svg>
+                  <span>{placesSource === 'photon_no_key' ? 'Google Places não configurado — usando busca alternativa.' : 'Google Places indisponível — usando busca alternativa.'}</span>
+                </div>
+              )}
+              <div style={{ position: 'relative', marginBottom: 8 }}>
+                <input className="input" type="text" value={currentAddr}
+                  onChange={e => { setAddrForm(e.target.value); searchAddress(e.target.value); }}
+                  onFocus={() => { if (addressSuggestions.length > 0) setShowSuggestions(true); }}
+                  onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
+                  placeholder="Buscar rua, número, bairro…" />
+                {showSuggestions && addressSuggestions.length > 0 && (
+                  <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 50, background: 'white', border: '1px solid #DDD', borderRadius: 8, maxHeight: 220, overflow: 'auto', boxShadow: '0 4px 16px rgba(0,0,0,0.15)' }}>
+                    {addressSuggestions.map((s, i) => (
+                      <div key={i} onMouseDown={() => selectAddress(s)}
+                        style={{ padding: '10px 14px', cursor: 'pointer', fontSize: 13, borderBottom: '1px solid #F5F5F5', display: 'flex', alignItems: 'flex-start', gap: 8 }}>
+                        <span style={{ color: 'var(--primary)', flexShrink: 0, marginTop: 1 }}>📍</span>
+                        <span>{s.display_name}</span>
                       </div>
-                    )}
-                    <input type="file" accept="image/*" ref={photoRef}
-                      onChange={e => { if (e.target.files?.[0]) uploadPhoto(e.target.files[0]); }}
-                      style={{ display: 'none' }} />
-                    <div style={{ fontSize: 9, color: '#888', textAlign: 'center', marginTop: 2 }}>Alterar foto</div>
-                  </label>
-                  <div>
-                    <div style={{ fontWeight: 800, fontSize: 16 }}>{user?.name}</div>
-                    <div style={{ fontSize: 12, color: '#888' }}>{user?.phone}</div>
+                    ))}
+                  </div>
+                )}
+              </div>
+              {(contaMapLat || user?.lat) && (contaMapLng || user?.lng) && (
+                <div style={{ marginBottom: 12 }}>
+                  <div style={{ fontSize: 11, color: '#888', marginBottom: 4 }}>Use o mapa para ajustar o ponto exato</div>
+                  <div style={{ height: 200, borderRadius: 10, overflow: 'hidden', border: '1px solid var(--border)' }}>
+                    <MapContainer center={[contaMapLat || user.lat, contaMapLng || user.lng]} zoom={16}
+                      style={{ height: '100%', width: '100%' }}
+                      key={`conta-map-${contaMapLat || 0}-${contaMapLng || 0}`} scrollWheelZoom={false}>
+                      <TileLayer attribution='&copy; OSM' url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+                      <Marker position={[contaMapLat || user.lat, contaMapLng || user.lng]} />
+                    </MapContainer>
                   </div>
                 </div>
-
-                {/* Endereço de entrega — sempre visível */}
-                <div style={{ marginBottom: 4 }}>
-                  <div style={{ fontWeight: 700, fontSize: 12, color: '#888', marginBottom: 10, textTransform: 'uppercase', letterSpacing: 0.5 }}>
-                    Endereço de entrega
-                  </div>
-
-                  <button type="button" className="btn btn-outline btn-sm"
-                    onClick={useMyLocationConta} disabled={savingAddr}
-                    style={{ width: '100%', justifyContent: 'flex-start', gap: 8, marginBottom: 10, padding: '10px 14px' }}>
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/>
-                      <line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/>
-                    </svg>
-                    {savingAddr ? 'Obtendo localização...' : 'Usar minha localização'}
-                  </button>
-
-                  {placesSource && placesSource !== 'google' && (
-                    <div style={{
-                      background: '#FFF3E0', border: '1px solid #FFB74D',
-                      borderRadius: 8, padding: '8px 12px', marginBottom: 8,
-                      fontSize: 12, color: '#E65100',
-                      display: 'flex', alignItems: 'center', gap: 8
-                    }}>
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="#E65100" style={{ flexShrink: 0 }}>
-                        <path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/>
-                      </svg>
-                      <span>
-                        {placesSource === 'photon_no_key'
-                          ? 'Google Places não configurado — usando busca alternativa. Configure GOOGLE_PLACES_KEY no servidor.'
-                          : 'Google Places indisponível — usando busca alternativa.'}
-                      </span>
-                    </div>
-                  )}
-
-                  <div style={{ position: 'relative', marginBottom: 8 }}>
-                    <input className="input" type="text" value={currentAddr}
-                      onChange={e => { setAddrForm(e.target.value); searchAddress(e.target.value); }}
-                      onFocus={() => { if (addressSuggestions.length > 0) setShowSuggestions(true); }}
-                      onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
-                      placeholder="Buscar rua, número, bairro…" />
-                    {showSuggestions && addressSuggestions.length > 0 && (
-                      <div style={{
-                        position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 50,
-                        background: 'white', border: '1px solid #DDD', borderRadius: 8,
-                        maxHeight: 220, overflow: 'auto',
-                        boxShadow: '0 4px 16px rgba(0,0,0,0.15)'
-                      }}>
-                        {addressSuggestions.map((s, i) => (
-                          <div key={i} onMouseDown={() => selectAddress(s)}
-                            style={{ padding: '10px 14px', cursor: 'pointer', fontSize: 13, borderBottom: '1px solid #F5F5F5', display: 'flex', alignItems: 'flex-start', gap: 8 }}>
-                            <span style={{ color: 'var(--primary)', flexShrink: 0, marginTop: 1 }}>📍</span>
-                            <span>{s.display_name}</span>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Mapa para ajuste fino — aparece automaticamente ao selecionar endereço */}
-                  {(contaMapLat || user?.lat) && (contaMapLng || user?.lng) && (
-                    <div style={{ marginBottom: 12 }}>
-                      <div style={{ fontSize: 11, color: '#888', marginBottom: 4 }}>
-                        Use o mapa para ajustar o ponto exato
-                      </div>
-                      <div style={{ height: 200, borderRadius: 10, overflow: 'hidden', border: '1px solid var(--border)' }}>
-                        <MapContainer
-                          center={[contaMapLat || user.lat, contaMapLng || user.lng]} zoom={16}
-                          style={{ height: '100%', width: '100%' }}
-                          key={`conta-map-${contaMapLat || 0}-${contaMapLng || 0}`} scrollWheelZoom={false}>
-                          <TileLayer attribution='&copy; OSM' url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-                          <Marker position={[contaMapLat || user.lat, contaMapLng || user.lng]} />
-                        </MapContainer>
-                      </div>
-                    </div>
-                  )}
-
-                  {!showCepConta ? (
-                    <button type="button" onClick={() => setShowCepConta(true)}
-                      style={{ background: 'none', border: 'none', color: 'var(--primary)', fontSize: 12, fontWeight: 600, cursor: 'pointer', padding: '2px 0', textDecoration: 'underline' }}>
-                      Buscar por CEP
-                    </button>
-                  ) : (
-                    <div className="flex-row" style={{ gap: 8, marginBottom: 8 }}>
-                      <input className="input" type="text" value={cep}
-                        onChange={e => { setCep(e.target.value.replace(/\D/g, '').slice(0, 8)); }}
-                        placeholder="CEP (ex: 01001000)" maxLength={8}
-                        style={{ width: 140, flexShrink: 0 }} />
-                      <button type="button" className="btn btn-sm btn-secondary"
-                        onClick={lookupCep} disabled={cepLoading || cep.replace(/\D/g, '').length !== 8}
-                        style={{ whiteSpace: 'nowrap' }}>
-                        {cepLoading ? '...' : 'Buscar CEP'}
-                      </button>
-                    </div>
-                  )}
-
-                  {addrMsg && <div style={{ fontSize: 13, fontWeight: 600, color: addrMsg.includes('Erro') ? '#C62828' : '#2E7D32', marginTop: 8 }}>{addrMsg}</div>}
-
-                  <button className="btn btn-primary" style={{ marginTop: 14, width: '100%' }} onClick={saveAddress} disabled={savingAddr}>
-                    {savingAddr ? 'Salvando…' : 'Salvar Endereço'}
-                  </button>
+              )}
+              {!showCepConta ? (
+                <button type="button" onClick={() => setShowCepConta(true)}
+                  style={{ background: 'none', border: 'none', color: 'var(--primary)', fontSize: 12, fontWeight: 600, cursor: 'pointer', padding: '2px 0', textDecoration: 'underline' }}>
+                  Buscar por CEP
+                </button>
+              ) : (
+                <div className="flex-row" style={{ gap: 8, marginBottom: 8 }}>
+                  <input className="input" type="text" value={cep}
+                    onChange={e => { setCep(e.target.value.replace(/\D/g, '').slice(0, 8)); }}
+                    placeholder="CEP (ex: 01001000)" maxLength={8} style={{ width: 140, flexShrink: 0 }} />
+                  <button type="button" className="btn btn-sm btn-secondary"
+                    onClick={lookupCep} disabled={cepLoading || cep.replace(/\D/g, '').length !== 8}
+                    style={{ whiteSpace: 'nowrap' }}>{cepLoading ? '...' : 'Buscar CEP'}</button>
                 </div>
+              )}
+              {addrMsg && <div style={{ fontSize: 13, fontWeight: 600, color: addrMsg.includes('Erro') ? '#C62828' : '#2E7D32', marginTop: 8 }}>{addrMsg}</div>}
+              <button className="btn btn-primary" style={{ marginTop: 14, width: '100%' }} onClick={saveAddress} disabled={savingAddr}>
+                {savingAddr ? 'Salvando…' : 'Salvar Endereço'}
+              </button>
+            </div>
+          )}
 
-                <div style={{ borderTop: '1px solid var(--border)', marginTop: 20, paddingTop: 16 }}>
-                  <div className="page-title" style={{ fontSize: 16, marginBottom: 12 }}>Alterar Senha</div>
-                  <div className="form-group">
-                    <label className="label">Senha atual</label>
-                    <input className="input" type="password" value={pwCurrent}
-                      onChange={e => setPwCurrent(e.target.value)} placeholder="Senha atual" />
-                  </div>
-                  <div className="form-group">
-                    <label className="label">Nova senha</label>
-                    <input className="input" type="password" value={pwNew}
-                      onChange={e => setPwNew(e.target.value)} placeholder="Nova senha (min 4 caracteres)" />
-                  </div>
-                  {pwMsg && <div style={{ fontSize: 13, fontWeight: 600, padding: '10px 14px', borderRadius: 8, marginBottom: 12,
-                    background: pwMsg.includes('sucesso') ? '#E8F5E9' : '#FFEBEE',
-                    color: pwMsg.includes('sucesso') ? '#2E7D32' : '#C62828' }}>{pwMsg}</div>}
-                  <button className="btn btn-primary" onClick={async () => {
-                    setPwSaving(true);
-                    const res = await apiFetch('/auth/password', {
-                      method: 'PATCH',
-                      body: JSON.stringify({ current_password: pwCurrent, new_password: pwNew })
-                    });
-                    setPwMsg(res.ok ? 'Senha alterada com sucesso!' : (res.error || 'Erro ao alterar senha'));
-                    if (res.ok) { setPwCurrent(''); setPwNew(''); }
-                    setPwSaving(false);
-                    setTimeout(() => setPwMsg(''), 4000);
-                  }} disabled={pwSaving}>{pwSaving ? 'Salvando...' : 'Alterar Senha'}</button>
-                </div>
+          {/* Trocar Senha */}
+          {perfilExpanded && perfilSection === 'senha' && (
+            <div style={{ padding: '16px 20px', borderTop: '1px solid var(--border)', background: 'white' }}>
+              <div className="form-group">
+                <label className="label">Senha atual</label>
+                <input className="input" type="password" value={pwCurrent} onChange={e => setPwCurrent(e.target.value)} placeholder="Senha atual" />
               </div>
-            )}
+              <div className="form-group">
+                <label className="label">Nova senha</label>
+                <input className="input" type="password" value={pwNew} onChange={e => setPwNew(e.target.value)} placeholder="Nova senha (min 4 caracteres)" />
+              </div>
+              {pwMsg && <div style={{ fontSize: 13, fontWeight: 600, padding: '10px 14px', borderRadius: 8, marginBottom: 12, background: pwMsg.includes('sucesso') ? '#E8F5E9' : '#FFEBEE', color: pwMsg.includes('sucesso') ? '#2E7D32' : '#C62828' }}>{pwMsg}</div>}
+              <button className="btn btn-primary" onClick={async () => {
+                setPwSaving(true);
+                const res = await apiFetch('/auth/password', { method: 'PATCH', body: JSON.stringify({ current_password: pwCurrent, new_password: pwNew }) });
+                setPwMsg(res.ok ? 'Senha alterada com sucesso!' : (res.error || 'Erro ao alterar senha'));
+                if (res.ok) { setPwCurrent(''); setPwNew(''); }
+                setPwSaving(false);
+                setTimeout(() => setPwMsg(''), 4000);
+              }} disabled={pwSaving}>{pwSaving ? 'Salvando...' : 'Alterar Senha'}</button>
+            </div>
+          )}
+        </div>
 
-            {contaTab === 'pagamentos' && (
-              <div style={{ textAlign: 'center', padding: '24px 0' }}>
-                <div style={{ fontSize: 40, marginBottom: 12 }}>💳</div>
-                <div style={{ fontWeight: 700, fontSize: 15, color: 'var(--text)', marginBottom: 6 }}>Nenhum pagamento</div>
-                <div style={{ fontSize: 13, color: '#999' }}>Seus pagamentos aparecerão aqui</div>
-              </div>
-            )}
+        {/* Card: Pagamentos */}
+        <div className="card" style={{ padding: 0, overflow: 'hidden', marginBottom: 12 }}>
+          <CardRow label="Pagamentos" expanded={contaTab === 'pagamentos'} onClick={() => setContaTab(v => v === 'pagamentos' ? '' : 'pagamentos')}
+            icon={<svg width="20" height="20" viewBox="0 0 24 24" fill="var(--primary)"><path d="M20 4H4c-1.11 0-2 .89-2 2v12c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V6c0-1.11-.89-2-2-2zm0 14H4v-6h16v6zm0-10H4V6h16v2z"/></svg>}
+          >
+            <div style={{ padding: '16px 20px', background: 'white' }}>
+              <div style={{ textAlign: 'center', padding: '12px 0', color: '#999', fontSize: 14 }}>Seus pagamentos aparecerão aqui</div>
+            </div>
+          </CardRow>
+        </div>
 
-            {contaTab === 'conversas' && (
-              <div style={{ textAlign: 'center', padding: '24px 0' }}>
-                <div style={{ fontSize: 40, marginBottom: 12 }}>💬</div>
-                <div style={{ fontWeight: 700, fontSize: 15, color: 'var(--text)', marginBottom: 6 }}>Nenhuma conversa</div>
-                <div style={{ fontSize: 13, color: '#999' }}>Converse com as lojas pelo chat</div>
-              </div>
-            )}
+        {/* Card: Notificações */}
+        <div className="card" style={{ padding: 0, overflow: 'hidden', marginBottom: 12 }}>
+          <CardRow label="Notificações" expanded={contaTab === 'notificacoes'} onClick={() => setContaTab(v => v === 'notificacoes' ? '' : 'notificacoes')}
+            icon={<svg width="20" height="20" viewBox="0 0 24 24" fill="var(--primary)"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/></svg>}
+          >
+            <div style={{ padding: '16px 20px', background: 'white' }}>
+              <div style={{ textAlign: 'center', padding: '12px 0', color: '#999', fontSize: 14 }}>Atualizações dos seus pedidos</div>
+            </div>
+          </CardRow>
+        </div>
 
-            {contaTab === 'notificacoes' && (
-              <div style={{ textAlign: 'center', padding: '24px 0' }}>
-                <div style={{ fontSize: 40, marginBottom: 12 }}>🔔</div>
-                <div style={{ fontWeight: 700, fontSize: 15, color: 'var(--text)', marginBottom: 6 }}>Nenhuma notificação</div>
-                <div style={{ fontSize: 13, color: '#999' }}>Atualizações dos seus pedidos</div>
-              </div>
-            )}
-
-            {contaTab === 'favoritos' && (
-              <div style={{ textAlign: 'center', padding: '24px 0' }}>
-                <div style={{ fontSize: 40, marginBottom: 12 }}>❤️</div>
-                <div style={{ fontWeight: 700, fontSize: 15, color: 'var(--text)', marginBottom: 6 }}>Nenhum favorito</div>
-                <div style={{ fontSize: 13, color: '#999' }}>Favorite lojas e produtos</div>
-              </div>
-            )}
-          </div>
+        {/* Card: Favoritos */}
+        <div className="card" style={{ padding: 0, overflow: 'hidden', marginBottom: 12 }}>
+          <CardRow label="Favoritos" expanded={contaTab === 'favoritos'} onClick={() => setContaTab(v => v === 'favoritos' ? '' : 'favoritos')}
+            icon={<svg width="20" height="20" viewBox="0 0 24 24" fill="var(--primary)"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>}
+          >
+            <div style={{ padding: '16px 20px', background: 'white' }}>
+              <div style={{ textAlign: 'center', padding: '12px 0', color: '#999', fontSize: 14 }}>Favorite lojas e produtos</div>
+            </div>
+          </CardRow>
         </div>
       </>
     );
