@@ -36,7 +36,10 @@ export default function CustomerPedidos() {
           </div>
         )}
 
-        {orders.map(order => {
+        {orders.filter(order => {
+          if (order.payment_status !== 'pending') return true;
+          return Date.now() - new Date(order.created_at).getTime() < 24 * 60 * 60 * 1000;
+        }).map(order => {
           const canTrack = !['delivered', 'cancelled'].includes(order.status) && order.payment_status === 'paid';
           return (
             <div key={order.id} className="card" onClick={() => canTrack && navigate(`/customer/tracking/${order.id}`)}
