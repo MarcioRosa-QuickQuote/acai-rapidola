@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import CustomerHeader from '../components/CustomerHeader';
 import CustomerBottomNav from '../components/CustomerBottomNav';
 import { useSocket } from '../contexts/SocketContext';
 import { MapContainer, TileLayer, Marker } from 'react-leaflet';
@@ -336,6 +335,7 @@ export default function CustomerTracking() {
   const { id } = useParams();
   const { apiFetch } = useAuth();
   const { socket, joinOrder } = useSocket();
+  const navigate = useNavigate();
   const [order, setOrder] = useState(null);
   const [motoboyPos, setMotoboyPos] = useState(null);
   const [eta, setEta] = useState(null);
@@ -398,12 +398,25 @@ export default function CustomerTracking() {
 
   return (
     <div style={{ minHeight: '100vh', paddingBottom: 80 }}>
-      <CustomerHeader title="Acompanhar Pedido" />
-
-      <div style={{ position: 'sticky', top: 0, zIndex: 50, background: 'var(--bg)', padding: '8px 16px', display: 'flex', justifyContent: 'flex-end' }}>
-        <span className={`badge ${order.payment_status === 'paid' ? 'badge-success' : 'badge-warning'}`}>
-          {order.payment_status === 'paid' ? 'Pago' : 'Pendente'}
-        </span>
+      <div className="header">
+        <div className="header-left">
+          <button className="btn btn-sm"
+            style={{ background: 'var(--border)', color: 'var(--primary-dark)', fontSize: 20, padding: '4px 10px', fontWeight: 700, lineHeight: 1 }}
+            onClick={() => navigate(-1)}>
+            ‹
+          </button>
+        </div>
+        <div className="header-right">
+          <span className={`badge ${order.payment_status === 'paid' ? 'badge-success' : 'badge-warning'}`}>
+            {order.payment_status === 'paid' ? 'Pago' : 'Pendente'}
+          </span>
+          <button onClick={() => navigate('/customer/notificacoes')}
+            style={{ background: 'rgba(106,27,154,0.08)', border: 'none', borderRadius: 20, padding: 7, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="var(--primary)">
+              <path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/>
+            </svg>
+          </button>
+        </div>
       </div>
 
       <div className="container" style={{ paddingTop: 4 }}>
@@ -412,7 +425,7 @@ export default function CustomerTracking() {
             {/* Logo da loja no início */}
             <div className="order-status-step">
               <div style={{ height: 52, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <img src="/logo_placa.png" style={{ width: 36, height: 36, objectFit: 'contain', opacity: 0.6 }} />
+                <img src="/logo_placa.png" style={{ width: 48, height: 48, objectFit: 'contain', opacity: 0.6 }} />
               </div>
               <span className="text-xs" style={{ color: 'var(--text-light)', textAlign: 'center' }}> </span>
             </div>
@@ -424,9 +437,7 @@ export default function CustomerTracking() {
                 <div key={step} className="order-status-step">
                   <div style={{ height: 52, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     {isCurrent ? (
-                      <div style={{ width: 52, height: 52, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', animation: 'glow-saco 2s ease-in-out infinite' }}>
-                        <img src="/saco_acai.png" style={{ width: 36, height: 36, objectFit: 'contain' }} />
-                      </div>
+                      <img src="/saco_acai.png" style={{ width: 44, height: 44, objectFit: 'contain', animation: 'glow-saco 2s ease-in-out infinite', borderRadius: '50%' }} />
                     ) : done ? (
                       <div style={{ width: 16, height: 16, borderRadius: '50%', background: 'var(--secondary)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                         <svg width="10" height="10" viewBox="0 0 24 24" fill="white"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
@@ -449,7 +460,7 @@ export default function CustomerTracking() {
             {/* Tigela de açaí no fim */}
             <div className="order-status-step">
               <div style={{ height: 52, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <img src="/tigela.png" style={{ width: 40, height: 40, objectFit: 'contain', opacity: order.status === 'delivered' ? 1 : 0.25 }} onError={(e) => { e.target.style.display = 'none'; }} />
+                <img src="/tigela.png" style={{ width: 44, height: 44, objectFit: 'contain', opacity: order.status === 'delivered' ? 1 : 0.5 }} onError={(e) => { e.target.style.display = 'none'; }} />
               </div>
               <span className="text-xs" style={{ color: order.status === 'delivered' ? 'var(--secondary)' : 'var(--text-light)', textAlign: 'center', fontWeight: order.status === 'delivered' ? 700 : 400 }}>
                 {order.status === 'delivered' ? 'Bom aprov!' : ' '}
