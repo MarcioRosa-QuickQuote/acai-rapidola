@@ -388,7 +388,7 @@ export default function CustomerTracking() {
 
   if (!order) return (
     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh' }}>
-      <div className="spin" style={{ width: 48, height: 48, border: '4px solid var(--border)', borderTopColor: 'var(--primary)', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
+      <img className="spin" src="/saco_acai.png" />
     </div>
   );
 
@@ -409,14 +409,6 @@ export default function CustomerTracking() {
           </div>
 
           <div className="order-status-bar">
-            {/* Logo da loja no início (antes do primeiro passo) */}
-            <div className="order-status-step">
-              <div style={{ height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <img src="/logo_placa.png" style={{ width: 22, height: 22, objectFit: 'contain', opacity: 0.55 }} />
-              </div>
-              <span className="text-xs" style={{ color: 'var(--text-light)', textAlign: 'center' }}> </span>
-            </div>
-
             {statusSteps.map((step, i) => {
               const done = i <= currentStep;
               const isCurrent = i === currentStep;
