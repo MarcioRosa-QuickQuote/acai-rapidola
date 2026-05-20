@@ -463,7 +463,7 @@ export default function CustomerTracking() {
                 <img src={order.status === 'delivered' ? '/tigela_cheia.png' : '/tigela.png'} style={{ width: 44, height: 44, objectFit: 'contain', opacity: order.status === 'delivered' ? 1 : 0.5 }} />
               </div>
               <span className="text-xs" style={{ color: order.status === 'delivered' ? 'var(--secondary)' : 'var(--text-light)', textAlign: 'center', fontWeight: order.status === 'delivered' ? 700 : 400 }}>
-                {order.status === 'delivered' ? 'Bom aprov!' : ' '}
+                {order.status === 'delivered' ? 'Só o filé' : ' '}
               </span>
             </div>
           </div>
