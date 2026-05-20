@@ -388,7 +388,7 @@ export default function CustomerTracking() {
 
   if (!order) return (
     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh' }}>
-      <img className="spin" src="/saco_acai.png" />
+      <div className="spin" style={{ width: 48, height: 48, border: '4px solid var(--border)', borderTopColor: 'var(--primary)', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
     </div>
   );
 

@@ -37,7 +37,7 @@ export default function CustomerTopBar() {
           {activeOrder && activeOrder.payment_status === 'paid' && !['delivered', 'cancelled'].includes(activeOrder.status) && (
             <img src="/saco_acai.png"
               onClick={() => navigate(`/customer/tracking/${activeOrder.id}`)}
-              style={{ width: 40, height: 40, objectFit: 'contain', cursor: 'pointer' }} />
+              style={{ width: 32, height: 32, objectFit: 'contain', cursor: 'pointer' }} />
           )}
           <button onClick={() => navigate('/customer/notificacoes')}
             style={{ background: 'rgba(106,27,154,0.08)', border: 'none', borderRadius: 20, padding: 8, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
