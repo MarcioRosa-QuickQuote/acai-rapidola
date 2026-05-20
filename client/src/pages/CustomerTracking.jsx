@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import CustomerTopBar from '../components/CustomerTopBar';
+import CustomerHeader from '../components/CustomerHeader';
 import CustomerBottomNav from '../components/CustomerBottomNav';
 import { useSocket } from '../contexts/SocketContext';
 import { MapContainer, TileLayer, Marker } from 'react-leaflet';
@@ -426,7 +426,7 @@ export default function CustomerTracking() {
 
   return (
     <div style={{ minHeight: '100vh', paddingBottom: 72 }}>
-      <CustomerTopBar />
+      <CustomerHeader title="Acompanhar Pedido" />
 
       <div className="container" style={{ paddingTop: 12 }}>
         <div className="card">

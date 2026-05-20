@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import CustomerTopBar from '../components/CustomerTopBar';
+import CustomerHeader from '../components/CustomerHeader';
 import CustomerBottomNav from '../components/CustomerBottomNav';
 
 const statusLabels = { pending:'Aguardando', confirmed:'Confirmado', preparing:'Preparando', ready:'Pronto', assigned:'Saiu para entrega', picked_up:'A caminho', arriving:'Chegando', delivered:'Entregue', cancelled:'Cancelado' };
@@ -22,11 +22,9 @@ export default function CustomerPedidos() {
 
   return (
     <div style={{ minHeight: '100vh', paddingBottom: 72 }}>
-      <CustomerTopBar />
+      <CustomerHeader title="Meus Pedidos" />
       <div className="container" style={{ paddingTop: 16 }}>
-        <div style={{ fontWeight: 800, fontSize: 18, marginBottom: 16 }}>Meus Pedidos</div>
-
-        {loading && <div style={{ textAlign: 'center', padding: 40 }}><img className="spin" src="/saco_acai.png" style={{ width: 48 }} /></div>}
+        {loading && <div className="loading"><img className="spin" src="/saco_acai.png" /></div>}
 
         {!loading && orders.length === 0 && (
           <div className="empty-state">

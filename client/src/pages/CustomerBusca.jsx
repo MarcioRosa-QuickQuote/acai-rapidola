@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import CustomerTopBar from '../components/CustomerTopBar';
+import CustomerHeader from '../components/CustomerHeader';
 import CustomerBottomNav from '../components/CustomerBottomNav';
 
 export default function CustomerBusca() {
@@ -9,15 +9,13 @@ export default function CustomerBusca() {
   const navigate = useNavigate();
   const [stores, setStores] = useState([]);
   const [search, setSearch] = useState('');
-  const [loading, setLoading] = useState(true);
   const inputRef = useRef(null);
 
   useEffect(() => {
     apiFetch('/stores').then(d => {
       if (d.data) setStores(d.data);
-      setLoading(false);
     });
-    setTimeout(() => inputRef.current?.focus(), 150);
+    setTimeout(() => inputRef.current?.focus(), 100);
   }, []);
 
   const q = search.toLowerCase().trim();
@@ -27,7 +25,7 @@ export default function CustomerBusca() {
 
   return (
     <div style={{ minHeight: '100vh', paddingBottom: 72 }}>
-      <CustomerTopBar />
+      <CustomerHeader title="Busca" />
       <div className="container" style={{ paddingTop: 12 }}>
         <div style={{ position: 'relative', marginBottom: 16 }}>
           <svg style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', zIndex: 1 }} width="18" height="18" viewBox="0 0 24 24" fill="#999">
@@ -39,10 +37,14 @@ export default function CustomerBusca() {
             style={{ paddingLeft: 42, fontSize: 15, borderRadius: 24, border: '2px solid #E8E0F0' }} />
         </div>
 
-        {loading && <div style={{ textAlign: 'center', padding: 40 }}><img className="spin" src="/saco_acai.png" style={{ width: 48 }} /></div>}
-
-        {!loading && filtered.length === 0 && (
+        {filtered.length === 0 && search && (
           <div className="empty-state"><p>Nenhuma loja encontrada</p></div>
+        )}
+
+        {!search && stores.length === 0 && (
+          <div style={{ textAlign: 'center', padding: 40, color: '#BBB', fontSize: 14 }}>
+            Digite para buscar lojas
+          </div>
         )}
 
         {filtered.map(store => {
