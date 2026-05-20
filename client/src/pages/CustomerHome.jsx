@@ -208,9 +208,9 @@ export default function CustomerHome() {
   if (loading) return <div className="loading"><img className="spin" src="/saco_acai.png" /></div>;
 
   return (
-    <div style={{ minHeight: '100vh', paddingBottom: storeId ? 0 : 72 }}>
+    <div style={{ minHeight: '100vh', paddingBottom: storeId ? 0 : 72, animation: storeId ? 'slideInFromTop 0.28s ease-out' : 'none' }}>
       {!storeId ? (
-        <CustomerHeader title="Perfil" onBack={() => navigate('/customer')} />
+        <CustomerHeader onBack={() => navigate('/customer')} />
       ) : (
         <div className="header">
           <div className="header-left">
@@ -223,8 +223,14 @@ export default function CustomerHome() {
           <div className="header-right" style={{ gap: 6 }}>
             {activeOrder && activeOrder.payment_status === 'paid' && !['delivered','cancelled'].includes(activeOrder.status) && (
               <img src="/saco_acai.png" onClick={() => navigate(`/customer/tracking/${activeOrder.id}`)}
-                style={{ width: 44, height: 44, objectFit: 'contain', cursor: 'pointer' }} />
+                style={{ width: 40, height: 40, objectFit: 'contain', cursor: 'pointer' }} />
             )}
+            <button onClick={() => navigate('/customer/notificacoes')}
+              style={{ background: 'rgba(106,27,154,0.08)', border: 'none', borderRadius: 20, padding: 7, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="var(--primary)">
+                <path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/>
+              </svg>
+            </button>
             {Object.keys(cart).length > 0 && (
               <button className="btn btn-sm" onClick={() => setShowCart(!showCart)}
                 style={{ background: '#FFF3E0', color: '#E65100', fontSize: 14, fontWeight: 700, padding: '4px 8px', border: 'none', borderRadius: 20, width: 'auto', position: 'relative' }}>
@@ -474,7 +480,7 @@ export default function CustomerHome() {
             <input className="input" type="text" value={name} onChange={e => setName(e.target.value)} placeholder="Seu nome" />
           </div>
           <div className="form-group">
-            <label className="label">CPF (opcional)</label>
+            <label className="label">CPF</label>
             <input className="input" type="text" value={cpf}
               onChange={e => setCpf(e.target.value.replace(/\D/g, '').slice(0, 11))}
               placeholder="Somente números" maxLength={11} />

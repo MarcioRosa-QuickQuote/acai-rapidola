@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import CustomerHeader from '../components/CustomerHeader';
+import CustomerTopBar from '../components/CustomerTopBar';
 import CustomerBottomNav from '../components/CustomerBottomNav';
 
 export default function CustomerBusca() {
@@ -21,11 +21,11 @@ export default function CustomerBusca() {
   const q = search.toLowerCase().trim();
   const filtered = q
     ? stores.filter(s => s.name.toLowerCase().includes(q) || (s.address || '').toLowerCase().includes(q))
-    : stores;
+    : [];
 
   return (
     <div style={{ minHeight: '100vh', paddingBottom: 72 }}>
-      <CustomerHeader title="Busca" />
+      <CustomerTopBar />
       <div className="container" style={{ paddingTop: 12 }}>
         <div style={{ position: 'relative', marginBottom: 16 }}>
           <svg style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', zIndex: 1 }} width="18" height="18" viewBox="0 0 24 24" fill="#999">
@@ -37,14 +37,8 @@ export default function CustomerBusca() {
             style={{ paddingLeft: 42, fontSize: 15, borderRadius: 24, border: '2px solid #E8E0F0' }} />
         </div>
 
-        {filtered.length === 0 && search && (
+        {q && filtered.length === 0 && (
           <div className="empty-state"><p>Nenhuma loja encontrada</p></div>
-        )}
-
-        {!search && stores.length === 0 && (
-          <div style={{ textAlign: 'center', padding: 40, color: '#BBB', fontSize: 14 }}>
-            Digite para buscar lojas
-          </div>
         )}
 
         {filtered.map(store => {

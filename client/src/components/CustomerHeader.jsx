@@ -11,7 +11,6 @@ export default function CustomerHeader({ title, onBack }) {
           ‹
         </button>
       </div>
-      {title && <div className="header-title">{title}</div>}
       <div className="header-right" />
     </div>
   );

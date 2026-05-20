@@ -379,6 +379,11 @@ body {
   to { transform: rotate(360deg); }
 }
 
+@keyframes slideInFromTop {
+  from { transform: translateY(-24px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
 .empty-state {
   text-align: center;
   padding: 48px 20px;
