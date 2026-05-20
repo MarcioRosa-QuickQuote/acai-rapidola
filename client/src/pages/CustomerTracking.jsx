@@ -424,8 +424,8 @@ export default function CustomerTracking() {
           <div className="order-status-bar">
             {/* Logo da loja no início */}
             <div className="order-status-step">
-              <div style={{ height: 44, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <img src="/logo_placa.png" style={{ width: 44, height: 44, objectFit: 'contain', opacity: 0.6 }} />
+              <div style={{ height: 44, width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <img src="/logo_placa.png" style={{ width: '100%', height: '100%', objectFit: 'contain', opacity: 0.6 }} />
               </div>
               <span className="text-xs" style={{ color: 'var(--text-light)', textAlign: 'center' }}> </span>
             </div>
