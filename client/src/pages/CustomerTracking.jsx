@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import CustomerHeader from '../components/CustomerHeader';
 import CustomerBottomNav from '../components/CustomerBottomNav';
@@ -23,27 +23,6 @@ const statusLabels = {
   picked_up: 'Saiu pra entrega', in_transit: 'Saiu pra entrega',
   arriving: 'Saiu pra entrega', delivered: 'Entregue'
 };
-
-function CustomerAvatar({ photo }) {
-  const [showFallback, setShowFallback] = useState(!photo);
-  if (showFallback) {
-    return (
-      <div style={{ width: 36, height: 36, borderRadius: '50%', background: '#1565C0',
-        display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="white">
-          <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
-        </svg>
-      </div>
-    );
-  }
-  return (
-    <div style={{ width: 36, height: 36, borderRadius: '50%', overflow: 'hidden',
-      display: 'inline-flex', alignItems: 'center', justifyContent: 'center', background: '#1565C0' }}>
-      <img src={photo} alt="Você" style={{ width: 36, height: 36, objectFit: 'cover' }}
-        onError={() => setShowFallback(true)} />
-    </div>
-  );
-}
 
 function StoreLogo({ logo }) {
   const [showFallback, setShowFallback] = useState(!logo);
@@ -355,9 +334,8 @@ function GiriasParaenses() {
 
 export default function CustomerTracking() {
   const { id } = useParams();
-  const { user, apiFetch } = useAuth();
+  const { apiFetch } = useAuth();
   const { socket, joinOrder } = useSocket();
-  const navigate = useNavigate();
   const [order, setOrder] = useState(null);
   const [motoboyPos, setMotoboyPos] = useState(null);
   const [eta, setEta] = useState(null);
@@ -419,7 +397,7 @@ export default function CustomerTracking() {
   const currentStep = stepMap[order.status] ?? 0;
 
   return (
-    <div style={{ minHeight: '100vh', paddingBottom: 72 }}>
+    <div style={{ minHeight: '100vh', paddingBottom: 80 }}>
       <CustomerHeader title="Acompanhar Pedido" />
 
       <div className="container" style={{ paddingTop: 12 }}>
@@ -446,9 +424,7 @@ export default function CustomerTracking() {
                 <div key={step} className="order-status-step">
                   <div style={{ height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     {isCurrent ? (
-                      <div style={{ width: 40, height: 40, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', animation: 'glow-saco 2s ease-in-out infinite' }}>
-                        <img src="/saco_acai.png" style={{ width: 28, height: 28, objectFit: 'contain' }} />
-                      </div>
+                      <div style={{ width: 18, height: 18, borderRadius: '50%', background: 'var(--primary)', animation: 'glow-saco 2s ease-in-out infinite' }} />
                     ) : done ? (
                       <div style={{ width: 16, height: 16, borderRadius: '50%', background: 'var(--secondary)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                         <svg width="10" height="10" viewBox="0 0 24 24" fill="white"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
@@ -467,16 +443,6 @@ export default function CustomerTracking() {
                 </div>
               );
             })}
-
-            {/* Cuia ao final (após Entregue) */}
-            <div className="order-status-step">
-              <div style={{ height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <img src="/cuia.png" style={{ width: 28, height: 28, objectFit: 'contain', opacity: order.status === 'delivered' ? 1 : 0.22 }} onError={(e) => { e.target.style.display = 'none'; }} />
-              </div>
-              <span className="text-xs" style={{ color: order.status === 'delivered' ? 'var(--secondary)' : 'var(--text-light)', textAlign: 'center', fontWeight: order.status === 'delivered' ? 700 : 400 }}>
-                {order.status === 'delivered' ? 'Bom aprov!' : ' '}
-              </span>
-            </div>
           </div>
         </div>
 
@@ -517,10 +483,7 @@ export default function CustomerTracking() {
                 <span className="text-xs" style={{ color: '#888' }}>Loja</span>
               </div>
               <span className="text-xs" style={{ color: '#888' }}>↓ {order.customer_address}</span>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <CustomerAvatar photo={user?.photo_url} />
-                <span className="text-xs" style={{ color: '#888' }}>Você</span>
-              </div>
+
             </div>
 
             <div style={{ marginTop: 8, fontSize: 13, color: '#888' }}>
@@ -557,6 +520,7 @@ export default function CustomerTracking() {
           )}
         </div>
       </div>
+      <div style={{ height: 80 }} />
       <CustomerBottomNav />
     </div>
   );
