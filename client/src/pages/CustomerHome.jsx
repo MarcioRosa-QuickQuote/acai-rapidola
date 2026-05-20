@@ -471,7 +471,15 @@ export default function CustomerHome() {
 
     function DadosSection({ user, apiFetch }) {
       const [name, setName] = useState(user?.name || '');
-      const [cpf, setCpf] = useState(user?.cpf || '');
+      const [cpf, setCpf] = useState(() => {
+        const raw = (user?.cpf || '').replace(/\D/g, '');
+        if (!raw) return '';
+        let m = raw;
+        if (raw.length > 3) m = raw.slice(0, 3) + '.' + raw.slice(3);
+        if (raw.length > 6) m = m.slice(0, 7) + '.' + m.slice(7);
+        if (raw.length > 9) m = m.slice(0, 11) + '-' + m.slice(11);
+        return m;
+      });
       const [saving, setSaving] = useState(false);
       const [msg, setMsg] = useState('');
 
@@ -500,8 +508,15 @@ export default function CustomerHome() {
           <div className="form-group">
             <label className="label">CPF</label>
             <input className="input" type="text" value={cpf}
-              onChange={e => setCpf(e.target.value.replace(/\D/g, '').slice(0, 11))}
-              placeholder="Somente números" maxLength={11} />
+              onChange={e => {
+                const digits = e.target.value.replace(/\D/g, '').slice(0, 11);
+                let masked = digits;
+                if (digits.length > 3) masked = digits.slice(0, 3) + '.' + digits.slice(3);
+                if (digits.length > 6) masked = masked.slice(0, 7) + '.' + masked.slice(7);
+                if (digits.length > 9) masked = masked.slice(0, 11) + '-' + masked.slice(11);
+                setCpf(masked);
+              }}
+              placeholder="000.000.000-00" maxLength={14} />
           </div>
           {msg && <div style={{ fontSize: 13, fontWeight: 600, color: msg.includes('Erro') ? '#C62828' : '#2E7D32', marginBottom: 8 }}>{msg}</div>}
           <button className="btn btn-primary" style={{ width: '100%' }} onClick={save} disabled={saving || !name.trim()}>
