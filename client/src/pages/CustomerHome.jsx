@@ -35,6 +35,16 @@ export default function CustomerHome() {
   const [products, setProducts] = useState([]);
   const [orders, setOrders] = useState([]);
   const [activeOrder, setActiveOrder] = useState(null);
+  const [favorites, setFavorites] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('fav_stores') || '[]'); }
+    catch { return []; }
+  });
+  const isFavorited = storeId && favorites.includes(storeId);
+  function toggleFavorite() {
+    const next = isFavorited ? favorites.filter(id => id !== storeId) : [...favorites, storeId];
+    setFavorites(next);
+    localStorage.setItem('fav_stores', JSON.stringify(next));
+  }
   const [view, setView] = useState('menu');
   const [mainTab, setMainTab] = useState('menu');
   const [contaTab, setContaTab] = useState('perfil');
@@ -225,12 +235,6 @@ export default function CustomerHome() {
               <img src="/saco_acai.png" onClick={() => navigate(`/customer/tracking/${activeOrder.id}`)}
                 style={{ width: 32, height: 32, objectFit: 'contain', cursor: 'pointer' }} />
             )}
-            <button onClick={() => navigate('/customer/notificacoes')}
-              style={{ background: 'rgba(106,27,154,0.08)', border: 'none', borderRadius: 20, padding: 7, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="var(--primary)">
-                <path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/>
-              </svg>
-            </button>
             {Object.keys(cart).length > 0 && (
               <button className="btn btn-sm" onClick={() => setShowCart(!showCart)}
                 style={{ background: '#FFF3E0', color: '#E65100', fontSize: 14, fontWeight: 700, padding: '4px 8px', border: 'none', borderRadius: 20, width: 'auto', position: 'relative' }}>
@@ -240,6 +244,20 @@ export default function CustomerHome() {
                 </span>
               </button>
             )}
+            {storeId && (
+              <button onClick={toggleFavorite}
+                style={{ background: 'rgba(106,27,154,0.08)', border: 'none', borderRadius: 20, padding: 7, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill={isFavorited ? '#E53935' : '#999'}>
+                  <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                </svg>
+              </button>
+            )}
+            <button onClick={() => navigate('/customer/notificacoes')}
+              style={{ background: 'rgba(106,27,154,0.08)', border: 'none', borderRadius: 20, padding: 7, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="var(--primary)">
+                <path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/>
+              </svg>
+            </button>
           </div>
         </div>
       )}
@@ -758,7 +776,7 @@ export default function CustomerHome() {
                   const total = items.reduce((s, i) => s + (i.price || 0) * i.quantity, 0);
                   navigate('/customer/order', { state: { items, store, total } });
                 }}>
-                Finalizar Pedido
+                Ir para Pagamento
               </button>
             </div>
           </div>
@@ -777,7 +795,7 @@ export default function CustomerHome() {
                 const total = items.reduce((s, i) => s + (i.price || 0) * i.quantity, 0);
                 navigate('/customer/order', { state: { items, store, total } });
               }}>
-              Finalizar Pedido — R$ {Object.entries(cart).reduce((s, [id, qty]) => {
+              Ir para Pagamento — R$ {Object.entries(cart).reduce((s, [id, qty]) => {
                 const pr = products.find(pp => pp.id === id);
                 return s + (pr?.price || 0) * qty;
               }, 0).toFixed(2)}

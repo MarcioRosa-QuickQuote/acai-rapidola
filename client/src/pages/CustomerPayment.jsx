@@ -11,9 +11,13 @@ export default function CustomerPayment() {
   const [order, setOrder] = useState(null);
   const [pix, setPix] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [generating, setGenerating] = useState(false);
   const [error, setError] = useState('');
   const [copied, setCopied] = useState(false);
   const [countdown, setCountdown] = useState(1800);
+  const [showCard, setShowCard] = useState(false);
+  const [cardForm, setCardForm] = useState({ number: '', expiry: '', cvv: '', name: '' });
+  const [cardLoading, setCardLoading] = useState(false);
 
   useEffect(() => {
     joinOrder(id);
@@ -23,24 +27,24 @@ export default function CustomerPayment() {
   useEffect(() => {
     if (!socket) return;
     socket.on('payment_confirmed', (data) => {
-      if (data.orderId === id) navigate(`/customer/tracking/${id}`);
+      if (data.orderId === id) navigate('/customer/tracking/' + id);
     });
     return () => { socket.off('payment_confirmed'); };
   }, [socket, id]);
 
   async function loadOrder() {
-    const data = await apiFetch(`/orders/${id}`);
+    const data = await apiFetch('/orders/' + id);
     if (data.ok || data.id) {
       setOrder(data);
       if (data.payment_status === 'paid') {
-        navigate(`/customer/tracking/${id}`);
+        navigate('/customer/tracking/' + id);
         return;
       }
       if (data.payment_id) {
-        const statusRes = await apiFetch(`/payment-status/${data.payment_id}`);
+        const statusRes = await apiFetch('/payment-status/' + data.payment_id);
         if (statusRes.status === 'approved') {
           await apiFetch('/pix/confirm', { method: 'POST', body: JSON.stringify({ order_id: id }) });
-          navigate(`/customer/tracking/${id}`);
+          navigate('/customer/tracking/' + id);
           return;
         }
       }
@@ -51,6 +55,7 @@ export default function CustomerPayment() {
 
   async function generatePix() {
     setError('');
+    setGenerating(true);
     try {
       const data = await apiFetch('/pix/qrcode', {
         method: 'POST',
@@ -58,12 +63,15 @@ export default function CustomerPayment() {
       });
       if (data.success) {
         setPix(data);
+        setGenerating(false);
         startPolling(data.payment_id);
       } else if (data.error) {
         setError(data.error);
+        setGenerating(false);
       }
     } catch {
       setError('Erro ao gerar PIX. Tente novamente.');
+      setGenerating(false);
     }
   }
 
@@ -72,12 +80,12 @@ export default function CustomerPayment() {
     const timer = setInterval(async () => {
       if (confirmed) return;
       try {
-        const res = await apiFetch(`/payment-status/${paymentId}`);
+        const res = await apiFetch('/payment-status/' + paymentId);
         if (res.status === 'approved') {
           confirmed = true;
           clearInterval(timer);
           await apiFetch('/pix/confirm', { method: 'POST', body: JSON.stringify({ order_id: id }) });
-          navigate(`/customer/tracking/${id}`);
+          navigate('/customer/tracking/' + id);
         }
       } catch {}
     }, 5000);
@@ -96,7 +104,7 @@ export default function CustomerPayment() {
   }, [pix]);
 
   function copyPix() {
-    if (!pix?.pix_copy_paste) return;
+    if (!pix || !pix.pix_copy_paste) return;
     navigator.clipboard.writeText(pix.pix_copy_paste);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
@@ -105,7 +113,35 @@ export default function CustomerPayment() {
   const minutes = Math.floor(countdown / 60);
   const seconds = countdown % 60;
 
-  if (loading) return <div className="loading"><img className="spin" src="/saco_acai.png" /></div>;
+  async function handleCardPayment() {
+    setCardLoading(true);
+    try {
+      const res = await apiFetch('/payment/card', {
+        method: 'POST',
+        body: JSON.stringify({ order_id: id, card: cardForm })
+      });
+      if (res.success) {
+        navigate('/customer/tracking/' + id);
+      } else {
+        setError(res.error || 'Erro no pagamento com cartao');
+      }
+    } catch {
+      setError('Erro ao processar cartao');
+    }
+    setCardLoading(false);
+  }
+
+  function onCardField(field, val) {
+    setCardForm(prev => ({ ...prev, [field]: val }));
+  }
+
+  if (loading) {
+    return (
+      <div className="loading">
+        <img className="spin" src="/saco_acai.png" />
+      </div>
+    );
+  }
 
   return (
     <div>
@@ -114,10 +150,10 @@ export default function CustomerPayment() {
           <button className="btn btn-sm"
             style={{ background: 'var(--border)', color: 'var(--primary-dark)', fontSize: 20, padding: '4px 10px', fontWeight: 700, lineHeight: 1 }}
             onClick={() => navigate(-1)}>
-            ‹
+            &lsaquo;
           </button>
         </div>
-        <div className="header-title">Pagamento</div>
+        <div className="header-title">&nbsp;</div>
         <div className="header-right" />
       </div>
 
@@ -131,7 +167,7 @@ export default function CustomerPayment() {
 
         {order.payment_status === 'paid' ? (
           <div className="card" style={{ background: '#E8F5E9', border: '1px solid #C8E6C9', textAlign: 'center' }}>
-            <div style={{ fontSize: 48, marginBottom: 8 }}>✅</div>
+            <div style={{ fontSize: 48, marginBottom: 8 }}>&#10004;&#65039;</div>
             <div style={{ fontSize: 18, fontWeight: 700, color: '#2E7D32' }}>Pagamento confirmado!</div>
             <p className="text-sm text-muted mt-2">Redirecionando para acompanhar seu pedido...</p>
           </div>
@@ -140,21 +176,19 @@ export default function CustomerPayment() {
             <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text)', marginBottom: 12 }}>
               Pague com PIX
             </div>
-
             {pix.qr_code_base64 && (
               <div style={{
                 background: 'white', padding: 16, borderRadius: 12,
                 display: 'inline-block', border: '2px solid #E8E0F0', marginBottom: 16
               }}>
-                <img src={`data:image/png;base64,${pix.qr_code_base64}`}
+                <img src={'data:image/png;base64,' + pix.qr_code_base64}
                   alt="QR Code PIX" style={{ width: 200, height: 200, display: 'block' }} />
               </div>
             )}
-
             {pix.pix_copy_paste && (
               <div style={{ textAlign: 'left', marginBottom: 16 }}>
                 <div style={{ fontSize: 11, fontWeight: 600, color: '#999', marginBottom: 6 }}>
-                  Ou copie o código PIX:
+                  Ou copie o codigo PIX:
                 </div>
                 <div style={{ display: 'flex', gap: 8 }}>
                   <div style={{
@@ -171,14 +205,12 @@ export default function CustomerPayment() {
                 </div>
               </div>
             )}
-
             <div style={{
               background: '#FFF3E0', borderRadius: 8, padding: '10px 14px',
               fontSize: 12, color: '#E65100', fontWeight: 600
             }}>
               Expira em {minutes}:{seconds.toString().padStart(2, '0')}
             </div>
-
             <p className="text-xs text-muted mt-3">
               Pagamento seguro via Mercado Pago
             </p>
@@ -193,9 +225,47 @@ export default function CustomerPayment() {
                 {error}
               </div>
             )}
-            <button className="btn btn-primary" onClick={generatePix}
+            <button className="btn btn-primary" onClick={generatePix} disabled={generating}
               style={{ padding: '16px 32px', fontSize: 18, fontWeight: 700, borderRadius: 12 }}>
-              Gerar PIX
+              {generating ? 'Gerando PIX...' : 'Gerar PIX'}
+            </button>
+          </div>
+        )}
+
+        {!pix && (
+          <button className="btn" onClick={() => setShowCard(!showCard)}
+            style={{ background: 'none', color: 'var(--primary)', fontSize: 14, fontWeight: 600, marginTop: 8, textDecoration: 'underline', border: 'none', cursor: 'pointer' }}>
+            Outras formas de pagamento
+          </button>
+        )}
+
+        {showCard && !pix && (
+          <div className="card" style={{ textAlign: 'left' }}>
+            <h3 style={{ fontSize: 16, fontWeight: 700, marginBottom: 12 }}>Pagamento com Cartao</h3>
+            <div className="form-group">
+              <label className="label">Numero do cartao</label>
+              <input className="input" placeholder="0000 0000 0000 0000" value={cardForm.number}
+                onChange={e => onCardField('number', e.target.value)} />
+            </div>
+            <div style={{ display: 'flex', gap: 12 }}>
+              <div className="form-group" style={{ flex: 1 }}>
+                <label className="label">Validade</label>
+                <input className="input" placeholder="MM/AA" value={cardForm.expiry}
+                  onChange={e => onCardField('expiry', e.target.value)} />
+              </div>
+              <div className="form-group" style={{ flex: 1 }}>
+                <label className="label">CVV</label>
+                <input className="input" placeholder="123" value={cardForm.cvv}
+                  onChange={e => onCardField('cvv', e.target.value)} />
+              </div>
+            </div>
+            <div className="form-group">
+              <label className="label">Nome no cartao</label>
+              <input className="input" placeholder="Nome como esta no cartao" value={cardForm.name}
+                onChange={e => onCardField('name', e.target.value)} />
+            </div>
+            <button className="btn btn-primary" onClick={handleCardPayment} disabled={cardLoading}>
+              {cardLoading ? 'Processando...' : 'Pagar com Cartao'}
             </button>
           </div>
         )}

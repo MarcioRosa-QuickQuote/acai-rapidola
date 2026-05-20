@@ -321,7 +321,7 @@ export default function CustomerOrder() {
             ‹
           </button>
         </div>
-        <div className="header-title">Finalizar Pedido</div>
+        <div className="header-title">Resumo do Pedido</div>
         <div className="header-right" />
       </div>
 
