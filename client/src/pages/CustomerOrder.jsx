@@ -316,9 +316,9 @@ export default function CustomerOrder() {
       <div className="header">
         <div className="header-left">
           <button className="btn btn-sm"
-            style={{ background: 'var(--border)', color: 'var(--primary-dark)', fontSize: 13, fontWeight: 700 }}
+            style={{ background: 'var(--border)', color: 'var(--primary-dark)', fontSize: 20, padding: '4px 10px', fontWeight: 700, lineHeight: 1 }}
             onClick={() => navigate(-1)}>
-            Voltar
+            ‹
           </button>
         </div>
         <div className="header-title">Finalizar Pedido</div>

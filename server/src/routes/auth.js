@@ -168,8 +168,9 @@ router.get('/me', authMiddleware, async (req, res) => {
 });
 
 router.patch('/profile', authMiddleware, async (req, res) => {
-  const { address, lat, lng, photo_url, cpf, vehicle_type, pix_key } = req.body;
+  const { address, lat, lng, photo_url, cpf, vehicle_type, pix_key, name } = req.body;
   const update = {};
+  if (name !== undefined && name.trim()) update.name = name.trim().slice(0, 100);
   if (address !== undefined) update.address = address;
   if (lat !== undefined) update.lat = lat;
   if (lng !== undefined) update.lng = lng;

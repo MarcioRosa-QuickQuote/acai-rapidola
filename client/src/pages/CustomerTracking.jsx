@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import CustomerTopBar from '../components/CustomerTopBar';
+import CustomerBottomNav from '../components/CustomerBottomNav';
 import { useSocket } from '../contexts/SocketContext';
 import { MapContainer, TileLayer, Marker } from 'react-leaflet';
 import L from 'leaflet';
@@ -423,23 +425,12 @@ export default function CustomerTracking() {
   const currentStep = stepMap[order.status] ?? 0;
 
   return (
-    <div>
-      <div className="header">
-        <div className="header-left">
-          <button className="btn btn-sm"
-            style={{ background: 'var(--border)', color: 'var(--primary-dark)', fontSize: 13, fontWeight: 700 }}
-            onClick={() => navigate('/customer')}>
-            Voltar
-          </button>
-        </div>
-        <div className="header-title">Acompanhar</div>
-        <div className="header-right" />
-      </div>
+    <div style={{ minHeight: '100vh', paddingBottom: 72 }}>
+      <CustomerTopBar />
 
-      <div className="container">
+      <div className="container" style={{ paddingTop: 12 }}>
         <div className="card">
-          <div className="flex-between" style={{ marginBottom: 12 }}>
-            <span className="text-sm text-muted">Pedido #{order.id.slice(0, 8)}</span>
+          <div style={{ marginBottom: 8, display: 'flex', justifyContent: 'flex-end' }}>
             <span className={`badge ${order.payment_status === 'paid' ? 'badge-success' : 'badge-warning'}`}>
               {order.payment_status === 'paid' ? 'Pago' : 'Pendente'}
             </span>
@@ -451,7 +442,15 @@ export default function CustomerTracking() {
               const isCurrent = i === currentStep;
               return (
                 <div key={step} className="order-status-step">
-                  <div className={`order-status-dot ${done ? (isCurrent ? 'current' : 'active') : ''}`} />
+                  {isCurrent ? (
+                    <img src="/saco_acai.png" style={{ width: 32, height: 32, objectFit: 'contain' }} />
+                  ) : done ? (
+                    <div style={{ width: 16, height: 16, borderRadius: '50%', background: 'var(--secondary)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <svg width="10" height="10" viewBox="0 0 24 24" fill="white"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+                    </div>
+                  ) : (
+                    <div style={{ width: 12, height: 12, borderRadius: '50%', background: 'var(--border)' }} />
+                  )}
                   <span className="text-xs" style={{
                     color: done ? (isCurrent ? 'var(--primary)' : 'var(--secondary)') : 'var(--text-light)',
                     fontWeight: done ? 700 : 400,
@@ -542,6 +541,7 @@ export default function CustomerTracking() {
           )}
         </div>
       </div>
+      <CustomerBottomNav />
     </div>
   );
 }

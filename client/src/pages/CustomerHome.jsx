@@ -1,6 +1,8 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import CustomerTopBar from '../components/CustomerTopBar';
+import CustomerBottomNav from '../components/CustomerBottomNav';
 import { useSocket } from '../contexts/SocketContext';
 import { MapContainer, TileLayer, Marker } from 'react-leaflet';
 import L from 'leaflet';
@@ -206,81 +208,41 @@ export default function CustomerHome() {
   if (loading) return <div className="loading"><img className="spin" src="/saco_acai.png" /></div>;
 
   return (
-    <div>
-      <div className="header">
-        <div className="header-left">
-          <button className="btn btn-sm"
-            style={{ background: 'var(--border)', color: 'var(--primary-dark)', fontSize: 13, padding: '6px 10px', fontWeight: 700 }}
-            onClick={() => navigate('/customer')}>
-            &larr; Lojas
-          </button>
-        </div>
-        <div className="header-right" style={{ gap: 6 }}>
-          {activeOrder && activeOrder.payment_status === 'paid' && !['delivered','cancelled'].includes(activeOrder.status) && (
+    <div style={{ minHeight: '100vh', paddingBottom: storeId ? 0 : 72 }}>
+      {!storeId ? (
+        <CustomerTopBar />
+      ) : (
+        <div className="header">
+          <div className="header-left">
             <button className="btn btn-sm"
-              onClick={() => navigate(`/customer/tracking/${activeOrder.id}`)}
-              title="Acompanhar pedido"
-              style={{
-                background: 'transparent',
-                padding: '2px',
-                border: 'none', borderRadius: 20, width: 'auto', display: 'flex', alignItems: 'center'
-              }}>
-              <img src="/saco_acai.png" style={{ width: 52, height: 52, objectFit: 'contain' }} />
+              style={{ background: 'var(--border)', color: 'var(--primary-dark)', fontSize: 20, padding: '4px 10px', fontWeight: 700, lineHeight: 1 }}
+              onClick={() => navigate('/customer')}>
+              ‹
             </button>
-          )}
-          {Object.keys(cart).length > 0 && (
-            <button className="btn btn-sm"
-              onClick={() => setShowCart(!showCart)}
-              style={{
-                background: '#FFF3E0', color: '#E65100',
-                fontSize: 14, fontWeight: 700, padding: '4px 8px',
-                border: 'none', borderRadius: 20, width: 'auto',
-                position: 'relative'
-              }}>
-              🛒
-              <span style={{
-                position: 'absolute', top: -4, right: -6,
-                background: '#C62828', color: 'white', fontSize: 10,
-                width: 18, height: 18, borderRadius: '50%',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontWeight: 700
-              }}>
-                {Object.values(cart).reduce((a, b) => a + b, 0)}
-              </span>
-            </button>
-          )}
-          <div onClick={() => {
-            if (storeId) setView(view === 'conta' ? 'menu' : 'conta');
-          }}
-            style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: storeId ? 'pointer' : 'default' }}>
-            {user?.photo_url ? (
-              <img src={user.photo_url} alt="Foto"
-                style={{ width: 34, height: 34, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }}
-                onError={e => { e.target.style.display = 'none'; }} />
-            ) : (
-              <div style={{
-                width: 34, height: 34, borderRadius: '50%',
-                background: 'linear-gradient(135deg, #CE93D8, #AB47BC)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                color: 'white', fontWeight: 700, fontSize: 15, flexShrink: 0, lineHeight: 1
-              }}>
-                {user?.name?.charAt(0)?.toUpperCase()}
-              </div>
+          </div>
+          <div className="header-right" style={{ gap: 6 }}>
+            {activeOrder && activeOrder.payment_status === 'paid' && !['delivered','cancelled'].includes(activeOrder.status) && (
+              <img src="/saco_acai.png" onClick={() => navigate(`/customer/tracking/${activeOrder.id}`)}
+                style={{ width: 44, height: 44, objectFit: 'contain', cursor: 'pointer' }} />
             )}
-            <div>
-              <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text)', lineHeight: 1.2 }}>{user?.name?.split(' ')[0]}</div>
-              <div onClick={(e) => { e.stopPropagation(); logout(); }}
-                style={{ fontSize: 10, color: 'var(--text-light)', cursor: 'pointer', lineHeight: 1 }}>
-                Sair
-              </div>
-            </div>
+            {Object.keys(cart).length > 0 && (
+              <button className="btn btn-sm" onClick={() => setShowCart(!showCart)}
+                style={{ background: '#FFF3E0', color: '#E65100', fontSize: 14, fontWeight: 700, padding: '4px 8px', border: 'none', borderRadius: 20, width: 'auto', position: 'relative' }}>
+                🛒
+                <span style={{ position: 'absolute', top: -4, right: -6, background: '#C62828', color: 'white', fontSize: 10, width: 18, height: 18, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700 }}>
+                  {Object.values(cart).reduce((a, b) => a + b, 0)}
+                </span>
+              </button>
+            )}
           </div>
         </div>
-      </div>
+      )}
 
       <div className="container" style={{ paddingTop: 12 }}>
         {view === 'conta' ? renderConta() : renderMenu()}
       </div>
+
+      {!storeId && <CustomerBottomNav />}
     </div>
   );
 
@@ -452,6 +414,58 @@ export default function CustomerHome() {
       }
     }
 
+    function NavCard({ icon, label, onClick }) {
+      return (
+        <div onClick={onClick} style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '16px 20px', cursor: 'pointer', background: 'white' }}>
+          <div style={{ width: 40, height: 40, borderRadius: 12, background: '#F3E5F5', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>{icon}</div>
+          <span style={{ flex: 1, fontWeight: 600, fontSize: 15 }}>{label}</span>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="#BBB"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6z"/></svg>
+        </div>
+      );
+    }
+
+    function DadosSection({ user, apiFetch }) {
+      const [name, setName] = useState(user?.name || '');
+      const [cpf, setCpf] = useState(user?.cpf || '');
+      const [saving, setSaving] = useState(false);
+      const [msg, setMsg] = useState('');
+
+      async function save() {
+        setSaving(true);
+        const res = await apiFetch('/auth/profile', { method: 'PATCH', body: JSON.stringify({ name: name.trim(), cpf }) });
+        if (res.ok) {
+          setMsg('Dados salvos!');
+          setTimeout(() => { setMsg(''); window.location.reload(); }, 1200);
+        } else {
+          setMsg(res.error || 'Erro ao salvar');
+          setTimeout(() => setMsg(''), 3000);
+        }
+        setSaving(false);
+      }
+
+      return (
+        <div style={{ padding: '16px 20px', borderTop: '1px solid var(--border)', background: 'white' }}>
+          <div style={{ fontSize: 11, color: '#888', marginBottom: 4, fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.5 }}>
+            ID único: {user?.email || user?.phone}
+          </div>
+          <div className="form-group" style={{ marginTop: 12 }}>
+            <label className="label">Nome</label>
+            <input className="input" type="text" value={name} onChange={e => setName(e.target.value)} placeholder="Seu nome" />
+          </div>
+          <div className="form-group">
+            <label className="label">CPF (opcional)</label>
+            <input className="input" type="text" value={cpf}
+              onChange={e => setCpf(e.target.value.replace(/\D/g, '').slice(0, 11))}
+              placeholder="Somente números" maxLength={11} />
+          </div>
+          {msg && <div style={{ fontSize: 13, fontWeight: 600, color: msg.includes('Erro') ? '#C62828' : '#2E7D32', marginBottom: 8 }}>{msg}</div>}
+          <button className="btn btn-primary" style={{ width: '100%' }} onClick={save} disabled={saving || !name.trim()}>
+            {saving ? 'Salvando...' : 'Salvar'}
+          </button>
+        </div>
+      );
+    }
+
     function CardRow({ icon, label, onClick, children, expanded }) {
       return (
         <div style={{ borderBottom: '1px solid var(--border)' }}>
@@ -489,26 +503,10 @@ export default function CustomerHome() {
 
     return (
       <>
-        {/* Cabeçalho com avatar */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '20px 20px 16px', borderBottom: '1px solid var(--border)' }}>
-          <label style={{ cursor: 'pointer', position: 'relative', flexShrink: 0 }}>
-            {user?.photo_url ? (
-              <img src={user.photo_url} alt="Foto"
-                style={{ width: 60, height: 60, borderRadius: '50%', objectFit: 'cover' }}
-                onError={e => { e.target.style.display = 'none'; }} />
-            ) : (
-              <div style={{ width: 60, height: 60, borderRadius: '50%', background: 'linear-gradient(135deg, #CE93D8, #AB47BC)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 700, fontSize: 26 }}>
-                {user?.name?.charAt(0)?.toUpperCase()}
-              </div>
-            )}
-            <input type="file" accept="image/*" ref={photoRef}
-              onChange={e => { if (e.target.files?.[0]) uploadPhoto(e.target.files[0]); }}
-              style={{ display: 'none' }} />
-          </label>
-          <div>
-            <div style={{ fontWeight: 800, fontSize: 17 }}>{user?.name}</div>
-            <div style={{ fontSize: 13, color: '#888', marginTop: 2 }}>{user?.email || user?.phone}</div>
-          </div>
+        {/* Cabeçalho da conta */}
+        <div style={{ padding: '20px 20px 16px', borderBottom: '1px solid var(--border)' }}>
+          <div style={{ fontWeight: 800, fontSize: 17 }}>{user?.name}</div>
+          <div style={{ fontSize: 13, color: '#888', marginTop: 2 }}>{user?.email || user?.phone}</div>
         </div>
 
         {/* Card: Perfil */}
@@ -526,11 +524,7 @@ export default function CustomerHome() {
 
           {/* Dados */}
           {perfilExpanded && perfilSection === 'dados' && (
-            <div style={{ padding: '16px 20px', borderTop: '1px solid var(--border)', background: 'white' }}>
-              <div style={{ fontSize: 14, marginBottom: 6 }}><span style={{ color: '#888' }}>Nome: </span><span style={{ fontWeight: 600 }}>{user?.name}</span></div>
-              <div style={{ fontSize: 14, marginBottom: 6 }}><span style={{ color: '#888' }}>Email: </span><span>{user?.email}</span></div>
-              <div style={{ fontSize: 14 }}><span style={{ color: '#888' }}>Telefone: </span><span>{user?.phone || '—'}</span></div>
-            </div>
+            <DadosSection user={user} apiFetch={apiFetch} />
           )}
 
           {/* Endereço */}
@@ -630,35 +624,20 @@ export default function CustomerHome() {
 
         {/* Card: Pagamentos */}
         <div className="card" style={{ padding: 0, overflow: 'hidden', marginBottom: 12 }}>
-          <CardRow label="Pagamentos" expanded={contaTab === 'pagamentos'} onClick={() => setContaTab(v => v === 'pagamentos' ? '' : 'pagamentos')}
-            icon={<svg width="20" height="20" viewBox="0 0 24 24" fill="var(--primary)"><path d="M20 4H4c-1.11 0-2 .89-2 2v12c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V6c0-1.11-.89-2-2-2zm0 14H4v-6h16v6zm0-10H4V6h16v2z"/></svg>}
-          >
-            <div style={{ padding: '16px 20px', background: 'white' }}>
-              <div style={{ textAlign: 'center', padding: '12px 0', color: '#999', fontSize: 14 }}>Seus pagamentos aparecerão aqui</div>
-            </div>
-          </CardRow>
+          <NavCard label="Pagamentos" onClick={() => navigate('/customer/pagamentos')}
+            icon={<svg width="20" height="20" viewBox="0 0 24 24" fill="var(--primary)"><path d="M20 4H4c-1.11 0-2 .89-2 2v12c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V6c0-1.11-.89-2-2-2zm0 14H4v-6h16v6zm0-10H4V6h16v2z"/></svg>} />
         </div>
 
         {/* Card: Notificações */}
         <div className="card" style={{ padding: 0, overflow: 'hidden', marginBottom: 12 }}>
-          <CardRow label="Notificações" expanded={contaTab === 'notificacoes'} onClick={() => setContaTab(v => v === 'notificacoes' ? '' : 'notificacoes')}
-            icon={<svg width="20" height="20" viewBox="0 0 24 24" fill="var(--primary)"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/></svg>}
-          >
-            <div style={{ padding: '16px 20px', background: 'white' }}>
-              <div style={{ textAlign: 'center', padding: '12px 0', color: '#999', fontSize: 14 }}>Atualizações dos seus pedidos</div>
-            </div>
-          </CardRow>
+          <NavCard label="Notificações" onClick={() => navigate('/customer/notificacoes')}
+            icon={<svg width="20" height="20" viewBox="0 0 24 24" fill="var(--primary)"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/></svg>} />
         </div>
 
         {/* Card: Favoritos */}
         <div className="card" style={{ padding: 0, overflow: 'hidden', marginBottom: 12 }}>
-          <CardRow label="Favoritos" expanded={contaTab === 'favoritos'} onClick={() => setContaTab(v => v === 'favoritos' ? '' : 'favoritos')}
-            icon={<svg width="20" height="20" viewBox="0 0 24 24" fill="var(--primary)"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>}
-          >
-            <div style={{ padding: '16px 20px', background: 'white' }}>
-              <div style={{ textAlign: 'center', padding: '12px 0', color: '#999', fontSize: 14 }}>Favorite lojas e produtos</div>
-            </div>
-          </CardRow>
+          <NavCard label="Favoritos" onClick={() => navigate('/customer/favoritos')}
+            icon={<svg width="20" height="20" viewBox="0 0 24 24" fill="var(--primary)"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>} />
         </div>
       </>
     );

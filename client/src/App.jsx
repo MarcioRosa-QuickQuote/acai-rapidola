@@ -9,6 +9,11 @@ import CustomerHome from './pages/CustomerHome';
 import CustomerOrder from './pages/CustomerOrder';
 import CustomerPayment from './pages/CustomerPayment';
 import CustomerTracking from './pages/CustomerTracking';
+import CustomerBusca from './pages/CustomerBusca';
+import CustomerPedidos from './pages/CustomerPedidos';
+import CustomerFavoritos from './pages/CustomerFavoritos';
+import CustomerPagamentos from './pages/CustomerPagamentos';
+import CustomerNotificacoes from './pages/CustomerNotificacoes';
 import StoreDashboard from './pages/StoreDashboard';
 import MotoboyDashboard from './pages/MotoboyDashboard';
 
@@ -63,6 +68,21 @@ export default function App() {
       } />
       <Route path="/customer/tracking/:id" element={
         <ProtectedRoute role="customer"><CustomerTracking /></ProtectedRoute>
+      } />
+      <Route path="/customer/busca" element={
+        <ProtectedRoute role="customer"><CustomerBusca /></ProtectedRoute>
+      } />
+      <Route path="/customer/pedidos" element={
+        <ProtectedRoute role="customer"><CustomerPedidos /></ProtectedRoute>
+      } />
+      <Route path="/customer/favoritos" element={
+        <ProtectedRoute role="customer"><CustomerFavoritos /></ProtectedRoute>
+      } />
+      <Route path="/customer/pagamentos" element={
+        <ProtectedRoute role="customer"><CustomerPagamentos /></ProtectedRoute>
+      } />
+      <Route path="/customer/notificacoes" element={
+        <ProtectedRoute role="customer"><CustomerNotificacoes /></ProtectedRoute>
       } />
 
       <Route path="/store/*" element={
