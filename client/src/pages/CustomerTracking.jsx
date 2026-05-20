@@ -301,11 +301,7 @@ function GiriasParaenses() {
     <div className="card" style={{ marginBottom: 12 }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <svg width="32" height="22" viewBox="0 0 32 22" style={{ borderRadius: 3, flexShrink: 0, border: '0.5px solid #CCC' }}>
-              <rect width="32" height="22" fill="white"/>
-              <circle cx="16" cy="11" r="9" fill="#003087"/>
-              <text x="16" y="15.5" textAnchor="middle" fill="white" fontSize="12" fontWeight="bold">★</text>
-            </svg>
+          <img src="/bandeira.png" alt="Bandeira do Pará" style={{ width: 32, height: 22, borderRadius: 3, flexShrink: 0, border: '0.5px solid #CCC', objectFit: 'cover' }} />
           <span style={{ fontWeight: 800, fontSize: 16, color: 'var(--primary)' }}>Gírias Paraenses</span>
         </div>
         <span style={{ fontSize: 12, color: 'var(--text-light)', fontWeight: 600 }}>
@@ -437,20 +433,30 @@ export default function CustomerTracking() {
           </div>
 
           <div className="order-status-bar">
+            {/* Saco_acai de início (antes do primeiro passo) */}
+            <div className="order-status-step">
+              <div style={{ height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <img src="/saco_acai.png" style={{ width: 24, height: 24, objectFit: 'contain', opacity: 0.55 }} />
+              </div>
+              <span className="text-xs" style={{ color: 'var(--text-light)', textAlign: 'center' }}> </span>
+            </div>
+
             {statusSteps.map((step, i) => {
               const done = i <= currentStep;
               const isCurrent = i === currentStep;
               return (
                 <div key={step} className="order-status-step">
-                  {isCurrent ? (
-                    <img src="/saco_acai.png" style={{ width: 32, height: 32, objectFit: 'contain' }} />
-                  ) : done ? (
-                    <div style={{ width: 16, height: 16, borderRadius: '50%', background: 'var(--secondary)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <svg width="10" height="10" viewBox="0 0 24 24" fill="white"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
-                    </div>
-                  ) : (
-                    <div style={{ width: 12, height: 12, borderRadius: '50%', background: 'var(--border)' }} />
-                  )}
+                  <div style={{ height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    {isCurrent ? (
+                      <img src="/saco_acai.png" style={{ width: 32, height: 32, objectFit: 'contain', animation: 'blink-saco 0.85s ease-in-out infinite' }} />
+                    ) : done ? (
+                      <div style={{ width: 16, height: 16, borderRadius: '50%', background: 'var(--secondary)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <svg width="10" height="10" viewBox="0 0 24 24" fill="white"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+                      </div>
+                    ) : (
+                      <div style={{ width: 12, height: 12, borderRadius: '50%', background: 'var(--border)' }} />
+                    )}
+                  </div>
                   <span className="text-xs" style={{
                     color: done ? (isCurrent ? 'var(--primary)' : 'var(--secondary)') : 'var(--text-light)',
                     fontWeight: done ? 700 : 400,
@@ -461,6 +467,16 @@ export default function CustomerTracking() {
                 </div>
               );
             })}
+
+            {/* Cuia ao final (após Entregue) */}
+            <div className="order-status-step">
+              <div style={{ height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <img src="/cuia.png" style={{ width: 28, height: 28, objectFit: 'contain', opacity: order.status === 'delivered' ? 1 : 0.22 }} />
+              </div>
+              <span className="text-xs" style={{ color: order.status === 'delivered' ? 'var(--secondary)' : 'var(--text-light)', textAlign: 'center', fontWeight: order.status === 'delivered' ? 700 : 400 }}>
+                {order.status === 'delivered' ? 'Bom aprov!' : ' '}
+              </span>
+            </div>
           </div>
         </div>
 
