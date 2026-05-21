@@ -35,6 +35,16 @@ export default function CustomerHome() {
   const [products, setProducts] = useState([]);
   const [orders, setOrders] = useState([]);
   const [activeOrder, setActiveOrder] = useState(null);
+  const [favorites, setFavorites] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('fav_stores') || '[]'); }
+    catch { return []; }
+  });
+  const isFavorited = storeId && favorites.includes(storeId);
+  function toggleFavorite() {
+    const next = isFavorited ? favorites.filter(id => id !== storeId) : [...favorites, storeId];
+    setFavorites(next);
+    localStorage.setItem('fav_stores', JSON.stringify(next));
+  }
   const [view, setView] = useState('menu');
   const [mainTab, setMainTab] = useState('menu');
   const [contaTab, setContaTab] = useState('perfil');
@@ -238,6 +248,14 @@ export default function CustomerHome() {
                 <span style={{ position: 'absolute', top: -4, right: -6, background: '#C62828', color: 'white', fontSize: 10, width: 18, height: 18, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700 }}>
                   {Object.values(cart).reduce((a, b) => a + b, 0)}
                 </span>
+              </button>
+            )}
+            {storeId && (
+              <button onClick={toggleFavorite}
+                style={{ background: 'rgba(106,27,154,0.08)', border: 'none', borderRadius: 20, padding: 7, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill={isFavorited ? '#E53935' : '#999'}>
+                  <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                </svg>
               </button>
             )}
           </div>

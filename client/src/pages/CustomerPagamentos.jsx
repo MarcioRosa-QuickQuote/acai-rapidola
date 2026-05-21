@@ -13,8 +13,15 @@ export default function CustomerPagamentos() {
   useEffect(() => {
     apiFetch('/orders').then(d => {
       if (d.data) {
-        const paid = d.data.filter(o => o.payment_status === 'paid' || o.payment_status === 'pending');
-        setPayments(paid.sort((a, b) => new Date(b.created_at) - new Date(a.created_at)));
+        const now = Date.now();
+        const filtered = d.data.filter(o => {
+          if (o.payment_status === 'paid') return true;
+          if (o.payment_status === 'pending') {
+            return now - new Date(o.created_at).getTime() < 24 * 60 * 60 * 1000;
+          }
+          return false;
+        });
+        setPayments(filtered.sort((a, b) => new Date(b.created_at) - new Date(a.created_at)));
       }
       setLoading(false);
     });
@@ -36,7 +43,7 @@ export default function CustomerPagamentos() {
           </div>
         ) : (
           payments.map(order => (
-            <div key={order.id} className="card" onClick={() => navigate(`/customer/tracking/${order.id}`)} style={{ cursor: 'pointer' }}>
+            <div key={order.id} className="card" onClick={() => navigate(order.payment_status === 'paid' ? `/customer/tracking/${order.id}` : `/customer/payment/${order.id}`)} style={{ cursor: 'pointer' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
                 <span style={{ fontWeight: 700, fontSize: 15 }}>{order.store_name || 'Loja'}</span>
                 <span className={`badge ${order.payment_status === 'paid' ? 'badge-success' : 'badge-warning'}`}>
