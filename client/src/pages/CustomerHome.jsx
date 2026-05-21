@@ -218,7 +218,7 @@ export default function CustomerHome() {
   if (loading) return <div className="loading"><img className="spin" src="/saco_acai.png" /></div>;
 
   return (
-    <div style={{ minHeight: '100vh', paddingBottom: storeId ? 0 : 72, animation: storeId ? 'slideInFromTop 0.28s ease-out' : 'none', background: storeId ? 'url(/fundo.jpeg) center top / cover no-repeat' : 'none' }}>
+    <div style={{ minHeight: '100vh', paddingBottom: storeId ? 0 : 72, animation: storeId ? 'slideInFromTop 0.28s ease-out' : 'none' }}>
       {!storeId ? (
         <CustomerHeader onBack={() => navigate('/customer')} />
       ) : (
@@ -263,7 +263,7 @@ export default function CustomerHome() {
       )}
 
       {storeId && store && (
-        <div style={{ textAlign: 'center', padding: '20px 20px 0' }}>
+        <div style={{ textAlign: 'center', padding: '20px 20px 0', background: 'url(/fundo.jpeg) center top / cover no-repeat' }}>
           <div style={{ width: 80, height: 80, borderRadius: '50%', overflow: 'hidden', margin: '0 auto 10px', border: '3px solid rgba(255,255,255,0.5)', background: `linear-gradient(135deg, ${store.color_primary || '#6A1B9A'}, ${store.color_secondary || '#4A148C'})`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
             {store.logo ? (
               <img src={store.logo} alt={store.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={e => { e.target.style.display = 'none'; }} />
