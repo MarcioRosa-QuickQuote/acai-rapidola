@@ -274,13 +274,13 @@ export default function CustomerHome() {
             )}
           </div>
           <div style={{ fontWeight: 800, fontSize: 18, color: 'white', textShadow: '0 1px 4px rgba(0,0,0,0.3)', marginBottom: 12 }}>{store.name}</div>
-          <div style={{ display: 'inline-block' }}>
-            <div style={{ height: 1, background: 'rgba(255,255,255,0.3)', marginBottom: 10 }} />
-            <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.9)', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, paddingBottom: 12 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+            <div style={{ height: 1, background: 'rgba(255,255,255,0.3)', width: '80%', marginBottom: 8 }} />
+            <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.9)', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4, paddingBottom: 10, whiteSpace: 'nowrap' }}>
               Entrega
-              <span style={{ width: 5, height: 5, borderRadius: '50%', background: 'rgba(255,255,255,0.7)', display: 'inline-block' }} />
+              <span style={{ width: 4, height: 4, borderRadius: '50%', background: 'rgba(255,255,255,0.7)', display: 'inline-block' }} />
               24-35 min
-              <span style={{ width: 5, height: 5, borderRadius: '50%', background: 'rgba(255,255,255,0.7)', display: 'inline-block' }} />
+              <span style={{ width: 4, height: 4, borderRadius: '50%', background: 'rgba(255,255,255,0.7)', display: 'inline-block' }} />
               R$ 6,50
             </div>
           </div>
