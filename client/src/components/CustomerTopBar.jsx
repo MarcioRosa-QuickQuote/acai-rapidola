@@ -34,7 +34,7 @@ export default function CustomerTopBar() {
           </div>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          {activeOrder && activeOrder.payment_status === 'paid' && !['delivered', 'cancelled'].includes(activeOrder.status) && (
+          {activeOrder && !['delivered', 'cancelled'].includes(activeOrder.status) && (
             <img src="/saco_acai.png"
               onClick={() => navigate(`/customer/tracking/${activeOrder.id}`)}
               style={{ width: 32, height: 32, objectFit: 'contain', cursor: 'pointer' }} />
