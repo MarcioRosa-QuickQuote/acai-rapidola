@@ -222,17 +222,8 @@ export default function CustomerHome() {
           </div>
           <div className="header-right" style={{ gap: 6 }}>
             {activeOrder && activeOrder.payment_status === 'paid' && !['delivered','cancelled'].includes(activeOrder.status) && (
-              <img src="/saco_acai.png" onClick={() => navigate('/customer/tracking/' + activeOrder.id)}
-                style={{ width: 32, height: 32, objectFit: 'contain', cursor: 'pointer' }} />
-            )}
-            {Object.keys(cart).length > 0 && (
-              <button className="btn btn-sm" onClick={() => setShowCart(!showCart)}
-                style={{ background: '#FFF3E0', color: '#E65100', fontSize: 14, fontWeight: 700, padding: '4px 8px', border: 'none', borderRadius: 20, width: 'auto', position: 'relative' }}>
-                {'🛒'}
-                <span style={{ position: 'absolute', top: -4, right: -6, background: '#C62828', color: 'white', fontSize: 10, width: 18, height: 18, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700 }}>
-                  {Object.values(cart).reduce((a, b) => a + b, 0)}
-                </span>
-              </button>
+              <img src="/saco_acai.png" onClick={() => navigate(`/customer/tracking/${activeOrder.id}`)}
+                style={{ width: 40, height: 40, objectFit: 'contain', cursor: 'pointer' }} />
             )}
             <button onClick={() => navigate('/customer/notificacoes')}
               style={{ background: 'rgba(106,27,154,0.08)', border: 'none', borderRadius: 20, padding: 7, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -240,22 +231,31 @@ export default function CustomerHome() {
                 <path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/>
               </svg>
             </button>
+            {Object.keys(cart).length > 0 && (
+              <button className="btn btn-sm" onClick={() => setShowCart(!showCart)}
+                style={{ background: '#FFF3E0', color: '#E65100', fontSize: 14, fontWeight: 700, padding: '4px 8px', border: 'none', borderRadius: 20, width: 'auto', position: 'relative' }}>
+                🛒
+                <span style={{ position: 'absolute', top: -4, right: -6, background: '#C62828', color: 'white', fontSize: 10, width: 18, height: 18, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700 }}>
+                  {Object.values(cart).reduce((a, b) => a + b, 0)}
+                </span>
+              </button>
+            )}
           </div>
         </div>
       )}
 
       {storeId && store && (
-        <div style={{ textAlign: 'center', padding: '14px 20px 0', background: 'var(--bg)' }}>
-          <div style={{ width: 72, height: 72, borderRadius: '50%', overflow: 'hidden', margin: '0 auto 8px', border: '3px solid var(--border)', background: `linear-gradient(135deg, ${store.color_primary || '#6A1B9A'}, ${store.color_secondary || '#4A148C'})`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+        <div style={{ textAlign: 'center', padding: '20px 20px 0', background: 'var(--bg)' }}>
+          <div style={{ width: 80, height: 80, borderRadius: '50%', overflow: 'hidden', margin: '0 auto 10px', border: '3px solid var(--border)', background: `linear-gradient(135deg, ${store.color_primary || '#6A1B9A'}, ${store.color_secondary || '#4A148C'})`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
             {store.logo ? (
               <img src={store.logo} alt={store.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={e => { e.target.style.display = 'none'; }} />
             ) : (
               <span style={{ color: 'white', fontWeight: 800, fontSize: 32 }}>{store.name.charAt(0).toUpperCase()}</span>
             )}
           </div>
-          <div style={{ fontWeight: 800, fontSize: 18, color: 'var(--text)', marginBottom: 6 }}>{store.name}</div>
-          <div style={{ height: 1, background: '#E0E0E0', marginBottom: 6, marginLeft: -20, marginRight: -20 }} />
-          <div style={{ fontSize: 13, color: '#555', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, paddingBottom: 8 }}>
+          <div style={{ fontWeight: 800, fontSize: 18, color: 'var(--text)', marginBottom: 12 }}>{store.name}</div>
+          <div style={{ height: 1, background: '#E0E0E0', marginBottom: 10, marginLeft: -20, marginRight: -20 }} />
+          <div style={{ fontSize: 13, color: '#555', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, paddingBottom: 12 }}>
             Entrega
             <span style={{ width: 5, height: 5, borderRadius: '50%', background: '#333', display: 'inline-block' }} />
             24-35 min
@@ -453,15 +453,7 @@ export default function CustomerHome() {
 
     function DadosSection({ user, apiFetch }) {
       const [name, setName] = useState(user?.name || '');
-      const [cpf, setCpf] = useState(() => {
-        const raw = (user?.cpf || '').replace(/\D/g, '');
-        if (!raw) return '';
-        let m = raw;
-        if (raw.length > 3) m = raw.slice(0, 3) + '.' + raw.slice(3);
-        if (raw.length > 6) m = m.slice(0, 7) + '.' + m.slice(7);
-        if (raw.length > 9) m = m.slice(0, 11) + '-' + m.slice(11);
-        return m;
-      });
+      const [cpf, setCpf] = useState(user?.cpf || '');
       const [saving, setSaving] = useState(false);
       const [msg, setMsg] = useState('');
 
@@ -490,15 +482,8 @@ export default function CustomerHome() {
           <div className="form-group">
             <label className="label">CPF</label>
             <input className="input" type="text" value={cpf}
-              onChange={e => {
-                const digits = e.target.value.replace(/\D/g, '').slice(0, 11);
-                let masked = digits;
-                if (digits.length > 3) masked = digits.slice(0, 3) + '.' + digits.slice(3);
-                if (digits.length > 6) masked = masked.slice(0, 7) + '.' + masked.slice(7);
-                if (digits.length > 9) masked = masked.slice(0, 11) + '-' + masked.slice(11);
-                setCpf(masked);
-              }}
-              placeholder="000.000.000-00" maxLength={14} />
+              onChange={e => setCpf(e.target.value.replace(/\D/g, '').slice(0, 11))}
+              placeholder="Somente números" maxLength={11} />
           </div>
           {msg && <div style={{ fontSize: 13, fontWeight: 600, color: msg.includes('Erro') ? '#C62828' : '#2E7D32', marginBottom: 8 }}>{msg}</div>}
           <button className="btn btn-primary" style={{ width: '100%' }} onClick={save} disabled={saving || !name.trim()}>
@@ -773,7 +758,7 @@ export default function CustomerHome() {
                   const total = items.reduce((s, i) => s + (i.price || 0) * i.quantity, 0);
                   navigate('/customer/order', { state: { items, store, total } });
                 }}>
-                Ir para Pagamento
+                Finalizar Pedido
               </button>
             </div>
           </div>
@@ -792,7 +777,7 @@ export default function CustomerHome() {
                 const total = items.reduce((s, i) => s + (i.price || 0) * i.quantity, 0);
                 navigate('/customer/order', { state: { items, store, total } });
               }}>
-              Ir para Pagamento — R$ {Object.entries(cart).reduce((s, [id, qty]) => {
+              Finalizar Pedido — R$ {Object.entries(cart).reduce((s, [id, qty]) => {
                 const pr = products.find(pp => pp.id === id);
                 return s + (pr?.price || 0) * qty;
               }, 0).toFixed(2)}
