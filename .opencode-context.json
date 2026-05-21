@@ -1,7 +1,7 @@
 {
   "project": "Açaí Rapidola",
   "created": "2026-05-09T00:00:00-03:00",
-  "lastUpdated": "2026-05-09T00:00:00-03:00",
+  "lastUpdated": "2026-05-21T18:30:00-03:00",
   "interactions": [
     {
       "timestamp": "2026-05-09T00:00:00-03:00",
@@ -11,17 +11,65 @@
       "filesTouched": [".opencode-context.json", "server/src/routes/stores.js", "server/src/index.js", "client/src/pages/StoreDashboard.jsx", "client/vite.config.js"]
     },
     {
-      "timestamp": "2026-05-09T00:00:00-03:00",
-      "request": "quero que o arquivo de contexto seja atualizado assim que eu fizer o pedido, aí entao iniciar a tarefa",
-      "summary": "Fluxo ajustado: daqui pra frente, o .opencode-context.json será atualizado assim que o pedido for recebido (antes de executar a tarefa), com status 'in_progress'. Ao finalizar, status muda para 'completed' com summary do que foi feito.",
+      "timestamp": "2026-05-20T18:00:00-03:00",
+      "request": "Continue tarefa do Claude - gírias, imagens, pulsação, etc",
+      "summary": "Múltiplas alterações no CustomerTracking.jsx: 1) Expandido GIRIAS_QUESTIONS de 40 para 200 perguntas. 2) Replace blink-saco por glow-saco (drop-shadow ao redor da imagem). 3) Primeiro ícone do fluxo: saco_acai.png → logo_placa.png. 4) Adicionado tigela.png no final do fluxo (substitui cuia.png). 5) tigela_cheia.png aparece quando status=delivered. 6) Ajustes responsivos na barra de status. 7) onError fallback para imagens. 8) Corrigido: showCard (agora mostra card payment). 9) Pago movido pra header. 10) Ícones diminuídos.",
       "status": "completed",
-      "filesTouched": [".opencode-context.json"]
+      "filesTouched": ["client/src/pages/CustomerTracking.jsx", "client/src/index.css"]
     },
     {
-      "timestamp": "2026-05-09T00:00:00-03:00",
-      "request": "apoveite para fazer um arquivo de contexto que vai gravando tudo que a eu peço e o que vc me responde quando finaliza, mas pra nao ficar um arquivo gigante deve guardar apenas as interações das ultimas 24h, mas deve persistir esse arquivo caso de bug no chat pra reabrir e continuar de onde parou",
-      "summary": "Criado arquivo .opencode-context.json para persistir histórico de interações. O arquivo armazena requests/responses com timestamps e mantém apenas interações das últimas 24h. Serve como recovery point caso o chat caia.",
-      "filesTouched": [".opencode-context.json"]
+      "timestamp": "2026-05-20T19:00:00-03:00",
+      "request": "Remover saco_acai e cuia do fluxo, corrigir bottom nav, remover avatar",
+      "summary": "1) saco_acai.png e cuia.png removidos do fluxo de status. 2) BottomNav fixado (paddingBottom 80 + spacer). 3) CustomerAvatar e label 'Você' removidos. 4) Loading spinner substituído por CSS spinner. 5) Logo_placa.png no início só aparece quando pedido ativo. 6) Tamanhos responsivos.",
+      "status": "completed",
+      "filesTouched": ["client/src/pages/CustomerTracking.jsx"]
+    },
+    {
+      "timestamp": "2026-05-20T20:00:00-03:00",
+      "request": "Colocar logo_placa no início, saco_acai no spinner, tigela no fim",
+      "status": "completed",
+      "filesTouched": ["client/src/pages/CustomerTracking.jsx", "client/src/index.css"]
+    },
+    {
+      "timestamp": "2026-05-20T21:00:00-03:00",
+      "request": "Aumentar tamanhos, centralizar, glow mais forte",
+      "status": "completed",
+      "filesTouched": ["client/src/pages/CustomerTracking.jsx", "client/src/index.css"]
+    },
+    {
+      "timestamp": "2026-05-20T22:00:00-03:00",
+      "request": "Payment: Gerando PIX, card payment, topbar order, favoritos, pagamentos",
+      "summary": "1) CustomerPayment.jsx: rewrite com card payment form, 'Gerando PIX…' state, 'Outras formas de pagamento' button. 2) CustomerHome.jsx: reordenado header-right (saco→cart→heart→bell), add favorites state. 3) CustomerOrder.jsx: header title 'Finalizar Pedido' → 'Resumo do Pedido'. 4) "Ir para Pagamento" substitui "Finalizar Pedido". 5) CustomerPagamentos.jsx: fetch real orders da API com status e valores.",
+      "status": "completed",
+      "filesTouched": ["client/src/pages/CustomerPayment.jsx", "client/src/pages/CustomerHome.jsx", "client/src/pages/CustomerOrder.jsx", "client/src/pages/CustomerPagamentos.jsx"]
+    },
+    {
+      "timestamp": "2026-05-20T23:00:00-03:00",
+      "request": "CPF mask, persistência, saco_acai sumiu",
+      "summary": "1) Server: cpf adicionado ao select do /auth/me. 2) Client: CPF mask 000.000.000-00 com formatação inicial. 3) Bug saco_acai: activeOrder só encontrava primeiro pedido (podendo ser pending). Corrigido para filtrar por payment_status='paid'. 4) Debug badge removido após confirmação. 5) saco_acai 40→36→32.",
+      "status": "completed",
+      "filesTouched": ["server/src/routes/auth.js", "client/src/pages/CustomerHome.jsx", "client/src/components/CustomerTopBar.jsx"]
+    },
+    {
+      "timestamp": "2026-05-21T00:00:00-03:00",
+      "request": "Pagamentos filter 24h, heart favoritar, fundo.png, transparent header",
+      "summary": "1) CustomerPagamentos.jsx: pendentes >24h somem, pendente abre payment, pago abre tracking. 2) CustomerHome.jsx: heart de favoritar reinserido (antes do sino), isFavorited + toggleFavorite. 3) CustomerFavoritos.jsx: carrega lojas favoritadas da API. 4) fundo.png como background da loja (primeiro com overlay, depois sem, depois absolute, depois 100% auto). 5) Header transparente mostra imagem de fundo. 6) Ícones (saco, sino, coração) em círculos var(--bg). 7) ← em círculo. 8) Spacings reduzidos no mobile.",
+      "status": "completed",
+      "filesTouched": ["client/src/pages/CustomerPagamentos.jsx", "client/src/pages/CustomerHome.jsx", "client/src/pages/CustomerFavoritos.jsx", "client/public/fundo.png"]
+    },
+    {
+      "timestamp": "2026-05-21T18:30:00-03:00",
+      "request": "Compressão de imagens (product images + fundo)",
+      "summary": "Farinha dagua.png 1185→59KB, farinha de tapioca.png 809→35KB, açaí 500ml.png 358→41KB, açai 1 litro.png 326→36KB, fundo.png 2522→174KB.",
+      "status": "completed",
+      "filesTouched": ["client/public/*.png"]
+    },
+    {
+      "timestamp": "2026-05-21T19:00:00-03:00",
+      "request": "Geocoding: endereço não atualiza mapa, Google Places não funciona",
+      "summary": "1) searchAddress migrado de /api/orders/geocode (Photon puro) para /api/orders/places-autocomplete (tenta Google Places, fallback Photon). 2) selectSuggestion agora auto-geocoda via place-details (Google) ou chama geocodeAddress com fallback. 3) geocodeAddress aceita addrOverride para poder ser chamada com endereço alternativo. 4) Histórico adicionado ao .opencode-context.json.",
+      "status": "completed",
+      "filesTouched": ["client/src/pages/CustomerOrder.jsx", ".opencode-context.json"]
     }
   ]
 }
