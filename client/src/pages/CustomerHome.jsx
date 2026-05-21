@@ -218,7 +218,10 @@ export default function CustomerHome() {
   if (loading) return <div className="loading"><img className="spin" src="/saco_acai.png" /></div>;
 
   return (
-    <div style={{ minHeight: '100vh', paddingBottom: storeId ? 0 : 72, animation: storeId ? 'slideInFromTop 0.28s ease-out' : 'none', background: storeId ? 'url(/fundo.png) center top / cover no-repeat fixed' : 'none' }}>
+    <div style={{ minHeight: '100vh', paddingBottom: storeId ? 0 : 72, animation: storeId ? 'slideInFromTop 0.28s ease-out' : 'none', position: 'relative' }}>
+      {storeId && (
+        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 280, background: 'url(/fundo.png) center top / cover no-repeat', zIndex: 0 }} />
+      )}
       {!storeId ? (
         <CustomerHeader onBack={() => navigate('/customer')} />
       ) : (
@@ -233,7 +236,7 @@ export default function CustomerHome() {
           <div className="header-right" style={{ gap: 6 }}>
             {activeOrder && activeOrder.payment_status === 'paid' && !['delivered','cancelled'].includes(activeOrder.status) && (
               <div onClick={() => navigate(`/customer/tracking/${activeOrder.id}`)}
-                style={{ background: 'var(--bg)', borderRadius: 20, padding: 6, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                style={{ background: 'var(--bg)', borderRadius: 20, padding: '4px 6px 8px 6px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <img src="/saco_acai.png" style={{ width: 20, height: 20, objectFit: 'contain' }} />
               </div>
             )}
@@ -265,7 +268,7 @@ export default function CustomerHome() {
       )}
 
       {storeId && store && (
-        <div style={{ textAlign: 'center', padding: '20px 20px 0' }}>
+        <div style={{ textAlign: 'center', padding: '20px 20px 0', position: 'relative', zIndex: 1 }}>
           <div style={{ width: 80, height: 80, borderRadius: '50%', overflow: 'hidden', margin: '0 auto 10px', border: '3px solid rgba(255,255,255,0.5)', background: `linear-gradient(135deg, ${store.color_primary || '#6A1B9A'}, ${store.color_secondary || '#4A148C'})`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
             {store.logo ? (
               <img src={store.logo} alt={store.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={e => { e.target.style.display = 'none'; }} />
