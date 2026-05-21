@@ -265,18 +265,18 @@ export default function CustomerHome() {
       )}
 
       {storeId && store && (
-        <div style={{ textAlign: 'center', padding: '20px 20px 0', position: 'relative', zIndex: 1 }}>
-          <div style={{ width: 80, height: 80, borderRadius: '50%', overflow: 'hidden', margin: '0 auto 10px', border: '3px solid rgba(255,255,255,0.5)', background: `linear-gradient(135deg, ${store.color_primary || '#6A1B9A'}, ${store.color_secondary || '#4A148C'})`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+        <div style={{ textAlign: 'center', padding: '12px 20px 0', position: 'relative', zIndex: 1 }}>
+          <div style={{ width: 72, height: 72, borderRadius: '50%', overflow: 'hidden', margin: '0 auto 6px', border: '3px solid rgba(255,255,255,0.5)', background: `linear-gradient(135deg, ${store.color_primary || '#6A1B9A'}, ${store.color_secondary || '#4A148C'})`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
             {store.logo ? (
               <img src={store.logo} alt={store.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={e => { e.target.style.display = 'none'; }} />
             ) : (
-              <span style={{ color: 'white', fontWeight: 800, fontSize: 32 }}>{store.name.charAt(0).toUpperCase()}</span>
+              <span style={{ color: 'white', fontWeight: 800, fontSize: 28 }}>{store.name.charAt(0).toUpperCase()}</span>
             )}
           </div>
-          <div style={{ fontWeight: 800, fontSize: 18, color: 'white', textShadow: '0 1px 4px rgba(0,0,0,0.3)', marginBottom: 12 }}>{store.name}</div>
+          <div style={{ fontWeight: 800, fontSize: 17, color: 'white', textShadow: '0 1px 3px rgba(0,0,0,0.3)', marginBottom: 6 }}>{store.name}</div>
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-            <div style={{ height: 1, background: 'rgba(255,255,255,0.3)', width: '80%', marginBottom: 8 }} />
-            <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.9)', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4, paddingBottom: 10, whiteSpace: 'nowrap' }}>
+            <div style={{ height: 1, background: 'rgba(255,255,255,0.3)', width: '70%', marginBottom: 5 }} />
+            <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.9)', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4, paddingBottom: 8, whiteSpace: 'nowrap' }}>
               Entrega
               <span style={{ width: 4, height: 4, borderRadius: '50%', background: 'rgba(255,255,255,0.7)', display: 'inline-block' }} />
               24-35 min
