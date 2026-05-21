@@ -23,6 +23,11 @@ export default function CustomerTopBar() {
         <div>
           <div style={{ fontWeight: 800, fontSize: 18, color: 'var(--primary-dark)', lineHeight: 1.2 }}>
             Olá, {user?.name?.split(' ')[0]}
+            {activeOrder && (
+              <span style={{ fontSize: 10, color: activeOrder.payment_status === 'paid' ? '#2E7D32' : '#E65100', marginLeft: 8, fontWeight: 600 }}>
+                [{activeOrder.status}/{activeOrder.payment_status}]
+              </span>
+            )}
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginTop: 2 }}>
             <svg width="13" height="13" viewBox="0 0 24 24" fill="var(--primary)">
