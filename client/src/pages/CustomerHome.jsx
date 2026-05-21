@@ -263,7 +263,7 @@ export default function CustomerHome() {
       )}
 
       {storeId && store && (
-        <div style={{ textAlign: 'center', padding: '20px 20px 0', background: 'var(--bg)' }}>
+        <div style={{ textAlign: 'center', padding: '60px 20px 0', background: 'linear-gradient(rgba(248,244,252,0.92), rgba(248,244,252,1)), url(/fundo.jpeg)', backgroundSize: 'cover', backgroundPosition: 'center', position: 'relative' }}>
           <div style={{ width: 80, height: 80, borderRadius: '50%', overflow: 'hidden', margin: '0 auto 10px', border: '3px solid var(--border)', background: `linear-gradient(135deg, ${store.color_primary || '#6A1B9A'}, ${store.color_secondary || '#4A148C'})`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
             {store.logo ? (
               <img src={store.logo} alt={store.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={e => { e.target.style.display = 'none'; }} />
