@@ -130,12 +130,13 @@ export default function CustomerOrder() {
     }
   }, [user]);
 
-  async function geocodeAddress() {
-    if (!address) return;
+  async function geocodeAddress(addrOverride) {
+    const addr = addrOverride || address;
+    if (!addr) return;
     setGeocoding(true);
     setError('');
     try {
-      const res = await fetch(`/api/orders/geocode?q=${encodeURIComponent(address)}`);
+      const res = await fetch('/api/orders/geocode?q=' + encodeURIComponent(addr));
       const data = await res.json();
       if (data.length > 0) {
         const newLat = parseFloat(data[0].lat);
@@ -161,10 +162,10 @@ export default function CustomerOrder() {
   async function searchAddress(q) {
     if (q.length < 4) { setAddressSuggestions([]); setShowSuggestions(false); return; }
     try {
-      const res = await fetch(`/api/orders/geocode?q=${encodeURIComponent(q)}`);
+      const res = await fetch(`/api/orders/places-autocomplete?q=${encodeURIComponent(q)}`);
       const data = await res.json();
-      setAddressSuggestions(data || []);
-      setShowSuggestions((data || []).length > 0);
+      setAddressSuggestions(data.results || []);
+      setShowSuggestions((data.results || []).length > 0);
     } catch { setShowSuggestions(false); }
   }
 
@@ -172,6 +173,21 @@ export default function CustomerOrder() {
     setAddress(suggestion.display_name);
     setAddressSuggestions([]);
     setShowSuggestions(false);
+    if (suggestion.place_id) {
+      fetch('/api/orders/place-details?place_id=' + encodeURIComponent(suggestion.place_id))
+        .then(r => r.json()).then(data => {
+          if (data.lat) {
+            setLat(parseFloat(data.lat));
+            setLng(parseFloat(data.lng));
+            setMapCenter([parseFloat(data.lat), parseFloat(data.lng)]);
+            setShowMap(true);
+            updateDeliveryFee(parseFloat(data.lat), parseFloat(data.lng));
+            checkDistanceWarning(parseFloat(data.lat), parseFloat(data.lng));
+          }
+        }).catch(() => {});
+    } else {
+      geocodeAddress(suggestion.display_name);
+    }
   }
 
   async function lookupCep() {
