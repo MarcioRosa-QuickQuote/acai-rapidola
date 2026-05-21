@@ -23,11 +23,6 @@ export default function CustomerTopBar() {
         <div>
           <div style={{ fontWeight: 800, fontSize: 18, color: 'var(--primary-dark)', lineHeight: 1.2 }}>
             Olá, {user?.name?.split(' ')[0]}
-            {activeOrder && (
-              <span style={{ fontSize: 10, color: activeOrder.payment_status === 'paid' ? '#2E7D32' : '#E65100', marginLeft: 8, fontWeight: 600 }}>
-                [{activeOrder.status}/{activeOrder.payment_status}]
-              </span>
-            )}
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginTop: 2 }}>
             <svg width="13" height="13" viewBox="0 0 24 24" fill="var(--primary)">
@@ -42,7 +37,7 @@ export default function CustomerTopBar() {
           {activeOrder && activeOrder.payment_status === 'paid' && !['delivered', 'cancelled'].includes(activeOrder.status) && (
             <img src="/saco_acai.png"
               onClick={() => navigate(`/customer/tracking/${activeOrder.id}`)}
-              style={{ width: 40, height: 40, objectFit: 'contain', cursor: 'pointer' }} />
+              style={{ width: 36, height: 36, objectFit: 'contain', cursor: 'pointer' }} />
           )}
           <button onClick={() => navigate('/customer/notificacoes')}
             style={{ background: 'rgba(106,27,154,0.08)', border: 'none', borderRadius: 20, padding: 8, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
