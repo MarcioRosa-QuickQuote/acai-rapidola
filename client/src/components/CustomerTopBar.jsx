@@ -11,7 +11,7 @@ export default function CustomerTopBar() {
   useEffect(() => {
     apiFetch('/orders').then(d => {
       if (d.data) {
-        const active = d.data.find(o => !['delivered', 'cancelled'].includes(o.status));
+        const active = d.data.find(o => o.payment_status === 'paid' && !['delivered', 'cancelled'].includes(o.status));
         setActiveOrder(active || null);
       }
     });

@@ -169,7 +169,7 @@ export default function CustomerHome() {
   }, [socket]);
 
   useEffect(() => {
-    const active = orders.find(o => !['delivered','cancelled'].includes(o.status));
+    const active = orders.find(o => o.payment_status === 'paid' && !['delivered','cancelled'].includes(o.status));
     setActiveOrder(active || null);
   }, [orders]);
 
@@ -177,7 +177,7 @@ export default function CustomerHome() {
     apiFetch('/orders').then(d => {
       if (d.data) {
         setOrders(d.data);
-        const active = d.data.find(o => !['delivered','cancelled'].includes(o.status));
+        const active = d.data.find(o => o.payment_status === 'paid' && !['delivered','cancelled'].includes(o.status));
         setActiveOrder(active || null);
       }
     });
