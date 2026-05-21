@@ -218,10 +218,7 @@ export default function CustomerHome() {
   if (loading) return <div className="loading"><img className="spin" src="/saco_acai.png" /></div>;
 
   return (
-    <div style={{ minHeight: '100vh', paddingBottom: storeId ? 0 : 72, animation: storeId ? 'slideInFromTop 0.28s ease-out' : 'none', position: 'relative' }}>
-      {storeId && (
-        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 280, background: 'url(/fundo.png) center top / cover no-repeat', zIndex: 0 }} />
-      )}
+    <div style={{ minHeight: '100vh', paddingBottom: storeId ? 0 : 72, animation: storeId ? 'slideInFromTop 0.28s ease-out' : 'none', background: storeId ? 'url(/fundo.png) center top / 100% auto no-repeat var(--bg)' : 'none' }}>
       {!storeId ? (
         <CustomerHeader onBack={() => navigate('/customer')} />
       ) : (
