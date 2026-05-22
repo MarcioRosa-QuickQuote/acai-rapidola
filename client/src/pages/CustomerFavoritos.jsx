@@ -42,9 +42,13 @@ export default function CustomerFavoritos() {
           stores.map(store => (
             <div key={store.id} className="card" onClick={() => navigate('/customer/menu/' + store.id)} style={{ cursor: 'pointer' }}>
               <div style={{ display: 'flex', gap: 14, alignItems: 'center' }}>
-                <div style={{ width: 56, height: 56, borderRadius: 12, background: 'linear-gradient(135deg, #6A1B9A, #4A148C)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 800, fontSize: 24, flexShrink: 0 }}>
-                  {(store.name || '?').charAt(0).toUpperCase()}
-                </div>
+                {store.logo ? (
+                  <img src={store.logo} alt={store.name} style={{ width: 56, height: 56, borderRadius: 12, objectFit: 'cover' }} onError={e => { e.target.style.display = 'none'; }} />
+                ) : (
+                  <div style={{ width: 56, height: 56, borderRadius: 12, background: 'linear-gradient(135deg, #6A1B9A, #4A148C)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 800, fontSize: 24, flexShrink: 0 }}>
+                    {(store.name || '?').charAt(0).toUpperCase()}
+                  </div>
+                )}
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontWeight: 700, fontSize: 15 }}>{store.name}</div>
                   <div style={{ fontSize: 13, color: '#888', marginTop: 2 }}>{store.address}</div>
