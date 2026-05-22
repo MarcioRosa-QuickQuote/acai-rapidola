@@ -17,12 +17,12 @@ export default function CustomerFavoritos() {
   useEffect(() => {
     if (favs.length === 0) { setLoading(false); return; }
     Promise.all(favs.map(id =>
-      apiFetch('/stores/' + id).then(d => d.ok ? d : null)
+      apiFetch('/stores/' + id).then(d => d && d.ok ? d : null).catch(() => null)
     )).then(results => {
       setStores(results.filter(Boolean));
       setLoading(false);
-    });
-  }, []);
+    }).catch(() => setLoading(false));
+  }, [favs]);
 
   return (
     <div style={{ minHeight: '100vh', paddingBottom: 72 }}>
