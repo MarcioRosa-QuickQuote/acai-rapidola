@@ -106,6 +106,18 @@ export default function CustomerHome() {
     };
   }
 
+  function shortAddress(full) {
+    if (!full) return '';
+    const parts = full.split(',').map(s => s.trim());
+    const street = parts[0] || '';
+    const number = parts[1] || '';
+    const neighborhood = parts[2] || '';
+    let result = street;
+    if (number && !/^\d/.test(street.slice(-4))) result += `, ${number}`;
+    if (neighborhood) result += ` - ${neighborhood}`;
+    return result;
+  }
+
   function cleanNominatimAddress(displayName) {
     return displayName || '';
   }
@@ -319,7 +331,7 @@ export default function CustomerHome() {
             const res = await fetch(`/api/orders/reverse-geocode?lat=${latitude}&lng=${longitude}`);
             const data = await res.json();
             if (data.display_name) {
-              foundAddr = cleanNominatimAddress(data.display_name);
+              foundAddr = shortAddress(data.display_name);
             } else {
               setAddrMsg(data.error || 'Endereço não encontrado. Digite manualmente.');
             }
@@ -398,10 +410,12 @@ export default function CustomerHome() {
             const nomRes = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(q)}&countrycodes=br&limit=7&addressdetails=1${lat && lng ? `&viewbox=${parseFloat(lng)-0.05},${parseFloat(lat)+0.05},${parseFloat(lng)+0.05},${parseFloat(lat)-0.05}&bounded=1` : ''}`, { headers: { 'User-Agent': 'PedeAcai/1.0' } });
             const nomData = await nomRes.json();
             results = (nomData || []).map(r => ({
-              display_name: r.display_name,
+              display_name: shortAddress(r.display_name) || r.display_name,
               lat: r.lat,
               lon: r.lon
             }));
+          } else {
+            results = results.map(r => ({ ...r, display_name: shortAddress(r.display_name) || r.display_name }));
           }
           setAddressSuggestions(results);
           setShowSuggestions(results.length > 0);
@@ -433,7 +447,12 @@ export default function CustomerHome() {
     }
 
     async function selectAddress(suggestion) {
-      setAddrForm(suggestion.display_name);
+      let name = suggestion.display_name;
+      const numMatch = addrForm?.match(/(\d[\d\s\-]*)$/);
+      if (numMatch && !name.includes(numMatch[1].trim())) {
+        name = name.replace(/^(.+?)(\s*-\s*.*)?$/, `$1, ${numMatch[1].trim()}$2`);
+      }
+      setAddrForm(name);
       setShowSuggestions(false);
       if (suggestion.lat && suggestion.lon) {
         setContaMapLat(parseFloat(suggestion.lat));
