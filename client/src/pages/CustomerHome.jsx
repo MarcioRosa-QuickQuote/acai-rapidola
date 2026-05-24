@@ -110,10 +110,14 @@ export default function CustomerHome() {
     if (!full) return '';
     const parts = full.split(',').map(s => s.trim());
     const street = parts[0] || '';
-    const number = parts[1] || '';
-    const neighborhood = parts[2] || '';
+    let part1 = parts[1] || '';
+    let neighborhood = parts[2] || '';
+    if (part1 && !/^\d/.test(part1.replace(/\s/g, ''))) {
+      neighborhood = part1;
+      part1 = '';
+    }
     let result = street;
-    if (number && !/^\d/.test(street.slice(-4))) result += `, ${number}`;
+    if (part1) result += `, ${part1}`;
     if (neighborhood) result += ` - ${neighborhood}`;
     return result;
   }
@@ -145,6 +149,7 @@ export default function CustomerHome() {
   const [cep, setCep] = useState('');
   const [cepLoading, setCepLoading] = useState(false);
   const [searchingAddr, setSearchingAddr] = useState(false);
+  const [userCity, setUserCity] = useState('');
   const photoRef = useRef(null);
   const searchDebounceRef = useRef(null);
   const navigate = useNavigate();
@@ -152,6 +157,14 @@ export default function CustomerHome() {
   useEffect(() => {
     if (searchParams.get('tab') === 'conta') setView('conta');
   }, [searchParams]);
+
+  useEffect(() => {
+    if (user?.lat && user?.lng && !userCity) {
+      fetch(`/api/orders/reverse-geocode?lat=${user.lat}&lng=${user.lng}`).then(r => r.json()).then(d => {
+        if (d.display_name) setUserCity(extractCity(d.display_name));
+      }).catch(() => {});
+    }
+  }, [user?.lat, user?.lng]);
 
   useEffect(() => {
     if (!storeId) {
@@ -320,6 +333,17 @@ export default function CustomerHome() {
   function renderConta() {
     const currentAddr = addrForm !== null ? addrForm : (user?.address || '');
 
+    function extractCity(name) {
+      const parts = (name || '').split(',').map(s => s.trim());
+      for (let i = parts.length-1; i >= 0; i--) {
+        const p = parts[i];
+        if (/^(Região|Estado|Brazil|Brasil)$/i.test(p)) continue;
+        if (/^\d/.test(p)) continue;
+        if (p && !p.includes('-') && !p.includes('R$')) return p;
+      }
+      return '';
+    }
+
     async function useMyLocationConta() {
       if (!navigator.geolocation) { setAddrMsg('Geolocalização não disponível'); setTimeout(() => setAddrMsg(''), 3000); return; }
       setSavingAddr(true);
@@ -332,6 +356,7 @@ export default function CustomerHome() {
             const data = await res.json();
             if (data.display_name) {
               foundAddr = shortAddress(data.display_name);
+              setUserCity(extractCity(data.display_name));
             } else {
               setAddrMsg(data.error || 'Endereço não encontrado. Digite manualmente.');
             }
@@ -400,23 +425,28 @@ export default function CustomerHome() {
       setSearchingAddr(true);
       searchDebounceRef.current = setTimeout(async () => {
         try {
-          const params = new URLSearchParams({ q });
+          const searchQ = userCity ? `${q}, ${userCity}` : q;
+          const params = new URLSearchParams({ q: searchQ });
           if (lat) params.set('lat', lat);
           if (lng) params.set('lng', lng);
           const res = await fetch(`/api/orders/places-autocomplete?${params}`);
           const data = await res.json();
           let results = data.results || [];
           if (results.length === 0 && q.length >= 5) {
-            const nomRes = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(q)}&countrycodes=br&limit=7&addressdetails=1${lat && lng ? `&viewbox=${parseFloat(lng)-0.05},${parseFloat(lat)+0.05},${parseFloat(lng)+0.05},${parseFloat(lat)-0.05}&bounded=1` : ''}`, { headers: { 'User-Agent': 'PedeAcai/1.0' } });
+            const nomUrl = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(searchQ)}&countrycodes=br&limit=7&addressdetails=1${lat && lng ? `&viewbox=${parseFloat(lng)-0.05},${parseFloat(lat)+0.05},${parseFloat(lng)+0.05},${parseFloat(lat)-0.05}&bounded=1` : ''}`;
+            const nomRes = await fetch(nomUrl, { headers: { 'User-Agent': 'PedeAcai/1.0' } });
             const nomData = await nomRes.json();
-            results = (nomData || []).map(r => ({
-              display_name: shortAddress(r.display_name) || r.display_name,
-              lat: r.lat,
-              lon: r.lon
-            }));
+            results = (nomData || []).map(r => {
+              const short = shortAddress(r.display_name);
+              return { display_name: short, _city: extractCity(r.display_name), lat: r.lat, lon: r.lon };
+            });
           } else {
-            results = results.map(r => ({ ...r, display_name: shortAddress(r.display_name) || r.display_name }));
+            results = results.map(r => {
+              const short = shortAddress(r.display_name);
+              return { ...r, display_name: short, _city: extractCity(r.display_name) };
+            });
           }
+          if (userCity) results = results.filter(r => !r._city || r._city.toLowerCase().includes(userCity.toLowerCase().slice(0, 6)));
           setAddressSuggestions(results);
           setShowSuggestions(results.length > 0);
         } catch { setShowSuggestions(false); }
@@ -452,6 +482,7 @@ export default function CustomerHome() {
       if (numMatch && !name.includes(numMatch[1].trim())) {
         name = name.replace(/^(.+?)(\s*-\s*.*)?$/, `$1, ${numMatch[1].trim()}$2`);
       }
+      if (suggestion._city && !userCity) setUserCity(suggestion._city);
       setAddrForm(name);
       setShowSuggestions(false);
       if (suggestion.lat && suggestion.lon) {
