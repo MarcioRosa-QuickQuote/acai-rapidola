@@ -222,7 +222,7 @@ export default function CustomerHome() {
       {!storeId ? (
         <CustomerHeader onBack={() => navigate('/customer')} />
       ) : (
-        <div style={{ background: 'url(/fundo.png) center top / contain no-repeat' }}>
+        <div style={{ background: 'url(/fundo.png) center top / cover no-repeat' }}>
           <div className="header">
             <div className="header-left">
               <button className="btn btn-sm"
