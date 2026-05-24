@@ -4,16 +4,7 @@ import CustomerHeader from '../components/CustomerHeader';
 import CustomerBottomNav from '../components/CustomerBottomNav';
 import { useSocket } from '../contexts/SocketContext';
 
-const NOTIF_TYPES = [
-  { icon: '🛵', label: 'Motoboy a caminho', desc: 'Quando o motoboy sai da loja com seu pedido' },
-  { icon: '📍', label: 'Motoboy próximo', desc: 'Quando o motoboy está a X metros de distância' },
-  { icon: '✅', label: 'Pedido entregue', desc: 'Confirmação de entrega realizada' },
-  { icon: '⏳', label: 'Preparando pedido', desc: 'Quando a loja começa a preparar seu pedido' },
-  { icon: '💳', label: 'Pagamento pendente', desc: 'Lembrete de pagamento não confirmado' },
-  { icon: '💰', label: 'Pagamento confirmado', desc: 'Pagamento aprovado com sucesso' },
-  { icon: '🏪', label: 'Loja fechou', desc: 'Loja encerrou os atendimentos do dia' },
-  { icon: '⭐', label: 'Avalie seu pedido', desc: 'Pedido de avaliação após a entrega' },
-];
+
 
 function notifIcon(body) {
   const b = (body || '').toLowerCase();
@@ -60,18 +51,7 @@ export default function CustomerNotificacoes() {
               <path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/>
             </svg>
             <p style={{ fontWeight: 700, fontSize: 17, marginBottom: 4 }}>Nenhuma notificação</p>
-            <p style={{ fontSize: 13, color: '#999', marginBottom: 20 }}>Você será notificado sobre:</p>
-            <div style={{ textAlign: 'left', display: 'flex', flexDirection: 'column', gap: 14, maxWidth: 320, margin: '0 auto' }}>
-              {NOTIF_TYPES.map((t, i) => (
-                <div key={i} style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
-                  <span style={{ fontSize: 20, flexShrink: 0 }}>{t.icon}</span>
-                  <div>
-                    <div style={{ fontWeight: 600, fontSize: 14 }}>{t.label}</div>
-                    <div style={{ fontSize: 12, color: '#999' }}>{t.desc}</div>
-                  </div>
-                </div>
-              ))}
-            </div>
+            <p style={{ fontSize: 13, color: '#BBB', marginTop: 4 }}>Atualizações dos seus pedidos aparecem aqui</p>
           </div>
         )}
       </div>
