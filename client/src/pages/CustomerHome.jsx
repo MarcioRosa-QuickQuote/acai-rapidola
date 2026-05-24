@@ -146,16 +146,24 @@ export default function CustomerHome() {
       setLoading(false);
       return;
     }
+    let storeDone = false;
+    let productsDone = false;
+    function tryDone() {
+      if (storeDone && productsDone) setLoading(false);
+    }
     apiFetch(`/products?store_id=${storeId}`).then(d => {
       if (d.data) setProducts(d.data);
       if (!sessionStorage.getItem('cart')) {
         setCart({});
         setSplitItems({});
       }
-      setLoading(false);
+      productsDone = true;
+      tryDone();
     });
     apiFetch(`/stores/${storeId}`).then(d => {
       if (d.ok) setStore(d);
+      storeDone = true;
+      tryDone();
     });
     loadOrders();
   }, [storeId]);
@@ -218,7 +226,7 @@ export default function CustomerHome() {
   if (loading) return <div className="loading"><img className="spin" src="/saco_acai.png" /></div>;
 
   return (
-    <div style={{ minHeight: '100vh', paddingBottom: storeId ? 0 : 72, animation: storeId ? 'slideInFromTop 0.28s ease-out' : 'none' }}>
+    <div style={{ minHeight: '100vh', paddingBottom: storeId ? 0 : 72 }}>
       {!storeId ? (
         <CustomerHeader onBack={() => navigate('/customer')} />
       ) : (
