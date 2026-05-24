@@ -670,6 +670,13 @@ export default function CustomerHome() {
               }} disabled={pwSaving}>{pwSaving ? 'Salvando...' : 'Alterar Senha'}</button>
             </div>
           )}
+
+          {/* Sair */}
+          <div style={{ padding: '16px 20px', borderTop: '1px solid var(--border)', background: 'white' }}>
+            <button className="btn" style={{ width: '100%', background: '#FFEBEE', color: '#C62828', border: 'none', fontWeight: 700, fontSize: 15, padding: '12px', borderRadius: 10, cursor: 'pointer' }} onClick={() => { if (confirm('Tem certeza que deseja sair?')) logout(); }}>
+              Sair da Conta
+            </button>
+          </div>
         </div>
 
         {/* Card: Pagamentos */}
