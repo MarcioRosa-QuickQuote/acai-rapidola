@@ -218,72 +218,73 @@ export default function CustomerHome() {
   if (loading) return <div className="loading"><img className="spin" src="/saco_acai.png" /></div>;
 
   return (
-    <div style={{ minHeight: '100vh', paddingBottom: storeId ? 0 : 72, animation: storeId ? 'slideInFromTop 0.28s ease-out' : 'none', background: storeId ? 'url(/fundo.jpg) center top / cover no-repeat' : 'none' }}>
+    <div style={{ minHeight: '100vh', paddingBottom: storeId ? 0 : 72, animation: storeId ? 'slideInFromTop 0.28s ease-out' : 'none' }}>
       {!storeId ? (
         <CustomerHeader onBack={() => navigate('/customer')} />
       ) : (
-        <div className="header">
-          <div className="header-left">
-            <button className="btn btn-sm"
-              style={{ background: 'var(--border)', color: 'var(--primary-dark)', fontSize: 22, width: 36, height: 36, borderRadius: '50%', padding: 0, fontWeight: 700, lineHeight: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-              onClick={() => navigate('/customer')}>
-              ‹
-            </button>
-          </div>
-          <div className="header-right" style={{ gap: 6 }}>
-            {activeOrder && activeOrder.payment_status === 'paid' && !['delivered','cancelled'].includes(activeOrder.status) && (
-              <div onClick={() => navigate(`/customer/tracking/${activeOrder.id}`)}
-                style={{ background: 'var(--bg)', borderRadius: 20, padding: '4px 6px 8px 6px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <img src="/saco_acai.png" style={{ width: 20, height: 20, objectFit: 'contain' }} />
-              </div>
-            )}
-            <button onClick={() => navigate('/customer/notificacoes')}
-              style={{ background: 'var(--bg)', border: 'none', borderRadius: 20, padding: 7, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="var(--primary)">
-                <path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/>
-              </svg>
-            </button>
-            {Object.keys(cart).length > 0 && (
-              <button className="btn btn-sm" onClick={() => setShowCart(!showCart)}
-                style={{ background: '#FFF3E0', color: '#E65100', fontSize: 14, fontWeight: 700, padding: '4px 8px', border: 'none', borderRadius: 20, width: 'auto', position: 'relative' }}>
-                🛒
-                <span style={{ position: 'absolute', top: -4, right: -6, background: '#C62828', color: 'white', fontSize: 10, width: 18, height: 18, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700 }}>
-                  {Object.values(cart).reduce((a, b) => a + b, 0)}
-                </span>
+        <div style={{ background: 'url(/fundo.png) center top / 100% auto no-repeat' }}>
+          <div className="header">
+            <div className="header-left">
+              <button className="btn btn-sm"
+                style={{ background: 'var(--border)', color: 'var(--primary-dark)', fontSize: 22, width: 36, height: 36, borderRadius: '50%', padding: 0, fontWeight: 700, lineHeight: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                onClick={() => navigate('/customer')}>
+                ‹
               </button>
-            )}
-            {storeId && (
-              <button onClick={toggleFavorite}
+            </div>
+            <div className="header-right" style={{ gap: 6 }}>
+              {activeOrder && activeOrder.payment_status === 'paid' && !['delivered','cancelled'].includes(activeOrder.status) && (
+                <div onClick={() => navigate(`/customer/tracking/${activeOrder.id}`)}
+                  style={{ background: 'var(--bg)', borderRadius: 20, padding: '4px 6px 8px 6px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <img src="/saco_acai.png" style={{ width: 20, height: 20, objectFit: 'contain' }} />
+                </div>
+              )}
+              <button onClick={() => navigate('/customer/notificacoes')}
                 style={{ background: 'var(--bg)', border: 'none', borderRadius: 20, padding: 7, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <svg width="20" height="20" viewBox="0 0 24 24" fill={isFavorited ? '#E53935' : '#999'}>
-                  <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="var(--primary)">
+                  <path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/>
                 </svg>
               </button>
-            )}
-          </div>
-        </div>
-      )}
-
-      {storeId && store && (
-        <div style={{ textAlign: 'center', padding: '12px 20px 0', position: 'relative', zIndex: 1 }}>
-          <div style={{ width: 72, height: 72, borderRadius: '50%', overflow: 'hidden', margin: '0 auto 6px', border: '3px solid rgba(255,255,255,0.5)', background: `linear-gradient(135deg, ${store.color_primary || '#6A1B9A'}, ${store.color_secondary || '#4A148C'})`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-            {store.logo ? (
-              <img src={store.logo} alt={store.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={e => { e.target.style.display = 'none'; }} />
-            ) : (
-              <span style={{ color: 'white', fontWeight: 800, fontSize: 28 }}>{store.name.charAt(0).toUpperCase()}</span>
-            )}
-          </div>
-          <div style={{ fontWeight: 800, fontSize: 17, color: 'white', textShadow: '0 1px 3px rgba(0,0,0,0.3)', marginBottom: 6 }}>{store.name}</div>
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-            <div style={{ height: 1, background: 'rgba(255,255,255,0.3)', width: '70%', marginBottom: 5 }} />
-            <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.9)', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4, paddingBottom: 8, whiteSpace: 'nowrap' }}>
-              Entrega
-              <span style={{ width: 4, height: 4, borderRadius: '50%', background: 'rgba(255,255,255,0.7)', display: 'inline-block' }} />
-              24-35 min
-              <span style={{ width: 4, height: 4, borderRadius: '50%', background: 'rgba(255,255,255,0.7)', display: 'inline-block' }} />
-              R$ 6,50
+              {Object.keys(cart).length > 0 && (
+                <button className="btn btn-sm" onClick={() => setShowCart(!showCart)}
+                  style={{ background: '#FFF3E0', color: '#E65100', fontSize: 14, fontWeight: 700, padding: '4px 8px', border: 'none', borderRadius: 20, width: 'auto', position: 'relative' }}>
+                  🛒
+                  <span style={{ position: 'absolute', top: -4, right: -6, background: '#C62828', color: 'white', fontSize: 10, width: 18, height: 18, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700 }}>
+                    {Object.values(cart).reduce((a, b) => a + b, 0)}
+                  </span>
+                </button>
+              )}
+              {storeId && (
+                <button onClick={toggleFavorite}
+                  style={{ background: 'var(--bg)', border: 'none', borderRadius: 20, padding: 7, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill={isFavorited ? '#E53935' : '#999'}>
+                    <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                  </svg>
+                </button>
+              )}
             </div>
           </div>
+          {store && (
+            <div style={{ textAlign: 'center', padding: '12px 20px 0', position: 'relative', zIndex: 1 }}>
+              <div style={{ width: 72, height: 72, borderRadius: '50%', overflow: 'hidden', margin: '0 auto 6px', border: '3px solid rgba(255,255,255,0.5)', background: `linear-gradient(135deg, ${store.color_primary || '#6A1B9A'}, ${store.color_secondary || '#4A148C'})`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                {store.logo ? (
+                  <img src={store.logo} alt={store.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={e => { e.target.style.display = 'none'; }} />
+                ) : (
+                  <span style={{ color: 'white', fontWeight: 800, fontSize: 28 }}>{store.name.charAt(0).toUpperCase()}</span>
+                )}
+              </div>
+              <div style={{ fontWeight: 800, fontSize: 17, color: 'white', textShadow: '0 1px 3px rgba(0,0,0,0.3)', marginBottom: 6 }}>{store.name}</div>
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                <div style={{ height: 1, background: 'rgba(255,255,255,0.3)', width: '70%', marginBottom: 5 }} />
+                <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.9)', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4, paddingBottom: 8, whiteSpace: 'nowrap' }}>
+                  Entrega
+                  <span style={{ width: 4, height: 4, borderRadius: '50%', background: 'rgba(255,255,255,0.7)', display: 'inline-block' }} />
+                  24-35 min
+                  <span style={{ width: 4, height: 4, borderRadius: '50%', background: 'rgba(255,255,255,0.7)', display: 'inline-block' }} />
+                  R$ 6,50
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       )}
 
