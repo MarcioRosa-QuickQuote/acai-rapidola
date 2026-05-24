@@ -162,9 +162,12 @@ function formatNominatimAddress(a) {
   return addr.trim();
 }
 
-async function photonSearch(q) {
+async function photonSearch(q, lat, lon) {
+  const params = new URLSearchParams({ q, lang: 'pt', limit: '7', countrycodes: 'br' });
+  if (lat && lon) { params.set('lat', lat); params.set('lon', lon); }
+  else { params.set('lat', '-1.4558'); params.set('lon', '-48.5044'); }
   const resp = await fetch(
-    `https://photon.komoot.io/api/?q=${encodeURIComponent(q)}&lang=pt&limit=7&countrycodes=br&lat=-1.4558&lon=-48.5044`,
+    `https://photon.komoot.io/api/?${params}`,
     { headers: { 'User-Agent': 'PedeAcai/1.0' }, signal: AbortSignal.timeout(5000) }
   );
   const data = await resp.json();
@@ -186,17 +189,17 @@ router.get('/geocode', async (req, res) => {
 });
 
 router.get('/places-autocomplete', async (req, res) => {
-  const { q } = req.query;
+  const { q, lat, lng } = req.query;
   if (!q || q.length < 3) return res.json({ results: [], source: 'none' });
   const key = process.env.GOOGLE_PLACES_KEY;
   if (key) {
     try {
-      const url = `https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${encodeURIComponent(q)}&key=${key}&language=pt-BR&components=country:br&location=-1.4558,-48.5044&radius=50000&types=address`;
+      const locParam = lat && lng ? `&location=${lat},${lng}` : '&location=-1.4558,-48.5044';
+      const url = `https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${encodeURIComponent(q)}&key=${key}&language=pt-BR&components=country:br${locParam}&radius=50000&types=address`;
       const resp = await fetch(url, { signal: AbortSignal.timeout(5000) });
       const data = await resp.json();
       if (data.status === 'REQUEST_DENIED' || data.status === 'INVALID_REQUEST') {
         console.error('[Places] Google API error:', data.status, data.error_message);
-        // cai no fallback Photon
       } else {
         const results = (data.predictions || []).map(p => ({
           display_name: p.description,
@@ -208,11 +211,9 @@ router.get('/places-autocomplete', async (req, res) => {
       console.error('[Places] Google fetch error:', err.message);
     }
   }
-  // Fallback: Photon
   try {
-    const results = await photonSearch(q);
-    const source = key ? 'photon_fallback' : 'photon_no_key';
-    res.json({ results, source });
+    const results = await photonSearch(q, lat, lng);
+    res.json({ results, source: 'photon' });
   } catch {
     res.json({ results: [], source: 'error' });
   }

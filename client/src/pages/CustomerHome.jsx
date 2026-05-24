@@ -382,16 +382,21 @@ export default function CustomerHome() {
     function searchAddress(q) {
       if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);
       if (q.length < 3) { setAddressSuggestions([]); setShowSuggestions(false); return; }
+      const lat = contaMapLat || user?.lat || '';
+      const lng = contaMapLng || user?.lng || '';
       searchDebounceRef.current = setTimeout(async () => {
         try {
-          const res = await fetch(`/api/orders/places-autocomplete?q=${encodeURIComponent(q)}`);
+          const params = new URLSearchParams({ q });
+          if (lat) params.set('lat', lat);
+          if (lng) params.set('lng', lng);
+          const res = await fetch(`/api/orders/places-autocomplete?${params}`);
           const data = await res.json();
           const results = data.results || [];
           setPlacesSource(data.source || null);
           setAddressSuggestions(results);
           setShowSuggestions(results.length > 0);
         } catch { setShowSuggestions(false); }
-      }, 350);
+      }, 250);
     }
 
     async function lookupCep() {
@@ -597,12 +602,7 @@ export default function CustomerHome() {
                 </svg>
                 {savingAddr ? 'Obtendo localização...' : 'Usar minha localização'}
               </button>
-              {placesSource && placesSource !== 'google' && (
-                <div style={{ background: '#FFF3E0', border: '1px solid #FFB74D', borderRadius: 8, padding: '8px 12px', marginBottom: 8, fontSize: 12, color: '#E65100', display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="#E65100" style={{ flexShrink: 0 }}><path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/></svg>
-                  <span>{placesSource === 'photon_no_key' ? 'Google Places não configurado — usando busca alternativa.' : 'Google Places indisponível — usando busca alternativa.'}</span>
-                </div>
-              )}
+
               <div style={{ position: 'relative', marginBottom: 8 }}>
                 <input className="input" type="text" value={currentAddr}
                   onChange={e => { setAddrForm(e.target.value); searchAddress(e.target.value); }}
