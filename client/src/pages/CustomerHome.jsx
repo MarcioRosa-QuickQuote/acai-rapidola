@@ -132,6 +132,7 @@ export default function CustomerHome() {
   const [placesSource, setPlacesSource] = useState(null);
   const [cep, setCep] = useState('');
   const [cepLoading, setCepLoading] = useState(false);
+  const [searchingAddr, setSearchingAddr] = useState(false);
   const photoRef = useRef(null);
   const searchDebounceRef = useRef(null);
   const navigate = useNavigate();
@@ -381,9 +382,10 @@ export default function CustomerHome() {
 
     function searchAddress(q) {
       if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);
-      if (q.length < 3) { setAddressSuggestions([]); setShowSuggestions(false); return; }
+      if (q.length < 3) { setAddressSuggestions([]); setShowSuggestions(false); setSearchingAddr(false); return; }
       const lat = contaMapLat || user?.lat || '';
       const lng = contaMapLng || user?.lng || '';
+      setSearchingAddr(true);
       searchDebounceRef.current = setTimeout(async () => {
         try {
           const params = new URLSearchParams({ q });
@@ -391,12 +393,21 @@ export default function CustomerHome() {
           if (lng) params.set('lng', lng);
           const res = await fetch(`/api/orders/places-autocomplete?${params}`);
           const data = await res.json();
-          const results = data.results || [];
-          setPlacesSource(data.source || null);
+          let results = data.results || [];
+          if (results.length === 0 && q.length >= 5) {
+            const nomRes = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(q)}&countrycodes=br&limit=7&addressdetails=1${lat && lng ? `&viewbox=${parseFloat(lng)-0.05},${parseFloat(lat)+0.05},${parseFloat(lng)+0.05},${parseFloat(lat)-0.05}&bounded=1` : ''}`, { headers: { 'User-Agent': 'PedeAcai/1.0' } });
+            const nomData = await nomRes.json();
+            results = (nomData || []).map(r => ({
+              display_name: r.display_name,
+              lat: r.lat,
+              lon: r.lon
+            }));
+          }
           setAddressSuggestions(results);
           setShowSuggestions(results.length > 0);
         } catch { setShowSuggestions(false); }
-      }, 250);
+        setSearchingAddr(false);
+      }, 350);
     }
 
     async function lookupCep() {
@@ -424,7 +435,10 @@ export default function CustomerHome() {
     async function selectAddress(suggestion) {
       setAddrForm(suggestion.display_name);
       setShowSuggestions(false);
-      if (suggestion.place_id) {
+      if (suggestion.lat && suggestion.lon) {
+        setContaMapLat(parseFloat(suggestion.lat));
+        setContaMapLng(parseFloat(suggestion.lon));
+      } else if (suggestion.place_id) {
         try {
           const res = await fetch(`/api/orders/place-details?place_id=${suggestion.place_id}`);
           const data = await res.json();
@@ -434,9 +448,6 @@ export default function CustomerHome() {
             if (data.display_name) setAddrForm(data.display_name);
           }
         } catch {}
-      } else if (suggestion.lat && suggestion.lon) {
-        setContaMapLat(parseFloat(suggestion.lat));
-        setContaMapLng(parseFloat(suggestion.lon));
       }
     }
 
@@ -608,7 +619,17 @@ export default function CustomerHome() {
                   onChange={e => { setAddrForm(e.target.value); searchAddress(e.target.value); }}
                   onFocus={() => { if (addressSuggestions.length > 0) setShowSuggestions(true); }}
                   onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
-                  placeholder="Buscar rua, número, bairro…" />
+                  placeholder="Buscar rua, número, bairro…"
+                  style={{ paddingRight: 40 }} />
+                {currentAddr && (
+                  <button type="button" onClick={() => { setAddrForm(''); setAddressSuggestions([]); setShowSuggestions(false); setContaMapLat(null); setContaMapLng(null); }}
+                    style={{ position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', fontSize: 18, color: '#999', cursor: 'pointer', padding: '4px', lineHeight: 1 }}>
+                    ✕
+                  </button>
+                )}
+                {searchingAddr && (
+                  <span style={{ position: 'absolute', right: currentAddr ? 36 : 8, top: '50%', transform: 'translateY(-50%)', fontSize: 12, color: '#BBB' }}>…</span>
+                )}
                 {showSuggestions && addressSuggestions.length > 0 && (
                   <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 50, background: 'white', border: '1px solid #DDD', borderRadius: 8, maxHeight: 220, overflow: 'auto', boxShadow: '0 4px 16px rgba(0,0,0,0.15)' }}>
                     {addressSuggestions.map((s, i) => (
@@ -629,7 +650,19 @@ export default function CustomerHome() {
                       style={{ height: '100%', width: '100%' }}
                       key={`conta-map-${contaMapLat || 0}-${contaMapLng || 0}`} scrollWheelZoom={false}>
                       <TileLayer attribution='&copy; OSM' url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-                      <Marker position={[contaMapLat || user.lat, contaMapLng || user.lng]} />
+                      <Marker position={[contaMapLat || user.lat, contaMapLng || user.lng]} draggable={true}
+                        eventHandlers={{
+                          dragend: async (e) => {
+                            const { lat, lng } = e.target.getLatLng();
+                            setContaMapLat(lat);
+                            setContaMapLng(lng);
+                            try {
+                              const res = await fetch(`/api/orders/reverse-geocode?lat=${lat}&lng=${lng}`);
+                              const data = await res.json();
+                              if (data.display_name) setAddrForm(data.display_name);
+                            } catch {}
+                          }
+                        }} />
                     </MapContainer>
                   </div>
                 </div>
