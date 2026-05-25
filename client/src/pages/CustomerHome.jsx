@@ -431,6 +431,9 @@ export default function CustomerHome() {
           if (lng) params.set('lng', lng);
           const res = await fetch(`/api/orders/places-autocomplete?${params}`);
           const data = await res.json();
+          const source = data.source || 'none';
+          setPlacesSource(source);
+          console.log(`[Places] source: ${source}${source === 'google' ? ' ✅ Google Places ativo' : ' ⚠️ usando fallback Photon'}${source === 'none' ? ' (sem resultados)' : ''}`);
           let results = data.results || [];
           const numInQuery = q.match(/(\d[\d\s\-]*)$/);
           if (results.length === 0 && q.length >= 5) {
