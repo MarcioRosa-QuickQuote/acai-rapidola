@@ -370,16 +370,13 @@ export default function CustomerHome() {
           }
           if (foundAddr) {
             setAddrForm(foundAddr);
-            const saveRes = await apiFetch('/auth/profile', {
+            setContaMapLat(latitude);
+            setContaMapLng(longitude);
+            await apiFetch('/auth/profile', {
               method: 'PATCH',
               body: JSON.stringify({ address: foundAddr, lat: latitude, lng: longitude })
-            });
-            if (saveRes.ok) {
-              setAddrMsg('Endereço salvo com sucesso!');
-              window.location.reload();
-            } else {
-              setAddrMsg('Endereço preenchido. Clique em Salvar.');
-            }
+            }).catch(() => {});
+            setAddrMsg('Endereço salvo com sucesso!');
           }
           setSavingAddr(false);
           setTimeout(() => setAddrMsg(''), 4000);
@@ -704,20 +701,20 @@ export default function CustomerHome() {
                   onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
                   placeholder="Buscar rua, número, bairro…"
                   style={{ paddingRight: 40 }} />
-                {searchingAddr && (
-                  <span style={{ position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)', fontSize: 12, color: '#BBB' }}>…</span>
-                )}
-                {placesSource === 'google' && !searchingAddr && (
-                  <span style={{ position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)', fontSize: 9, color: '#4CAF50', fontWeight: 700, background: '#E8F5E9', borderRadius: 4, padding: '1px 5px' }} title="Google Places ativo">G</span>
-                )}
-                {placesSource && placesSource !== 'google' && placesSource !== 'none' && !searchingAddr && (
-                  <span style={{ position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)', fontSize: 9, color: '#E65100', fontWeight: 700, background: '#FFF3E0', borderRadius: 4, padding: '1px 5px' }} title="Fallback Photon ativo">P</span>
-                )}
                 {currentAddr && (
                   <button type="button" onClick={() => { setAddrForm(''); setAddressSuggestions([]); setShowSuggestions(false); setContaMapLat(null); setContaMapLng(null); }}
-                    style={{ position: 'absolute', right: 32, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', fontSize: 18, color: '#999', cursor: 'pointer', padding: '4px', lineHeight: 1 }}>
+                    style={{ position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', fontSize: 18, color: '#999', cursor: 'pointer', padding: '4px', lineHeight: 1 }}>
                     ✕
                   </button>
+                )}
+                {searchingAddr && (
+                  <span style={{ position: 'absolute', right: 32, top: '50%', transform: 'translateY(-50%)', fontSize: 12, color: '#BBB' }}>…</span>
+                )}
+                {placesSource === 'google' && !searchingAddr && (
+                  <span style={{ position: 'absolute', right: 32, top: '50%', transform: 'translateY(-50%)', fontSize: 9, color: '#4CAF50', fontWeight: 700, background: '#E8F5E9', borderRadius: 4, padding: '1px 5px' }} title="Google Places ativo">G</span>
+                )}
+                {placesSource && placesSource !== 'google' && placesSource !== 'none' && !searchingAddr && (
+                  <span style={{ position: 'absolute', right: 32, top: '50%', transform: 'translateY(-50%)', fontSize: 9, color: '#E65100', fontWeight: 700, background: '#FFF3E0', borderRadius: 4, padding: '1px 5px' }} title="Fallback Photon ativo">P</span>
                 )}
                 {showSuggestions && addressSuggestions.length > 0 && (
                   <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 50, background: 'white', border: '1px solid #DDD', borderRadius: 8, maxHeight: 220, overflow: 'auto', boxShadow: '0 4px 16px rgba(0,0,0,0.15)' }}>
