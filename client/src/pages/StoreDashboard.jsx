@@ -1076,21 +1076,17 @@ export default function StoreDashboard() {
                     </span>
                   </div>
 
-                  <div className="flex-between text-sm text-muted" style={{ marginBottom: 4 }}>
-                    <span>{shortAddress(order.customer_address)}</span>
+                  <div className="flex-between" style={{ marginTop: 8 }}>
+                    <span className={`badge ${statusColors[order.status] || 'badge-warning'}`}>
+                      {statusLabels[order.status]}
+                    </span>
                     <span className="font-bold" style={{ color: 'var(--primary)' }}>
                       R$ {order.total.toFixed(2)}
                     </span>
                   </div>
 
-                  <div style={{ marginTop: 8 }}>
-                    <span className={`badge ${statusColors[order.status] || 'badge-warning'}`}>
-                      {statusLabels[order.status]}
-                    </span>
-                  </div>
-
                   {order.motoboy_name && (
-                    <div style={{ marginTop: 4, fontSize: 12, color: '#555' }}>{order.motoboy_name}</div>
+                    <div style={{ marginTop: 4, fontSize: 12, color: '#555' }}>Motoboy: {order.motoboy_name}</div>
                   )}
 
                   {order.payment_status === 'paid' && actionMap[order.status] && (
@@ -1115,6 +1111,17 @@ export default function StoreDashboard() {
                       <div style={{ fontWeight: 700, fontSize: 14, color: '#333', marginBottom: 8 }}>Detalhes do Pedido</div>
                       <div style={{ marginBottom: 4 }}>📍 {shortAddress(order.customer_address)}</div>
                       <div style={{ marginBottom: 4 }}>🆔 Pedido #{order.id}</div>
+                      {(order.order_items || []).length > 0 && (
+                        <div style={{ marginTop: 8, marginBottom: 8 }}>
+                          <div style={{ fontWeight: 600, fontSize: 13, color: '#333', marginBottom: 4 }}>Itens</div>
+                          {order.order_items.map((item, idx) => (
+                            <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, marginBottom: 2 }}>
+                              <span>{item.quantity}x {item.products?.name || 'Produto'}</span>
+                              <span>R$ {(item.unit_price * item.quantity).toFixed(2)}</span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
 
                       {order.customer_lat && order.store_lat && (
                         <div style={{ height: 180, borderRadius: 8, overflow: 'hidden', border: '1px solid var(--border)', marginTop: 10 }}>
