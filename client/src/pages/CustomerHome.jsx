@@ -432,13 +432,37 @@ export default function CustomerHome() {
           const res = await fetch(`/api/orders/places-autocomplete?${params}`);
           const data = await res.json();
           let results = data.results || [];
+          const numInQuery = q.match(/(\d[\d\s\-]*)$/);
           if (results.length === 0 && q.length >= 5) {
-            const nomUrl = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(searchQ)}&countrycodes=br&limit=7&addressdetails=1${lat && lng ? `&viewbox=${parseFloat(lng)-0.05},${parseFloat(lat)+0.05},${parseFloat(lng)+0.05},${parseFloat(lat)-0.05}&bounded=1` : ''}`;
-            const nomRes = await fetch(nomUrl, { headers: { 'User-Agent': 'PedeAcai/1.0' } });
-            const nomData = await nomRes.json();
-            results = (nomData || []).map(r => {
-              const short = shortAddress(r.display_name);
-              return { display_name: short, _city: extractCity(r.display_name), lat: r.lat, lon: r.lon };
+            if (numInQuery) {
+              const streetQ = searchQ.replace(numInQuery[0], '').trim();
+              const nomUrl = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(streetQ)}&countrycodes=br&limit=5&addressdetails=1${lat && lng ? `&viewbox=${parseFloat(lng)-0.05},${parseFloat(lat)+0.05},${parseFloat(lng)+0.05},${parseFloat(lat)-0.05}&bounded=1` : ''}`;
+              const nomRes = await fetch(nomUrl, { headers: { 'User-Agent': 'PedeAcai/1.0' } });
+              const nomData = await nomRes.json();
+              results = (nomData || []).map(r => {
+                const short = shortAddress(r.display_name);
+                const withNum = short.replace(/(,\s*\d+)?\s*-\s*/, `, ${numInQuery[1].trim()} - `);
+                return { display_name: withNum, _city: extractCity(r.display_name), lat: r.lat, lon: r.lon };
+              });
+            } else {
+              const nomUrl = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(searchQ)}&countrycodes=br&limit=7&addressdetails=1${lat && lng ? `&viewbox=${parseFloat(lng)-0.05},${parseFloat(lat)+0.05},${parseFloat(lng)+0.05},${parseFloat(lat)-0.05}&bounded=1` : ''}`;
+              const nomRes = await fetch(nomUrl, { headers: { 'User-Agent': 'PedeAcai/1.0' } });
+              const nomData = await nomRes.json();
+              results = (nomData || []).map(r => {
+                const short = shortAddress(r.display_name);
+                return { display_name: short, _city: extractCity(r.display_name), lat: r.lat, lon: r.lon };
+              });
+            }
+          } else if (results.length > 0 && numInQuery) {
+            results = results.map(r => {
+              const name = r.display_name;
+              const short = shortAddress(name);
+              const hasNum = short.match(/\d+/);
+              if (!hasNum) {
+                const streetOnly = short.replace(/,\s*\d+\s*-\s*/, ' - ').replace(/,\s*\d+$/, '');
+                return { ...r, display_name: `${streetOnly}, ${numInQuery[1].trim()}`, _city: extractCity(name) };
+              }
+              return { ...r, display_name: short, _city: extractCity(name) };
             });
           } else {
             results = results.map(r => {
