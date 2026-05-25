@@ -749,15 +749,10 @@ export default function CustomerHome() {
                       <TileLayer attribution='&copy; OSM' url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
                       <Marker position={[contaMapLat || user.lat, contaMapLng || user.lng]} draggable={true}
                         eventHandlers={{
-                          dragend: async (e) => {
+                          dragend: (e) => {
                             const { lat, lng } = e.target.getLatLng();
                             setContaMapLat(lat);
                             setContaMapLng(lng);
-                            try {
-                              const res = await fetch(`/api/orders/reverse-geocode?lat=${lat}&lng=${lng}`);
-                              const data = await res.json();
-                              if (data.display_name) setAddrForm(shortAddress(data.display_name));
-                            } catch {}
                           }
                         }} />
                     </MapContainer>
