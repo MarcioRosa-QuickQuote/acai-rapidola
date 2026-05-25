@@ -347,7 +347,7 @@ export default function CustomerHome() {
   );
 
   function renderConta() {
-    const currentAddr = addrForm !== null ? addrForm : (user?.address || '');
+    const currentAddr = addrForm !== null ? addrForm : shortAddress(user?.address || '');
 
     function extractCity(name) {
       const parts = (name || '').split(',').map(s => s.trim());
@@ -720,12 +720,6 @@ export default function CustomerHome() {
                 )}
                 {searchingAddr && (
                   <span style={{ position: 'absolute', right: 32, top: '50%', transform: 'translateY(-50%)', fontSize: 12, color: '#BBB' }}>…</span>
-                )}
-                {placesSource === 'google' && !searchingAddr && (
-                  <span style={{ position: 'absolute', right: 32, top: '50%', transform: 'translateY(-50%)', fontSize: 9, color: '#4CAF50', fontWeight: 700, background: '#E8F5E9', borderRadius: 4, padding: '1px 5px' }} title="Google Places ativo">G</span>
-                )}
-                {placesSource && placesSource !== 'google' && placesSource !== 'none' && !searchingAddr && (
-                  <span style={{ position: 'absolute', right: 32, top: '50%', transform: 'translateY(-50%)', fontSize: 9, color: '#E65100', fontWeight: 700, background: '#FFF3E0', borderRadius: 4, padding: '1px 5px' }} title="Fallback Photon ativo">P</span>
                 )}
                 {showSuggestions && addressSuggestions.length > 0 && (
                   <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 50, background: 'white', border: '1px solid #DDD', borderRadius: 8, maxHeight: 220, overflow: 'auto', boxShadow: '0 4px 16px rgba(0,0,0,0.15)' }}>
