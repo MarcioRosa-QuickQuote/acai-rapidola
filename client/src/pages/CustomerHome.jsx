@@ -106,6 +106,18 @@ export default function CustomerHome() {
     };
   }
 
+  function abbr(s) {
+    if (!s) return s;
+    return s
+      .replace(/\bPassagem\b/gi, 'Pass.')
+      .replace(/\bTravessa\b/gi, 'Tv.')
+      .replace(/\bAvenida\b/gi, 'Av.')
+      .replace(/\bAlameda\b/gi, 'Al.')
+      .replace(/\bPraça\b/gi, 'Praç.')
+      .replace(/\bRodovia\b/gi, 'Rod.')
+      .replace(/\bEstrada\b/gi, 'Est.');
+  }
+
   function shortAddress(full) {
     if (!full) return '';
     const parts = full.split(',').map(s => s.trim());
@@ -116,9 +128,9 @@ export default function CustomerHome() {
       neighborhood = part1;
       part1 = '';
     }
-    let result = street;
+    let result = abbr(street);
     if (part1) result += `, ${part1}`;
-    if (neighborhood) result += ` - ${neighborhood}`;
+    if (neighborhood) result += ` - ${abbr(neighborhood)}`;
     return result;
   }
 
@@ -398,7 +410,6 @@ export default function CustomerHome() {
       const data = await apiFetch('/auth/profile', { method: 'PATCH', body: JSON.stringify(body) });
       if (data.ok) {
         setAddrMsg('Endereço salvo!');
-        window.location.reload();
       } else {
         setAddrMsg(data.error || 'Erro ao salvar');
       }
