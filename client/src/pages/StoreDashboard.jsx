@@ -1070,12 +1070,7 @@ export default function StoreDashboard() {
                 <div key={order.id} className="card" style={{ cursor: 'pointer' }}
                   onClick={() => setSelectedOrder(selectedOrder === order.id ? null : order.id)}>
                   <div className="flex-between" style={{ marginBottom: 6 }}>
-                    <div>
-                      <span className="font-bold">#{order.id.slice(0, 8)}</span>
-                      <span className="text-sm text-muted" style={{ marginLeft: 8 }}>
-                        {order.customer_name}
-                      </span>
-                    </div>
+                    <span className="font-bold">{order.customer_name}</span>
                     <span className={`badge ${order.payment_status === 'paid' ? 'badge-success' : 'badge-warning'}`}>
                       {order.payment_status === 'paid' ? 'Pago' : 'Pendente'}
                     </span>
@@ -1088,43 +1083,38 @@ export default function StoreDashboard() {
                     </span>
                   </div>
 
-                  <div className="flex-between" style={{ marginTop: 8 }}>
+                  <div style={{ marginTop: 8 }}>
                     <span className={`badge ${statusColors[order.status] || 'badge-warning'}`}>
                       {statusLabels[order.status]}
                     </span>
-
-                    <div className="flex-row">
-                      {order.motoboy_name && (
-                        <span className="text-xs text-muted" style={{ background: '#E3F2FD', padding: '2px 8px', borderRadius: 4 }}>
-                          {order.motoboy_name}
-                        </span>
-                      )}
-
-                      {order.payment_status === 'paid' && actionMap[order.status] && (
-                        <button className="btn btn-sm btn-primary"
-                          onClick={(e) => { e.stopPropagation(); updateStatus(order.id, actionMap[order.status].next); }}>
-                          {actionMap[order.status].label}
-                        </button>
-                      )}
-
-                      {(order.status === 'arriving' || order.status === 'picked_up') && (
-                        <span className="badge" style={{ background: '#FFF3E0', color: '#E65100' }}>
-                          ALERTA: Motoboy próximo!
-                        </span>
-                      )}
-                    </div>
                   </div>
+
+                  {order.motoboy_name && (
+                    <div style={{ marginTop: 4, fontSize: 12, color: '#555' }}>{order.motoboy_name}</div>
+                  )}
+
+                  {order.payment_status === 'paid' && actionMap[order.status] && (
+                    <div style={{ marginTop: 8 }}>
+                      <button className="btn btn-sm btn-primary"
+                        onClick={(e) => { e.stopPropagation(); updateStatus(order.id, actionMap[order.status].next); }}>
+                        {actionMap[order.status].label}
+                      </button>
+                    </div>
+                  )}
+
+                  {(order.status === 'arriving' || order.status === 'picked_up') && (
+                    <div style={{ marginTop: 4 }}>
+                      <span className="badge" style={{ background: '#FFF3E0', color: '#E65100' }}>
+                        ALERTA: Motoboy próximo!
+                      </span>
+                    </div>
+                  )}
 
                   {selectedOrder === order.id && (
                     <div style={{ marginTop: 12, padding: '12px 0', borderTop: '1px solid var(--border)', fontSize: 13, color: '#555' }}>
                       <div style={{ fontWeight: 700, fontSize: 14, color: '#333', marginBottom: 8 }}>Detalhes do Pedido</div>
                       <div style={{ marginBottom: 4 }}>📍 {shortAddress(order.customer_address)}</div>
-                      <div style={{ marginBottom: 4 }}>📞 {order.customer_phone || '—'}</div>
                       <div style={{ marginBottom: 4 }}>🆔 Pedido #{order.id}</div>
-                      {order.notes && <div style={{ marginBottom: 4 }}>📝 {order.notes}</div>}
-                      {order.delivery_fee > 0 && <div style={{ marginBottom: 4 }}>🏍️ Taxa entrega: R$ {order.delivery_fee.toFixed(2)}</div>}
-                      {order.motoboy_name && <div style={{ marginBottom: 4 }}>👤 Motoboy: {order.motoboy_name}</div>}
-                      <div style={{ fontWeight: 700, color: 'var(--primary)', fontSize: 15, marginTop: 6 }}>Total: R$ {order.total.toFixed(2)}</div>
 
                       {order.customer_lat && order.store_lat && (
                         <div style={{ height: 180, borderRadius: 8, overflow: 'hidden', border: '1px solid var(--border)', marginTop: 10 }}>
