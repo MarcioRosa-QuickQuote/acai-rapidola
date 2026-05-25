@@ -35,11 +35,7 @@ export default function App() {
   const { user, loading } = useAuth();
 
   if (loading) {
-    return (
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh' }}>
-        <img className="spin" src="/saco_acai.png" />
-      </div>
-    );
+    return <div className="loading"><img className="spin" src="/saco_acai.png" /></div>;
   }
 
   return (
