@@ -159,10 +159,14 @@ export default function CustomerHome() {
   }, [searchParams]);
 
   useEffect(() => {
-    if (user?.lat && user?.lng && !userCity) {
-      fetch(`/api/orders/reverse-geocode?lat=${user.lat}&lng=${user.lng}`).then(r => r.json()).then(d => {
-        if (d.display_name) setUserCity(extractCity(d.display_name));
-      }).catch(() => {});
+    if (user?.lat && user?.lng) {
+      if (contaMapLat === null) setContaMapLat(user.lat);
+      if (contaMapLng === null) setContaMapLng(user.lng);
+      if (!userCity) {
+        fetch(`/api/orders/reverse-geocode?lat=${user.lat}&lng=${user.lng}`).then(r => r.json()).then(d => {
+          if (d.display_name) setUserCity(extractCity(d.display_name));
+        }).catch(() => {});
+      }
     }
   }, [user?.lat, user?.lng]);
 
@@ -392,7 +396,9 @@ export default function CustomerHome() {
     async function saveAddress() {
       setSavingAddr(true);
       const newAddr = addrForm || '';
-      const data = await apiFetch('/auth/profile', { method: 'PATCH', body: JSON.stringify({ address: newAddr }) });
+      const body = { address: newAddr };
+      if (contaMapLat && contaMapLng) { body.lat = contaMapLat; body.lng = contaMapLng; }
+      const data = await apiFetch('/auth/profile', { method: 'PATCH', body: JSON.stringify(body) });
       if (data.ok) {
         setAddrMsg('Endereço salvo!');
         window.location.reload();
