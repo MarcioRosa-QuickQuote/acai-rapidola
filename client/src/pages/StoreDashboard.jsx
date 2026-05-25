@@ -88,6 +88,13 @@ export default function StoreDashboard() {
   const [finYear, setFinYear] = useState(() => new Date().getFullYear());
   const [finPeriod, setFinPeriod] = useState('mes');
   const [expandedOrder, setExpandedOrder] = useState(null);
+  const [isDesktop, setIsDesktop] = useState(window.innerWidth >= 768);
+
+  useEffect(() => {
+    const onResize = () => setIsDesktop(window.innerWidth >= 768);
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
 
   useEffect(() => {
     loadOrders();
@@ -1066,9 +1073,12 @@ export default function StoreDashboard() {
                 <p>Nenhum pedido ainda</p>
               </div>
             ) : (
-              displayOrders.map(order => (
-                <div key={order.id} className="card" style={{ cursor: 'pointer' }}
-                  onClick={() => setSelectedOrder(selectedOrder === order.id ? null : order.id)}>
+              <div className={isDesktop ? 'grid-2' : ''}>
+              {displayOrders.map(order => {
+                const expanded = selectedOrder === order.id || isDesktop;
+                return (
+                <div key={order.id} className="card" style={{ cursor: isDesktop ? 'default' : 'pointer' }}
+                  onClick={() => { if (!isDesktop) setSelectedOrder(selectedOrder === order.id ? null : order.id); }}>
                   <div className="flex-between" style={{ marginBottom: 6 }}>
                     <span className="font-bold">{order.customer_name}</span>
                     <span className={`badge ${order.payment_status === 'paid' ? 'badge-success' : 'badge-warning'}`}>
@@ -1106,25 +1116,30 @@ export default function StoreDashboard() {
                     </div>
                   )}
 
-                  {selectedOrder === order.id && (
+                  {expanded && (
                     <div style={{ marginTop: 12, padding: '12px 0', borderTop: '1px solid var(--border)', fontSize: 13, color: '#555' }}>
                       <div style={{ fontWeight: 700, fontSize: 14, color: '#333', marginBottom: 8 }}>Detalhes do Pedido</div>
                       <div style={{ marginBottom: 4 }}>📍 {shortAddress(order.customer_address)}</div>
                       <div style={{ marginBottom: 4 }}>🆔 Pedido #{order.id}</div>
-                      {(order.order_items || []).length > 0 && (
-                        <div style={{ marginTop: 8, marginBottom: 8 }}>
+
+                      <div style={{ display: 'flex', gap: 12, marginTop: 8 }}>
+                        <div style={{ flex: 1 }}>
                           <div style={{ fontWeight: 600, fontSize: 13, color: '#333', marginBottom: 4 }}>Itens</div>
-                          {order.order_items.map((item, idx) => (
+                          {(order.order_items || []).map((item, idx) => (
                             <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, marginBottom: 2 }}>
                               <span>{item.quantity}x {item.products?.name || 'Produto'}</span>
                               <span>R$ {(item.unit_price * item.quantity).toFixed(2)}</span>
                             </div>
                           ))}
                         </div>
-                      )}
+                        <div style={{ textAlign: 'right', fontSize: 12 }}>
+                          {order.delivery_fee > 0 && <div style={{ marginBottom: 2 }}>Frete: R$ {order.delivery_fee.toFixed(2)}</div>}
+                          <div style={{ fontWeight: 700, fontSize: 14, color: 'var(--primary)', marginTop: 4 }}>Total: R$ {order.total.toFixed(2)}</div>
+                        </div>
+                      </div>
 
                       {order.customer_lat && order.store_lat && (
-                        <div style={{ height: 180, borderRadius: 8, overflow: 'hidden', border: '1px solid var(--border)', marginTop: 10 }}>
+                        <div style={{ height: 160, borderRadius: 8, overflow: 'hidden', border: '1px solid var(--border)', marginTop: 10 }}>
                           <MapContainer
                             center={[(order.customer_lat + order.store_lat) / 2, ((order.customer_lng || 0) + (order.store_lng || 0)) / 2]}
                             zoom={13} style={{ height: '100%', width: '100%' }} scrollWheelZoom={false}>
@@ -1138,9 +1153,11 @@ export default function StoreDashboard() {
                     </div>
                   )}
                 </div>
-              ))
+              );
+              })}
+            </div>
             )}
-
+            
             <button className="btn btn-outline mt-4" onClick={loadOrders}>
               Atualizar Pedidos
             </button>
