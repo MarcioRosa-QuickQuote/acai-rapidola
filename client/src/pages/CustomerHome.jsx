@@ -120,17 +120,23 @@ export default function CustomerHome() {
 
   function shortAddress(full) {
     if (!full) return '';
-    const parts = full.split(',').map(s => s.trim());
-    const street = parts[0] || '';
-    let part1 = parts[1] || '';
-    let neighborhood = parts[2] || '';
-    if (part1 && !/^\d/.test(part1.replace(/\s/g, ''))) {
-      neighborhood = part1;
-      part1 = '';
+    const parts = full.split(',').map(s => s.trim()).filter(Boolean);
+    if (parts.length === 0) return '';
+    const street = parts[0];
+    let num = '';
+    let hood = '';
+    let cursor = 1;
+    if (parts[cursor] && /^\d+(\s*-?\s*\d+)?$/.test(parts[cursor].replace(/\s/g, ''))) {
+      num = parts[cursor];
+      cursor++;
+    }
+    if (parts[cursor]) {
+      hood = parts[cursor];
+      cursor++;
     }
     let result = abbr(street);
-    if (part1) result += `, ${part1}`;
-    if (neighborhood) result += ` - ${abbr(neighborhood)}`;
+    if (num) result += `, ${num}`;
+    if (hood) result += ` - ${abbr(hood)}`;
     return result;
   }
 
