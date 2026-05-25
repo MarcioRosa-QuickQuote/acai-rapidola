@@ -499,7 +499,7 @@ export default function CustomerHome() {
           setTimeout(() => setAddrMsg(''), 3000);
           return;
         }
-        setAddrForm(data.display_name);
+        setAddrForm(shortAddress(data.display_name));
         setShowSuggestions(false);
       } catch {
         setAddrMsg('Erro ao consultar CEP');
@@ -528,7 +528,7 @@ export default function CustomerHome() {
           if (data.lat && data.lon) {
             setContaMapLat(parseFloat(data.lat));
             setContaMapLng(parseFloat(data.lon));
-            if (data.display_name) setAddrForm(data.display_name);
+            if (data.display_name) setAddrForm(shortAddress(data.display_name));
           }
         } catch {}
       }
@@ -748,7 +748,7 @@ export default function CustomerHome() {
                             try {
                               const res = await fetch(`/api/orders/reverse-geocode?lat=${lat}&lng=${lng}`);
                               const data = await res.json();
-                              if (data.display_name) setAddrForm(data.display_name);
+                              if (data.display_name) setAddrForm(shortAddress(data.display_name));
                             } catch {}
                           }
                         }} />
