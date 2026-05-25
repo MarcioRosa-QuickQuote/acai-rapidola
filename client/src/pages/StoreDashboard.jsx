@@ -1075,10 +1075,10 @@ export default function StoreDashboard() {
             ) : (
               <div className={isDesktop ? 'grid-2' : ''}>
               {displayOrders.map(order => {
-                const expanded = selectedOrder === order.id || isDesktop;
+                const expanded = selectedOrder === order.id;
                 return (
-                <div key={order.id} className="card" style={{ cursor: isDesktop ? 'default' : 'pointer' }}
-                  onClick={() => { if (!isDesktop) setSelectedOrder(selectedOrder === order.id ? null : order.id); }}>
+                <div key={order.id} className="card" style={{ cursor: 'pointer' }}
+                  onClick={() => setSelectedOrder(selectedOrder === order.id ? null : order.id)}>
                   <div className="flex-between" style={{ marginBottom: 6 }}>
                     <span className="font-bold">{order.customer_name}</span>
                     <span className={`badge ${order.payment_status === 'paid' ? 'badge-success' : 'badge-warning'}`}>
