@@ -8,7 +8,7 @@ function OrderDetails({ orderId, apiFetch }) {
     if (!orderId || order) return;
     setLoading(true);
     apiFetch(`/orders/${orderId}`).then(d => {
-      if (d.data) setOrder(d.data);
+      if (d.ok) setOrder(d);
       setLoading(false);
     });
   }, [orderId]);
@@ -39,11 +39,63 @@ function OrderDetails({ orderId, apiFetch }) {
   );
 }
 
+function MessageBubble({ msg, apiFetch, storeId, onReload, showOrderFor, setShowOrderFor }) {
+  const isStore = msg.from_store;
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: isStore ? 'flex-end' : 'flex-start', marginBottom: 12 }}>
+      <div style={{
+        maxWidth: '85%',
+        background: isStore ? '#6A1B9A' : '#F0F0F0',
+        color: isStore ? 'white' : '#333',
+        borderRadius: isStore ? '16px 16px 4px 16px' : '16px 16px 16px 4px',
+        padding: '10px 14px',
+        fontSize: 14,
+        lineHeight: 1.4,
+        wordBreak: 'break-word'
+      }}>
+        <div>{msg.message}</div>
+        <div style={{
+          fontSize: 10, marginTop: 4,
+          color: isStore ? 'rgba(255,255,255,0.6)' : '#999',
+          textAlign: 'right'
+        }}>
+          {new Date(msg.created_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+        </div>
+      </div>
+      {!isStore && msg.order_id && (
+        <div style={{ marginTop: 4, marginLeft: 4 }}>
+          <span onClick={() => setShowOrderFor(showOrderFor === msg.id ? null : msg.id)}
+            style={{ fontSize: 12, color: '#6A1B9A', fontWeight: 600, cursor: 'pointer', textDecoration: 'underline' }}>
+            📋 {showOrderFor === msg.id ? 'Esconder pedido' : 'Ver pedido'}
+          </span>
+          {showOrderFor === msg.id && (
+            <OrderDetails orderId={msg.order_id} apiFetch={apiFetch} />
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function StoreMessages({ messages, storeId, apiFetch, onReload }) {
   const [showReplyFor, setShowReplyFor] = useState(null);
   const [replyText, setReplyText] = useState('');
   const [replySending, setReplySending] = useState(false);
   const [showOrderFor, setShowOrderFor] = useState(null);
+
+  const groups = {};
+  messages.forEach(msg => {
+    const key = msg.from_store ? 'store' : msg.customer_id;
+    if (!groups[key]) groups[key] = { customer_id: msg.customer_id, customer_name: msg.customer_name, messages: [] };
+    groups[key].messages.push(msg);
+  });
+
+  const groupList = Object.entries(groups).sort((a, b) => {
+    const aLast = new Date(a[1].messages[a[1].messages.length - 1].created_at).getTime();
+    const bLast = new Date(b[1].messages[b[1].messages.length - 1].created_at).getTime();
+    return bLast - aLast;
+  });
 
   if (messages.length === 0) {
     return (
@@ -55,46 +107,42 @@ export default function StoreMessages({ messages, storeId, apiFetch, onReload })
     );
   }
 
-  return messages.map(msg => {
-    const replying = showReplyFor === msg.id;
+  return groupList.map(([key, group]) => {
+    const replying = showReplyFor === key;
+    const sorted = [...group.messages].sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+
     return (
-      <div key={msg.id} className="card" style={{
-        padding: '14px 16px', marginBottom: 8,
-        background: msg.read ? 'white' : '#F3E5F5',
-        borderLeft: msg.read ? '3px solid transparent' : '3px solid #6A1B9A'
+      <div key={key} className="card" style={{
+        padding: '14px 16px', marginBottom: 12,
+        background: group.messages.some(m => !m.read && !m.from_store) ? '#F8F4FC' : 'white',
+        borderLeft: group.messages.some(m => !m.read && !m.from_store) ? '3px solid #6A1B9A' : '3px solid transparent'
       }}>
-        <div style={{ cursor: 'pointer' }} onClick={async () => {
-          if (!msg.read) {
-            await apiFetch(`/messages/${msg.id}/read`, { method: 'PATCH' });
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10, cursor: 'pointer' }}
+          onClick={() => {
+            const unread = group.messages.filter(m => !m.read && !m.from_store);
+            unread.forEach(async m => {
+              await apiFetch(`/messages/${m.id}/read`, { method: 'PATCH' });
+            });
             onReload();
-          }
-          setShowReplyFor(showReplyFor === msg.id ? null : msg.id);
-          setReplyText('');
-        }}>
-          <div className="flex-between" style={{ marginBottom: 4 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-              {msg.from_store ? <span style={{ fontSize: 12, color: '#6A1B9A', fontWeight: 600 }}>📤 Você</span> : <span style={{ fontWeight: 700, fontSize: 14 }}>{msg.customer_name}</span>}
-              {msg.from_store ? <span className="badge" style={{ background: '#E8F5E9', color: '#2E7D32', fontSize: 10 }}>Resposta enviada</span> : null}
-            </div>
-            <span style={{ fontSize: 11, color: '#999' }}>
-              {new Date(msg.created_at).toLocaleString('pt-BR')}
-            </span>
-          </div>
-          <div style={{ fontSize: 13, color: '#555', lineHeight: 1.4 }}>{msg.message}</div>
-        </div>
-        {!msg.from_store && msg.order_id && (
-          <div style={{ marginTop: 8 }}>
-            <span onClick={(e) => { e.stopPropagation(); setShowOrderFor(showOrderFor === msg.id ? null : msg.id); }}
-              style={{ fontSize: 12, color: '#6A1B9A', fontWeight: 600, cursor: 'pointer', textDecoration: 'underline' }}>
-              📋 {showOrderFor === msg.id ? 'Esconder pedido' : 'Ver pedido'}
-            </span>
-            {showOrderFor === msg.id && (
-              <OrderDetails orderId={msg.order_id} apiFetch={apiFetch} />
+            setShowReplyFor(replying ? null : key);
+            setReplyText('');
+          }}>
+          <span style={{ fontWeight: 700, fontSize: 15 }}>{group.customer_name}</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            {group.messages.some(m => !m.read && !m.from_store) && (
+              <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#6A1B9A' }} />
             )}
+            <span style={{ fontSize: 18, color: '#CCC' }}>{replying ? '▼' : '▶'}</span>
           </div>
-        )}
-        {replying && !msg.from_store && (
-          <div style={{ marginTop: 12, borderTop: '1px solid var(--border)', paddingTop: 12 }}>
+        </div>
+
+        {sorted.map(msg => (
+          <MessageBubble key={msg.id} msg={msg} apiFetch={apiFetch} storeId={storeId}
+            onReload={onReload} showOrderFor={showOrderFor} setShowOrderFor={setShowOrderFor} />
+        ))}
+
+        {replying && (
+          <div style={{ marginTop: 8, borderTop: '1px solid var(--border)', paddingTop: 12 }}>
             <textarea className="input" value={replyText} onChange={e => setReplyText(e.target.value)}
               placeholder="Digite sua resposta..."
               style={{ minHeight: 80, resize: 'vertical', fontSize: 14, marginBottom: 8 }} />
@@ -102,12 +150,13 @@ export default function StoreMessages({ messages, storeId, apiFetch, onReload })
               onClick={async () => {
                 if (!replyText.trim()) return;
                 setReplySending(true);
-                const data = await apiFetch('/messages/reply', {
+                const firstMsg = group.messages[0];
+                const data = await apiFetch('/store_messages/reply', {
                   method: 'POST',
-                  body: JSON.stringify({ customer_id: msg.customer_id, store_id: storeId, message: replyText.trim() })
+                  body: JSON.stringify({ customer_id: firstMsg.customer_id, store_id: storeId, message: replyText.trim() })
                 });
                 setReplySending(false);
-                if (data.ok) { setReplyText(''); setShowReplyFor(null); onReload(); }
+                if (data.ok) { setReplyText(''); onReload(); }
               }}>
               {replySending ? 'Enviando...' : 'Responder'}
             </button>
