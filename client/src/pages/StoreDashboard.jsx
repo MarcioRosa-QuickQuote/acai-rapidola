@@ -1416,13 +1416,13 @@ export default function StoreDashboard() {
                   {perfilTab === 'dados' ? 'Dados' : perfilTab === 'endereco' ? 'Endereço' : perfilTab === 'trocar-senha' ? 'Trocar Senha' : perfilTab === 'mensagens' ? 'Mensagens' : perfilTab === 'vendas' ? 'Vendas' : perfilTab === 'motoboy' ? 'Motoboys' : perfilTab === 'assinatura' ? 'Assinatura' : ''}
                 </span>
               </div>
-              {perfilTab === 'dados' && <DadosSection settings={settings} setSettings={setSettings} fileRef={fileRef} uploadLogo={uploadLogo} logoSaving={logoSaving} saveMsg={saveMsg} saveSettings={saveSettings} uploading={uploading} />}
+              {perfilTab === 'dados' && <PerfilView />}
               {perfilTab === 'endereco' && <StoreAddressForm settings={settings} setSettings={setSettings} saveSettings={saveSettings} uploading={uploading} saveMsg={saveMsg} setSaveMsg={setSaveMsg} />}
-              {perfilTab === 'trocar-senha' && <TrocarSenhaSection pwCurrent={pwCurrent} setPwCurrent={setPwCurrent} pwNew={pwNew} setPwNew={setPwNew} pwMsg={pwMsg} setPwMsg={setPwMsg} pwSaving={pwSaving} setPwSaving={setPwSaving} apiFetch={apiFetch} />}
+              {perfilTab === 'trocar-senha' && <PerfilView />}
               {perfilTab === 'mensagens' && <StoreMessages messages={storeMessages} storeId={storeData?.id} apiFetch={apiFetch} onReload={loadMessages} />}
               {perfilTab === 'vendas' && <FinanceiroTab />}
-              {perfilTab === 'motoboy' && <MotoboySection storeData={storeData} motoboys={motoboys} invites={invites} motoboyPhone={motoboyPhone} setMotoboyPhone={setMotoboyPhone} motoboyMsg={motoboyMsg} setMotoboyMsg={setMotoboyMsg} inviteLink={inviteLink} generateInvite={generateInvite} copyInviteLink={copyInviteLink} copyInviteLinkToken={copyInviteLinkToken} revokeInvite={revokeInvite} toggleEmployee={toggleEmployee} removeMotoboy={removeMotoboy} />}
-              {perfilTab === 'assinatura' && <AssinaturaSection />}
+              {perfilTab === 'motoboy' && <PerfilView />}
+              {perfilTab === 'assinatura' && <PerfilView />}
             </div>
           ) : (
             <PerfilView />
