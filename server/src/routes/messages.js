@@ -21,10 +21,10 @@ router.post('/', authMiddleware, async (req, res) => {
   const baseInsert = { id, store_id, customer_id: customerId, customer_name: customerName, message: cleanMsg, from_store: 0 };
   let insertData = { ...baseInsert };
   if (order_id) insertData.order_id = order_id;
-  let { error: insertError } = await supabase.from('messages').insert(insertData);
+  let { error: insertError } = await supabase.from('store_messages').insert(insertData);
   if (insertError && insertError.code === '42703' && order_id) {
     insertData = { ...baseInsert };
-    const retry = await supabase.from('messages').insert(insertData);
+    const retry = await supabase.from('store_messages').insert(insertData);
     insertError = retry.error;
   }
   if (insertError) {
@@ -66,7 +66,7 @@ router.post('/reply', authMiddleware, async (req, res) => {
   if (!store || store.owner_id !== req.user.id) return res.status(403).json({ error: 'Acesso negado' });
 
   const id = uuid();
-  const { error } = await supabase.from('messages').insert({
+  const { error } = await supabase.from('store_messages').insert({
     id, store_id, customer_id, customer_name: storeName, message: cleanMsg, from_store: 1
   });
   if (error) {
@@ -102,7 +102,7 @@ router.get('/:storeId', authMiddleware, async (req, res) => {
   if (!store) return res.status(404).json({ error: 'Loja não encontrada' });
   if (store.owner_id !== req.user.id) return res.status(403).json({ error: 'Acesso negado' });
 
-  const { data } = await supabase.from('messages')
+  const { data } = await supabase.from('store_messages')
     .select('*')
     .eq('store_id', storeId)
     .order('created_at', { ascending: false })
@@ -112,13 +112,13 @@ router.get('/:storeId', authMiddleware, async (req, res) => {
 
 router.patch('/:id/read', authMiddleware, async (req, res) => {
   const { id } = req.params;
-  const { data: msg } = await supabase.from('messages').select('id, store_id').eq('id', id).single();
+  const { data: msg } = await supabase.from('store_messages').select('id, store_id').eq('id', id).single();
   if (!msg) return res.status(404).json({ error: 'Mensagem não encontrada' });
 
   const { data: store } = await supabase.from('stores').select('owner_id').eq('id', msg.store_id).single();
   if (!store || store.owner_id !== req.user.id) return res.status(403).json({ error: 'Acesso negado' });
 
-  await supabase.from('messages').update({ read: 1 }).eq('id', id);
+  await supabase.from('store_messages').update({ read: 1 }).eq('id', id);
   res.json({ ok: true });
 });
 
