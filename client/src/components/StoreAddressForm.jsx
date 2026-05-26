@@ -165,7 +165,10 @@ export default memo(function StoreAddressForm({ settings, setSettings, saveSetti
         </div>
       )}
 
-      <button className="btn btn-primary" style={{ marginTop: 14, width: '100%' }} onClick={saveSettings} disabled={uploading}>
+      <button className="btn btn-primary" style={{ marginTop: 14, width: '100%' }} onClick={() => {
+        setSettings(prev => ({ ...prev, address: localAddr }));
+        saveSettings();
+      }} disabled={uploading}>
         {uploading ? 'Salvando...' : 'Salvar Endereço'}
       </button>
     </div>
