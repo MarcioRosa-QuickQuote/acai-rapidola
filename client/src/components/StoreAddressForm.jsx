@@ -1,7 +1,7 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, memo } from 'react';
 import { MapContainer, TileLayer, Marker } from 'react-leaflet';
 
-export default function StoreAddressForm({ settings, setSettings, saveSettings, uploading, saveMsg, setSaveMsg }) {
+export default memo(function StoreAddressForm({ settings, setSettings, saveSettings, uploading, saveMsg, setSaveMsg }) {
   const [localAddr, setLocalAddr] = useState('');
   const [suggestions, setSuggestions] = useState([]);
   const [showSugs, setShowSugs] = useState(false);
@@ -170,4 +170,4 @@ export default function StoreAddressForm({ settings, setSettings, saveSettings, 
       </button>
     </div>
   );
-}
+});
