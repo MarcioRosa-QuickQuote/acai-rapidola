@@ -14,6 +14,7 @@ import CustomerPedidos from './pages/CustomerPedidos';
 import CustomerFavoritos from './pages/CustomerFavoritos';
 import CustomerPagamentos from './pages/CustomerPagamentos';
 import CustomerNotificacoes from './pages/CustomerNotificacoes';
+import CustomerQuiz from './pages/CustomerQuiz';
 import StoreDashboard from './pages/StoreDashboard';
 import MotoboyDashboard from './pages/MotoboyDashboard';
 
@@ -79,6 +80,9 @@ export default function App() {
       } />
       <Route path="/customer/notificacoes" element={
         <ProtectedRoute role="customer"><CustomerNotificacoes /></ProtectedRoute>
+      } />
+      <Route path="/customer/quiz" element={
+        <ProtectedRoute role="customer"><CustomerQuiz /></ProtectedRoute>
       } />
 
       <Route path="/store/*" element={

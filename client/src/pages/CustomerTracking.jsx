@@ -339,6 +339,10 @@ export default function CustomerTracking() {
   const [order, setOrder] = useState(null);
   const [motoboyPos, setMotoboyPos] = useState(null);
   const [eta, setEta] = useState(null);
+  const [showMsgModal, setShowMsgModal] = useState(false);
+  const [msgText, setMsgText] = useState('');
+  const [msgSending, setMsgSending] = useState(false);
+  const [msgSent, setMsgSent] = useState(false);
 
   useEffect(() => {
     joinOrder(id);
@@ -522,6 +526,12 @@ export default function CustomerTracking() {
           <div className="text-sm" style={{ marginTop: 4 }}>
             <span style={{ color: '#888' }}>Loja: </span><span className="font-bold">{order.store_name}</span>
           </div>
+          <div style={{ marginTop: 8 }}>
+            <button onClick={(e) => { e.stopPropagation(); setShowMsgModal(true); setMsgSent(false); setMsgText(''); }}
+              style={{ fontSize: 13, color: 'var(--primary)', fontWeight: 600, background: 'none', border: 'none', cursor: 'pointer', padding: 0, textDecoration: 'underline' }}>
+              💬 Falar com a loja
+            </button>
+          </div>
           <div className="text-sm" style={{ marginTop: 4 }}>
             <span style={{ color: '#888' }}>Endereço: </span><span>{order.customer_address}</span>
           </div>
@@ -545,6 +555,55 @@ export default function CustomerTracking() {
       </div>
       <div style={{ height: 80 }} />
       <CustomerBottomNav />
+
+      {showMsgModal && (
+        <div style={{ position: 'fixed', inset: 0, zIndex: 2000, display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }}
+          onClick={() => setShowMsgModal(false)}>
+          <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.4)' }} />
+          <div onClick={e => e.stopPropagation()} style={{
+            position: 'relative', background: 'white', width: '100%', maxWidth: 500,
+            borderTopLeftRadius: 20, borderTopRightRadius: 20, padding: '24px 20px',
+            paddingBottom: 'calc(20px + env(safe-area-inset-bottom, 0px))',
+            boxShadow: '0 -4px 24px rgba(0,0,0,0.15)'
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+              <span style={{ fontWeight: 700, fontSize: 18 }}>Falar com a loja</span>
+              <div onClick={() => setShowMsgModal(false)} style={{ cursor: 'pointer', fontSize: 22, color: '#999', lineHeight: 1 }}>✕</div>
+            </div>
+            {msgSent ? (
+              <div style={{ textAlign: 'center', padding: 20 }}>
+                <div style={{ fontSize: 40, marginBottom: 12 }}>✅</div>
+                <div style={{ fontWeight: 600, fontSize: 16, marginBottom: 8 }}>Mensagem enviada!</div>
+                <div className="text-muted" style={{ fontSize: 13 }}>A loja responderá em breve.</div>
+                <button className="btn btn-primary" style={{ marginTop: 20, width: '100%' }} onClick={() => setShowMsgModal(false)}>
+                  OK
+                </button>
+              </div>
+            ) : (
+              <>
+                <div className="form-group">
+                  <textarea className="input" value={msgText} onChange={e => setMsgText(e.target.value)}
+                    placeholder="Digite sua mensagem para a loja (dúvidas, reclamações, etc.)"
+                    style={{ minHeight: 120, resize: 'vertical', fontSize: 15 }} />
+                </div>
+                <button className="btn btn-primary" style={{ width: '100%' }} disabled={!msgText.trim() || msgSending}
+                  onClick={async () => {
+                    if (!msgText.trim() || !order) return;
+                    setMsgSending(true);
+                    const data = await apiFetch('/messages', {
+                      method: 'POST',
+                      body: JSON.stringify({ store_id: order.store_id, message: msgText.trim() })
+                    });
+                    setMsgSending(false);
+                    if (data.ok) { setMsgSent(true); } else { alert('Erro ao enviar mensagem'); }
+                  }}>
+                  {msgSending ? 'Enviando...' : 'Enviar Mensagem'}
+                </button>
+              </>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

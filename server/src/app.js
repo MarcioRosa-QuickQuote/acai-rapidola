@@ -14,6 +14,7 @@ const storeRoutes = require('./routes/stores');
 const orderRoutes = require('./routes/orders');
 const motoboyRoutes = require('./routes/motoboy');
 const paymentRoutes = require('./routes/payment');
+const messageRoutes = require('./routes/messages');
 
 const { supabase } = require('./database');
 
@@ -101,6 +102,7 @@ app.get('/api/setup', async (req, res) => {
 app.use('/api/orders', orderRoutes);
 app.use('/api/motoboy', motoboyRoutes);
 app.use('/api', paymentRoutes);
+app.use('/api/messages', messageRoutes);
 
 app.use((err, req, res, next) => {
   console.error('[Server] Erro:', err?.message || err);

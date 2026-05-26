@@ -134,6 +134,15 @@ CREATE TABLE IF NOT EXISTS password_reset_codes (
   used INTEGER NOT NULL DEFAULT 0,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
+CREATE TABLE IF NOT EXISTS messages (
+  id TEXT PRIMARY KEY DEFAULT gen_random_uuid()::text,
+  store_id TEXT NOT NULL REFERENCES stores(id),
+  customer_id TEXT NOT NULL REFERENCES users(id),
+  customer_name TEXT NOT NULL,
+  message TEXT NOT NULL,
+  read INTEGER DEFAULT 0,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
 -- ALTER TABLE users ADD COLUMN IF NOT EXISTS email TEXT DEFAULT '';
 -- ALTER TABLE users ADD COLUMN IF NOT EXISTS pix_key TEXT DEFAULT '';
 -- ALTER TABLE stores ADD COLUMN IF NOT EXISTS pix_key TEXT DEFAULT '';

@@ -99,6 +99,8 @@ export default function StoreDashboard() {
   const [cep, setCep] = useState('');
   const [cepLoading, setCepLoading] = useState(false);
   const [savingAddr, setSavingAddr] = useState(false);
+  const [storeMessages, setStoreMessages] = useState([]);
+  const [unreadMessages, setUnreadMessages] = useState(0);
   const addrSearchRef = useRef(null);
 
   useEffect(() => {
@@ -138,6 +140,7 @@ export default function StoreDashboard() {
     socket.on('order_status', () => loadOrders());
     socket.on('notification', (notif) => {
       if (notif.type === 'delivery') setToast(notif.body);
+      if (notif.type === 'message') { loadMessages(); setToast(`📩 ${notif.body}`); }
     });
     if (storeData) joinStore(storeData.id);
     return () => {
@@ -151,7 +154,12 @@ export default function StoreDashboard() {
   useEffect(() => {
     if (view === 'produtos') loadProducts();
     if (view === 'perfil' && perfilTab === 'motoboy') loadMotoboys();
+    if (view === 'perfil' && perfilTab === 'mensagens') loadMessages();
   }, [view, perfilTab, storeData]);
+
+  useEffect(() => {
+    if (storeData) loadMessages();
+  }, [storeData]);
 
   useEffect(() => {
     const low = products.filter(p => p.active && p.stock_quantity != null && p.min_stock_alert != null && p.stock_quantity <= p.min_stock_alert);
@@ -162,6 +170,15 @@ export default function StoreDashboard() {
     const data = await apiFetch('/orders');
     if (data.data) setOrders(data.data);
     setLoading(false);
+  }
+
+  async function loadMessages() {
+    if (!storeData) return;
+    const data = await apiFetch(`/messages/${storeData.id}`);
+    if (data.data) {
+      setStoreMessages(data.data);
+      setUnreadMessages(data.data.filter(m => !m.read).length);
+    }
   }
 
   async function updateStatus(orderId, status) {
@@ -1115,10 +1132,35 @@ export default function StoreDashboard() {
 
     if (perfilTab === 'mensagens') {
       return (
-        <div className="card" style={{ textAlign: 'center', padding: 40 }}>
-          <div style={{ fontSize: 40, marginBottom: 12 }}>💬</div>
-          <div style={{ fontSize: 16, fontWeight: 700, color: '#333' }}>Mensagens</div>
-          <div className="text-muted" style={{ marginTop: 8 }}>Em breve</div>
+        <div>
+          {storeMessages.length === 0 ? (
+            <div className="card" style={{ textAlign: 'center', padding: 40 }}>
+              <div style={{ fontSize: 40, marginBottom: 12 }}>💬</div>
+              <div style={{ fontSize: 16, fontWeight: 700, color: '#333' }}>Mensagens</div>
+              <div className="text-muted" style={{ marginTop: 8 }}>Nenhuma mensagem recebida</div>
+            </div>
+          ) : (
+            storeMessages.map(msg => (
+              <div key={msg.id} className="card" style={{
+                padding: '14px 16px', marginBottom: 8,
+                background: msg.read ? 'white' : '#F3E5F5',
+                borderLeft: msg.read ? '3px solid transparent' : '3px solid #6A1B9A'
+              }} onClick={async () => {
+                if (!msg.read) {
+                  await apiFetch(`/messages/${msg.id}/read`, { method: 'PATCH' });
+                  loadMessages();
+                }
+              }}>
+                <div className="flex-between" style={{ marginBottom: 4 }}>
+                  <span style={{ fontWeight: 700, fontSize: 14 }}>{msg.customer_name}</span>
+                  <span style={{ fontSize: 11, color: '#999' }}>
+                    {new Date(msg.created_at).toLocaleString('pt-BR')}
+                  </span>
+                </div>
+                <div style={{ fontSize: 13, color: '#555', lineHeight: 1.4 }}>{msg.message}</div>
+              </div>
+            ))
+          )}
         </div>
       );
     }
@@ -1491,7 +1533,17 @@ export default function StoreDashboard() {
               {(storeData?.name || 'L').charAt(0)}
             </div>
           )}
-          <div style={{ position: 'relative', cursor: 'pointer' }} onClick={() => setToast('Nenhuma notificação')}>
+          <div style={{ position: 'relative', cursor: 'pointer' }}
+            onClick={() => { setView('perfil'); setPerfilTab('mensagens'); }}>
+            {unreadMessages > 0 && (
+              <div style={{
+                position: 'absolute', top: -4, right: -4,
+                width: 18, height: 18, borderRadius: '50%',
+                background: '#C62828', color: 'white',
+                fontSize: 10, fontWeight: 700,
+                display: 'flex', alignItems: 'center', justifyContent: 'center'
+              }}>{unreadMessages > 9 ? '9+' : unreadMessages}</div>
+            )}
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--text-light)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
               <path d="M13.73 21a2 2 0 0 1-3.46 0" />

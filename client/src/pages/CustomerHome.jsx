@@ -60,6 +60,10 @@ export default function CustomerHome() {
   });
   const [showAddrForm, setShowAddrForm] = useState(false);
   const [addrLabel, setAddrLabel] = useState('');
+  const [msgStore, setMsgStore] = useState(null);
+  const [msgText, setMsgText] = useState('');
+  const [msgSending, setMsgSending] = useState(false);
+  const [msgSent, setMsgSent] = useState(false);
 
   useEffect(() => {
     localStorage.setItem('user_addresses', JSON.stringify(savedAddresses));
@@ -349,6 +353,53 @@ export default function CustomerHome() {
       </div>
 
       {!storeId && <CustomerBottomNav />}
+
+      {msgStore && (
+        <div style={{ position: 'fixed', inset: 0, zIndex: 2000, display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }}
+          onClick={() => setMsgStore(null)}>
+          <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.4)' }} />
+          <div onClick={e => e.stopPropagation()} style={{
+            position: 'relative', background: 'white', width: '100%', maxWidth: 500,
+            borderTopLeftRadius: 20, borderTopRightRadius: 20, padding: '24px 20px',
+            paddingBottom: 'calc(20px + env(safe-area-inset-bottom, 0px))',
+            boxShadow: '0 -4px 24px rgba(0,0,0,0.15)'
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+              <span style={{ fontWeight: 700, fontSize: 18 }}>Falar com {msgStore.name}</span>
+              <div onClick={() => setMsgStore(null)} style={{ cursor: 'pointer', fontSize: 22, color: '#999', lineHeight: 1 }}>✕</div>
+            </div>
+            {msgSent ? (
+              <div style={{ textAlign: 'center', padding: 20 }}>
+                <div style={{ fontSize: 40, marginBottom: 12 }}>✅</div>
+                <div style={{ fontWeight: 600, fontSize: 16, marginBottom: 8 }}>Mensagem enviada!</div>
+                <div className="text-muted" style={{ fontSize: 13 }}>A loja responderá em breve.</div>
+                <button className="btn btn-primary" style={{ marginTop: 20, width: '100%' }} onClick={() => setMsgStore(null)}>OK</button>
+              </div>
+            ) : (
+              <>
+                <div className="form-group">
+                  <textarea className="input" value={msgText} onChange={e => setMsgText(e.target.value)}
+                    placeholder="Digite sua mensagem para a loja (dúvidas, reclamações, etc.)"
+                    style={{ minHeight: 120, resize: 'vertical', fontSize: 15 }} />
+                </div>
+                <button className="btn btn-primary" style={{ width: '100%' }} disabled={!msgText.trim() || msgSending}
+                  onClick={async () => {
+                    if (!msgText.trim() || !msgStore) return;
+                    setMsgSending(true);
+                    const data = await apiFetch('/messages', {
+                      method: 'POST',
+                      body: JSON.stringify({ store_id: msgStore.id, message: msgText.trim() })
+                    });
+                    setMsgSending(false);
+                    if (data.ok) { setMsgSent(true); } else { alert('Erro ao enviar mensagem'); }
+                  }}>
+                  {msgSending ? 'Enviando...' : 'Enviar Mensagem'}
+                </button>
+              </>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 
@@ -830,6 +881,12 @@ export default function CustomerHome() {
           <NavCard label="Favoritos" onClick={() => navigate('/customer/favoritos')}
             icon={<svg width="20" height="20" viewBox="0 0 24 24" fill="var(--primary)"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>} />
         </div>
+
+        {/* Card: Quiz Paraense */}
+        <div className="card" style={{ padding: 0, overflow: 'hidden', marginBottom: 12 }}>
+          <NavCard label="Quiz Paraense" onClick={() => navigate('/customer/quiz')}
+            icon={<span style={{ fontSize: 20 }}>🧠</span>} />
+        </div>
       </>
     );
   }
@@ -1068,6 +1125,12 @@ export default function CustomerHome() {
           <span>{new Date(order.created_at).toLocaleString('pt-BR')}</span>
           <span className={`badge ${order.payment_status === 'paid' ? 'badge-success' : 'badge-warning'}`}>
             {order.payment_status === 'paid' ? 'Pago' : 'Pendente'}
+          </span>
+        </div>
+        <div style={{ marginTop: 6 }}>
+          <span onClick={(e) => { e.stopPropagation(); setMsgStore({ id: order.store_id, name: order.store_name }); setMsgSent(false); setMsgText(''); }}
+            style={{ fontSize: 12, color: 'var(--primary)', fontWeight: 600, cursor: 'pointer', textDecoration: 'underline' }}>
+            💬 Falar com a loja
           </span>
         </div>
       </div>
