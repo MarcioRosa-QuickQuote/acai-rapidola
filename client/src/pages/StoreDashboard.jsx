@@ -1075,14 +1075,16 @@ export default function StoreDashboard() {
             ) : (
               <div className={isDesktop ? 'grid-2' : ''}>
               {displayOrders.map(order => {
+                const expanded = selectedOrder === order.id;
                 const hasAction = order.payment_status === 'paid' && actionMap[order.status];
                 return (
-                <div key={order.id} className="card">
+                <div key={order.id} className="card" style={{ cursor: 'pointer' }}
+                  onClick={() => setSelectedOrder(selectedOrder === order.id ? null : order.id)}>
                   <div className="flex-between" style={{ marginBottom: 10 }}>
                     <div>
                       <span className="font-bold" style={{ fontSize: 15 }}>{order.customer_name}</span>
                       {order.payment_status !== 'paid' && (
-                        <span className={`badge badge-warning`} style={{ marginLeft: 8, fontSize: 11 }}>Pendente</span>
+                        <span className="badge badge-warning" style={{ marginLeft: 8, fontSize: 11 }}>Pendente</span>
                       )}
                     </div>
                     {hasAction ? (
@@ -1099,15 +1101,13 @@ export default function StoreDashboard() {
 
                   <div style={{ fontWeight: 700, fontSize: 14, color: '#333', marginBottom: 8 }}>Detalhes do Pedido</div>
 
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, marginBottom: 4 }}>
-                    <div style={{ flex: 1 }}>
-                      {(order.order_items || []).map((item, idx) => (
-                        <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 2 }}>
-                          <span>{item.quantity}x {item.products?.name || 'Produto'}</span>
-                          <span>R$ {(item.unit_price * item.quantity).toFixed(2)}</span>
-                        </div>
-                      ))}
-                    </div>
+                  <div style={{ fontSize: 13, marginBottom: 4 }}>
+                    {(order.order_items || []).map((item, idx) => (
+                      <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 2 }}>
+                        <span>{item.quantity}x {item.products?.name || 'Produto'}</span>
+                        <span>R$ {(item.unit_price * item.quantity).toFixed(2)}</span>
+                      </div>
+                    ))}
                   </div>
 
                   {order.motoboy_name && (
@@ -1117,33 +1117,35 @@ export default function StoreDashboard() {
                     </div>
                   )}
 
-                  <div className="flex-between" style={{ fontSize: 14, fontWeight: 700, color: 'var(--primary)', marginTop: 4, marginBottom: 8 }}>
+                  <div className="flex-between" style={{ fontSize: 14, fontWeight: 700, color: 'var(--primary)', marginTop: 4, marginBottom: expanded ? 8 : 0 }}>
                     <span>Total</span>
                     <span>R$ {order.total.toFixed(2)}</span>
                   </div>
 
-                  <div style={{ fontSize: 12, color: '#555', marginBottom: 8 }}>
-                    📍 {shortAddress(order.customer_address)}
-                  </div>
+                  {expanded && (
+                    <div style={{ marginTop: 12, padding: '12px 0', borderTop: '1px solid var(--border)' }}>
+                      <div style={{ fontSize: 12, color: '#555', marginBottom: 8 }}>
+                        📍 {shortAddress(order.customer_address)}
+                      </div>
 
-                  {order.customer_lat && order.store_lat && (
-                    <div style={{ height: 160, borderRadius: 8, overflow: 'hidden', border: '1px solid var(--border)' }}>
-                      <MapContainer
-                        center={[(order.customer_lat + order.store_lat) / 2, ((order.customer_lng || 0) + (order.store_lng || 0)) / 2]}
-                        zoom={13} style={{ height: '100%', width: '100%' }} scrollWheelZoom={false}>
-                        <TileLayer attribution='&copy; OSM' url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-                        <Marker position={[order.store_lat, order.store_lng]} icon={L.divIcon({ html: '<img src="/logo_placa.png" style="width:44px;height:44px;object-fit:contain;filter:drop-shadow(0 2px 6px rgba(0,0,0,0.5))"/>', className: '', iconSize: [44, 44], iconAnchor: [22, 22] })} />
-                        <Marker position={[order.customer_lat, order.customer_lng]} />
-                        <RoutePolyline from={{ lat: order.store_lat, lng: order.store_lng }} to={{ lat: order.customer_lat, lng: order.customer_lng }} color="#4A148C" />
-                      </MapContainer>
-                    </div>
-                  )}
+                      {order.customer_lat && order.store_lat && (
+                        <div style={{ height: 160, borderRadius: 8, overflow: 'hidden', border: '1px solid var(--border)', marginBottom: 8 }}>
+                          <MapContainer
+                            center={[(order.customer_lat + order.store_lat) / 2, ((order.customer_lng || 0) + (order.store_lng || 0)) / 2]}
+                            zoom={13} style={{ height: '100%', width: '100%' }} scrollWheelZoom={false}>
+                            <TileLayer attribution='&copy; OSM' url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+                            <Marker position={[order.store_lat, order.store_lng]} icon={L.divIcon({ html: '<img src="/logo_placa.png" style="width:44px;height:44px;object-fit:contain;filter:drop-shadow(0 2px 6px rgba(0,0,0,0.5))"/>', className: '', iconSize: [44, 44], iconAnchor: [22, 22] })} />
+                            <Marker position={[order.customer_lat, order.customer_lng]} />
+                            <RoutePolyline from={{ lat: order.store_lat, lng: order.store_lng }} to={{ lat: order.customer_lat, lng: order.customer_lng }} color="#4A148C" />
+                          </MapContainer>
+                        </div>
+                      )}
 
-                  {(order.status === 'arriving' || order.status === 'picked_up') && (
-                    <div style={{ marginTop: 6 }}>
-                      <span className="badge" style={{ background: '#FFF3E0', color: '#E65100', fontSize: 11 }}>
-                        ALERTA: Motoboy próximo!
-                      </span>
+                      {(order.status === 'arriving' || order.status === 'picked_up') && (
+                        <span className="badge" style={{ background: '#FFF3E0', color: '#E65100', fontSize: 11 }}>
+                          ALERTA: Motoboy próximo!
+                        </span>
+                      )}
                     </div>
                   )}
                 </div>
