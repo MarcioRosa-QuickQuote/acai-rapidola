@@ -1499,35 +1499,19 @@ export default function StoreDashboard() {
             </span>
           </div>
         </div>
-        <div className="header-right" style={{ gap: 10 }}>
-          <div style={{ position: 'relative', cursor: 'pointer' }}
-            onClick={() => { setView('perfil'); setPerfilTab('mensagens'); }}>
-            {unreadMessages > 0 && (
-              <div style={{
-                position: 'absolute', top: -4, right: -4,
-                width: 18, height: 18, borderRadius: '50%',
-                background: '#C62828', color: 'white',
-                fontSize: 10, fontWeight: 700,
-                display: 'flex', alignItems: 'center', justifyContent: 'center'
-              }}>{unreadMessages > 9 ? '9+' : unreadMessages}</div>
-            )}
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--text-light)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
-              <path d="M13.73 21a2 2 0 0 1-3.46 0" />
-            </svg>
-          </div>
+        <div className="header-right" style={{ gap: 8 }}>
           <div style={{ position: 'relative' }}>
             {storeData?.logo ? (
               <img src={storeData.logo} alt="Logo"
-                style={{ width: 36, height: 36, borderRadius: '50%', objectFit: 'cover', flexShrink: 0, cursor: 'pointer' }}
+                style={{ width: 42, height: 42, borderRadius: '50%', objectFit: 'cover', flexShrink: 0, cursor: 'pointer' }}
                 onClick={(e) => { e.stopPropagation(); if (isDesktop) setShowDesktopMenu(v => !v); else { setView('perfil'); setPerfilTab(null); } }}
                 onError={e => { e.target.style.display = 'none'; }} />
             ) : (
               <div style={{
-                width: 36, height: 36, borderRadius: '50%',
+                width: 42, height: 42, borderRadius: '50%',
                 background: 'linear-gradient(135deg, var(--primary), var(--primary-dark))',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                color: 'white', fontWeight: 800, fontSize: 16, flexShrink: 0, cursor: 'pointer'
+                color: 'white', fontWeight: 800, fontSize: 18, flexShrink: 0, cursor: 'pointer'
               }}
                 onClick={(e) => { e.stopPropagation(); if (isDesktop) setShowDesktopMenu(v => !v); else { setView('perfil'); setPerfilTab(null); } }}>
                 {(storeData?.name || 'L').charAt(0)}
@@ -1557,6 +1541,22 @@ export default function StoreDashboard() {
                 </div>
               </div>
             )}
+          </div>
+          <div style={{ position: 'relative', cursor: 'pointer', marginLeft: 4 }}
+            onClick={() => { setView('perfil'); setPerfilTab('mensagens'); }}>
+            {unreadMessages > 0 && (
+              <div style={{
+                position: 'absolute', top: -4, right: -4,
+                width: 18, height: 18, borderRadius: '50%',
+                background: '#C62828', color: 'white',
+                fontSize: 10, fontWeight: 700,
+                display: 'flex', alignItems: 'center', justifyContent: 'center'
+              }}>{unreadMessages > 9 ? '9+' : unreadMessages}</div>
+            )}
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--text-light)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+              <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+            </svg>
           </div>
         </div>
       </div>
