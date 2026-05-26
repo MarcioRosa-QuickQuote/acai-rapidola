@@ -19,7 +19,7 @@ router.post('/', authMiddleware, async (req, res) => {
 
   const id = uuid();
   const { error: insertError } = await supabase.from('messages').insert({
-    id, store_id, customer_id: customerId, customer_name: customerName, message: cleanMsg
+    id, store_id, customer_id: customerId, customer_name: customerName, message: cleanMsg, from_store: 0
   });
   if (insertError) {
     console.error('[Messages] Insert error:', insertError);
@@ -41,6 +41,47 @@ router.post('/', authMiddleware, async (req, res) => {
       for (const [socketId, socket] of io.sockets.sockets) {
         if (socket.userId === store.owner_id) {
           socket.emit('notification', { id: notifId, title: 'Nova mensagem', body: `${customerName}: ${cleanMsg}`, type: 'message' });
+        }
+      }
+    }
+  } catch {}
+
+  res.json({ ok: true, id });
+});
+
+router.post('/reply', authMiddleware, async (req, res) => {
+  const { customer_id, store_id, message } = req.body;
+  const storeName = req.user.name || 'Loja';
+  if (!customer_id || !store_id || !message) return res.status(400).json({ error: 'customer_id, store_id e message são obrigatórios' });
+  const cleanMsg = sanitize(message, 1000);
+  if (!cleanMsg) return res.status(400).json({ error: 'Mensagem inválida' });
+
+  const { data: store } = await supabase.from('stores').select('id, owner_id').eq('id', store_id).single();
+  if (!store || store.owner_id !== req.user.id) return res.status(403).json({ error: 'Acesso negado' });
+
+  const id = uuid();
+  const { error } = await supabase.from('messages').insert({
+    id, store_id, customer_id, customer_name: storeName, message: cleanMsg, from_store: 1
+  });
+  if (error) {
+    console.error('[Messages] Reply error:', error);
+    return res.status(500).json({ error: 'Erro ao responder' });
+  }
+
+  try {
+    const notifId = uuid();
+    await supabase.from('notifications').insert({
+      id: notifId, user_id: customer_id,
+      title: 'Resposta da loja',
+      body: `${storeName}: ${cleanMsg}`,
+      type: 'message'
+    });
+    const { getIO } = require('../services/socket');
+    const io = getIO();
+    if (io) {
+      for (const [socketId, socket] of io.sockets.sockets) {
+        if (socket.userId === customer_id) {
+          socket.emit('notification', { id: notifId, title: 'Resposta da loja', body: `${storeName}: ${cleanMsg}`, type: 'message' });
         }
       }
     }

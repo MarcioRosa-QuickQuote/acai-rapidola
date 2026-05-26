@@ -142,6 +142,7 @@ CREATE TABLE IF NOT EXISTS messages (
   customer_id TEXT NOT NULL REFERENCES users(id),
   customer_name TEXT NOT NULL,
   message TEXT NOT NULL,
+  from_store INTEGER DEFAULT 0,
   read INTEGER DEFAULT 0,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
