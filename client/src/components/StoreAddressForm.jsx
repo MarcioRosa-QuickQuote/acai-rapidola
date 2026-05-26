@@ -129,8 +129,7 @@ export default function StoreAddressForm({ settings, setSettings, saveSettings, 
           <div style={{ fontSize: 11, color: '#888', marginBottom: 4 }}>Use o mapa para ajustar o ponto exato</div>
           <div style={{ height: 200, borderRadius: 10, overflow: 'hidden', border: '1px solid var(--border)' }}>
             <MapContainer center={[parseFloat(settings.lat), parseFloat(settings.lng)]} zoom={16}
-              style={{ height: '100%', width: '100%' }}
-              key={`addr-map-${settings.lat}-${settings.lng}`} scrollWheelZoom={false}>
+              style={{ height: '100%', width: '100%' }} scrollWheelZoom={false}>
               <TileLayer attribution='&copy; OSM' url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
               <Marker position={[parseFloat(settings.lat), parseFloat(settings.lng)]} draggable={true}
                 eventHandlers={{

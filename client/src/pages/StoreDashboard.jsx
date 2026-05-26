@@ -1404,7 +1404,29 @@ export default function StoreDashboard() {
         ) : view === 'financeiro' ? (
           <FinanceiroTab />
         ) : view === 'perfil' ? (
-          <PerfilView />
+          perfilTab ? (
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
+                <div onClick={() => setPerfilTab(null)} style={{
+                  width: 36, height: 36, borderRadius: '50%',
+                  background: '#F3E5F5', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  cursor: 'pointer', fontSize: 18, fontWeight: 700, color: '#6A1B9A', flexShrink: 0
+                }}>‹</div>
+                <span style={{ fontWeight: 700, fontSize: 16 }}>
+                  {perfilTab === 'dados' ? 'Dados' : perfilTab === 'endereco' ? 'Endereço' : perfilTab === 'trocar-senha' ? 'Trocar Senha' : perfilTab === 'mensagens' ? 'Mensagens' : perfilTab === 'vendas' ? 'Vendas' : perfilTab === 'motoboy' ? 'Motoboys' : perfilTab === 'assinatura' ? 'Assinatura' : ''}
+                </span>
+              </div>
+              {perfilTab === 'dados' && <DadosSection settings={settings} setSettings={setSettings} fileRef={fileRef} uploadLogo={uploadLogo} logoSaving={logoSaving} saveMsg={saveMsg} saveSettings={saveSettings} uploading={uploading} />}
+              {perfilTab === 'endereco' && <StoreAddressForm settings={settings} setSettings={setSettings} saveSettings={saveSettings} uploading={uploading} saveMsg={saveMsg} setSaveMsg={setSaveMsg} />}
+              {perfilTab === 'trocar-senha' && <TrocarSenhaSection pwCurrent={pwCurrent} setPwCurrent={setPwCurrent} pwNew={pwNew} setPwNew={setPwNew} pwMsg={pwMsg} setPwMsg={setPwMsg} pwSaving={pwSaving} setPwSaving={setPwSaving} apiFetch={apiFetch} />}
+              {perfilTab === 'mensagens' && <StoreMessages messages={storeMessages} storeId={storeData?.id} apiFetch={apiFetch} onReload={loadMessages} />}
+              {perfilTab === 'vendas' && <FinanceiroTab />}
+              {perfilTab === 'motoboy' && <MotoboySection storeData={storeData} motoboys={motoboys} invites={invites} motoboyPhone={motoboyPhone} setMotoboyPhone={setMotoboyPhone} motoboyMsg={motoboyMsg} setMotoboyMsg={setMotoboyMsg} inviteLink={inviteLink} generateInvite={generateInvite} copyInviteLink={copyInviteLink} copyInviteLinkToken={copyInviteLinkToken} revokeInvite={revokeInvite} toggleEmployee={toggleEmployee} removeMotoboy={removeMotoboy} />}
+              {perfilTab === 'assinatura' && <AssinaturaSection />}
+            </div>
+          ) : (
+            <PerfilView />
+          )
         ) : null}
       </div>
 
