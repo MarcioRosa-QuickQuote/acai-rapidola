@@ -592,7 +592,7 @@ export default function CustomerTracking() {
                     setMsgSending(true);
                     const data = await apiFetch('/messages', {
                       method: 'POST',
-                      body: JSON.stringify({ store_id: order.store_id, message: msgText.trim() })
+                      body: JSON.stringify({ store_id: order.store_id, message: msgText.trim(), order_id: order.id })
                     });
                     setMsgSending(false);
                     if (data.ok) { setMsgSent(true); } else { alert('Erro ao enviar mensagem'); }

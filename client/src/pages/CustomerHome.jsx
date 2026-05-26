@@ -388,7 +388,7 @@ export default function CustomerHome() {
                     setMsgSending(true);
                     const data = await apiFetch('/messages', {
                       method: 'POST',
-                      body: JSON.stringify({ store_id: msgStore.id, message: msgText.trim() })
+                      body: JSON.stringify({ store_id: msgStore.id, message: msgText.trim(), order_id: msgStore.order_id })
                     });
                     setMsgSending(false);
                     if (data.ok) { setMsgSent(true); } else { alert('Erro ao enviar mensagem'); }
@@ -1122,7 +1122,7 @@ export default function CustomerHome() {
           </span>
         </div>
         <div style={{ marginTop: 6 }}>
-          <span onClick={(e) => { e.stopPropagation(); setMsgStore({ id: order.store_id, name: order.store_name }); setMsgSent(false); setMsgText(''); }}
+          <span onClick={(e) => { e.stopPropagation(); setMsgStore({ id: order.store_id, name: order.store_name, order_id: order.id }); setMsgSent(false); setMsgText(''); }}
             style={{ fontSize: 12, color: 'var(--primary)', fontWeight: 600, cursor: 'pointer', textDecoration: 'underline' }}>
             💬 Falar com a loja
           </span>

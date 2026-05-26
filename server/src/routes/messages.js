@@ -7,7 +7,7 @@ const { sanitize } = require('../helpers');
 const router = Router();
 
 router.post('/', authMiddleware, async (req, res) => {
-  const { store_id, message } = req.body;
+  const { store_id, message, order_id } = req.body;
   const customerId = req.user.id;
   const customerName = req.user.name || 'Cliente';
   if (!store_id || !message) return res.status(400).json({ error: 'store_id e message são obrigatórios' });
@@ -18,9 +18,9 @@ router.post('/', authMiddleware, async (req, res) => {
   if (!store) return res.status(404).json({ error: 'Loja não encontrada' });
 
   const id = uuid();
-  const { error: insertError } = await supabase.from('messages').insert({
-    id, store_id, customer_id: customerId, customer_name: customerName, message: cleanMsg, from_store: 0
-  });
+  const insertData = { id, store_id, customer_id: customerId, customer_name: customerName, message: cleanMsg, from_store: 0 };
+  if (order_id) insertData.order_id = order_id;
+  const { error: insertError } = await supabase.from('messages').insert(insertData);
   if (insertError) {
     console.error('[Messages] Insert error:', insertError);
     if (insertError.code === '42P01') return res.status(500).json({ error: 'Tabela de mensagens não encontrada. Execute o setup.sql no Supabase.' });

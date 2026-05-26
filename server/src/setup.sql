@@ -144,6 +144,7 @@ CREATE TABLE IF NOT EXISTS messages (
   message TEXT NOT NULL,
   from_store INTEGER DEFAULT 0,
   read INTEGER DEFAULT 0,
+  order_id TEXT,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 -- ALTER TABLE users ADD COLUMN IF NOT EXISTS email TEXT DEFAULT '';

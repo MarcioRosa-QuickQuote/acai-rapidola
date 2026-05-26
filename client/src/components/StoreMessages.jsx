@@ -1,9 +1,49 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+
+function OrderDetails({ orderId, apiFetch }) {
+  const [order, setOrder] = useState(null);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (!orderId || order) return;
+    setLoading(true);
+    apiFetch(`/orders/${orderId}`).then(d => {
+      if (d.data) setOrder(d.data);
+      setLoading(false);
+    });
+  }, [orderId]);
+
+  if (loading) return <div style={{ fontSize: 12, color: '#888', padding: '8px 0' }}>Carregando pedido...</div>;
+  if (!order) return null;
+
+  return (
+    <div style={{ marginTop: 8, padding: 12, background: '#F3E5F5', borderRadius: 8, border: '1px solid #E1BEE7' }}>
+      <div style={{ fontWeight: 700, fontSize: 13, color: '#6A1B9A', marginBottom: 6 }}>📋 Pedido #{order.id?.slice(0, 8)}</div>
+      {(order.items || []).map((item, i) => (
+        <div key={i} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, marginBottom: 2 }}>
+          <span>{item.quantity}x {item.product_name || 'Produto'}</span>
+          <span>R$ {(item.unit_price * item.quantity).toFixed(2)}</span>
+        </div>
+      ))}
+      {order.delivery_fee > 0 && (
+        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, marginTop: 4 }}>
+          <span>Frete</span>
+          <span>R$ {order.delivery_fee.toFixed(2)}</span>
+        </div>
+      )}
+      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, fontWeight: 700, color: '#6A1B9A', marginTop: 6, borderTop: '1px solid #E1BEE7', paddingTop: 6 }}>
+        <span>Total</span>
+        <span>R$ {order.total?.toFixed(2)}</span>
+      </div>
+    </div>
+  );
+}
 
 export default function StoreMessages({ messages, storeId, apiFetch, onReload }) {
   const [showReplyFor, setShowReplyFor] = useState(null);
   const [replyText, setReplyText] = useState('');
   const [replySending, setReplySending] = useState(false);
+  const [showOrderFor, setShowOrderFor] = useState(null);
 
   if (messages.length === 0) {
     return (
@@ -42,6 +82,17 @@ export default function StoreMessages({ messages, storeId, apiFetch, onReload })
           </div>
           <div style={{ fontSize: 13, color: '#555', lineHeight: 1.4 }}>{msg.message}</div>
         </div>
+        {!msg.from_store && msg.order_id && (
+          <div style={{ marginTop: 8 }}>
+            <span onClick={(e) => { e.stopPropagation(); setShowOrderFor(showOrderFor === msg.id ? null : msg.id); }}
+              style={{ fontSize: 12, color: '#6A1B9A', fontWeight: 600, cursor: 'pointer', textDecoration: 'underline' }}>
+              📋 {showOrderFor === msg.id ? 'Esconder pedido' : 'Ver pedido'}
+            </span>
+            {showOrderFor === msg.id && (
+              <OrderDetails orderId={msg.order_id} apiFetch={apiFetch} />
+            )}
+          </div>
+        )}
         {replying && !msg.from_store && (
           <div style={{ marginTop: 12, borderTop: '1px solid var(--border)', paddingTop: 12 }}>
             <textarea className="input" value={replyText} onChange={e => setReplyText(e.target.value)}
