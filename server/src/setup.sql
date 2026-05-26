@@ -119,11 +119,13 @@ VALUES ('uploads', 'uploads', true)
 ON CONFLICT (id) DO NOTHING;
 
 -- Política pública para leitura de uploads
-CREATE POLICY IF NOT EXISTS "Public uploads" ON storage.objects
+DROP POLICY IF EXISTS "Public uploads" ON storage.objects;
+CREATE POLICY "Public uploads" ON storage.objects
   FOR SELECT USING (bucket_id = 'uploads');
 
 -- Política para inserção autenticada
-CREATE POLICY IF NOT EXISTS "Auth insert uploads" ON storage.objects
+DROP POLICY IF EXISTS "Auth insert uploads" ON storage.objects;
+CREATE POLICY "Auth insert uploads" ON storage.objects
   FOR INSERT WITH CHECK (bucket_id = 'uploads');
 
 -- Colunas adicionadas posteriormente (rodar se necessario):
