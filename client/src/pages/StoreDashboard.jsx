@@ -1178,144 +1178,123 @@ export default function StoreDashboard() {
 
     return (
       <div>
-        <div style={{ marginBottom: 16 }}>
-          <div style={{ fontSize: 24, fontWeight: 800, color: '#333' }}>Olá, {storeData?.name || 'Loja'}! 👋</div>
-          <div style={{ fontSize: 13, color: '#888', marginTop: 4 }}>
+        <div style={{ marginBottom: 24 }}>
+          <div style={{ fontSize: 26, fontWeight: 800, color: '#1a1a1a' }}>
+            Olá, {storeData?.name || 'Loja'}! 👋
+          </div>
+          <div style={{ fontSize: 14, color: '#888', marginTop: 4 }}>
             {new Date().toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' })}
           </div>
         </div>
 
-        <div className={isDesktop ? 'grid-2' : ''} style={{ marginBottom: 16 }}>
-          <div className="card" style={{
-            background: 'linear-gradient(135deg, #6A1B9A, #9C27B0)',
-            color: 'white', border: 'none', padding: 20
-          }}>
-            <div style={{ fontSize: 13, opacity: 0.8 }}>Status da Loja</div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 8 }}>
-              <div style={{
-                width: 12, height: 12, borderRadius: '50%',
-                background: open ? '#69F0AE' : '#FF8A80',
-                boxShadow: open ? '0 0 12px rgba(105,240,174,0.6)' : '0 0 12px rgba(255,138,128,0.6)'
-              }} />
-              <span style={{ fontSize: 20, fontWeight: 800 }}>
-                {open ? 'ABERTA' : 'FECHADA'}
-              </span>
-            </div>
+        <div style={{
+          background: 'linear-gradient(135deg, #6A1B9A 0%, #9C27B0 50%, #CE93D8 100%)',
+          borderRadius: 20, padding: 24, marginBottom: 20,
+          color: 'white', position: 'relative', overflow: 'hidden'
+        }}>
+          <div style={{ position: 'absolute', top: -20, right: -20, width: 120, height: 120, borderRadius: '50%', background: 'rgba(255,255,255,0.08)' }} />
+          <div style={{ position: 'absolute', bottom: -30, left: -10, width: 80, height: 80, borderRadius: '50%', background: 'rgba(255,255,255,0.05)' }} />
+          <div style={{ fontSize: 13, opacity: 0.8, fontWeight: 500 }}>Faturamento Hoje</div>
+          <div style={{ fontSize: 34, fontWeight: 800, marginTop: 6 }}>
+            R$ {faturamentoHoje.toFixed(2)}
           </div>
-
-          <div className="card" style={{
-            background: 'linear-gradient(135deg, #1B5E20, #388E3C)',
-            color: 'white', border: 'none', padding: 20
-          }}>
-            <div style={{ fontSize: 13, opacity: 0.8 }}>Faturamento Hoje</div>
-            <div style={{ fontSize: 26, fontWeight: 800, marginTop: 4 }}>
-              R$ {faturamentoHoje.toFixed(2)}
+          <div style={{ display: 'flex', gap: 24, marginTop: 16 }}>
+            <div>
+              <div style={{ fontSize: 11, opacity: 0.6 }}>Pedidos hoje</div>
+              <div style={{ fontSize: 20, fontWeight: 700 }}>{totalPedidosHoje}</div>
+            </div>
+            <div>
+              <div style={{ fontSize: 11, opacity: 0.6 }}>Loja</div>
+              <div style={{ fontSize: 20, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 6 }}>
+                <span style={{ width: 8, height: 8, borderRadius: '50%', background: open ? '#69F0AE' : '#FF8A80', display: 'inline-block' }} />
+                {open ? 'Aberta' : 'Fechada'}
+              </div>
+            </div>
+            <div>
+              <div style={{ fontSize: 11, opacity: 0.6 }}>Produtos</div>
+              <div style={{ fontSize: 20, fontWeight: 700 }}>{totalProdutos}</div>
             </div>
           </div>
         </div>
 
-        <div className={isDesktop ? 'grid-3' : ''} style={{ marginBottom: 16 }}>
-          <div className="card text-center" style={{ padding: 16, background: '#F3E5F5', border: 'none' }}
-            onClick={() => setView('pedidos')}>
-            <div style={{ fontSize: 32, fontWeight: 800, color: '#6A1B9A' }}>{pendingOrders.length}</div>
-            <div style={{ fontSize: 12, color: '#6A1B9A', fontWeight: 600 }}>Pedidos Ativos</div>
+        <div style={{ display: 'grid', gridTemplateColumns: isDesktop ? '1fr 1fr' : '1fr 1fr', gap: 12, marginBottom: 20 }}>
+          <div onClick={() => setView('pedidos')} style={{
+            background: '#F3E5F5', borderRadius: 16, padding: 18,
+            cursor: 'pointer', border: '1px solid #E1BEE7'
+          }}>
+            <div style={{ fontSize: 28, fontWeight: 800, color: '#6A1B9A' }}>{pendingOrders.length}</div>
+            <div style={{ fontSize: 13, color: '#6A1B9A', fontWeight: 600, marginTop: 2 }}>Ativos</div>
           </div>
-          <div className="card text-center" style={{ padding: 16, background: '#FFF3E0', border: 'none' }}
-            onClick={() => setView('pedidos')}>
-            <div style={{ fontSize: 32, fontWeight: 800, color: '#E65100' }}>{pedidosPendentes}</div>
-            <div style={{ fontSize: 12, color: '#E65100', fontWeight: 600 }}>Pendentes</div>
-          </div>
-          <div className="card text-center" style={{ padding: 16, background: '#E8F5E9', border: 'none' }}
-            onClick={() => setView('produtos')}>
-            <div style={{ fontSize: 32, fontWeight: 800, color: '#2E7D32' }}>{totalProdutos}</div>
-            <div style={{ fontSize: 12, color: '#2E7D32', fontWeight: 600 }}>Produtos</div>
+          <div onClick={() => setView('pedidos')} style={{
+            background: '#FFF3E0', borderRadius: 16, padding: 18,
+            cursor: 'pointer', border: '1px solid #FFE0B2'
+          }}>
+            <div style={{ fontSize: 28, fontWeight: 800, color: '#E65100' }}>{pedidosPendentes}</div>
+            <div style={{ fontSize: 13, color: '#E65100', fontWeight: 600, marginTop: 2 }}>Pendentes</div>
           </div>
           {isDesktop && (
             <>
-              <div className="card text-center" style={{ padding: 16, background: '#E3F2FD', border: 'none' }}
-                onClick={() => setView('pedidos')}>
-                <div style={{ fontSize: 32, fontWeight: 800, color: '#1565C0' }}>{totalPedidosHoje}</div>
-                <div style={{ fontSize: 12, color: '#1565C0', fontWeight: 600 }}>Pedidos Hoje</div>
+              <div onClick={() => setView('produtos')} style={{
+                background: '#E8F5E9', borderRadius: 16, padding: 18,
+                cursor: 'pointer', border: '1px solid #C8E6C9'
+              }}>
+                <div style={{ fontSize: 28, fontWeight: 800, color: '#2E7D32' }}>{totalProdutos}</div>
+                <div style={{ fontSize: 13, color: '#2E7D32', fontWeight: 600, marginTop: 2 }}>Produtos</div>
               </div>
-              <div className="card text-center" style={{ padding: 16, background: '#FCE4EC', border: 'none' }}
-                onClick={() => setView('perfil')}>
-                <div style={{ fontSize: 32, fontWeight: 800, color: '#C62828' }}>{motoboysAtivos}</div>
-                <div style={{ fontSize: 12, color: '#C62828', fontWeight: 600 }}>Motoboys</div>
-              </div>
-              <div className="card text-center" style={{ padding: 16, background: '#FFF8E1', border: 'none' }}
-                onClick={() => setView('financeiro')}>
-                <div style={{ fontSize: 32, fontWeight: 800, color: '#F57F17' }}>{concludedOrders.length}</div>
-                <div style={{ fontSize: 12, color: '#F57F17', fontWeight: 600 }}>Concluídos Hoje</div>
+              <div onClick={() => setView('pedidos')} style={{
+                background: '#E3F2FD', borderRadius: 16, padding: 18,
+                cursor: 'pointer', border: '1px solid #BBDEFB'
+              }}>
+                <div style={{ fontSize: 28, fontWeight: 800, color: '#1565C0' }}>{concludedOrders.length}</div>
+                <div style={{ fontSize: 13, color: '#1565C0', fontWeight: 600, marginTop: 2 }}>Concluídos</div>
               </div>
             </>
           )}
         </div>
 
         {lowStockProducts.length > 0 && (
-          <div className="card" style={{ background: '#FFF3E0', border: '1px solid #FFE082', marginBottom: 16 }}>
-            <div className="flex-between">
-              <div>
-                <div style={{ fontSize: 13, fontWeight: 700, color: '#E65100' }}>⚠️ Estoque baixo</div>
-                <div style={{ fontSize: 12, color: '#BF360C', marginTop: 4 }}>
-                  {lowStockProducts.length} produto(s) abaixo do mínimo
-                </div>
+          <div style={{
+            background: '#FFF3E0', borderRadius: 16, padding: 16, marginBottom: 16,
+            border: '1px solid #FFE082', display: 'flex', alignItems: 'center', justifyContent: 'space-between'
+          }}>
+            <div>
+              <div style={{ fontSize: 14, fontWeight: 700, color: '#E65100' }}>⚠️ Estoque baixo</div>
+              <div style={{ fontSize: 13, color: '#BF360C', marginTop: 2 }}>
+                {lowStockProducts.length} produto(s) precisam de reposição
               </div>
-              <button className="btn btn-sm btn-outline" style={{ fontSize: 12 }} onClick={() => { setView('produtos'); }}>
-                Ver produtos
-              </button>
             </div>
+            <button className="btn btn-sm" style={{ background: '#E65100', color: 'white', border: 'none', borderRadius: 8, padding: '8px 16px', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}
+              onClick={() => setView('produtos')}>
+              Ver
+            </button>
           </div>
         )}
 
-        <div className={isDesktop ? 'grid-2' : ''}>
-          <div className="card" style={{ padding: 16 }}>
-            <div style={{ fontWeight: 700, fontSize: 15, marginBottom: 12, color: '#333' }}>🕐 Últimos Pedidos</div>
-            {orders.slice(0, 5).map(o => (
-              <div key={o.id} className="flex-between" style={{ fontSize: 13, padding: '6px 0', borderBottom: '1px solid #f0f0f0' }}>
-                <span style={{ fontWeight: 600 }}>{o.customer_name}</span>
-                <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                  <span className={`badge ${o.payment_status === 'paid' ? 'badge-success' : 'badge-warning'}`} style={{ fontSize: 10 }}>
-                    {o.payment_status === 'paid' ? 'Pago' : 'Pendente'}
-                  </span>
-                  <span style={{ fontWeight: 700, color: '#6A1B9A' }}>R$ {o.total.toFixed(2)}</span>
+        <div style={{ background: 'white', borderRadius: 16, padding: 18, border: '1px solid #f0f0f0' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+            <span style={{ fontWeight: 700, fontSize: 16, color: '#1a1a1a' }}>🕐 Últimos pedidos</span>
+            <span onClick={() => setView('pedidos')} style={{ fontSize: 13, color: '#6A1B9A', fontWeight: 600, cursor: 'pointer' }}>
+              Ver todos →
+            </span>
+          </div>
+          {orders.slice(0, 5).length === 0 ? (
+            <div style={{ fontSize: 13, color: '#888', padding: '12px 0', textAlign: 'center' }}>Nenhum pedido ainda</div>
+          ) : orders.slice(0, 5).map(o => (
+            <div key={o.id} style={{
+              display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+              padding: '10px 0', borderBottom: '1px solid #f5f5f5'
+            }}>
+              <div>
+                <div style={{ fontSize: 14, fontWeight: 600, color: '#333' }}>{o.customer_name}</div>
+                <div style={{ fontSize: 12, color: '#999', marginTop: 2 }}>
+                  R$ {o.total.toFixed(2)} • {new Date(o.created_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
                 </div>
               </div>
-            ))}
-            <button className="btn btn-outline btn-sm" style={{ marginTop: 12, width: '100%', fontSize: 12 }}
-              onClick={() => setView('pedidos')}>
-              Ver todos os pedidos
-            </button>
-          </div>
-
-          {isDesktop && (
-            <div className="card" style={{ padding: 16 }}>
-              <div style={{ fontWeight: 700, fontSize: 15, marginBottom: 12, color: '#333' }}>📊 Resumo Rápido</div>
-              <div style={{ fontSize: 13, marginBottom: 8 }}>
-                <span style={{ color: '#888' }}>Pedidos pagos hoje:</span>
-                <span style={{ fontWeight: 700, float: 'right' }}>
-                  {orders.filter(o => o.payment_status === 'paid' && new Date(o.created_at).toDateString() === new Date().toDateString()).length}
-                </span>
-              </div>
-              <div style={{ fontSize: 13, marginBottom: 8 }}>
-                <span style={{ color: '#888' }}>Taxa de entrega média:</span>
-                <span style={{ fontWeight: 700, float: 'right' }}>
-                  R$ {orders.filter(o => o.delivery_fee).reduce((s, o, _, a) => s + (o.delivery_fee || 0) / a.length, 0).toFixed(2)}
-                </span>
-              </div>
-              <div style={{ fontSize: 13, marginBottom: 8 }}>
-                <span style={{ color: '#888' }}>Ticket médio:</span>
-                <span style={{ fontWeight: 700, float: 'right' }}>
-                  R$ {orders.filter(o => o.payment_status === 'paid').reduce((s, o, _, a) => s + o.total / a.length, 0).toFixed(2) || '0.00'}
-                </span>
-              </div>
-              <div style={{ fontSize: 13 }}>
-                <span style={{ color: '#888' }}>Produtos em estoque baixo:</span>
-                <span style={{ fontWeight: 700, float: 'right', color: lowStockProducts.length > 0 ? '#E65100' : '#2E7D32' }}>
-                  {lowStockProducts.length}
-                </span>
-              </div>
+              <span className={`badge ${o.payment_status === 'paid' ? 'badge-success' : 'badge-warning'}`} style={{ fontSize: 10 }}>
+                {o.payment_status === 'paid' ? 'Pago' : 'Pendente'}
+              </span>
             </div>
-          )}
+          ))}
         </div>
       </div>
     );
@@ -1336,6 +1315,22 @@ export default function StoreDashboard() {
           </div>
         </div>
         <div className="header-right" style={{ gap: 8 }}>
+          <div style={{ position: 'relative', cursor: 'pointer' }}
+            onClick={() => { setView('perfil'); setPerfilTab('mensagens'); }}>
+            {unreadMessages > 0 && (
+              <div style={{
+                position: 'absolute', top: -4, right: -4,
+                width: 18, height: 18, borderRadius: '50%',
+                background: '#C62828', color: 'white',
+                fontSize: 10, fontWeight: 700,
+                display: 'flex', alignItems: 'center', justifyContent: 'center'
+              }}>{unreadMessages > 9 ? '9+' : unreadMessages}</div>
+            )}
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--text-light)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+              <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+            </svg>
+          </div>
           <div style={{ position: 'relative' }}>
             {storeData?.logo ? (
               <img src={storeData.logo} alt="Logo"
@@ -1377,22 +1372,6 @@ export default function StoreDashboard() {
                 </div>
               </div>
             )}
-          </div>
-          <div style={{ position: 'relative', cursor: 'pointer', marginLeft: 4 }}
-            onClick={() => { setView('perfil'); setPerfilTab('mensagens'); }}>
-            {unreadMessages > 0 && (
-              <div style={{
-                position: 'absolute', top: -4, right: -4,
-                width: 18, height: 18, borderRadius: '50%',
-                background: '#C62828', color: 'white',
-                fontSize: 10, fontWeight: 700,
-                display: 'flex', alignItems: 'center', justifyContent: 'center'
-              }}>{unreadMessages > 9 ? '9+' : unreadMessages}</div>
-            )}
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--text-light)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
-              <path d="M13.73 21a2 2 0 0 1-3.46 0" />
-            </svg>
           </div>
         </div>
       </div>
