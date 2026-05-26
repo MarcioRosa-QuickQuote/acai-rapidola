@@ -45,13 +45,24 @@ export default function CustomerPedidos() {
             <div key={order.id} className="card" onClick={() => canTrack && navigate(`/customer/tracking/${order.id}`)}
               style={{ cursor: canTrack ? 'pointer' : 'default' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 6 }}>
-                <span style={{ fontWeight: 700, fontSize: 15 }}>{order.store_name}</span>
-                <span className={`badge ${statusColors[order.status] || 'badge-warning'}`} style={{ fontSize: 11 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0 }}>
+                  {order.store_logo ? (
+                    <img src={order.store_logo} alt="Logo"
+                      style={{ width: 32, height: 32, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }}
+                      onError={e => { e.target.style.display = 'none'; }} />
+                  ) : (
+                    <div style={{ width: 32, height: 32, borderRadius: '50%', background: 'linear-gradient(135deg, var(--primary), var(--primary-dark))', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 800, fontSize: 14, flexShrink: 0 }}>
+                      {(order.store_name || 'L').charAt(0)}
+                    </div>
+                  )}
+                  <div style={{ minWidth: 0 }}>
+                    <span style={{ fontWeight: 700, fontSize: 15, display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{order.store_name}</span>
+                    <span style={{ fontSize: 12, color: '#888' }}>R$ {order.total?.toFixed(2)} • {new Date(order.created_at).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: '2-digit' })}</span>
+                  </div>
+                </div>
+                <span className={`badge ${statusColors[order.status] || 'badge-warning'}`} style={{ fontSize: 11, flexShrink: 0, marginLeft: 8 }}>
                   {statusLabels[order.status] || order.status}
                 </span>
-              </div>
-              <div style={{ fontSize: 13, color: '#888', marginBottom: 4 }}>
-                R$ {order.total?.toFixed(2)} • {new Date(order.created_at).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: '2-digit' })}
               </div>
               {canTrack && (
                 <div style={{ fontSize: 12, color: 'var(--primary)', fontWeight: 600, marginTop: 4 }}>

@@ -262,9 +262,9 @@ router.get('/cep/:cep', async (req, res) => {
 router.get('/', authMiddleware, async (req, res) => {
   if (req.user.role === 'customer') {
     const { data } = await supabase.from('orders')
-      .select('*, stores(name)').eq('customer_id', req.user.id)
+      .select('*, stores(name, logo)').eq('customer_id', req.user.id)
       .order('created_at', { ascending: false });
-    return res.json((data || []).map(o => ({ ...o, store_name: o.stores?.name })));
+    return res.json((data || []).map(o => ({ ...o, store_name: o.stores?.name, store_logo: o.stores?.logo })));
   }
 
   if (req.user.role === 'store') {
