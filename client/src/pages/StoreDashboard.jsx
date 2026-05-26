@@ -1075,81 +1075,75 @@ export default function StoreDashboard() {
             ) : (
               <div className={isDesktop ? 'grid-2' : ''}>
               {displayOrders.map(order => {
-                const expanded = selectedOrder === order.id;
+                const hasAction = order.payment_status === 'paid' && actionMap[order.status];
                 return (
-                <div key={order.id} className="card" style={{ cursor: 'pointer' }}
-                  onClick={() => setSelectedOrder(selectedOrder === order.id ? null : order.id)}>
-                  <div className="flex-between" style={{ marginBottom: 6 }}>
-                    <span className="font-bold">{order.customer_name}</span>
-                    <span className={`badge ${order.payment_status === 'paid' ? 'badge-success' : 'badge-warning'}`}>
-                      {order.payment_status === 'paid' ? 'Pago' : 'Pendente'}
-                    </span>
-                  </div>
-
-                  <div className="flex-between" style={{ marginTop: 8 }}>
-                    <span className={`badge ${statusColors[order.status] || 'badge-warning'}`}>
-                      {statusLabels[order.status]}
-                    </span>
-                    <span className="font-bold" style={{ color: 'var(--primary)' }}>
-                      R$ {order.total.toFixed(2)}
-                    </span>
-                  </div>
-
-                  {order.motoboy_name && (
-                    <div style={{ marginTop: 4, fontSize: 12, color: '#555' }}>Motoboy: {order.motoboy_name}</div>
-                  )}
-
-                  {order.payment_status === 'paid' && actionMap[order.status] && (
-                    <div style={{ marginTop: 8 }}>
+                <div key={order.id} className="card">
+                  <div className="flex-between" style={{ marginBottom: 10 }}>
+                    <div>
+                      <span className="font-bold" style={{ fontSize: 15 }}>{order.customer_name}</span>
+                      {order.payment_status !== 'paid' && (
+                        <span className={`badge badge-warning`} style={{ marginLeft: 8, fontSize: 11 }}>Pendente</span>
+                      )}
+                    </div>
+                    {hasAction ? (
                       <button className="btn btn-sm btn-primary"
                         onClick={(e) => { e.stopPropagation(); updateStatus(order.id, actionMap[order.status].next); }}>
                         {actionMap[order.status].label}
                       </button>
+                    ) : (
+                      <span className={`badge ${statusColors[order.status] || 'badge-warning'}`} style={{ fontSize: 11 }}>
+                        {statusLabels[order.status]}
+                      </span>
+                    )}
+                  </div>
+
+                  <div style={{ fontWeight: 700, fontSize: 14, color: '#333', marginBottom: 8 }}>Detalhes do Pedido</div>
+
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, marginBottom: 4 }}>
+                    <div style={{ flex: 1 }}>
+                      {(order.order_items || []).map((item, idx) => (
+                        <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 2 }}>
+                          <span>{item.quantity}x {item.products?.name || 'Produto'}</span>
+                          <span>R$ {(item.unit_price * item.quantity).toFixed(2)}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {order.motoboy_name && (
+                    <div className="flex-between" style={{ fontSize: 13, marginBottom: 2 }}>
+                      <span>Motoboy: {order.motoboy_name}</span>
+                      {order.delivery_fee > 0 && <span>R$ {order.delivery_fee.toFixed(2)}</span>}
+                    </div>
+                  )}
+
+                  <div className="flex-between" style={{ fontSize: 14, fontWeight: 700, color: 'var(--primary)', marginTop: 4, marginBottom: 8 }}>
+                    <span>Total</span>
+                    <span>R$ {order.total.toFixed(2)}</span>
+                  </div>
+
+                  <div style={{ fontSize: 12, color: '#555', marginBottom: 8 }}>
+                    📍 {shortAddress(order.customer_address)}
+                  </div>
+
+                  {order.customer_lat && order.store_lat && (
+                    <div style={{ height: 160, borderRadius: 8, overflow: 'hidden', border: '1px solid var(--border)' }}>
+                      <MapContainer
+                        center={[(order.customer_lat + order.store_lat) / 2, ((order.customer_lng || 0) + (order.store_lng || 0)) / 2]}
+                        zoom={13} style={{ height: '100%', width: '100%' }} scrollWheelZoom={false}>
+                        <TileLayer attribution='&copy; OSM' url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+                        <Marker position={[order.store_lat, order.store_lng]} icon={L.divIcon({ html: '<img src="/logo_placa.png" style="width:44px;height:44px;object-fit:contain;filter:drop-shadow(0 2px 6px rgba(0,0,0,0.5))"/>', className: '', iconSize: [44, 44], iconAnchor: [22, 22] })} />
+                        <Marker position={[order.customer_lat, order.customer_lng]} />
+                        <RoutePolyline from={{ lat: order.store_lat, lng: order.store_lng }} to={{ lat: order.customer_lat, lng: order.customer_lng }} color="#4A148C" />
+                      </MapContainer>
                     </div>
                   )}
 
                   {(order.status === 'arriving' || order.status === 'picked_up') && (
-                    <div style={{ marginTop: 4 }}>
-                      <span className="badge" style={{ background: '#FFF3E0', color: '#E65100' }}>
+                    <div style={{ marginTop: 6 }}>
+                      <span className="badge" style={{ background: '#FFF3E0', color: '#E65100', fontSize: 11 }}>
                         ALERTA: Motoboy próximo!
                       </span>
-                    </div>
-                  )}
-
-                  {expanded && (
-                    <div style={{ marginTop: 12, padding: '12px 0', borderTop: '1px solid var(--border)', fontSize: 13, color: '#555' }}>
-                      <div style={{ fontWeight: 700, fontSize: 14, color: '#333', marginBottom: 8 }}>Detalhes do Pedido</div>
-                      <div style={{ marginBottom: 4 }}>📍 {shortAddress(order.customer_address)}</div>
-                      <div style={{ marginBottom: 4 }}>🆔 Pedido #{order.id}</div>
-
-                      <div style={{ display: 'flex', gap: 12, marginTop: 8 }}>
-                        <div style={{ flex: 1 }}>
-                          <div style={{ fontWeight: 600, fontSize: 13, color: '#333', marginBottom: 4 }}>Itens</div>
-                          {(order.order_items || []).map((item, idx) => (
-                            <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, marginBottom: 2 }}>
-                              <span>{item.quantity}x {item.products?.name || 'Produto'}</span>
-                              <span>R$ {(item.unit_price * item.quantity).toFixed(2)}</span>
-                            </div>
-                          ))}
-                        </div>
-                        <div style={{ textAlign: 'right', fontSize: 12 }}>
-                          {order.delivery_fee > 0 && <div style={{ marginBottom: 2 }}>Frete: R$ {order.delivery_fee.toFixed(2)}</div>}
-                          <div style={{ fontWeight: 700, fontSize: 14, color: 'var(--primary)', marginTop: 4 }}>Total: R$ {order.total.toFixed(2)}</div>
-                        </div>
-                      </div>
-
-                      {order.customer_lat && order.store_lat && (
-                        <div style={{ height: 160, borderRadius: 8, overflow: 'hidden', border: '1px solid var(--border)', marginTop: 10 }}>
-                          <MapContainer
-                            center={[(order.customer_lat + order.store_lat) / 2, ((order.customer_lng || 0) + (order.store_lng || 0)) / 2]}
-                            zoom={13} style={{ height: '100%', width: '100%' }} scrollWheelZoom={false}>
-                            <TileLayer attribution='&copy; OSM' url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-                            <Marker position={[order.store_lat, order.store_lng]} icon={L.divIcon({ html: '<img src="/logo_placa.png" style="width:44px;height:44px;object-fit:contain;filter:drop-shadow(0 2px 6px rgba(0,0,0,0.5))"/>', className: '', iconSize: [44, 44], iconAnchor: [22, 22] })} />
-                            <Marker position={[order.customer_lat, order.customer_lng]} />
-                            <RoutePolyline from={{ lat: order.store_lat, lng: order.store_lng }} to={{ lat: order.customer_lat, lng: order.customer_lng }} color="#4A148C" />
-                          </MapContainer>
-                        </div>
-                      )}
                     </div>
                   )}
                 </div>
