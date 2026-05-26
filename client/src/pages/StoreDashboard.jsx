@@ -988,7 +988,7 @@ export default function StoreDashboard() {
     }
 
     if (perfilTab === 'vendas') {
-      return <FinanceiroTab />;
+      return FinanceiroTab();
     }
 
     if (perfilTab === 'motoboy') {
@@ -1387,22 +1387,22 @@ export default function StoreDashboard() {
               }}>‹</div>
               <span style={{ fontWeight: 700, fontSize: 16 }}>{perfilTab === 'dados' ? 'Dados' : perfilTab === 'endereco' ? 'Endereço' : perfilTab === 'trocar-senha' ? 'Trocar Senha' : perfilTab === 'mensagens' ? 'Mensagens' : perfilTab === 'vendas' ? 'Vendas' : perfilTab === 'motoboy' ? 'Motoboys' : perfilTab === 'assinatura' ? 'Assinatura' : ''}</span>
             </div>
-            {perfilTab === 'dados' && <PerfilView />}
-            {perfilTab === 'endereco' && <PerfilView />}
-            {perfilTab === 'trocar-senha' && <PerfilView />}
-            {perfilTab === 'mensagens' && <PerfilView />}
-            {perfilTab === 'vendas' && <PerfilView />}
-            {perfilTab === 'motoboy' && <PerfilView />}
-            {perfilTab === 'assinatura' && <PerfilView />}
+            {perfilTab === 'dados' && PerfilView()}
+            {perfilTab === 'endereco' && <StoreAddressForm settings={settings} setSettings={setSettings} saveSettings={saveSettings} uploading={uploading} saveMsg={saveMsg} setSaveMsg={setSaveMsg} />}
+            {perfilTab === 'trocar-senha' && PerfilView()}
+            {perfilTab === 'mensagens' && <StoreMessages messages={storeMessages} storeId={storeData?.id} apiFetch={apiFetch} onReload={loadMessages} />}
+            {perfilTab === 'vendas' && FinanceiroTab()}
+            {perfilTab === 'motoboy' && PerfilView()}
+            {perfilTab === 'assinatura' && PerfilView()}
           </div>
         ) : view === 'painel' ? (
-          <PainelView />
+          PainelView()
         ) : view === 'pedidos' ? (
-          <PedidosView />
+          PedidosView()
         ) : view === 'produtos' ? (
-          <ProdutosView />
+          ProdutosView()
         ) : view === 'financeiro' ? (
-          <FinanceiroTab />
+          FinanceiroTab()
         ) : view === 'perfil' ? (
           perfilTab ? (
             <div>
@@ -1416,16 +1416,16 @@ export default function StoreDashboard() {
                   {perfilTab === 'dados' ? 'Dados' : perfilTab === 'endereco' ? 'Endereço' : perfilTab === 'trocar-senha' ? 'Trocar Senha' : perfilTab === 'mensagens' ? 'Mensagens' : perfilTab === 'vendas' ? 'Vendas' : perfilTab === 'motoboy' ? 'Motoboys' : perfilTab === 'assinatura' ? 'Assinatura' : ''}
                 </span>
               </div>
-              {perfilTab === 'dados' && <PerfilView />}
+              {perfilTab === 'dados' && PerfilView()}
               {perfilTab === 'endereco' && <StoreAddressForm settings={settings} setSettings={setSettings} saveSettings={saveSettings} uploading={uploading} saveMsg={saveMsg} setSaveMsg={setSaveMsg} />}
-              {perfilTab === 'trocar-senha' && <PerfilView />}
+              {perfilTab === 'trocar-senha' && PerfilView()}
               {perfilTab === 'mensagens' && <StoreMessages messages={storeMessages} storeId={storeData?.id} apiFetch={apiFetch} onReload={loadMessages} />}
-              {perfilTab === 'vendas' && <FinanceiroTab />}
-              {perfilTab === 'motoboy' && <PerfilView />}
-              {perfilTab === 'assinatura' && <PerfilView />}
+              {perfilTab === 'vendas' && FinanceiroTab()}
+              {perfilTab === 'motoboy' && PerfilView()}
+              {perfilTab === 'assinatura' && PerfilView()}
             </div>
           ) : (
-            <PerfilView />
+            PerfilView()
           )
         ) : null}
       </div>
