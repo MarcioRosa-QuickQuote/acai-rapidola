@@ -1,132 +1,112 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { MapContainer, TileLayer, Marker } from 'react-leaflet';
-import L from 'leaflet';
 
-export default function StoreAddressForm({ settings, setSettings, mapCenter, saveSettings, uploading, saveMsg, setSaveMsg }) {
-  const [addressSuggestions, setAddressSuggestions] = useState([]);
-  const [showAddrSuggestions, setShowAddrSuggestions] = useState(false);
-  const [searchingAddr, setSearchingAddr] = useState(false);
+export default function StoreAddressForm({ settings, setSettings, saveSettings, uploading, saveMsg, setSaveMsg }) {
+  const [localAddr, setLocalAddr] = useState(settings.address || '');
+  const [suggestions, setSuggestions] = useState([]);
+  const [showSugs, setShowSugs] = useState(false);
+  const [searching, setSearching] = useState(false);
   const [showCep, setShowCep] = useState(false);
   const [cep, setCep] = useState('');
   const [cepLoading, setCepLoading] = useState(false);
-  const [savingAddr, setSavingAddr] = useState(false);
-  const searchTimer = useRef(null);
+  const [locating, setLocating] = useState(false);
+  const debounce = useRef(null);
 
-  function searchAddress(q) {
-    if (searchTimer.current) clearTimeout(searchTimer.current);
-    if (q.length < 3) { setAddressSuggestions([]); setShowAddrSuggestions(false); setSearchingAddr(false); return; }
-    setSearchingAddr(true);
-    searchTimer.current = setTimeout(async () => {
+  useEffect(() => {
+    setLocalAddr(settings.address || '');
+  }, [settings.address]);
+
+  function searchAddr(q) {
+    if (debounce.current) clearTimeout(debounce.current);
+    if (q.length < 3) { setSuggestions([]); setShowSugs(false); setSearching(false); return; }
+    setSearching(true);
+    debounce.current = setTimeout(async () => {
       try {
-        const nomUrl = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(q)}&countrycodes=br&limit=5&addressdetails=1`;
-        const res = await fetch(nomUrl, { headers: { 'User-Agent': 'AcaiRapidola/1.0' } });
+        const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(q)}&countrycodes=br&limit=5&addressdetails=1`,
+          { headers: { 'User-Agent': 'AcaiRapidola/1.0' } });
         const data = await res.json();
-        const results = (data || []).map(r => ({ display_name: r.display_name, lat: r.lat, lon: r.lon }));
-        setAddressSuggestions(results);
-        setShowAddrSuggestions(results.length > 0);
-      } catch { setShowAddrSuggestions(false); }
-      setSearchingAddr(false);
+        setSuggestions((data || []).map(r => ({ display_name: r.display_name, lat: r.lat, lon: r.lon })));
+        setShowSugs(data?.length > 0);
+      } catch { setShowSugs(false); }
+      setSearching(false);
     }, 350);
   }
 
-  function selectAddress(suggestion) {
-    setSettings(s => ({ ...s, address: suggestion.display_name, lat: suggestion.lat, lng: suggestion.lon }));
-    setShowAddrSuggestions(false);
-    setAddressSuggestions([]);
+  function pickAddr(s) {
+    setLocalAddr(s.display_name);
+    setSettings(prev => ({ ...prev, address: s.display_name, lat: s.lat, lng: s.lon }));
+    setShowSugs(false);
+    setSuggestions([]);
   }
 
-  async function geocodeAddress() {
-    if (!settings.address) return;
-    setSavingAddr(true);
-    try {
-      const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(settings.address)}&limit=1&countrycodes=BR`);
-      const data = await res.json();
-      if (data.length > 0) {
-        setSettings(s => ({ ...s, lat: String(parseFloat(data[0].lat)), lng: String(parseFloat(data[0].lon)) }));
-      } else {
-        setSaveMsg('Endereço não encontrado. Tente um endereço mais específico.');
-        setTimeout(() => setSaveMsg(''), 4000);
-      }
-    } catch {
-      setSaveMsg('Erro ao buscar endereço.');
-      setTimeout(() => setSaveMsg(''), 4000);
-    }
-    setSavingAddr(false);
-  }
-
-  async function lookupCep() {
-    const cleaned = cep.replace(/\D/g, '');
-    if (cleaned.length !== 8) return;
-    setCepLoading(true);
-    try {
-      const res = await fetch(`/api/orders/cep/${cleaned}`);
-      const data = await res.json();
-      if (data.error) {
-        setSaveMsg(data.error);
-        setTimeout(() => setSaveMsg(''), 3000);
-        return;
-      }
-      setSettings(s => ({ ...s, address: data.display_name }));
-      if (data.lat && data.lon) setSettings(s => ({ ...s, lat: String(data.lat), lng: String(data.lon) }));
-      setShowAddrSuggestions(false);
-    } catch {
-      setSaveMsg('Erro ao consultar CEP');
-      setTimeout(() => setSaveMsg(''), 3000);
-    }
-    setCepLoading(false);
-  }
-
-  async function useMyLocation() {
+  async function useLocation() {
     if (!navigator.geolocation) { setSaveMsg('Geolocalização não disponível'); setTimeout(() => setSaveMsg(''), 3000); return; }
-    setSavingAddr(true);
+    setLocating(true);
     navigator.geolocation.getCurrentPosition(
       async (pos) => {
         const { latitude, longitude } = pos.coords;
-        setSettings(s => ({ ...s, lat: String(latitude.toFixed(6)), lng: String(longitude.toFixed(6)) }));
+        setSettings(prev => ({ ...prev, lat: String(latitude.toFixed(6)), lng: String(longitude.toFixed(6)) }));
         try {
           const res = await fetch(`/api/orders/reverse-geocode?lat=${latitude}&lng=${longitude}`);
           const data = await res.json();
-          if (data.display_name) setSettings(s => ({ ...s, address: data.display_name }));
+          if (data.display_name) {
+            setLocalAddr(data.display_name);
+            setSettings(prev => ({ ...prev, address: data.display_name }));
+          }
         } catch {}
-        setSavingAddr(false);
+        setLocating(false);
       },
-      () => { setSaveMsg('Permissão de localização negada'); setSavingAddr(false); setTimeout(() => setSaveMsg(''), 3000); },
+      () => { setSaveMsg('Permissão negada'); setLocating(false); setTimeout(() => setSaveMsg(''), 3000); },
       { enableHighAccuracy: true, timeout: 10000, maximumAge: 120000 }
     );
+  }
+
+  async function lookupCep() {
+    const c = cep.replace(/\D/g, '');
+    if (c.length !== 8) return;
+    setCepLoading(true);
+    try {
+      const res = await fetch(`/api/orders/cep/${c}`);
+      const data = await res.json();
+      if (data.error) { setSaveMsg(data.error); setTimeout(() => setSaveMsg(''), 3000); return; }
+      setLocalAddr(data.display_name);
+      setSettings(prev => ({ ...prev, address: data.display_name }));
+      if (data.lat && data.lon) setSettings(prev => ({ ...prev, lat: String(data.lat), lng: String(data.lon) }));
+    } catch { setSaveMsg('Erro CEP'); setTimeout(() => setSaveMsg(''), 3000); }
+    finally { setCepLoading(false); }
   }
 
   return (
     <div className="card">
       <div className="page-title" style={{ fontSize: 18, marginBottom: 16 }}>Endereço da Loja</div>
 
-      <button type="button" className="btn btn-outline btn-sm"
-        onClick={useMyLocation} disabled={savingAddr}
+      <button type="button" className="btn btn-outline btn-sm" onClick={useLocation} disabled={locating}
         style={{ width: '100%', justifyContent: 'flex-start', gap: 8, marginBottom: 10, padding: '10px 14px' }}>
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
           <circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/>
           <line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/>
         </svg>
-        {savingAddr ? 'Obtendo localização...' : 'Usar minha localização'}
+        {locating ? 'Obtendo localização...' : 'Usar minha localização'}
       </button>
 
       <div style={{ position: 'relative', marginBottom: 8 }}>
-        <input className="input" type="text" value={settings.address}
-          onChange={e => { setSettings(s => ({ ...s, address: e.target.value })); searchAddress(e.target.value); }}
-          onFocus={() => { if (addressSuggestions.length > 0) setShowAddrSuggestions(true); }}
-          onBlur={() => setTimeout(() => setShowAddrSuggestions(false), 200)}
+        <input className="input" type="text" value={localAddr}
+          onChange={e => { setLocalAddr(e.target.value); searchAddr(e.target.value); }}
+          onFocus={() => { if (suggestions.length > 0) setShowSugs(true); }}
+          onBlur={() => setTimeout(() => setShowSugs(false), 200)}
           placeholder="Buscar rua, número, bairro…"
           style={{ paddingRight: 40 }} />
-        {settings.address && (
-          <button type="button" onClick={() => { setSettings(s => ({ ...s, address: '' })); setAddressSuggestions([]); setShowAddrSuggestions(false); }}
+        {localAddr && (
+          <button type="button" onClick={() => { setLocalAddr(''); setSuggestions([]); setShowSugs(false); }}
             style={{ position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', fontSize: 18, color: '#999', cursor: 'pointer', padding: '4px', lineHeight: 1 }}>
             ✕
           </button>
         )}
-        {searchingAddr && <span style={{ position: 'absolute', right: 32, top: '50%', transform: 'translateY(-50%)', fontSize: 12, color: '#BBB' }}>…</span>}
-        {showAddrSuggestions && addressSuggestions.length > 0 && (
+        {searching && <span style={{ position: 'absolute', right: 32, top: '50%', transform: 'translateY(-50%)', fontSize: 12, color: '#BBB' }}>…</span>}
+        {showSugs && suggestions.length > 0 && (
           <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 50, background: 'white', border: '1px solid #DDD', borderRadius: 8, maxHeight: 220, overflow: 'auto', boxShadow: '0 4px 16px rgba(0,0,0,0.15)' }}>
-            {addressSuggestions.map((s, i) => (
-              <div key={i} onMouseDown={() => selectAddress(s)}
+            {suggestions.map((s, i) => (
+              <div key={i} onMouseDown={() => pickAddr(s)}
                 style={{ padding: '10px 14px', cursor: 'pointer', fontSize: 13, borderBottom: '1px solid #F5F5F5', display: 'flex', alignItems: 'flex-start', gap: 8 }}>
                 <span style={{ color: 'var(--primary)', flexShrink: 0, marginTop: 1 }}>📍</span>
                 <span>{s.display_name}</span>
@@ -140,15 +120,15 @@ export default function StoreAddressForm({ settings, setSettings, mapCenter, sav
         <div style={{ marginBottom: 12 }}>
           <div style={{ fontSize: 11, color: '#888', marginBottom: 4 }}>Use o mapa para ajustar o ponto exato</div>
           <div style={{ height: 200, borderRadius: 10, overflow: 'hidden', border: '1px solid var(--border)' }}>
-            <MapContainer center={[parseFloat(settings.lat) || mapCenter[0], parseFloat(settings.lng) || mapCenter[1]]} zoom={16}
+            <MapContainer center={[parseFloat(settings.lat), parseFloat(settings.lng)]} zoom={16}
               style={{ height: '100%', width: '100%' }}
-              key={`addr-map-${settings.lat || 0}-${settings.lng || 0}`} scrollWheelZoom={false}>
+              key={`addr-map-${settings.lat}-${settings.lng}`} scrollWheelZoom={false}>
               <TileLayer attribution='&copy; OSM' url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-              <Marker position={[parseFloat(settings.lat) || mapCenter[0], parseFloat(settings.lng) || mapCenter[1]]} draggable={true}
+              <Marker position={[parseFloat(settings.lat), parseFloat(settings.lng)]} draggable={true}
                 eventHandlers={{
                   dragend: (e) => {
                     const { lat, lng } = e.target.getLatLng();
-                    setSettings(s => ({ ...s, lat: String(lat.toFixed(6)), lng: String(lng.toFixed(6)) }));
+                    setSettings(prev => ({ ...prev, lat: String(lat.toFixed(6)), lng: String(lng.toFixed(6)) }));
                   }
                 }} />
             </MapContainer>
@@ -164,10 +144,10 @@ export default function StoreAddressForm({ settings, setSettings, mapCenter, sav
       ) : (
         <div className="flex-row" style={{ gap: 8, marginBottom: 8 }}>
           <input className="input" type="text" value={cep}
-            onChange={e => { setCep(e.target.value.replace(/\D/g, '').slice(0, 8)); }}
+            onChange={e => setCep(e.target.value.replace(/\D/g, '').slice(0, 8))}
             placeholder="CEP (ex: 01001000)" maxLength={8} style={{ width: 140, flexShrink: 0 }} />
-          <button type="button" className="btn btn-sm btn-secondary"
-            onClick={lookupCep} disabled={cepLoading || cep.replace(/\D/g, '').length !== 8}
+          <button type="button" className="btn btn-sm btn-secondary" onClick={lookupCep}
+            disabled={cepLoading || cep.replace(/\D/g, '').length !== 8}
             style={{ whiteSpace: 'nowrap' }}>{cepLoading ? '...' : 'Buscar CEP'}</button>
         </div>
       )}

@@ -944,7 +944,7 @@ export default function StoreDashboard() {
     }
 
     if (perfilTab === 'endereco') {
-      return <StoreAddressForm settings={settings} setSettings={setSettings} mapCenter={mapCenter} saveSettings={saveSettings} uploading={uploading} saveMsg={saveMsg} setSaveMsg={setSaveMsg} />;
+      return <StoreAddressForm settings={settings} setSettings={setSettings} saveSettings={saveSettings} uploading={uploading} saveMsg={saveMsg} setSaveMsg={setSaveMsg} />;
     }
 
     if (perfilTab === 'trocar-senha') {
