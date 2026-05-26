@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { MapContainer, TileLayer, Marker } from 'react-leaflet';
 
 export default function StoreAddressForm({ settings, setSettings, saveSettings, uploading, saveMsg, setSaveMsg }) {
-  const [localAddr, setLocalAddr] = useState(settings.address || '');
+  const [localAddr, setLocalAddr] = useState('');
   const [suggestions, setSuggestions] = useState([]);
   const [showSugs, setShowSugs] = useState(false);
   const [searching, setSearching] = useState(false);
@@ -10,11 +10,19 @@ export default function StoreAddressForm({ settings, setSettings, saveSettings, 
   const [cep, setCep] = useState('');
   const [cepLoading, setCepLoading] = useState(false);
   const [locating, setLocating] = useState(false);
+  const [mapLat, setMapLat] = useState(null);
+  const [mapLng, setMapLng] = useState(null);
   const debounce = useRef(null);
+  const inited = useRef(false);
 
   useEffect(() => {
-    setLocalAddr(settings.address || '');
-  }, [settings.address]);
+    if (!inited.current) {
+      setLocalAddr(settings.address || '');
+      setMapLat(settings.lat || null);
+      setMapLng(settings.lng || null);
+      inited.current = true;
+    }
+  }, []);
 
   function searchAddr(q) {
     if (debounce.current) clearTimeout(debounce.current);
