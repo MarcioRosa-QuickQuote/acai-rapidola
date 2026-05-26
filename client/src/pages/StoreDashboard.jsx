@@ -101,6 +101,7 @@ export default function StoreDashboard() {
   const [savingAddr, setSavingAddr] = useState(false);
   const [storeMessages, setStoreMessages] = useState([]);
   const [unreadMessages, setUnreadMessages] = useState(0);
+  const [showDesktopMenu, setShowDesktopMenu] = useState(false);
   const addrSearchRef = useRef(null);
 
   useEffect(() => {
@@ -141,6 +142,7 @@ export default function StoreDashboard() {
     socket.on('notification', (notif) => {
       if (notif.type === 'delivery') setToast(notif.body);
       if (notif.type === 'message') { loadMessages(); setToast(`📩 ${notif.body}`); }
+      setTimeout(() => setToast(null), 4000);
     });
     if (storeData) joinStore(storeData.id);
     return () => {
@@ -507,6 +509,16 @@ export default function StoreDashboard() {
   useEffect(() => {
     if (view === 'financeiro') loadEarnings();
   }, [view]);
+
+  useEffect(() => {
+    function handleClick(e) {
+      if (showDesktopMenu) setShowDesktopMenu(false);
+    }
+    if (isDesktop && showDesktopMenu) {
+      document.addEventListener('click', handleClick);
+      return () => document.removeEventListener('click', handleClick);
+    }
+  }, [isDesktop, showDesktopMenu]);
 
   if (loading) return (
     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh' }}>
@@ -1502,25 +1514,11 @@ export default function StoreDashboard() {
   return (
     <div style={{ paddingBottom: isDesktop ? 0 : 72 }}>
       <div className="header" style={{ padding: '8px 16px' }}>
-        <div className="header-left">
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <div className="toggle-switch" onClick={toggleOpen} title={open ? 'Fechar loja' : 'Abrir loja'}>
-              <input type="checkbox" checked={open} readOnly />
-              <span className="toggle-slider" />
-            </div>
-            <span style={{
-              fontSize: 12, fontWeight: 700,
-              color: open ? 'var(--success)' : 'var(--danger)',
-            }}>
-              {open ? 'ABERTA' : 'FECHADA'}
-            </span>
-          </div>
-        </div>
-        <div className="header-right" style={{ gap: 10 }}>
+        <div className="header-left" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           {storeData?.logo ? (
             <img src={storeData.logo} alt="Logo"
               style={{ width: 36, height: 36, borderRadius: '50%', objectFit: 'cover', flexShrink: 0, cursor: 'pointer' }}
-              onClick={() => { setView('perfil'); setPerfilTab(null); }}
+              onClick={() => { if (isDesktop) setShowDesktopMenu(v => !v); else { setView('perfil'); setPerfilTab(null); } }}
               onError={e => { e.target.style.display = 'none'; }} />
           ) : (
             <div style={{
@@ -1529,12 +1527,48 @@ export default function StoreDashboard() {
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               color: 'white', fontWeight: 800, fontSize: 16, flexShrink: 0, cursor: 'pointer'
             }}
-              onClick={() => { setView('perfil'); setPerfilTab(null); }}>
+              onClick={() => { if (isDesktop) setShowDesktopMenu(v => !v); else { setView('perfil'); setPerfilTab(null); } }}>
               {(storeData?.name || 'L').charAt(0)}
             </div>
           )}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <div className="toggle-switch" onClick={toggleOpen} title={open ? 'Fechar loja' : 'Abrir loja'}>
+              <input type="checkbox" checked={open} readOnly />
+              <span className="toggle-slider" />
+            </div>
+            <span style={{ fontSize: 11, fontWeight: 700, color: open ? 'var(--success)' : 'var(--danger)' }}>
+              {open ? 'ABERTA' : 'FECHADA'}
+            </span>
+          </div>
+        </div>
+        <div className="header-right">
+          {isDesktop && showDesktopMenu && (
+            <div style={{ position: 'absolute', top: '100%', right: 50, zIndex: 1000, background: 'white', borderRadius: 12, boxShadow: '0 4px 20px rgba(0,0,0,0.15)', border: '1px solid var(--border)', overflow: 'hidden', minWidth: 200 }}
+              onClick={() => setShowDesktopMenu(false)}>
+              {[
+                { key: 'dados', icon: '📋', label: 'Dados' },
+                { key: 'endereco', icon: '📍', label: 'Endereço' },
+                { key: 'trocar-senha', icon: '🔒', label: 'Trocar Senha' },
+                { key: 'mensagens', icon: '💬', label: 'Mensagens' },
+                { key: 'vendas', icon: '💰', label: 'Vendas' },
+                { key: 'motoboy', icon: '🏍️', label: 'Motoboy' },
+                { key: 'assinatura', icon: '⭐', label: 'Assinatura' },
+              ].map(item => (
+                <div key={item.key} style={{ padding: '12px 16px', cursor: 'pointer', fontSize: 14, display: 'flex', alignItems: 'center', gap: 10, borderBottom: '1px solid #f5f5f5' }}
+                  onClick={() => { setView('perfil'); setPerfilTab(item.key); }}>
+                  <span>{item.icon}</span>
+                  <span style={{ fontWeight: 500 }}>{item.label}</span>
+                </div>
+              ))}
+              <div style={{ padding: '12px 16px', cursor: 'pointer', fontSize: 14, display: 'flex', alignItems: 'center', gap: 10, color: '#C62828' }}
+                onClick={logout}>
+                <span>🚪</span>
+                <span style={{ fontWeight: 500 }}>Sair</span>
+              </div>
+            </div>
+          )}
           <div style={{ position: 'relative', cursor: 'pointer' }}
-            onClick={() => { setView('perfil'); setPerfilTab('mensagens'); }}>
+            onClick={() => { if (isDesktop) { setView('perfil'); setPerfilTab('mensagens'); } else { setView('perfil'); setPerfilTab('mensagens'); } }}>
             {unreadMessages > 0 && (
               <div style={{
                 position: 'absolute', top: -4, right: -4,
