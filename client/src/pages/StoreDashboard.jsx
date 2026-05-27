@@ -1142,6 +1142,7 @@ export default function StoreDashboard() {
         <div className="page-title" style={{ marginBottom: 16 }}>Perfil</div>
 
         {[
+          { key: 'painel', icon: '📊', label: 'Painel' },
           { key: 'dados', icon: '📋', label: 'Dados' },
           { key: 'endereco', icon: '📍', label: 'Endereço' },
           { key: 'trocar-senha', icon: '🔒', label: 'Trocar Senha' },
@@ -1151,7 +1152,7 @@ export default function StoreDashboard() {
           { key: 'assinatura', icon: '⭐', label: 'Assinatura' },
         ].map(item => (
           <div key={item.key} className="card" style={{ padding: '14px 16px', cursor: 'pointer', marginBottom: 8 }}
-            onClick={() => setPerfilTab(item.key)}>
+            onClick={() => { if (item.key === 'painel') { setView('painel'); setPerfilTab(null); } else { setPerfilTab(item.key); } }}>
             <div className="flex-between">
               <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                 <span style={{ fontSize: 20 }}>{item.icon}</span>
@@ -1351,6 +1352,7 @@ export default function StoreDashboard() {
             {isDesktop && showDesktopMenu && (
               <div style={{ position: 'absolute', top: '100%', right: 0, zIndex: 1000, background: 'white', borderRadius: 12, boxShadow: '0 4px 20px rgba(0,0,0,0.15)', border: '1px solid var(--border)', overflow: 'hidden', minWidth: 200, marginTop: 4 }}>
                 {[
+                  { key: 'painel', icon: '📊', label: 'Painel' },
                   { key: 'dados', icon: '📋', label: 'Dados' },
                   { key: 'endereco', icon: '📍', label: 'Endereço' },
                   { key: 'trocar-senha', icon: '🔒', label: 'Trocar Senha' },
@@ -1360,7 +1362,7 @@ export default function StoreDashboard() {
                   { key: 'assinatura', icon: '⭐', label: 'Assinatura' },
                 ].map(item => (
                   <div key={item.key} style={{ padding: '12px 16px', cursor: 'pointer', fontSize: 14, display: 'flex', alignItems: 'center', gap: 10, borderBottom: '1px solid #f5f5f5' }}
-                    onClick={() => { setView('perfil'); setPerfilTab(item.key); setShowDesktopMenu(false); }}>
+                    onClick={() => { if (item.key === 'painel') { setView('painel'); setShowDesktopMenu(false); } else { setView('perfil'); setPerfilTab(item.key); setShowDesktopMenu(false); } }}>
                     <span>{item.icon}</span>
                     <span style={{ fontWeight: 500 }}>{item.label}</span>
                   </div>
