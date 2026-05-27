@@ -75,6 +75,9 @@ function calcDistance(lat1, lng1, lat2, lng2) {
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
+// Cache em memória para evitar alertas duplicados por aproximação
+const approachingStoreCache = new Set();
+
 router.post('/location', authMiddleware, roleMiddleware('motoboy'), async (req, res) => {
   const { lat, lng, online } = req.body;
   if (lat == null || lng == null) {
@@ -88,7 +91,8 @@ router.post('/location', authMiddleware, roleMiddleware('motoboy'), async (req, 
   const io = require('../services/socket').getIO();
   if (io) {
     const { data: activeOrders } = await supabase.from('orders')
-      .select('id, customer_lat, customer_lng, status').eq('motoboy_id', req.user.id)
+      .select('id, customer_lat, customer_lng, status, store_id, stores(lat, lng)')
+      .eq('motoboy_id', req.user.id)
       .in('status', ['assigned', 'picked_up', 'in_transit', 'arriving']);
 
     for (const o of (activeOrders || [])) {
@@ -96,6 +100,24 @@ router.post('/location', authMiddleware, roleMiddleware('motoboy'), async (req, 
         orderId: o.id, motoboyId: req.user.id, motoboyName: req.user.name, lat, lng
       });
 
+      // ── Alerta de proximidade da LOJA (status assigned) ──────────────
+      if (o.status === 'assigned' && o.stores?.lat && o.stores?.lng) {
+        const storeKm = calcDistance(lat, lng, o.stores.lat, o.stores.lng);
+        const cacheKey = `store_${req.user.id}_${o.id}`;
+        if (storeKm < 0.3 && !approachingStoreCache.has(cacheKey)) {
+          approachingStoreCache.add(cacheKey);
+          io.to(`store:${o.store_id}`).emit('motoboy_approaching_store', {
+            orderId: o.id,
+            motoboyId: req.user.id,
+            motoboyName: req.user.name || 'Motoboy',
+            distanceMeters: Math.round(storeKm * 1000)
+          });
+        } else if (storeKm > 0.5) {
+          approachingStoreCache.delete(cacheKey); // reseta se o motoboy se afastou
+        }
+      }
+
+      // ── Alerta de proximidade do CLIENTE (status picked_up) ──────────
       if (o.status === 'picked_up' && o.customer_lat && o.customer_lng) {
         const km = calcDistance(lat, lng, o.customer_lat, o.customer_lng);
         if (km < 0.2) {

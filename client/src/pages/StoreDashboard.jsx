@@ -109,7 +109,8 @@ export default function StoreDashboard() {
   const [tvLocked, setTvLocked] = useState(false);
   const [tvTime, setTvTime] = useState('');
   const [tvLight, setTvLight] = useState(false);
-  const [motoboyAlert, setMotoboyAlert] = useState(null); // { name, orderId }
+  const [motoboyAlert, setMotoboyAlert] = useState(null); // { name, orderId, type, distanceMeters }
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const addrSearchRef = useRef(null);
 
   function playMotoboyAlarm() {
@@ -166,9 +167,14 @@ export default function StoreDashboard() {
       loadOrders();
       if (data?.status === 'assigned') {
         playMotoboyAlarm();
-        setMotoboyAlert({ orderId: data.orderId, name: data.motoboyName || 'Motoboy' });
+        setMotoboyAlert({ orderId: data.orderId, name: data.motoboyName || 'Motoboy', type: 'accepted' });
         setTimeout(() => setMotoboyAlert(null), 8000);
       }
+    });
+    socket.on('motoboy_approaching_store', (data) => {
+      playMotoboyAlarm();
+      setMotoboyAlert({ orderId: data.orderId, name: data.motoboyName || 'Motoboy', type: 'approaching', distanceMeters: data.distanceMeters });
+      setTimeout(() => setMotoboyAlert(null), 12000);
     });
     socket.on('notification', (notif) => {
       if (notif.type === 'delivery') setToast(notif.body);
@@ -181,6 +187,7 @@ export default function StoreDashboard() {
       socket.off('order_paid');
       socket.off('order_status');
       socket.off('notification');
+      socket.off('motoboy_approaching_store');
     };
   }, [socket]);
 
@@ -1553,12 +1560,13 @@ export default function StoreDashboard() {
               { key: 'painel', icon: '📊', label: 'Painel', onClick: () => { setView('painel'); setPerfilTab(null); }, active: view === 'painel' && !perfilTab, badge: pendingOrders.length || null },
               { key: 'pedidos', icon: '📋', label: 'Pedidos', onClick: () => { setView('pedidos'); setPerfilTab(null); }, active: view === 'pedidos' && !perfilTab, badge: pendingOrders.length || null },
               { key: 'produtos', icon: '🧾', label: 'Produtos', onClick: () => { setView('produtos'); setPerfilTab(null); }, active: view === 'produtos' && !perfilTab },
-              { key: 'financeiro', icon: '💰', label: 'Financeiro', onClick: () => { setView('financeiro'); setPerfilTab(null); }, active: view === 'financeiro' && !perfilTab },
+              { key: 'financeiro', icon: '💰', label: 'Financeiro', isPremium: true, onClick: () => { if (storeData?.plan === 'premium') { setView('financeiro'); setPerfilTab(null); } else { setShowUpgradeModal(true); } }, active: view === 'financeiro' && !perfilTab },
             ].map(item => (
               <div key={item.key} onClick={item.onClick}
-                style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '9px 12px', margin: '1px 8px', cursor: 'pointer', borderRadius: 8, background: item.active ? '#F3E5F5' : 'transparent', color: item.active ? 'var(--primary)' : '#555', fontWeight: item.active ? 700 : 500, fontSize: 13 }}>
+                style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '9px 12px', margin: '1px 8px', cursor: 'pointer', borderRadius: 8, background: item.active ? '#F3E5F5' : 'transparent', color: item.active ? 'var(--primary)' : (item.isPremium && storeData?.plan !== 'premium' ? '#aaa' : '#555'), fontWeight: item.active ? 700 : 500, fontSize: 13 }}>
                 <span style={{ fontSize: 15, flexShrink: 0 }}>{item.icon}</span>
                 <span style={{ flex: 1 }}>{item.label}</span>
+                {item.isPremium && storeData?.plan !== 'premium' && <span style={{ fontSize: 9, background: 'linear-gradient(90deg,#FF6D00,#FF9100)', color: 'white', borderRadius: 4, padding: '1px 5px', fontWeight: 700 }}>PRO</span>}
                 {item.badge > 0 && <span style={{ background: 'var(--primary)', color: 'white', borderRadius: 10, fontSize: 10, fontWeight: 700, padding: '1px 5px', minWidth: 18, textAlign: 'center' }}>{item.badge}</span>}
               </div>
             ))}
@@ -1595,9 +1603,9 @@ export default function StoreDashboard() {
                 {open ? 'Loja Aberta' : 'Loja Fechada'}
               </span>
             </div>
-            <button onClick={() => setShowTV(true)}
+            <button onClick={() => { if (storeData?.plan === 'premium') { setShowTV(true); } else { setShowUpgradeModal(true); } }}
               style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, padding: '8px 12px', background: '#1a1a2e', color: '#c8c8ff', border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
-              📺 Ver na TV
+              📺 Ver na TV {storeData?.plan !== 'premium' && <span style={{ fontSize: 10, opacity: 0.6 }}>⭐</span>}
             </button>
             <button onClick={logout}
               style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, padding: '7px 12px', background: 'none', color: '#C62828', border: '1px solid #ffcdd2', borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
@@ -1614,18 +1622,31 @@ export default function StoreDashboard() {
       {motoboyAlert && (
         <div style={{
           position: 'fixed', top: 20, left: '50%', transform: 'translateX(-50%)',
-          zIndex: 99999, background: '#1a1a2e', color: 'white',
-          borderRadius: 16, padding: '14px 24px', boxShadow: '0 8px 32px rgba(0,0,0,0.4)',
-          display: 'flex', alignItems: 'center', gap: 12, border: '2px solid #6A1B9A',
+          zIndex: 99999, background: motoboyAlert.type === 'approaching' ? '#1b2e1a' : '#1a1a2e',
+          color: 'white', borderRadius: 16, padding: '14px 24px',
+          boxShadow: '0 8px 32px rgba(0,0,0,0.4)',
+          display: 'flex', alignItems: 'center', gap: 12,
+          border: `2px solid ${motoboyAlert.type === 'approaching' ? '#43a047' : '#6A1B9A'}`,
           animation: 'pulse-border 0.6s infinite alternate',
-          minWidth: 280, maxWidth: 400
+          minWidth: 300, maxWidth: 420
         }}>
-          <span style={{ fontSize: 28 }}>🛵</span>
-          <div>
-            <div style={{ fontWeight: 800, fontSize: 15 }}>Motoboy a caminho da loja!</div>
-            <div style={{ fontSize: 13, opacity: 0.8, marginTop: 2 }}>{motoboyAlert.name} está vindo buscar o pedido</div>
+          <span style={{ fontSize: 30 }}>🛵</span>
+          <div style={{ flex: 1 }}>
+            {motoboyAlert.type === 'approaching' ? (
+              <>
+                <div style={{ fontWeight: 800, fontSize: 15 }}>Motoboy chegando na loja!</div>
+                <div style={{ fontSize: 13, opacity: 0.85, marginTop: 2 }}>
+                  {motoboyAlert.name} · <strong style={{ color: '#81c784' }}>{motoboyAlert.distanceMeters}m</strong> da loja
+                </div>
+              </>
+            ) : (
+              <>
+                <div style={{ fontWeight: 800, fontSize: 15 }}>Motoboy aceitou o pedido!</div>
+                <div style={{ fontSize: 13, opacity: 0.8, marginTop: 2 }}>{motoboyAlert.name} está a caminho da loja</div>
+              </>
+            )}
           </div>
-          <button onClick={() => setMotoboyAlert(null)} style={{ marginLeft: 'auto', background: 'none', border: 'none', color: 'rgba(255,255,255,0.5)', fontSize: 18, cursor: 'pointer', padding: 4 }}>✕</button>
+          <button onClick={() => setMotoboyAlert(null)} style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.5)', fontSize: 18, cursor: 'pointer', padding: 4 }}>✕</button>
         </div>
       )}
 
@@ -1737,7 +1758,7 @@ export default function StoreDashboard() {
               { key: 'painel', icon: '📊', label: 'Painel' },
               { key: 'pedidos', icon: '📋', label: 'Pedidos' },
               { key: 'produtos', icon: '🧾', label: 'Produtos' },
-              { key: 'financeiro', icon: '💰', label: 'Financeiro' },
+              { key: 'financeiro', icon: '💰', label: 'Financeiro', isPremium: true },
               { key: 'perfil', icon: '👤', label: 'Perfil' },
             ].map(item => (
               <div key={item.key} style={{
@@ -1745,7 +1766,10 @@ export default function StoreDashboard() {
                 cursor: 'pointer', opacity: view === item.key ? 1 : 0.5,
                 borderTop: view === item.key ? '2px solid var(--primary)' : '2px solid transparent',
                 background: view === item.key ? '#F3E5F5' : 'transparent'
-              }} onClick={() => { setView(item.key); if (item.key !== 'perfil') setPerfilTab(null); }}>
+              }} onClick={() => {
+                if (item.isPremium && storeData?.plan !== 'premium') { setShowUpgradeModal(true); return; }
+                setView(item.key); if (item.key !== 'perfil') setPerfilTab(null);
+              }}>
                 <div style={{ fontSize: 18 }}>{item.icon}</div>
                 <div style={{ fontSize: 10, fontWeight: 600, color: view === item.key ? 'var(--primary)' : '#888', marginTop: 2 }}>
                   {item.label}
@@ -1755,6 +1779,45 @@ export default function StoreDashboard() {
           </div>
         )}
       </div>
+
+      {/* ─── MODAL UPGRADE PREMIUM ────────────── */}
+      {showUpgradeModal && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.55)', zIndex: 99998, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}
+          onClick={() => setShowUpgradeModal(false)}>
+          <div style={{ background: 'white', borderRadius: 20, padding: 28, maxWidth: 380, width: '100%', boxShadow: '0 20px 60px rgba(0,0,0,0.2)' }}
+            onClick={e => e.stopPropagation()}>
+            <div style={{ textAlign: 'center', marginBottom: 20 }}>
+              <div style={{ fontSize: 40, marginBottom: 8 }}>⭐</div>
+              <div style={{ fontSize: 20, fontWeight: 800, color: '#1a1a1a' }}>Recurso Premium</div>
+              <div style={{ fontSize: 14, color: '#666', marginTop: 6, lineHeight: 1.5 }}>Este recurso está disponível apenas no plano Premium.</div>
+            </div>
+            <div style={{ background: '#fdf8ff', borderRadius: 12, padding: '14px 16px', marginBottom: 20, border: '1px solid #e1bee7' }}>
+              {[
+                '💰 Relatório financeiro completo',
+                '📺 Tela de TV (modo operação)',
+                '🏍️ Motoboys ilimitados',
+                '📊 Dashboard de desempenho',
+                '📁 Exportação de dados CSV',
+                '💬 Suporte prioritário WhatsApp',
+              ].map((f, i) => (
+                <div key={i} style={{ fontSize: 13, color: '#555', marginBottom: 6, display: 'flex', alignItems: 'center', gap: 8 }}>{f}</div>
+              ))}
+            </div>
+            <div style={{ textAlign: 'center', marginBottom: 16 }}>
+              <div style={{ fontSize: 28, fontWeight: 800, color: '#1a1a1a' }}>R$ 89<span style={{ fontSize: 14, fontWeight: 400, color: '#888' }}>/mês</span></div>
+            </div>
+            <button
+              onClick={() => { setShowUpgradeModal(false); setView('perfil'); setPerfilTab('assinatura'); }}
+              style={{ width: '100%', background: 'linear-gradient(135deg, #6A1B9A, #9C27B0)', color: 'white', border: 'none', borderRadius: 12, padding: '14px 0', fontSize: 15, fontWeight: 700, cursor: 'pointer', marginBottom: 10 }}>
+              Ver planos →
+            </button>
+            <button onClick={() => setShowUpgradeModal(false)}
+              style={{ width: '100%', background: 'none', border: 'none', color: '#aaa', fontSize: 13, cursor: 'pointer', padding: 8 }}>
+              Agora não
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* ─── TV OVERLAY ─────────────────────── */}
       {showTV && (() => {
