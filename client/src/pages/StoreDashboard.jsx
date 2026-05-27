@@ -107,6 +107,7 @@ export default function StoreDashboard() {
   const [showTV, setShowTV] = useState(false);
   const [tvLocked, setTvLocked] = useState(false);
   const [tvTime, setTvTime] = useState('');
+  const [tvLight, setTvLight] = useState(false);
   const addrSearchRef = useRef(null);
 
   useEffect(() => {
@@ -664,85 +665,81 @@ export default function StoreDashboard() {
             <p>Nenhum pedido ainda</p>
           </div>
         ) : (
-          <div className={isDesktop ? 'grid-2' : ''}>
+          <div style={isDesktop ? { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 } : {}}>
           {displayOrders.map(order => {
-            const expanded = selectedOrder === order.id;
             const hasAction = order.payment_status === 'paid' && actionMap[order.status];
             const showMap = showMapForOrder === order.id;
             return (
-            <div key={order.id} className="card" style={{ cursor: 'pointer' }}
-              onClick={() => setSelectedOrder(selectedOrder === order.id ? null : order.id)}>
-              <div className="flex-between" style={{ marginBottom: 10 }}>
-                <div>
-                  <span className="font-bold" style={{ fontSize: 15 }}>{order.customer_name}</span>
-                  {order.payment_status !== 'paid' && (
-                    <span className="badge badge-warning" style={{ marginLeft: 8, fontSize: 11 }}>Pendente</span>
-                  )}
-                </div>
-                {hasAction ? (
-                  <button className="btn btn-sm btn-primary"
-                    onClick={(e) => { e.stopPropagation(); updateStatus(order.id, actionMap[order.status].next); }}>
-                    {actionMap[order.status].label}
-                  </button>
-                ) : (
-                  <span className={`badge ${statusColors[order.status] || 'badge-warning'}`} style={{ fontSize: 11 }}>
-                    {statusLabels[order.status]}
-                  </span>
-                )}
-              </div>
-
-              <div style={{ fontWeight: 700, fontSize: 14, color: '#333', marginBottom: 8 }}>Detalhes do Pedido</div>
-
-              <div style={{ fontSize: 13, marginBottom: 4 }}>
-                {(order.order_items || []).map((item, idx) => (
-                  <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 2 }}>
-                    <span>{item.quantity}x {item.products?.name || 'Produto'}</span>
-                    <span>R$ {(item.unit_price * item.quantity).toFixed(2)}</span>
+              <div key={order.id} className="card" style={{ cursor: 'pointer' }}
+                onClick={() => setShowMapForOrder(showMap ? null : order.id)}>
+                <div className="flex-between" style={{ marginBottom: 10 }}>
+                  <div>
+                    <span className="font-bold" style={{ fontSize: 15 }}>{order.customer_name}</span>
+                    {order.payment_status !== 'paid' && (
+                      <span className="badge badge-warning" style={{ marginLeft: 8, fontSize: 11 }}>Pendente</span>
+                    )}
                   </div>
-                ))}
-              </div>
-
-              {order.motoboy_name && (
-                <div className="flex-between" style={{ fontSize: 13, marginBottom: 2 }}>
-                  <span>Motoboy: {order.motoboy_name}</span>
-                  {order.delivery_fee > 0 && <span>R$ {order.delivery_fee.toFixed(2)}</span>}
-                </div>
-              )}
-
-              <div className="flex-between" style={{ fontSize: 14, fontWeight: 700, color: 'var(--primary)', marginTop: 4, marginBottom: 8 }}>
-                <span>Total</span>
-                <span>R$ {order.total.toFixed(2)}</span>
-              </div>
-
-              <div style={{ fontSize: 12, cursor: 'pointer', color: '#6A1B9A', textDecoration: 'underline', marginBottom: showMap ? 8 : 0 }}
-                onClick={(e) => { e.stopPropagation(); setShowMapForOrder(showMap ? null : order.id); }}>
-                📍 {shortAddress(order.customer_address)}
-              </div>
-
-              {showMap && order.customer_lat && order.store_lat && (
-                <div style={{ height: 160, borderRadius: 8, overflow: 'hidden', border: '1px solid var(--border)', marginBottom: 8 }}>
-                  <MapContainer
-                    center={[(order.customer_lat + order.store_lat) / 2, ((order.customer_lng || 0) + (order.store_lng || 0)) / 2]}
-                    zoom={13} style={{ height: '100%', width: '100%' }} scrollWheelZoom={false}>
-                    <TileLayer attribution='&copy; OSM' url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-                    <Marker position={[order.store_lat, order.store_lng]} icon={L.divIcon({ html: '<img src="/logo_placa.png" style="width:44px;height:44px;object-fit:contain;filter:drop-shadow(0 2px 6px rgba(0,0,0,0.5))"/>', className: '', iconSize: [44, 44], iconAnchor: [22, 22] })} />
-                    <Marker position={[order.customer_lat, order.customer_lng]} />
-                    <RoutePolyline from={{ lat: order.store_lat, lng: order.store_lng }} to={{ lat: order.customer_lat, lng: order.customer_lng }} color="#4A148C" />
-                  </MapContainer>
-                </div>
-              )}
-
-              {expanded && (
-                <div style={{ marginTop: 12, padding: '12px 0', borderTop: '1px solid var(--border)' }}>
-                  {(order.status === 'arriving' || order.status === 'picked_up') && (
-                    <span className="badge" style={{ background: '#FFF3E0', color: '#E65100', fontSize: 11 }}>
-                      ALERTA: Motoboy próximo!
+                  {hasAction ? (
+                    <button className="btn btn-sm btn-primary"
+                      onClick={(e) => { e.stopPropagation(); updateStatus(order.id, actionMap[order.status].next); }}>
+                      {actionMap[order.status].label}
+                    </button>
+                  ) : (
+                    <span className={`badge ${statusColors[order.status] || 'badge-warning'}`} style={{ fontSize: 11 }}>
+                      {statusLabels[order.status]}
                     </span>
                   )}
                 </div>
-              )}
-            </div>
-          );
+
+                <div style={{ fontWeight: 700, fontSize: 14, color: '#333', marginBottom: 8 }}>Detalhes do Pedido</div>
+
+                <div style={{ fontSize: 13, marginBottom: 4 }}>
+                  {(order.order_items || []).map((item, idx) => (
+                    <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 2 }}>
+                      <span>{item.quantity}x {item.products?.name || 'Produto'}</span>
+                      <span>R$ {(item.unit_price * item.quantity).toFixed(2)}</span>
+                    </div>
+                  ))}
+                </div>
+
+                {order.motoboy_name && (
+                  <div className="flex-between" style={{ fontSize: 13, marginBottom: 2 }}>
+                    <span>Motoboy: {order.motoboy_name}</span>
+                    {order.delivery_fee > 0 && <span>R$ {order.delivery_fee.toFixed(2)}</span>}
+                  </div>
+                )}
+
+                <div className="flex-between" style={{ fontSize: 14, fontWeight: 700, color: 'var(--primary)', marginTop: 4, marginBottom: 8 }}>
+                  <span>Total</span>
+                  <span>R$ {order.total.toFixed(2)}</span>
+                </div>
+
+                <div style={{ fontSize: 12, color: '#888', marginBottom: showMap ? 8 : 0 }}>
+                  📍 {shortAddress(order.customer_address)}
+                </div>
+
+                {showMap && order.customer_lat && order.store_lat && (
+                  <div style={{ height: 160, borderRadius: 8, overflow: 'hidden', border: '1px solid var(--border)', marginTop: 8 }}>
+                    <MapContainer
+                      center={[(order.customer_lat + order.store_lat) / 2, ((order.customer_lng || 0) + (order.store_lng || 0)) / 2]}
+                      zoom={13} style={{ height: '100%', width: '100%' }} scrollWheelZoom={false}>
+                      <TileLayer attribution='&copy; OSM' url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+                      <Marker position={[order.store_lat, order.store_lng]} icon={L.divIcon({ html: '<img src="/logo_placa.png" style="width:44px;height:44px;object-fit:contain;filter:drop-shadow(0 2px 6px rgba(0,0,0,0.5))"/>', className: '', iconSize: [44, 44], iconAnchor: [22, 22] })} />
+                      <Marker position={[order.customer_lat, order.customer_lng]} />
+                      <RoutePolyline from={{ lat: order.store_lat, lng: order.store_lng }} to={{ lat: order.customer_lat, lng: order.customer_lng }} color="#4A148C" />
+                    </MapContainer>
+                  </div>
+                )}
+
+                {(order.status === 'arriving' || order.status === 'picked_up') && (
+                  <div style={{ marginTop: 8 }}>
+                    <span className="badge" style={{ background: '#FFF3E0', color: '#E65100', fontSize: 11 }}>
+                      🏍️ Motoboy próximo!
+                    </span>
+                  </div>
+                )}
+              </div>
+            );
           })}
         </div>
         )}
@@ -1206,68 +1203,50 @@ export default function StoreDashboard() {
           </div>
         </div>
 
-        <div style={{
-          background: 'linear-gradient(135deg, #6A1B9A 0%, #9C27B0 50%, #CE93D8 100%)',
-          borderRadius: 20, padding: 24, marginBottom: 20,
-          color: 'white', position: 'relative', overflow: 'hidden'
-        }}>
-          <div style={{ position: 'absolute', top: -20, right: -20, width: 120, height: 120, borderRadius: '50%', background: 'rgba(255,255,255,0.08)' }} />
-          <div style={{ position: 'absolute', bottom: -30, left: -10, width: 80, height: 80, borderRadius: '50%', background: 'rgba(255,255,255,0.05)' }} />
-          <div style={{ fontSize: 13, opacity: 0.8, fontWeight: 500 }}>Faturamento Hoje</div>
-          <div style={{ fontSize: 34, fontWeight: 800, marginTop: 6 }}>
-            R$ {faturamentoHoje.toFixed(2)}
-          </div>
-          <div style={{ display: 'flex', gap: 24, marginTop: 16 }}>
+        <div style={{ display: 'flex', gap: 12, marginBottom: 20 }}>
+          <div style={{ background: '#F8F4FC', borderRadius: 16, padding: '16px 20px', border: '1px solid #E1BEE7', display: 'flex', flexDirection: 'column', gap: 12 }}>
             <div>
-              <div style={{ fontSize: 11, opacity: 0.6 }}>Pedidos hoje</div>
-              <div style={{ fontSize: 20, fontWeight: 700 }}>{totalPedidosHoje}</div>
+              <div style={{ fontSize: 10, color: '#888', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5 }}>Pedidos hoje</div>
+              <div style={{ fontSize: 26, fontWeight: 800, color: '#1a1a1a', lineHeight: 1.2 }}>{totalPedidosHoje}</div>
             </div>
             <div>
-              <div style={{ fontSize: 11, opacity: 0.6 }}>Loja</div>
-              <div style={{ fontSize: 20, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 6 }}>
-                <span style={{ width: 8, height: 8, borderRadius: '50%', background: open ? '#69F0AE' : '#FF8A80', display: 'inline-block' }} />
+              <div style={{ fontSize: 10, color: '#888', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5 }}>Loja</div>
+              <div style={{ fontSize: 15, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 6 }}>
+                <span style={{ width: 8, height: 8, borderRadius: '50%', background: open ? '#43a047' : '#e53935', display: 'inline-block' }} />
                 {open ? 'Aberta' : 'Fechada'}
               </div>
             </div>
             <div>
-              <div style={{ fontSize: 11, opacity: 0.6 }}>Produtos</div>
-              <div style={{ fontSize: 20, fontWeight: 700 }}>{totalProdutos}</div>
+              <div style={{ fontSize: 10, color: '#888', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5 }}>Produtos</div>
+              <div style={{ fontSize: 26, fontWeight: 800, color: '#1a1a1a', lineHeight: 1.2 }}>{totalProdutos}</div>
             </div>
+          </div>
+          <div style={{
+            flex: 1, background: 'linear-gradient(135deg, #6A1B9A 0%, #9C27B0 55%, #CE93D8 100%)',
+            borderRadius: 16, padding: '20px 24px', color: 'white',
+            position: 'relative', overflow: 'hidden', display: 'flex', flexDirection: 'column', justifyContent: 'center'
+          }}>
+            <div style={{ position: 'absolute', top: -20, right: -20, width: 110, height: 110, borderRadius: '50%', background: 'rgba(255,255,255,0.08)' }} />
+            <div style={{ position: 'absolute', bottom: -30, left: -10, width: 80, height: 80, borderRadius: '50%', background: 'rgba(255,255,255,0.05)' }} />
+            <div style={{ fontSize: 13, opacity: 0.8, fontWeight: 500 }}>Faturamento Hoje</div>
+            <div style={{ fontSize: 34, fontWeight: 800, marginTop: 6 }}>R$ {faturamentoHoje.toFixed(2)}</div>
           </div>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: isDesktop ? '1fr 1fr' : '1fr 1fr', gap: 12, marginBottom: 20 }}>
-          <div onClick={() => setView('pedidos')} style={{
-            background: '#F3E5F5', borderRadius: 16, padding: 18,
-            cursor: 'pointer', border: '1px solid #E1BEE7'
-          }}>
-            <div style={{ fontSize: 28, fontWeight: 800, color: '#6A1B9A' }}>{pendingOrders.length}</div>
-            <div style={{ fontSize: 13, color: '#6A1B9A', fontWeight: 600, marginTop: 2 }}>Ativos</div>
-          </div>
-          <div onClick={() => setView('pedidos')} style={{
-            background: '#FFF3E0', borderRadius: 16, padding: 18,
-            cursor: 'pointer', border: '1px solid #FFE0B2'
-          }}>
+        <div style={{ display: 'grid', gridTemplateColumns: isDesktop ? '1fr 1fr 1fr' : '1fr 1fr', gap: 12, marginBottom: 20 }}>
+          <div onClick={() => { setOrderFilter('pendentes'); setView('pedidos'); }} style={{ background: '#FFF3E0', borderRadius: 16, padding: 18, cursor: 'pointer', border: '1px solid #FFE0B2' }}>
             <div style={{ fontSize: 28, fontWeight: 800, color: '#E65100' }}>{pedidosPendentes}</div>
             <div style={{ fontSize: 13, color: '#E65100', fontWeight: 600, marginTop: 2 }}>Pendentes</div>
           </div>
+          <div onClick={() => { setOrderFilter('ativos'); setView('pedidos'); }} style={{ background: '#F3E5F5', borderRadius: 16, padding: 18, cursor: 'pointer', border: '1px solid #E1BEE7' }}>
+            <div style={{ fontSize: 28, fontWeight: 800, color: '#6A1B9A' }}>{pendingOrders.length}</div>
+            <div style={{ fontSize: 13, color: '#6A1B9A', fontWeight: 600, marginTop: 2 }}>Ativos</div>
+          </div>
           {isDesktop && (
-            <>
-              <div onClick={() => setView('produtos')} style={{
-                background: '#E8F5E9', borderRadius: 16, padding: 18,
-                cursor: 'pointer', border: '1px solid #C8E6C9'
-              }}>
-                <div style={{ fontSize: 28, fontWeight: 800, color: '#2E7D32' }}>{totalProdutos}</div>
-                <div style={{ fontSize: 13, color: '#2E7D32', fontWeight: 600, marginTop: 2 }}>Produtos</div>
-              </div>
-              <div onClick={() => setView('pedidos')} style={{
-                background: '#E3F2FD', borderRadius: 16, padding: 18,
-                cursor: 'pointer', border: '1px solid #BBDEFB'
-              }}>
-                <div style={{ fontSize: 28, fontWeight: 800, color: '#1565C0' }}>{concludedOrders.length}</div>
-                <div style={{ fontSize: 13, color: '#1565C0', fontWeight: 600, marginTop: 2 }}>Concluídos</div>
-              </div>
-            </>
+            <div onClick={() => { setOrderFilter('concluidos'); setView('pedidos'); }} style={{ background: '#E3F2FD', borderRadius: 16, padding: 18, cursor: 'pointer', border: '1px solid #BBDEFB' }}>
+              <div style={{ fontSize: 28, fontWeight: 800, color: '#1565C0' }}>{concludedOrders.length}</div>
+              <div style={{ fontSize: 13, color: '#1565C0', fontWeight: 600, marginTop: 2 }}>Concluídos</div>
+            </div>
           )}
         </div>
 
@@ -1423,11 +1402,7 @@ export default function StoreDashboard() {
         <div className="header" style={{ padding: '8px 16px' }}>
           {isDesktop ? (
             <>
-              <div className="header-left">
-                <span style={{ fontWeight: 700, fontSize: 16, color: '#1a1a1a' }}>
-                  {view === 'painel' ? 'Painel' : view === 'pedidos' ? 'Pedidos' : view === 'produtos' ? 'Produtos' : view === 'financeiro' ? 'Financeiro' : view === 'perfil' ? (perfilTab === 'dados' ? 'Dados da Loja' : perfilTab === 'endereco' ? 'Endereço' : perfilTab === 'motoboy' ? 'Motoboys' : perfilTab === 'mensagens' ? 'Mensagens' : perfilTab === 'assinatura' ? 'Assinatura' : perfilTab === 'trocar-senha' ? 'Trocar Senha' : 'Perfil') : 'Dashboard'}
-                </span>
-              </div>
+              <div className="header-left" />
               <div className="header-right" style={{ gap: 8 }}>
                 <div style={{ position: 'relative', cursor: 'pointer' }}
                   onClick={() => { setView('perfil'); setPerfilTab('mensagens'); }}>
@@ -1548,111 +1523,143 @@ export default function StoreDashboard() {
       </div>
 
       {/* ─── TV OVERLAY ─────────────────────── */}
-      {showTV && (
-        <div style={{ position: 'fixed', inset: 0, background: '#0d0d1a', zIndex: 9999, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+      {showTV && (() => {
+        const tvBg = tvLight ? '#f0f2f5' : '#0d0d1a';
+        const tvCard = tvLight ? 'white' : 'rgba(255,255,255,0.05)';
+        const tvText = tvLight ? '#1a1a1a' : 'white';
+        const tvSub = tvLight ? '#666' : 'rgba(255,255,255,0.45)';
+        const tvDivider = tvLight ? '#e8e8e8' : 'rgba(255,255,255,0.07)';
+        const tvHdrBg = tvLight ? 'white' : 'rgba(10,10,30,0.95)';
+        const tvHdrBorder = tvLight ? '#e0e0e0' : 'rgba(255,255,255,0.07)';
+        const tvStatBg = tvLight ? '#f8f8f8' : 'rgba(255,255,255,0.06)';
+        const tvStatBorder = tvLight ? '#e0e0e0' : 'rgba(255,255,255,0.1)';
 
-          {/* Barra superior */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '14px 28px', borderBottom: '1px solid rgba(255,255,255,0.07)', flexShrink: 0 }}>
-            {storeData?.logo && (
-              <img src={storeData.logo} alt="Logo" style={{ width: 44, height: 44, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} onError={e => { e.target.style.display = 'none'; }} />
-            )}
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ color: 'white', fontWeight: 800, fontSize: 20, lineHeight: 1.2 }}>{storeData?.name || 'Loja'}</div>
-              <div style={{ fontSize: 12, fontWeight: 600, marginTop: 2, color: open ? '#00C851' : '#ff4444' }}>{open ? '● Loja Aberta' : '● Loja Fechada'}</div>
-            </div>
-            <div style={{ color: 'white', fontWeight: 800, fontSize: 40, fontVariantNumeric: 'tabular-nums', letterSpacing: 3 }}>{tvTime}</div>
-            <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexShrink: 0 }}>
-              <button
-                onClick={() => setTvLocked(v => !v)}
-                title={tvLocked ? 'Desbloquear — permite fechar' : 'Bloquear — impede fechar acidentalmente'}
-                style={{ width: 44, height: 44, borderRadius: 10, background: tvLocked ? 'rgba(255,180,0,0.15)' : 'rgba(255,255,255,0.07)', border: tvLocked ? '1px solid rgba(255,180,0,0.45)' : '1px solid rgba(255,255,255,0.12)', color: tvLocked ? '#ffb400' : 'rgba(255,255,255,0.5)', fontSize: 20, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                {tvLocked ? '🔒' : '🔓'}
-              </button>
-              <button
-                onClick={() => { if (!tvLocked) setShowTV(false); }}
-                title={tvLocked ? 'Desbloqueie o cadeado primeiro' : 'Fechar TV'}
-                style={{ width: 44, height: 44, borderRadius: 10, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: tvLocked ? 'rgba(255,255,255,0.15)' : 'rgba(255,255,255,0.65)', fontSize: 22, cursor: tvLocked ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700 }}>
-                ✕
-              </button>
-            </div>
-          </div>
+        const tvActive = pendingOrders;
+        const cntPronto = tvActive.filter(o => o.status === 'ready').length;
+        const cntPrep = tvActive.filter(o => ['confirmed', 'preparing'].includes(o.status)).length;
+        const cntCaminho = tvActive.filter(o => ['assigned', 'picked_up', 'in_transit', 'arriving'].includes(o.status)).length;
+        const tvGroups = [
+          { label: 'PRONTOS', color: '#00a844', bg: 'rgba(0,168,68,0.1)', border: 'rgba(0,168,68,0.28)', orders: tvActive.filter(o => o.status === 'ready') },
+          { label: 'PREPARANDO', color: '#1e88e5', bg: 'rgba(30,136,229,0.08)', border: 'rgba(30,136,229,0.25)', orders: tvActive.filter(o => ['confirmed', 'preparing'].includes(o.status)) },
+          { label: 'A CAMINHO', color: '#8e24aa', bg: 'rgba(142,36,170,0.08)', border: 'rgba(142,36,170,0.25)', orders: tvActive.filter(o => ['assigned', 'picked_up', 'in_transit', 'arriving'].includes(o.status)) },
+        ].filter(g => g.orders.length > 0);
 
-          {/* Barra de stats */}
-          {(() => {
-            const tvActive = pendingOrders;
-            const cntPronto = tvActive.filter(o => o.status === 'ready').length;
-            const cntPrep = tvActive.filter(o => ['confirmed', 'preparing'].includes(o.status)).length;
-            const cntCaminho = tvActive.filter(o => ['assigned', 'picked_up', 'in_transit', 'arriving'].includes(o.status)).length;
-            const tvGroups = [
-              { label: 'PRONTOS', color: '#00C851', bg: 'rgba(0,200,81,0.1)', border: 'rgba(0,200,81,0.25)', orders: tvActive.filter(o => o.status === 'ready') },
-              { label: 'PREPARANDO', color: '#33b5e5', bg: 'rgba(51,181,229,0.08)', border: 'rgba(51,181,229,0.22)', orders: tvActive.filter(o => ['confirmed', 'preparing'].includes(o.status)) },
-              { label: 'A CAMINHO', color: '#aa66cc', bg: 'rgba(170,102,204,0.08)', border: 'rgba(170,102,204,0.22)', orders: tvActive.filter(o => ['assigned', 'picked_up', 'in_transit', 'arriving'].includes(o.status)) },
-            ].filter(g => g.orders.length > 0);
-            return (
-              <>
-                <div style={{ display: 'flex', gap: 10, padding: '10px 28px', borderBottom: '1px solid rgba(255,255,255,0.05)', flexShrink: 0 }}>
-                  {[
-                    { label: 'Ativos', value: tvActive.length, color: 'rgba(255,255,255,0.9)', bg: 'rgba(255,255,255,0.06)', border: 'rgba(255,255,255,0.1)' },
-                    { label: 'Prontos', value: cntPronto, color: '#00C851', bg: 'rgba(0,200,81,0.1)', border: 'rgba(0,200,81,0.25)' },
-                    { label: 'Preparando', value: cntPrep, color: '#33b5e5', bg: 'rgba(51,181,229,0.08)', border: 'rgba(51,181,229,0.22)' },
-                    { label: 'A Caminho', value: cntCaminho, color: '#aa66cc', bg: 'rgba(170,102,204,0.08)', border: 'rgba(170,102,204,0.22)' },
-                  ].map(s => (
-                    <div key={s.label} style={{ flex: 1, textAlign: 'center', padding: '8px 12px', background: s.bg, borderRadius: 8, border: `1px solid ${s.border}` }}>
-                      <div style={{ color: 'rgba(255,255,255,0.45)', fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: 1 }}>{s.label}</div>
-                      <div style={{ color: s.color, fontSize: 28, fontWeight: 800, lineHeight: 1.2 }}>{s.value}</div>
+        const btnBase = { width: 44, height: 44, borderRadius: 10, fontSize: 20, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', border: tvLight ? '1px solid #ddd' : '1px solid rgba(255,255,255,0.12)' };
+
+        return (
+          <div style={{ position: 'fixed', inset: 0, background: tvBg, zIndex: 9999, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+
+            {/* Barra superior */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '12px 28px', borderBottom: `1px solid ${tvHdrBorder}`, flexShrink: 0, background: tvHdrBg }}>
+              {storeData?.logo && (
+                <img src={storeData.logo} alt="Logo" style={{ width: 42, height: 42, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} onError={e => { e.target.style.display = 'none'; }} />
+              )}
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ color: tvText, fontWeight: 800, fontSize: 19, lineHeight: 1.2 }}>{storeData?.name || 'Loja'}</div>
+                <div style={{ fontSize: 12, fontWeight: 600, marginTop: 2, color: open ? '#00a844' : '#e53935' }}>{open ? '● Loja Aberta' : '● Loja Fechada'}</div>
+              </div>
+              <div style={{ color: tvText, fontWeight: 800, fontSize: 38, fontVariantNumeric: 'tabular-nums', letterSpacing: 2 }}>{tvTime}</div>
+              <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexShrink: 0 }}>
+                {/* Tema claro/escuro */}
+                <button onClick={() => setTvLight(v => !v)} title={tvLight ? 'Mudar para tema escuro' : 'Mudar para tema claro'}
+                  style={{ ...btnBase, background: tvLight ? '#f0f0f0' : 'rgba(255,255,255,0.07)', color: tvLight ? '#e65100' : 'rgba(255,255,255,0.6)' }}>
+                  {tvLight ? (
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/>
+                      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+                      <line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/>
+                      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+                    </svg>
+                  ) : (
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+                    </svg>
+                  )}
+                </button>
+                {/* Cadeado */}
+                <button onClick={() => setTvLocked(v => !v)} title={tvLocked ? 'Desbloquear — permite fechar' : 'Bloquear — impede fechar acidentalmente'}
+                  style={{ ...btnBase, background: tvLocked ? 'rgba(255,180,0,0.15)' : tvLight ? '#f0f0f0' : 'rgba(255,255,255,0.07)', border: tvLocked ? '1px solid rgba(255,180,0,0.45)' : btnBase.border, color: tvLocked ? '#ffb400' : tvLight ? '#555' : 'rgba(255,255,255,0.5)' }}>
+                  {tvLocked ? '🔒' : '🔓'}
+                </button>
+                {/* Fechar */}
+                <button onClick={() => { if (!tvLocked) setShowTV(false); }} title={tvLocked ? 'Desbloqueie o cadeado primeiro' : 'Fechar TV'}
+                  style={{ ...btnBase, background: tvLight ? '#f0f0f0' : 'rgba(255,255,255,0.05)', color: tvLocked ? (tvLight ? '#ccc' : 'rgba(255,255,255,0.15)') : tvLight ? '#333' : 'rgba(255,255,255,0.65)', cursor: tvLocked ? 'not-allowed' : 'pointer', fontWeight: 700, fontSize: 22 }}>
+                  ✕
+                </button>
+              </div>
+            </div>
+
+            {/* Barra de stats */}
+            <div style={{ display: 'flex', gap: 10, padding: '10px 28px', borderBottom: `1px solid ${tvHdrBorder}`, flexShrink: 0, background: tvHdrBg }}>
+              {[
+                { label: 'Ativos', value: tvActive.length, color: tvText, bg: tvStatBg, border: tvStatBorder },
+                { label: 'Prontos', value: cntPronto, color: '#00a844', bg: 'rgba(0,168,68,0.08)', border: 'rgba(0,168,68,0.25)' },
+                { label: 'Preparando', value: cntPrep, color: '#1e88e5', bg: 'rgba(30,136,229,0.08)', border: 'rgba(30,136,229,0.22)' },
+                { label: 'A Caminho', value: cntCaminho, color: '#8e24aa', bg: 'rgba(142,36,170,0.08)', border: 'rgba(142,36,170,0.22)' },
+              ].map(s => (
+                <div key={s.label} style={{ flex: 1, textAlign: 'center', padding: '8px 12px', background: s.bg, borderRadius: 8, border: `1px solid ${s.border}` }}>
+                  <div style={{ color: tvSub, fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1 }}>{s.label}</div>
+                  <div style={{ color: s.color, fontSize: 26, fontWeight: 800, lineHeight: 1.2 }}>{s.value}</div>
+                </div>
+              ))}
+            </div>
+
+            {/* Cards de pedidos */}
+            <div style={{ flex: 1, overflow: 'auto', padding: '20px 28px' }}>
+              {tvActive.length === 0 ? (
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: tvSub, fontSize: 22, fontWeight: 600 }}>
+                  Nenhum pedido ativo no momento
+                </div>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+                  {tvGroups.map(group => (
+                    <div key={group.label}>
+                      {/* Cabeçalho do grupo */}
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12, padding: '6px 14px', background: group.bg, borderRadius: 8, border: `1px solid ${group.border}`, width: 'fit-content' }}>
+                        <div style={{ width: 8, height: 8, borderRadius: '50%', background: group.color }} />
+                        <span style={{ color: group.color, fontSize: 13, fontWeight: 800, letterSpacing: 1, textTransform: 'uppercase' }}>{group.label}</span>
+                        <span style={{ color: group.color, fontSize: 13, fontWeight: 700, opacity: 0.75 }}>· {group.orders.length}</span>
+                      </div>
+                      {/* Grid de cards */}
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 12 }}>
+                        {group.orders.map(o => (
+                          <div key={o.id} style={{ background: tvCard, borderRadius: 12, padding: '14px 16px', border: `1px solid ${group.border}` }}>
+                            {/* Linha topo: nome + status */}
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
+                              <div style={{ color: tvText, fontWeight: 700, fontSize: 15, lineHeight: 1.3 }}>{o.customer_name}</div>
+                              <span style={{ color: group.color, fontSize: 11, fontWeight: 700, background: group.bg, padding: '2px 8px', borderRadius: 6, border: `1px solid ${group.border}`, whiteSpace: 'nowrap', marginLeft: 8 }}>
+                                {statusLabels[o.status] || o.status}
+                              </span>
+                            </div>
+                            {/* Divider + detalhes */}
+                            <div style={{ borderTop: `1px solid ${tvDivider}`, paddingTop: 8, marginBottom: 6 }}>
+                              <div style={{ color: tvSub, fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 }}>Detalhes do Pedido</div>
+                              {(o.items || o.order_items || []).map((it, i) => (
+                                <div key={i} style={{ color: tvText, fontSize: 13, marginBottom: 2 }}>
+                                  {it.quantity}x {it.product_name || it.products?.name || 'Produto'}
+                                </div>
+                              ))}
+                            </div>
+                            {o.motoboy_name && (
+                              <div style={{ color: tvSub, fontSize: 12, marginTop: 4 }}>
+                                Motoboy: <span style={{ color: tvText, fontWeight: 600 }}>{o.motoboy_name}</span>
+                              </div>
+                            )}
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 8, paddingTop: 8, borderTop: `1px solid ${tvDivider}` }}>
+                              <div style={{ color: tvSub, fontSize: 11 }}>#{String(o.id).slice(-4)} · {new Date(o.created_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</div>
+                              <div style={{ color: group.color, fontWeight: 800, fontSize: 16 }}>R$ {o.total.toFixed(2)}</div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
                     </div>
                   ))}
                 </div>
-
-                {/* Cards de pedidos */}
-                <div style={{ flex: 1, overflow: 'auto', padding: '20px 28px' }}>
-                  {tvActive.length === 0 ? (
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: 'rgba(255,255,255,0.25)', fontSize: 22, fontWeight: 600 }}>
-                      Nenhum pedido ativo no momento
-                    </div>
-                  ) : (
-                    <div style={{ display: 'flex', gap: 20, alignItems: 'flex-start' }}>
-                      {tvGroups.map(group => (
-                        <div key={group.label} style={{ flex: 1, minWidth: 0 }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12, padding: '7px 14px', background: group.bg, borderRadius: 8, border: `1px solid ${group.border}` }}>
-                            <div style={{ width: 8, height: 8, borderRadius: '50%', background: group.color, flexShrink: 0 }} />
-                            <span style={{ color: group.color, fontSize: 13, fontWeight: 800, letterSpacing: 1, textTransform: 'uppercase' }}>{group.label}</span>
-                            <span style={{ color: group.color, fontSize: 13, fontWeight: 700, marginLeft: 'auto', opacity: 0.8 }}>{group.orders.length}</span>
-                          </div>
-                          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                            {group.orders.map(o => (
-                              <div key={o.id} style={{ background: 'rgba(255,255,255,0.05)', borderRadius: 12, padding: '14px 16px', border: `1px solid ${group.border}` }}>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 6 }}>
-                                  <div>
-                                    <div style={{ color: 'white', fontWeight: 700, fontSize: 16, lineHeight: 1.2 }}>{o.customer_name}</div>
-                                    <div style={{ color: 'rgba(255,255,255,0.35)', fontSize: 11, marginTop: 2 }}>
-                                      #{String(o.id).slice(-4)} · {new Date(o.created_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
-                                    </div>
-                                  </div>
-                                  <div style={{ color: group.color, fontWeight: 800, fontSize: 17, whiteSpace: 'nowrap' }}>
-                                    R$ {o.total.toFixed(2)}
-                                  </div>
-                                </div>
-                                {o.items && o.items.length > 0 && (
-                                  <div style={{ color: 'rgba(255,255,255,0.45)', fontSize: 12, borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: 6, marginTop: 4 }}>
-                                    {o.items.slice(0, 2).map((it, i) => (
-                                      <span key={i}>{it.quantity}x {it.product_name}{i < Math.min(o.items.length, 2) - 1 ? ' · ' : ''}</span>
-                                    ))}{o.items.length > 2 ? ` +${o.items.length - 2}` : ''}
-                                  </div>
-                                )}
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </>
-            );
-          })()}
-        </div>
-      )}
+              )}
+            </div>
+          </div>
+        );
+      })()}
     </div>
   );
 }
