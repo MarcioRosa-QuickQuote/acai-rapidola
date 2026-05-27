@@ -791,45 +791,35 @@ export default function MotoboyDashboard() {
         ))}
 
         {activeDeliveries.length === 0 && (
-          <>
-            {isEmployee ? (
-              <div className="card" style={{ background: '#E8F5E9', border: '1px solid #C8E6C9', textAlign: 'center', marginBottom: 12 }}>
-                <span style={{ fontWeight: 600, color: '#2E7D32', fontSize: 13 }}>
-                  Você é parceiro desta loja — os pedidos chegam automaticamente
-                </span>
+          availableOrders.length === 0 ? (
+            <div className="card empty-state" style={{ paddingTop: 40, paddingBottom: 40 }}>
+              <div className="empty-state-icon">
+                <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
+                  <circle cx="32" cy="28" r="16" stroke="var(--border)" strokeWidth="2"/>
+                  <path d="M32 20v8l5 5" stroke="var(--border)" strokeWidth="2" strokeLinecap="round"/>
+                </svg>
               </div>
-            ) : availableOrders.length === 0 ? (
-              <div className="card empty-state" style={{ paddingTop: 40, paddingBottom: 40 }}>
-                <div className="empty-state-icon">
-                  <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
-                    <circle cx="32" cy="28" r="16" stroke="var(--border)" strokeWidth="2"/>
-                    <path d="M32 20v8l5 5" stroke="var(--border)" strokeWidth="2" strokeLinecap="round"/>
-                  </svg>
+              <p>Nenhum pedido disponível no momento</p>
+            </div>
+          ) : (
+            availableOrders.map(order => (
+              <div key={order.id} className="card">
+                <div className="flex-between" style={{ marginBottom: 6 }}>
+                  <div>
+                    <span className="font-bold">#{order.id.slice(0, 8)}</span>
+                    <span className="text-sm text-muted" style={{ marginLeft: 8 }}>{order.customer_name}</span>
+                  </div>
+                  <span className="badge badge-success">R$ {order.total.toFixed(2)}</span>
                 </div>
-                <p>Nenhum pedido disponível no momento</p>
+                <div className="text-sm text-muted" style={{ marginBottom: 6 }}>Loja: {order.store_name}</div>
+                <div className="text-sm text-muted" style={{ marginBottom: 8 }}>{order.customer_address}</div>
+                <div className="flex-between">
+                  <span className={`badge ${statusColors[order.status] || 'badge-primary'}`}>{statusLabels[order.status] || order.status}</span>
+                  <button className="btn btn-sm btn-primary" onClick={() => acceptOrder(order.id)}>Aceitar Entrega</button>
+                </div>
               </div>
-            ) : (
-              availableOrders.map(order => (
-                <div key={order.id} className="card">
-                  <div className="flex-between" style={{ marginBottom: 6 }}>
-                    <div>
-                      <span className="font-bold">#{order.id.slice(0, 8)}</span>
-                      <span className="text-sm text-muted" style={{ marginLeft: 8 }}>{order.customer_name}</span>
-                    </div>
-                    <span className="badge badge-success">R$ {order.total.toFixed(2)}</span>
-                  </div>
-                  <div className="text-sm text-muted" style={{ marginBottom: 6 }}>Loja: {order.store_name}</div>
-                  <div className="text-sm text-muted" style={{ marginBottom: 8 }}>{order.customer_address}</div>
-                  <div className="flex-between">
-                    <span className={`badge ${statusColors[order.status] || 'badge-primary'}`}>{statusLabels[order.status] || order.status}</span>
-                    {!isEmployee && (
-                      <button className="btn btn-sm btn-primary" onClick={() => acceptOrder(order.id)}>Aceitar Entrega</button>
-                    )}
-                  </div>
-                </div>
-              ))
-            )}
-          </>
+            ))
+          )
         )}
       </>
     );
