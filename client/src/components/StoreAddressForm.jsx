@@ -26,15 +26,24 @@ export default memo(function StoreAddressForm({ settings, setSettings, saveSetti
   const [locating, setLocating] = useState(false);
   const [mapLat, setMapLat] = useState(null);
   const [mapLng, setMapLng] = useState(null);
+  const [knownCity, setKnownCity] = useState('');
   const debounce = useRef(null);
   const inited = useRef(false);
 
   useEffect(() => {
     if (!inited.current) {
       setLocalAddr(settings.address || '');
-      setMapLat(settings.lat || null);
-      setMapLng(settings.lng || null);
+      const lat = settings.lat || null;
+      const lng = settings.lng || null;
+      setMapLat(lat);
+      setMapLng(lng);
       inited.current = true;
+      if (lat && lng) {
+        fetch(`/api/orders/reverse-geocode?lat=${lat}&lng=${lng}`)
+          .then(r => r.json())
+          .then(d => { if (d.display_name) setKnownCity(extractCity(d.display_name)); })
+          .catch(() => {});
+      }
     }
   }, []);
 
@@ -48,8 +57,6 @@ export default memo(function StoreAddressForm({ settings, setSettings, saveSetti
     }
     return '';
   }
-
-  const knownCity = extractCity(settings.address);
 
   function searchAddr(q) {
     if (debounce.current) clearTimeout(debounce.current);
