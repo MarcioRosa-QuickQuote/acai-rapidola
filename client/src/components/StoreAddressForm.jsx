@@ -30,7 +30,8 @@ export default memo(function StoreAddressForm({ settings, setSettings, saveSetti
     setSearching(true);
     debounce.current = setTimeout(async () => {
       try {
-        const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(q)}&countrycodes=br&limit=5&addressdetails=1`,
+        const vb = (mapLat && mapLng) ? `&viewbox=${mapLng - 0.5},${mapLat + 0.5},${mapLng + 0.5},${mapLat - 0.5}&bounded=0` : '';
+        const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(q)}&countrycodes=br&limit=5&addressdetails=1${vb}`,
           { headers: { 'User-Agent': 'AcaiRapidola/1.0' } });
         const data = await res.json();
         setSuggestions((data || []).map(r => ({ display_name: r.display_name, lat: r.lat, lon: r.lon })));
