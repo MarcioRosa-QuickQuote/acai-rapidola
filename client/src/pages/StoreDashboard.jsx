@@ -109,7 +109,24 @@ export default function StoreDashboard() {
   const [tvLocked, setTvLocked] = useState(false);
   const [tvTime, setTvTime] = useState('');
   const [tvLight, setTvLight] = useState(false);
+  const [motoboyAlert, setMotoboyAlert] = useState(null); // { name, orderId }
   const addrSearchRef = useRef(null);
+
+  function playMotoboyAlarm() {
+    try {
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      const beep = (freq, t, dur) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain); gain.connect(ctx.destination);
+        osc.frequency.value = freq; osc.type = 'sine';
+        gain.gain.setValueAtTime(0.35, ctx.currentTime + t);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + t + dur);
+        osc.start(ctx.currentTime + t); osc.stop(ctx.currentTime + t + dur + 0.05);
+      };
+      beep(880, 0, 0.12); beep(1100, 0.15, 0.12); beep(1320, 0.30, 0.2); beep(1100, 0.52, 0.12); beep(1320, 0.67, 0.3);
+    } catch (e) {}
+  }
 
   useEffect(() => {
     const onResize = () => setIsDesktop(window.innerWidth >= 768);
@@ -145,7 +162,14 @@ export default function StoreDashboard() {
     if (!socket) return;
     socket.on('new_order', () => loadOrders());
     socket.on('order_paid', () => { loadOrders(); setToast('Pagamento confirmado! Prepare o açaí!'); });
-    socket.on('order_status', () => loadOrders());
+    socket.on('order_status', (data) => {
+      loadOrders();
+      if (data?.status === 'assigned') {
+        playMotoboyAlarm();
+        setMotoboyAlert({ orderId: data.orderId, name: data.motoboyName || 'Motoboy' });
+        setTimeout(() => setMotoboyAlert(null), 8000);
+      }
+    });
     socket.on('notification', (notif) => {
       if (notif.type === 'delivery') setToast(notif.body);
       if (notif.type === 'message') { loadMessages(); setToast(`📩 ${notif.body}`); }
@@ -1131,23 +1155,84 @@ export default function StoreDashboard() {
     }
 
     if (perfilTab === 'assinatura') {
+      const planoAtual = storeData?.plan || 'basico';
+      const isPremium = planoAtual === 'premium';
+
+      const Feature = ({ ok, text }) => (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+          <span style={{ fontSize: 14, flexShrink: 0 }}>{ok ? '✅' : '🔒'}</span>
+          <span style={{ fontSize: 13, color: ok ? 'var(--text)' : '#aaa' }}>{text}</span>
+        </div>
+      );
+
       return (
-        <div className="card" style={{ textAlign: 'left' }}>
-          <div className="page-title" style={{ fontSize: 20 }}>Assinatura</div>
-          <div style={{
-            background: 'linear-gradient(135deg, #6A1B9A, #4A148C)',
-            borderRadius: 14, padding: 24, color: 'white', textAlign: 'center', marginBottom: 16
-          }}>
-            <div style={{ fontSize: 13, opacity: 0.8, marginBottom: 4 }}>Plano Atual</div>
-            <div style={{ fontSize: 36, fontWeight: 800 }}>R$ 89<span style={{ fontSize: 16, fontWeight: 400 }}>/mês</span></div>
-            <div style={{ fontSize: 12, opacity: 0.7, marginTop: 6 }}>Plano Profissional</div>
+        <div>
+          <div className="page-title" style={{ fontSize: 20, marginBottom: 20 }}>Assinatura</div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: isDesktop ? '1fr 1fr' : '1fr', gap: 16 }}>
+
+            {/* BÁSICO */}
+            <div style={{ borderRadius: 16, border: `2px solid ${!isPremium ? '#6A1B9A' : '#e0e0e0'}`, padding: 20, position: 'relative', background: !isPremium ? '#fdf8ff' : 'white' }}>
+              {!isPremium && (
+                <div style={{ position: 'absolute', top: -12, left: 20, background: '#6A1B9A', color: 'white', fontSize: 11, fontWeight: 700, padding: '3px 12px', borderRadius: 20 }}>
+                  PLANO ATUAL
+                </div>
+              )}
+              <div style={{ marginBottom: 4, fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, color: '#888' }}>Básico</div>
+              <div style={{ fontSize: 30, fontWeight: 800, color: '#1a1a1a' }}>Grátis</div>
+              <div style={{ fontSize: 12, color: '#888', marginBottom: 16, marginTop: 2 }}>Para começar a vender</div>
+              <Feature ok text="Painel de pedidos" />
+              <Feature ok text="Cardápio digital (até 15 produtos)" />
+              <Feature ok text="1 motoboy parceiro" />
+              <Feature ok text="Pagamento via Pix e cartão (Mercado Pago)" />
+              <Feature ok text="Notificações em tempo real" />
+              <Feature ok={false} text="Relatório financeiro" />
+              <Feature ok={false} text="Tela de TV (modo operação)" />
+              <Feature ok={false} text="Motoboys ilimitados" />
+              <Feature ok={false} text="Histórico de 90 dias" />
+              <Feature ok={false} text="Exportação de dados (CSV)" />
+              <Feature ok={false} text="Suporte prioritário via WhatsApp" />
+            </div>
+
+            {/* PREMIUM */}
+            <div style={{ borderRadius: 16, border: `2px solid ${isPremium ? '#6A1B9A' : '#e0e0e0'}`, padding: 20, position: 'relative', background: isPremium ? '#fdf8ff' : 'white' }}>
+              {isPremium && (
+                <div style={{ position: 'absolute', top: -12, left: 20, background: '#6A1B9A', color: 'white', fontSize: 11, fontWeight: 700, padding: '3px 12px', borderRadius: 20 }}>
+                  PLANO ATUAL
+                </div>
+              )}
+              <div style={{ position: 'absolute', top: -12, right: 20, background: 'linear-gradient(90deg,#FF6D00,#FF9100)', color: 'white', fontSize: 11, fontWeight: 700, padding: '3px 12px', borderRadius: 20 }}>
+                ⭐ PREMIUM
+              </div>
+              <div style={{ marginBottom: 4, fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, color: '#888' }}>Premium</div>
+              <div style={{ fontSize: 30, fontWeight: 800, color: '#1a1a1a' }}>R$ 89<span style={{ fontSize: 15, fontWeight: 400, color: '#888' }}>/mês</span></div>
+              <div style={{ fontSize: 12, color: '#888', marginBottom: 16, marginTop: 2 }}>Para quem quer crescer</div>
+              <Feature ok text="Tudo do Básico" />
+              <Feature ok text="Relatório financeiro completo" />
+              <Feature ok text="Tela de TV (modo operação)" />
+              <Feature ok text="Motoboys ilimitados" />
+              <Feature ok text="Histórico de 90 dias" />
+              <Feature ok text="Exportação de dados (CSV)" />
+              <Feature ok text="Suporte prioritário via WhatsApp" />
+              <Feature ok text="Alarme de motoboy chegando" />
+              <Feature ok text="Dashboard de desempenho semanal" />
+              {!isPremium && (
+                <button style={{
+                  marginTop: 16, width: '100%', background: 'linear-gradient(135deg, #6A1B9A, #9C27B0)',
+                  color: 'white', border: 'none', borderRadius: 12, padding: '14px 0',
+                  fontSize: 15, fontWeight: 700, cursor: 'pointer'
+                }}>
+                  Assinar Premium →
+                </button>
+              )}
+            </div>
           </div>
-          <div style={{ fontSize: 13, color: 'var(--text-light)', lineHeight: 1.6 }}>
-            <div style={{ marginBottom: 8 }}>✅ Pedidos ilimitados</div>
-            <div style={{ marginBottom: 8 }}>✅ Até 5 motoboys parceiros</div>
-            <div style={{ marginBottom: 8 }}>✅ Pagamento via Mercado Pago</div>
-            <div style={{ marginBottom: 8 }}>✅ Gestão de cardápio</div>
-            <div style={{ marginBottom: 8 }}>✅ Suporte prioritário</div>
+
+          <div style={{ marginTop: 20, padding: '14px 16px', background: '#f9f5ff', borderRadius: 12, border: '1px solid #e1bee7', fontSize: 13, color: '#555' }}>
+            💡 Dúvidas sobre os planos? Fale com a gente pelo WhatsApp:{' '}
+            <a href="https://wa.me/5591999999999" target="_blank" rel="noopener noreferrer" style={{ color: '#6A1B9A', fontWeight: 700 }}>
+              (91) 99999-9999
+            </a>
           </div>
         </div>
       );
@@ -1525,6 +1610,25 @@ export default function StoreDashboard() {
         </div>
       )}
 
+      {/* ─── ALERTA MOTOBOY CHEGANDO ─────────────── */}
+      {motoboyAlert && (
+        <div style={{
+          position: 'fixed', top: 20, left: '50%', transform: 'translateX(-50%)',
+          zIndex: 99999, background: '#1a1a2e', color: 'white',
+          borderRadius: 16, padding: '14px 24px', boxShadow: '0 8px 32px rgba(0,0,0,0.4)',
+          display: 'flex', alignItems: 'center', gap: 12, border: '2px solid #6A1B9A',
+          animation: 'pulse-border 0.6s infinite alternate',
+          minWidth: 280, maxWidth: 400
+        }}>
+          <span style={{ fontSize: 28 }}>🛵</span>
+          <div>
+            <div style={{ fontWeight: 800, fontSize: 15 }}>Motoboy a caminho da loja!</div>
+            <div style={{ fontSize: 13, opacity: 0.8, marginTop: 2 }}>{motoboyAlert.name} está vindo buscar o pedido</div>
+          </div>
+          <button onClick={() => setMotoboyAlert(null)} style={{ marginLeft: 'auto', background: 'none', border: 'none', color: 'rgba(255,255,255,0.5)', fontSize: 18, cursor: 'pointer', padding: 4 }}>✕</button>
+        </div>
+      )}
+
       {/* ─── ÁREA PRINCIPAL ─────────────────────── */}
       <div style={{ marginLeft: isDesktop ? 240 : 0 }}>
 
@@ -1751,8 +1855,8 @@ export default function StoreDashboard() {
                         <span style={{ color: group.color, fontSize: 13, fontWeight: 800, letterSpacing: 1, textTransform: 'uppercase' }}>{group.label}</span>
                         <span style={{ color: group.color, fontSize: 13, fontWeight: 700, opacity: 0.75 }}>· {group.orders.length}</span>
                       </div>
-                      {/* Grid de cards — 3 por linha */}
-                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 14 }}>
+                      {/* Grid de cards — responsivo por largura da tela */}
+                      <div style={{ display: 'grid', gridTemplateColumns: `repeat(${window.innerWidth >= 2560 ? 5 : window.innerWidth >= 1920 ? 4 : 3}, 1fr)`, gap: 14 }}>
                         {group.orders.map(o => {
                           const action = actionMap[o.status];
                           return (
@@ -1774,8 +1878,8 @@ export default function StoreDashboard() {
                                 ))}
                               </div>
                               {o.motoboy_name && (
-                                <div style={{ color: tvSub, fontSize: 13, marginBottom: 8 }}>
-                                  Motoboy: <span style={{ color: tvText, fontWeight: 700 }}>{o.motoboy_name}</span>
+                                <div style={{ color: tvSub, fontSize: 14, marginBottom: 8 }}>
+                                  🛵 <span style={{ color: tvText, fontWeight: 800, fontSize: 17 }}>{o.motoboy_name}</span>
                                 </div>
                               )}
                               {/* Rodapé: id+hora + valor + botão ação */}

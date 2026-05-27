@@ -442,6 +442,11 @@ body {
   to { transform: translateX(-50%) translateY(0); opacity: 1; }
 }
 
+@keyframes pulse-border {
+  from { border-color: #6A1B9A; box-shadow: 0 8px 32px rgba(106,27,154,0.3); }
+  to   { border-color: #CE93D8; box-shadow: 0 8px 40px rgba(206,147,216,0.6); }
+}
+
 .toggle-switch {
   position: relative;
   width: 52px;

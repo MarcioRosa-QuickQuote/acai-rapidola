@@ -54,6 +54,16 @@ router.post('/accept/:orderId', authMiddleware, roleMiddleware('motoboy'), async
   const newStatus = order.status !== 'assigned' ? 'assigned' : order.status;
   await supabase.from('orders').update({ motoboy_id: req.user.id, status: newStatus }).eq('id', req.params.orderId);
 
+  // Notificar a loja que o motoboy aceitou e está a caminho
+  const io = require('../services/socket').getIO();
+  if (io && newStatus === 'assigned') {
+    io.to(`store:${order.store_id}`).emit('order_status', {
+      orderId: req.params.orderId,
+      status: 'assigned',
+      motoboyName: req.user.name || 'Motoboy'
+    });
+  }
+
   res.json({ success: true });
 });
 
