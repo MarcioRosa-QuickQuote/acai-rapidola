@@ -616,6 +616,7 @@ export default function MotoboyDashboard() {
   const [selectedTab, setSelectedTab] = useState('available');
   const [pageTab, setPageTab] = useState('inicio');
   const [isEmployee, setIsEmployee] = useState(false);
+  const [isLinked, setIsLinked] = useState(false); // vinculado a alguma loja → recebe pedidos automático
   const [earnings, setEarnings] = useState({ total: 0, pending: 0, list: [] });
   const [fullscreenOrder, setFullscreenOrder] = useState(null);
   const restoredNav = useRef(false);
@@ -636,9 +637,8 @@ export default function MotoboyDashboard() {
       if (d.data && d.data.length > 0) setStore(d.data[0]);
     });
     apiFetch('/motoboy/profile').then(d => {
-      if (d.employments && d.employments.some(e => e.employee)) {
-        setIsEmployee(true);
-      }
+      if (d.employments && d.employments.some(e => e.employee)) setIsEmployee(true);
+      if (d.employments && d.employments.length > 0) setIsLinked(true);
       if (d.total !== undefined) setEarnings({ total: d.total, pending: d.pending, list: d.earnings || [] });
     });
     const interval = setInterval(loadData, 10000);
@@ -816,7 +816,19 @@ export default function MotoboyDashboard() {
           </div>
         ))}
 
-        {availableOrders.length === 0 && activeDeliveries.length === 0 ? (
+        {/* Motoboy vinculado: pedidos chegam automáticos, sem aceite manual */}
+        {isLinked && activeDeliveries.length === 0 && (
+          <div style={{ background: '#f0f7ff', borderRadius: 14, padding: '16px 18px', border: '1px solid #bbdefb', display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
+            <span style={{ fontSize: 24 }}>🔔</span>
+            <div>
+              <div style={{ fontWeight: 700, fontSize: 14, color: '#1565C0' }}>Aguardando pedidos</div>
+              <div style={{ fontSize: 12, color: '#555', marginTop: 2 }}>Os pedidos chegam automaticamente quando a loja estiver pronta</div>
+            </div>
+          </div>
+        )}
+
+        {/* Motoboy avulso: precisa aceitar manualmente */}
+        {!isLinked && availableOrders.length === 0 && activeDeliveries.length === 0 ? (
           <div className="card empty-state" style={{ paddingTop: 40, paddingBottom: 40 }}>
             <div className="empty-state-icon">
               <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
@@ -826,7 +838,7 @@ export default function MotoboyDashboard() {
             </div>
             <p>Nenhum pedido disponível no momento</p>
           </div>
-        ) : availableOrders.length > 0 ? (
+        ) : !isLinked && availableOrders.length > 0 ? (
           <>
             {activeDeliveries.length > 0 && (
               <div style={{ fontSize: 12, fontWeight: 700, color: '#6A1B9A', marginBottom: 8, marginTop: 4, textTransform: 'uppercase', letterSpacing: 0.5 }}>

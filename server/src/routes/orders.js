@@ -406,15 +406,18 @@ router.patch('/:id/status', authMiddleware, async (req, res) => {
   }
 
   if (status === 'ready') {
+    // Auto-atribuir a qualquer motoboy vinculado à loja (parceiro ou funcionário) que esteja online
     const { data: motoboys } = await supabase.from('store_motoboys')
-      .select('motoboy_id, motoboy_locations!inner(online)')
-      .eq('store_id', order.store_id).eq('employee', 1).eq('motoboy_locations.online', 1)
+      .select('motoboy_id, motoboy_locations!inner(online, updated_at)')
+      .eq('store_id', order.store_id).eq('motoboy_locations.online', 1)
       .order('updated_at', { foreignTable: 'motoboy_locations', ascending: false });
 
     if (motoboys?.length > 0) {
       const motoboyId = motoboys[0].motoboy_id;
       await supabase.from('orders').update({ motoboy_id: motoboyId, status: 'assigned' }).eq('id', req.params.id);
-      await notifyUser(motoboyId, 'Nova entrega!', 'Pedido atribuído automaticamente para você', 'delivery');
+      const io = getIO();
+      if (io) io.to(`user:${motoboyId}`).emit('order_updated', { orderId: req.params.id, status: 'assigned' });
+      await notifyUser(motoboyId, '🛵 Nova entrega!', 'Pedido atribuído para você — verifique o app', 'delivery');
     }
   }
 
