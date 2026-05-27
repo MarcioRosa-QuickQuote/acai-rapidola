@@ -69,11 +69,20 @@ export default memo(function StoreAddressForm({ settings, setSettings, saveSetti
     setLocalAddr(s.display_name);
     setSettings(prev => ({ ...prev, address: s.display_name }));
     if (s.lat && s.lon) {
-      setSettings(prev => ({ ...prev, lat: s.lat, lng: s.lon }));
+      const lat = parseFloat(s.lat), lng = parseFloat(s.lon);
+      setMapLat(lat); setMapLng(lng);
+      setSettings(prev => ({ ...prev, lat: String(lat), lng: String(lng) }));
     } else if (s.place_id) {
       fetch(`/api/orders/place-details?place_id=${s.place_id}`)
         .then(r => r.json())
-        .then(data => { if (data.lat && data.lon) setSettings(prev => ({ ...prev, lat: String(data.lat), lng: String(data.lon) })); })
+        .then(data => {
+          if (data.lat && data.lon) {
+            const lat = parseFloat(data.lat), lng = parseFloat(data.lon);
+            setMapLat(lat); setMapLng(lng);
+            setSettings(prev => ({ ...prev, lat: String(lat), lng: String(lng) }));
+            if (data.display_name) setLocalAddr(data.display_name);
+          }
+        })
         .catch(() => {});
     }
     setShowSugs(false);
@@ -86,7 +95,9 @@ export default memo(function StoreAddressForm({ settings, setSettings, saveSetti
     navigator.geolocation.getCurrentPosition(
       async (pos) => {
         const { latitude, longitude } = pos.coords;
-        setSettings(prev => ({ ...prev, lat: String(latitude.toFixed(6)), lng: String(longitude.toFixed(6)) }));
+        const lat = parseFloat(latitude.toFixed(6)), lng = parseFloat(longitude.toFixed(6));
+        setMapLat(lat); setMapLng(lng);
+        setSettings(prev => ({ ...prev, lat: String(lat), lng: String(lng) }));
         try {
           const res = await fetch(`/api/orders/reverse-geocode?lat=${latitude}&lng=${longitude}`);
           const data = await res.json();
@@ -112,7 +123,7 @@ export default memo(function StoreAddressForm({ settings, setSettings, saveSetti
       if (data.error) { setSaveMsg(data.error); setTimeout(() => setSaveMsg(''), 3000); return; }
       setLocalAddr(data.display_name);
       setSettings(prev => ({ ...prev, address: data.display_name }));
-      if (data.lat && data.lon) setSettings(prev => ({ ...prev, lat: String(data.lat), lng: String(data.lon) }));
+      if (data.lat && data.lon) { const lat = parseFloat(data.lat), lng = parseFloat(data.lon); setMapLat(lat); setMapLng(lng); setSettings(prev => ({ ...prev, lat: String(lat), lng: String(lng) })); }
     } catch { setSaveMsg('Erro CEP'); setTimeout(() => setSaveMsg(''), 3000); }
     finally { setCepLoading(false); }
   }
@@ -157,17 +168,19 @@ export default memo(function StoreAddressForm({ settings, setSettings, saveSetti
         )}
       </div>
 
-      {settings.lat && settings.lng && (
+      {(mapLat || settings.lat) && (mapLng || settings.lng) && (
         <div style={{ marginBottom: 12 }}>
           <div style={{ fontSize: 11, color: '#888', marginBottom: 4 }}>Use o mapa para ajustar o ponto exato</div>
           <div style={{ height: 200, borderRadius: 10, overflow: 'hidden', border: '1px solid var(--border)' }}>
-            <MapContainer center={[parseFloat(settings.lat), parseFloat(settings.lng)]} zoom={16}
+            <MapContainer center={[mapLat || parseFloat(settings.lat), mapLng || parseFloat(settings.lng)]} zoom={16}
+              key={`map-${mapLat || 0}-${mapLng || 0}`}
               style={{ height: '100%', width: '100%' }} scrollWheelZoom={false}>
               <TileLayer attribution='&copy; OSM' url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-              <Marker position={[parseFloat(settings.lat), parseFloat(settings.lng)]} draggable={true}
+              <Marker position={[mapLat || parseFloat(settings.lat), mapLng || parseFloat(settings.lng)]} draggable={true}
                 eventHandlers={{
                   dragend: (e) => {
                     const { lat, lng } = e.target.getLatLng();
+                    setMapLat(lat); setMapLng(lng);
                     setSettings(prev => ({ ...prev, lat: String(lat.toFixed(6)), lng: String(lng.toFixed(6)) }));
                   }
                 }} />
