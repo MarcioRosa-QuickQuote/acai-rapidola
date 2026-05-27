@@ -1341,53 +1341,84 @@ export default function StoreDashboard() {
             <div style={{ textAlign: 'center', padding: '40px 20px', color: '#bbb', fontSize: 14, background: 'white', borderRadius: 14, border: '1px solid #f0f0f0' }}>
               Nenhum pedido ativo no momento
             </div>
-          ) : (
-            <div style={{ display: 'grid', gridTemplateColumns: isDesktop ? 'repeat(3, 1fr)' : '1fr', gap: 12 }}>
-              {pendingOrders.map(o => {
-                const action = actionMap[o.status];
-                const sc = statusColors[o.status] || { bg: '#f5f5f5', color: '#666', border: '#e0e0e0' };
-                const allItems = o.items || o.order_items || [];
-                const itemsSummary = allItems.slice(0, 2).map(it => `${it.quantity}x ${it.product_name || it.products?.name || 'Item'}`).join(' · ') + (allItems.length > 2 ? ` +${allItems.length - 2}` : '');
-                return (
-                  <div key={o.id} style={{
-                    background: 'white', borderRadius: 14, padding: '14px 16px',
-                    border: `1px solid ${sc.border}`, display: 'flex', flexDirection: 'column', gap: 8
-                  }}>
-                    {/* Header: nome + status */}
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8 }}>
-                      <div style={{ fontWeight: 700, fontSize: 14, color: '#1a1a1a', flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                        {o.customer_name}
-                      </div>
-                      <span style={{ background: sc.bg, color: sc.color, borderRadius: 8, padding: '3px 8px', fontSize: 10, fontWeight: 700, whiteSpace: 'nowrap', flexShrink: 0 }}>
-                        {statusLabels[o.status] || o.status}
-                      </span>
+          ) : (() => {
+            const grupos = [
+              { key: 'preparar',  label: 'Preparar',          emoji: '🔥', accentColor: '#E65100', bgColor: '#FFF3E0', statuses: ['confirmed'] },
+              { key: 'preparando',label: 'Preparando',         emoji: '⏳', accentColor: '#1565C0', bgColor: '#E3F2FD', statuses: ['preparing'] },
+              { key: 'entrega',   label: 'Saiu pra entrega',   emoji: '🛵', accentColor: '#6A1B9A', bgColor: '#F3E5F5', statuses: ['ready', 'assigned', 'picked_up', 'in_transit', 'arriving'] },
+            ].map(g => ({ ...g, orders: pendingOrders.filter(o => g.statuses.includes(o.status)) }))
+             .filter(g => g.orders.length > 0);
+
+            const renderCard = (o) => {
+              const action = actionMap[o.status];
+              const sc = statusColors[o.status] || { bg: '#f5f5f5', color: '#666', border: '#e0e0e0' };
+              const allItems = o.items || o.order_items || [];
+              const itemsSummary = allItems.slice(0, 2).map(it => `${it.quantity}x ${it.product_name || it.products?.name || 'Item'}`).join(' · ') + (allItems.length > 2 ? ` +${allItems.length - 2}` : '');
+              return (
+                <div key={o.id} style={{
+                  background: 'white', borderRadius: 14, padding: '14px 16px',
+                  border: `1px solid ${sc.border}`, display: 'flex', flexDirection: 'column', gap: 8
+                }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8 }}>
+                    <div style={{ fontWeight: 700, fontSize: 14, color: '#1a1a1a', flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {o.customer_name}
                     </div>
-                    {/* Itens */}
-                    {itemsSummary && (
-                      <div style={{ fontSize: 12, color: '#888', lineHeight: 1.4, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                        {itemsSummary}
-                      </div>
+                    <span style={{ background: sc.bg, color: sc.color, borderRadius: 8, padding: '3px 8px', fontSize: 10, fontWeight: 700, whiteSpace: 'nowrap', flexShrink: 0 }}>
+                      {statusLabels[o.status] || o.status}
+                    </span>
+                  </div>
+                  {itemsSummary && (
+                    <div style={{ fontSize: 12, color: '#888', lineHeight: 1.4, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {itemsSummary}
+                    </div>
+                  )}
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 2 }}>
+                    <div style={{ fontSize: 14, fontWeight: 700, color: '#333' }}>R$ {o.total.toFixed(2)}</div>
+                    {action ? (
+                      <button
+                        onClick={() => updateStatus(o.id, action.next)}
+                        style={{ background: '#6A1B9A', color: 'white', border: 'none', borderRadius: 8, padding: '7px 14px', fontSize: 12, fontWeight: 700, cursor: 'pointer' }}>
+                        {action.label}
+                      </button>
+                    ) : (
+                      <span style={{ fontSize: 11, color: '#bbb' }}>
+                        {new Date(o.created_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                      </span>
                     )}
-                    {/* Rodapé: valor + botão */}
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 2 }}>
-                      <div style={{ fontSize: 14, fontWeight: 700, color: '#333' }}>R$ {o.total.toFixed(2)}</div>
-                      {action ? (
-                        <button
-                          onClick={() => updateStatus(o.id, action.next)}
-                          style={{ background: '#6A1B9A', color: 'white', border: 'none', borderRadius: 8, padding: '7px 14px', fontSize: 12, fontWeight: 700, cursor: 'pointer' }}>
-                          {action.label}
-                        </button>
-                      ) : (
-                        <span style={{ fontSize: 11, color: '#bbb' }}>
-                          {new Date(o.created_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                  </div>
+                </div>
+              );
+            };
+
+            return (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+                {grupos.map(g => (
+                  <div key={g.key}>
+                    {/* Separador de grupo */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
+                      <div style={{
+                        background: g.bgColor, border: `1px solid`, borderColor: g.bgColor,
+                        borderRadius: 8, padding: '4px 10px', display: 'flex', alignItems: 'center', gap: 6
+                      }}>
+                        <span style={{ fontSize: 13 }}>{g.emoji}</span>
+                        <span style={{ fontSize: 12, fontWeight: 700, color: g.accentColor, textTransform: 'uppercase', letterSpacing: 0.5 }}>
+                          {g.label}
                         </span>
-                      )}
+                        <span style={{ background: g.accentColor, color: 'white', borderRadius: 8, padding: '1px 7px', fontSize: 11, fontWeight: 700 }}>
+                          {g.orders.length}
+                        </span>
+                      </div>
+                      <div style={{ flex: 1, height: 1, background: '#f0f0f0' }} />
+                    </div>
+                    {/* Cards do grupo */}
+                    <div style={{ display: 'grid', gridTemplateColumns: isDesktop ? 'repeat(3, 1fr)' : '1fr', gap: 12 }}>
+                      {g.orders.map(renderCard)}
                     </div>
                   </div>
-                );
-              })}
-            </div>
-          )}
+                ))}
+              </div>
+            );
+          })()}
         </div>
       </div>
     );
