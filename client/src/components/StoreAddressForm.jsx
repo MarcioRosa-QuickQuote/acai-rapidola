@@ -24,19 +24,42 @@ export default memo(function StoreAddressForm({ settings, setSettings, saveSetti
     }
   }, []);
 
+  function extractCity(name) {
+    const parts = (name || '').split(',').map(s => s.trim());
+    for (let i = parts.length - 1; i >= 0; i--) {
+      const p = parts[i];
+      if (/^(Região|Estado|Brazil|Brasil)$/i.test(p)) continue;
+      if (/^\d/.test(p)) continue;
+      if (p && !p.includes('-') && !p.includes('R$')) return p;
+    }
+    return '';
+  }
+
+  const knownCity = extractCity(settings.address);
+
   function searchAddr(q) {
     if (debounce.current) clearTimeout(debounce.current);
     if (q.length < 3) { setSuggestions([]); setShowSugs(false); setSearching(false); return; }
     setSearching(true);
     debounce.current = setTimeout(async () => {
       try {
-        const params = new URLSearchParams({ q });
+        const searchQ = knownCity ? `${q}, ${knownCity}` : q;
+        const params = new URLSearchParams({ q: searchQ });
         if (mapLat) params.set('lat', mapLat);
         if (mapLng) params.set('lng', mapLng);
         const res = await fetch(`/api/orders/places-autocomplete?${params}`);
         const data = await res.json();
-        setSuggestions((data.results || []).map(r => ({ display_name: r.display_name, lat: r.lat || null, lon: r.lon || null, place_id: r.place_id || null })));
-        setShowSugs(data.results?.length > 0);
+        let results = (data.results || []).map(r => ({
+          display_name: r.display_name,
+          lat: r.lat || null,
+          lon: r.lon || null,
+          place_id: r.place_id || null,
+          _city: extractCity(r.display_name),
+        }));
+        if (knownCity)
+          results = results.filter(r => !r._city || r._city.toLowerCase().includes(knownCity.toLowerCase().slice(0, 6)));
+        setSuggestions(results);
+        setShowSugs(results.length > 0);
       } catch { setShowSugs(false); }
       setSearching(false);
     }, 350);
