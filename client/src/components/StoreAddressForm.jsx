@@ -30,13 +30,13 @@ export default memo(function StoreAddressForm({ settings, setSettings, saveSetti
     setSearching(true);
     debounce.current = setTimeout(async () => {
       try {
-        const lat = +mapLat, lng = +mapLng;
-        const vb = (mapLat && mapLng) ? `&viewbox=${lng - 0.5},${lat + 0.5},${lng + 0.5},${lat - 0.5}&bounded=0` : '';
-        const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(q)}&countrycodes=br&limit=5&addressdetails=1${vb}`,
-          { headers: { 'User-Agent': 'AcaiRapidola/1.0' } });
+        const params = new URLSearchParams({ q });
+        if (mapLat) params.set('lat', mapLat);
+        if (mapLng) params.set('lng', mapLng);
+        const res = await fetch(`/api/orders/places-autocomplete?${params}`);
         const data = await res.json();
-        setSuggestions((data || []).map(r => ({ display_name: r.display_name, lat: r.lat, lon: r.lon })));
-        setShowSugs(data?.length > 0);
+        setSuggestions((data.results || []).map(r => ({ display_name: r.display_name, lat: r.lat || null, lon: r.lon || null, place_id: r.place_id || null })));
+        setShowSugs(data.results?.length > 0);
       } catch { setShowSugs(false); }
       setSearching(false);
     }, 350);
@@ -44,7 +44,15 @@ export default memo(function StoreAddressForm({ settings, setSettings, saveSetti
 
   function pickAddr(s) {
     setLocalAddr(s.display_name);
-    setSettings(prev => ({ ...prev, address: s.display_name, lat: s.lat, lng: s.lon }));
+    setSettings(prev => ({ ...prev, address: s.display_name }));
+    if (s.lat && s.lon) {
+      setSettings(prev => ({ ...prev, lat: s.lat, lng: s.lon }));
+    } else if (s.place_id) {
+      fetch(`/api/orders/place-details?place_id=${s.place_id}`)
+        .then(r => r.json())
+        .then(data => { if (data.lat && data.lon) setSettings(prev => ({ ...prev, lat: String(data.lat), lng: String(data.lon) })); })
+        .catch(() => {});
+    }
     setShowSugs(false);
     setSuggestions([]);
   }
