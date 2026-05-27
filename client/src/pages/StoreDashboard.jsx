@@ -104,6 +104,9 @@ export default function StoreDashboard() {
   const [storeMessages, setStoreMessages] = useState([]);
   const [unreadMessages, setUnreadMessages] = useState(0);
   const [showDesktopMenu, setShowDesktopMenu] = useState(false);
+  const [showTV, setShowTV] = useState(false);
+  const [tvLocked, setTvLocked] = useState(false);
+  const [tvTime, setTvTime] = useState('');
   const addrSearchRef = useRef(null);
 
   useEffect(() => {
@@ -445,6 +448,21 @@ export default function StoreDashboard() {
       return () => document.removeEventListener('click', handleClick);
     }
   }, [isDesktop, showDesktopMenu]);
+
+  useEffect(() => {
+    if (!showTV) return;
+    const upd = () => setTvTime(new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }));
+    upd();
+    const t = setInterval(upd, 1000);
+    return () => clearInterval(t);
+  }, [showTV]);
+
+  useEffect(() => {
+    if (!showTV) return;
+    const onKey = (e) => { if (e.key === 'Escape' && !tvLocked) setShowTV(false); };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [showTV, tvLocked]);
 
   if (loading) return (
     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh' }}>
@@ -1303,121 +1321,180 @@ export default function StoreDashboard() {
 
   return (
     <div style={{ paddingBottom: isDesktop ? 0 : 72 }}>
-      <div className="header" style={{ padding: '8px 16px' }}>
-        <div className="header-left">
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-            <div className="toggle-switch" onClick={toggleOpen} title={open ? 'Fechar loja' : 'Abrir loja'}>
-              <input type="checkbox" checked={open} readOnly />
-              <span className="toggle-slider" />
-            </div>
-            <span style={{ fontSize: 11, fontWeight: 700, color: open ? 'var(--success)' : 'var(--danger)' }}>
-              {open ? 'ABERTA' : 'FECHADA'}
-            </span>
-          </div>
-        </div>
-        <div className="header-right" style={{ gap: 8 }}>
-          <div style={{ position: 'relative', cursor: 'pointer' }}
-            onClick={() => { setView('perfil'); setPerfilTab('mensagens'); }}>
-            {unreadMessages > 0 && (
-              <div style={{
-                position: 'absolute', top: -4, right: -4,
-                width: 18, height: 18, borderRadius: '50%',
-                background: '#C62828', color: 'white',
-                fontSize: 10, fontWeight: 700,
-                display: 'flex', alignItems: 'center', justifyContent: 'center'
-              }}>{unreadMessages > 9 ? '9+' : unreadMessages}</div>
-            )}
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--text-light)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
-              <path d="M13.73 21a2 2 0 0 1-3.46 0" />
-            </svg>
-          </div>
-          <div style={{ position: 'relative' }}>
-            {storeData?.logo ? (
-              <img src={storeData.logo} alt="Logo"
-                style={{ width: 42, height: 42, borderRadius: '50%', objectFit: 'cover', flexShrink: 0, cursor: 'pointer' }}
-                onClick={(e) => { e.stopPropagation(); if (isDesktop) setShowDesktopMenu(v => !v); else { setView('perfil'); setPerfilTab(null); } }}
-                onError={e => { e.target.style.display = 'none'; }} />
-            ) : (
-              <div style={{
-                width: 42, height: 42, borderRadius: '50%',
-                background: 'linear-gradient(135deg, var(--primary), var(--primary-dark))',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                color: 'white', fontWeight: 800, fontSize: 18, flexShrink: 0, cursor: 'pointer'
-              }}
-                onClick={(e) => { e.stopPropagation(); if (isDesktop) setShowDesktopMenu(v => !v); else { setView('perfil'); setPerfilTab(null); } }}>
-                {(storeData?.name || 'L').charAt(0)}
-              </div>
-            )}
-            {isDesktop && showDesktopMenu && (
-              <div style={{ position: 'absolute', top: '100%', right: 0, zIndex: 1000, background: 'white', borderRadius: 12, boxShadow: '0 4px 20px rgba(0,0,0,0.15)', border: '1px solid var(--border)', overflow: 'hidden', minWidth: 200, marginTop: 4 }}>
-                {[
-                  { key: 'painel', icon: '📊', label: 'Painel' },
-                  { key: 'dados', icon: '📋', label: 'Dados' },
-                  { key: 'endereco', icon: '📍', label: 'Endereço' },
-                  { key: 'trocar-senha', icon: '🔒', label: 'Trocar Senha' },
-                  { key: 'mensagens', icon: '💬', label: 'Mensagens' },
-                  { key: 'vendas', icon: '💰', label: 'Vendas' },
-                  { key: 'motoboy', icon: '🏍️', label: 'Motoboy' },
-                  { key: 'assinatura', icon: '⭐', label: 'Assinatura' },
-                ].map(item => (
-                  <div key={item.key} style={{ padding: '12px 16px', cursor: 'pointer', fontSize: 14, display: 'flex', alignItems: 'center', gap: 10, borderBottom: '1px solid #f5f5f5' }}
-                    onClick={() => { if (item.key === 'painel') { setView('painel'); setShowDesktopMenu(false); } else { setView('perfil'); setPerfilTab(item.key); setShowDesktopMenu(false); } }}>
-                    <span>{item.icon}</span>
-                    <span style={{ fontWeight: 500 }}>{item.label}</span>
-                  </div>
-                ))}
-                <div style={{ padding: '12px 16px', cursor: 'pointer', fontSize: 14, display: 'flex', alignItems: 'center', gap: 10, color: '#C62828' }}
-                  onClick={() => { logout(); setShowDesktopMenu(false); }}>
-                  <span>🚪</span>
-                  <span style={{ fontWeight: 500 }}>Sair</span>
+
+      {/* ─── SIDEBAR DESKTOP ─────────────────────── */}
+      {isDesktop && (
+        <div style={{
+          position: 'fixed', left: 0, top: 0, bottom: 0, width: 240,
+          background: 'white', borderRight: '1px solid var(--border)',
+          display: 'flex', flexDirection: 'column', zIndex: 100
+        }}>
+          {/* Marca */}
+          <div style={{ padding: '18px 16px 14px', borderBottom: '1px solid var(--border)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              {storeData?.logo ? (
+                <img src={storeData.logo} alt="Logo"
+                  style={{ width: 40, height: 40, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }}
+                  onError={e => { e.target.style.display = 'none'; }} />
+              ) : (
+                <div style={{
+                  width: 40, height: 40, borderRadius: '50%', flexShrink: 0,
+                  background: 'linear-gradient(135deg, var(--primary), var(--primary-dark))',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  color: 'white', fontWeight: 800, fontSize: 18
+                }}>{(storeData?.name || 'L').charAt(0)}</div>
+              )}
+              <div style={{ minWidth: 0 }}>
+                <div style={{ fontWeight: 700, fontSize: 13, color: '#1a1a1a', lineHeight: 1.3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  {storeData?.name || 'Loja'}
+                </div>
+                <div style={{ fontSize: 11, fontWeight: 600, marginTop: 2, color: open ? 'var(--success)' : 'var(--danger)' }}>
+                  {open ? '● Aberta' : '● Fechada'}
                 </div>
               </div>
-            )}
+            </div>
+          </div>
+
+          {/* Navegação */}
+          <nav style={{ flex: 1, overflowY: 'auto', padding: '10px 0' }}>
+            <div style={{ padding: '4px 16px 6px', fontSize: 10, fontWeight: 700, color: '#bbb', letterSpacing: 1, textTransform: 'uppercase' }}>Operação</div>
+            {[
+              { key: 'painel', icon: '📊', label: 'Painel', onClick: () => { setView('painel'); setPerfilTab(null); }, active: view === 'painel' && !perfilTab, badge: pendingOrders.length || null },
+              { key: 'pedidos', icon: '📋', label: 'Pedidos', onClick: () => { setView('pedidos'); setPerfilTab(null); }, active: view === 'pedidos' && !perfilTab, badge: pendingOrders.length || null },
+              { key: 'produtos', icon: '🧾', label: 'Produtos', onClick: () => { setView('produtos'); setPerfilTab(null); }, active: view === 'produtos' && !perfilTab },
+              { key: 'financeiro', icon: '💰', label: 'Financeiro', onClick: () => { setView('financeiro'); setPerfilTab(null); }, active: view === 'financeiro' && !perfilTab },
+            ].map(item => (
+              <div key={item.key} onClick={item.onClick}
+                style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '9px 12px', margin: '1px 8px', cursor: 'pointer', borderRadius: 8, background: item.active ? '#F3E5F5' : 'transparent', color: item.active ? 'var(--primary)' : '#555', fontWeight: item.active ? 700 : 500, fontSize: 13 }}>
+                <span style={{ fontSize: 15, flexShrink: 0 }}>{item.icon}</span>
+                <span style={{ flex: 1 }}>{item.label}</span>
+                {item.badge > 0 && <span style={{ background: 'var(--primary)', color: 'white', borderRadius: 10, fontSize: 10, fontWeight: 700, padding: '1px 5px', minWidth: 18, textAlign: 'center' }}>{item.badge}</span>}
+              </div>
+            ))}
+
+            <div style={{ padding: '10px 16px 6px', fontSize: 10, fontWeight: 700, color: '#bbb', letterSpacing: 1, textTransform: 'uppercase', marginTop: 4 }}>Configurações</div>
+            {[
+              { key: 'dados', icon: '🏪', label: 'Dados da Loja' },
+              { key: 'endereco', icon: '📍', label: 'Endereço' },
+              { key: 'motoboy', icon: '🏍️', label: 'Motoboys' },
+              { key: 'mensagens', icon: '💬', label: 'Mensagens', badge: unreadMessages || null },
+              { key: 'assinatura', icon: '⭐', label: 'Assinatura' },
+              { key: 'trocar-senha', icon: '🔑', label: 'Senha' },
+            ].map(item => {
+              const isActive = view === 'perfil' && perfilTab === item.key;
+              return (
+                <div key={item.key} onClick={() => { setView('perfil'); setPerfilTab(item.key); }}
+                  style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '9px 12px', margin: '1px 8px', cursor: 'pointer', borderRadius: 8, background: isActive ? '#F3E5F5' : 'transparent', color: isActive ? 'var(--primary)' : '#555', fontWeight: isActive ? 700 : 500, fontSize: 13 }}>
+                  <span style={{ fontSize: 15, flexShrink: 0 }}>{item.icon}</span>
+                  <span style={{ flex: 1 }}>{item.label}</span>
+                  {item.badge > 0 && <span style={{ background: '#C62828', color: 'white', borderRadius: 10, fontSize: 10, fontWeight: 700, padding: '1px 5px', minWidth: 18, textAlign: 'center' }}>{item.badge}</span>}
+                </div>
+              );
+            })}
+          </nav>
+
+          {/* Rodapé sidebar */}
+          <div style={{ padding: '12px 16px', borderTop: '1px solid var(--border)', display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <div className="toggle-switch" onClick={toggleOpen} title={open ? 'Fechar loja' : 'Abrir loja'}>
+                <input type="checkbox" checked={open} readOnly />
+                <span className="toggle-slider" />
+              </div>
+              <span style={{ fontSize: 12, fontWeight: 600, color: open ? 'var(--success)' : 'var(--danger)' }}>
+                {open ? 'Loja Aberta' : 'Loja Fechada'}
+              </span>
+            </div>
+            <button onClick={() => setShowTV(true)}
+              style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, padding: '8px 12px', background: '#1a1a2e', color: '#c8c8ff', border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
+              📺 Ver na TV
+            </button>
+            <button onClick={logout}
+              style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, padding: '7px 12px', background: 'none', color: '#C62828', border: '1px solid #ffcdd2', borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
+              🚪 Sair
+            </button>
           </div>
         </div>
-      </div>
+      )}
 
-      <div className="container">
-        {perfilTab && view === 'perfil' ? (
-          <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
-              <div onClick={() => setPerfilTab(null)} style={{
-                width: 36, height: 36, borderRadius: '50%',
-                background: '#F3E5F5', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                cursor: 'pointer', fontSize: 18, fontWeight: 700, color: '#6A1B9A', flexShrink: 0
-              }}>‹</div>
-              <span style={{ fontWeight: 700, fontSize: 16 }}>{perfilTab === 'dados' ? 'Dados' : perfilTab === 'endereco' ? 'Endereço' : perfilTab === 'trocar-senha' ? 'Trocar Senha' : perfilTab === 'mensagens' ? 'Mensagens' : perfilTab === 'vendas' ? 'Vendas' : perfilTab === 'motoboy' ? 'Motoboys' : perfilTab === 'assinatura' ? 'Assinatura' : ''}</span>
-            </div>
-            {perfilTab === 'dados' && PerfilView()}
-            {perfilTab === 'endereco' && <StoreAddressForm settings={settings} setSettings={setSettings} saveSettings={saveSettings} uploading={uploading} saveMsg={saveMsg} setSaveMsg={setSaveMsg} />}
-            {perfilTab === 'trocar-senha' && PerfilView()}
-            {perfilTab === 'mensagens' && <StoreMessages messages={storeMessages} storeId={storeData?.id} apiFetch={apiFetch} onReload={loadMessages} />}
-            {perfilTab === 'vendas' && FinanceiroTab()}
-            {perfilTab === 'motoboy' && PerfilView()}
-            {perfilTab === 'assinatura' && PerfilView()}
-          </div>
-        ) : view === 'painel' ? (
-          PainelView()
-        ) : view === 'pedidos' ? (
-          PedidosView()
-        ) : view === 'produtos' ? (
-          ProdutosView()
-        ) : view === 'financeiro' ? (
-          FinanceiroTab()
-        ) : view === 'perfil' ? (
-          perfilTab ? (
-            <div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
-                <div onClick={() => setPerfilTab(null)} style={{
-                  width: 36, height: 36, borderRadius: '50%',
-                  background: '#F3E5F5', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  cursor: 'pointer', fontSize: 18, fontWeight: 700, color: '#6A1B9A', flexShrink: 0
-                }}>‹</div>
-                <span style={{ fontWeight: 700, fontSize: 16 }}>
-                  {perfilTab === 'dados' ? 'Dados' : perfilTab === 'endereco' ? 'Endereço' : perfilTab === 'trocar-senha' ? 'Trocar Senha' : perfilTab === 'mensagens' ? 'Mensagens' : perfilTab === 'vendas' ? 'Vendas' : perfilTab === 'motoboy' ? 'Motoboys' : perfilTab === 'assinatura' ? 'Assinatura' : ''}
+      {/* ─── ÁREA PRINCIPAL ─────────────────────── */}
+      <div style={{ marginLeft: isDesktop ? 240 : 0 }}>
+
+        {/* Header */}
+        <div className="header" style={{ padding: '8px 16px' }}>
+          {isDesktop ? (
+            <>
+              <div className="header-left">
+                <span style={{ fontWeight: 700, fontSize: 16, color: '#1a1a1a' }}>
+                  {view === 'painel' ? 'Painel' : view === 'pedidos' ? 'Pedidos' : view === 'produtos' ? 'Produtos' : view === 'financeiro' ? 'Financeiro' : view === 'perfil' ? (perfilTab === 'dados' ? 'Dados da Loja' : perfilTab === 'endereco' ? 'Endereço' : perfilTab === 'motoboy' ? 'Motoboys' : perfilTab === 'mensagens' ? 'Mensagens' : perfilTab === 'assinatura' ? 'Assinatura' : perfilTab === 'trocar-senha' ? 'Trocar Senha' : 'Perfil') : 'Dashboard'}
                 </span>
               </div>
+              <div className="header-right" style={{ gap: 8 }}>
+                <div style={{ position: 'relative', cursor: 'pointer' }}
+                  onClick={() => { setView('perfil'); setPerfilTab('mensagens'); }}>
+                  {unreadMessages > 0 && (
+                    <div style={{ position: 'absolute', top: -4, right: -4, width: 18, height: 18, borderRadius: '50%', background: '#C62828', color: 'white', fontSize: 10, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      {unreadMessages > 9 ? '9+' : unreadMessages}
+                    </div>
+                  )}
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--text-light)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+                    <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+                  </svg>
+                </div>
+              </div>
+            </>
+          ) : (
+            <>
+              <div className="header-left">
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <div className="toggle-switch" onClick={toggleOpen} title={open ? 'Fechar loja' : 'Abrir loja'}>
+                    <input type="checkbox" checked={open} readOnly />
+                    <span className="toggle-slider" />
+                  </div>
+                  <span style={{ fontSize: 11, fontWeight: 700, color: open ? 'var(--success)' : 'var(--danger)' }}>
+                    {open ? 'ABERTA' : 'FECHADA'}
+                  </span>
+                </div>
+              </div>
+              <div className="header-right" style={{ gap: 8 }}>
+                <div style={{ position: 'relative', cursor: 'pointer' }}
+                  onClick={() => { setView('perfil'); setPerfilTab('mensagens'); }}>
+                  {unreadMessages > 0 && (
+                    <div style={{ position: 'absolute', top: -4, right: -4, width: 18, height: 18, borderRadius: '50%', background: '#C62828', color: 'white', fontSize: 10, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{unreadMessages > 9 ? '9+' : unreadMessages}</div>
+                  )}
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--text-light)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+                    <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+                  </svg>
+                </div>
+                <div>
+                  {storeData?.logo ? (
+                    <img src={storeData.logo} alt="Logo"
+                      style={{ width: 42, height: 42, borderRadius: '50%', objectFit: 'cover', flexShrink: 0, cursor: 'pointer' }}
+                      onClick={() => { setView('perfil'); setPerfilTab(null); }}
+                      onError={e => { e.target.style.display = 'none'; }} />
+                  ) : (
+                    <div style={{ width: 42, height: 42, borderRadius: '50%', background: 'linear-gradient(135deg, var(--primary), var(--primary-dark))', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 800, fontSize: 18, flexShrink: 0, cursor: 'pointer' }}
+                      onClick={() => { setView('perfil'); setPerfilTab(null); }}>
+                      {(storeData?.name || 'L').charAt(0)}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </>
+          )}
+        </div>
+
+        {/* Conteúdo */}
+        <div className="container">
+          {perfilTab && view === 'perfil' ? (
+            <div>
+              {!isDesktop && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
+                  <div onClick={() => setPerfilTab(null)} style={{ width: 36, height: 36, borderRadius: '50%', background: '#F3E5F5', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontSize: 18, fontWeight: 700, color: '#6A1B9A', flexShrink: 0 }}>‹</div>
+                  <span style={{ fontWeight: 700, fontSize: 16 }}>{perfilTab === 'dados' ? 'Dados' : perfilTab === 'endereco' ? 'Endereço' : perfilTab === 'trocar-senha' ? 'Trocar Senha' : perfilTab === 'mensagens' ? 'Mensagens' : perfilTab === 'vendas' ? 'Vendas' : perfilTab === 'motoboy' ? 'Motoboys' : perfilTab === 'assinatura' ? 'Assinatura' : ''}</span>
+                </div>
+              )}
               {perfilTab === 'dados' && PerfilView()}
               {perfilTab === 'endereco' && <StoreAddressForm settings={settings} setSettings={setSettings} saveSettings={saveSettings} uploading={uploading} saveMsg={saveMsg} setSaveMsg={setSaveMsg} />}
               {perfilTab === 'trocar-senha' && PerfilView()}
@@ -1426,38 +1503,154 @@ export default function StoreDashboard() {
               {perfilTab === 'motoboy' && PerfilView()}
               {perfilTab === 'assinatura' && PerfilView()}
             </div>
-          ) : (
+          ) : view === 'painel' ? (
+            PainelView()
+          ) : view === 'pedidos' ? (
+            PedidosView()
+          ) : view === 'produtos' ? (
+            ProdutosView()
+          ) : view === 'financeiro' ? (
+            FinanceiroTab()
+          ) : view === 'perfil' ? (
             PerfilView()
-          )
-        ) : null}
+          ) : null}
+        </div>
+
+        {/* Nav mobile (bottom) */}
+        {!isDesktop && (
+          <div style={{
+            position: 'fixed', bottom: 0, left: 0, right: 0,
+            background: 'white', borderTop: '1px solid var(--border)',
+            display: 'flex', zIndex: 1000,
+            paddingBottom: 'env(safe-area-inset-bottom, 0px)'
+          }}>
+            {[
+              { key: 'painel', icon: '📊', label: 'Painel' },
+              { key: 'pedidos', icon: '📋', label: 'Pedidos' },
+              { key: 'produtos', icon: '🧾', label: 'Produtos' },
+              { key: 'financeiro', icon: '💰', label: 'Financeiro' },
+              { key: 'perfil', icon: '👤', label: 'Perfil' },
+            ].map(item => (
+              <div key={item.key} style={{
+                flex: 1, textAlign: 'center', padding: '8px 4px',
+                cursor: 'pointer', opacity: view === item.key ? 1 : 0.5,
+                borderTop: view === item.key ? '2px solid var(--primary)' : '2px solid transparent',
+                background: view === item.key ? '#F3E5F5' : 'transparent'
+              }} onClick={() => { setView(item.key); if (item.key !== 'perfil') setPerfilTab(null); }}>
+                <div style={{ fontSize: 18 }}>{item.icon}</div>
+                <div style={{ fontSize: 10, fontWeight: 600, color: view === item.key ? 'var(--primary)' : '#888', marginTop: 2 }}>
+                  {item.label}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
-      {!isDesktop && (
-        <div style={{
-          position: 'fixed', bottom: 0, left: 0, right: 0,
-          background: 'white', borderTop: '1px solid var(--border)',
-          display: 'flex', zIndex: 1000,
-          paddingBottom: 'env(safe-area-inset-bottom, 0px)'
-        }}>
-          {[
-            { key: 'painel', icon: '📊', label: 'Painel' },
-            { key: 'pedidos', icon: '📋', label: 'Pedidos' },
-            { key: 'produtos', icon: '🧾', label: 'Produtos' },
-            { key: 'financeiro', icon: '💰', label: 'Financeiro' },
-            { key: 'perfil', icon: '👤', label: 'Perfil' },
-          ].map(item => (
-            <div key={item.key} style={{
-              flex: 1, textAlign: 'center', padding: '8px 4px',
-              cursor: 'pointer', opacity: view === item.key ? 1 : 0.5,
-              borderTop: view === item.key ? '2px solid var(--primary)' : '2px solid transparent',
-              background: view === item.key ? '#F3E5F5' : 'transparent'
-            }} onClick={() => { setView(item.key); if (item.key !== 'perfil') setPerfilTab(null); }}>
-              <div style={{ fontSize: 18 }}>{item.icon}</div>
-              <div style={{ fontSize: 10, fontWeight: 600, color: view === item.key ? 'var(--primary)' : '#888', marginTop: 2 }}>
-                {item.label}
-              </div>
+      {/* ─── TV OVERLAY ─────────────────────── */}
+      {showTV && (
+        <div style={{ position: 'fixed', inset: 0, background: '#0d0d1a', zIndex: 9999, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+
+          {/* Barra superior */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '14px 28px', borderBottom: '1px solid rgba(255,255,255,0.07)', flexShrink: 0 }}>
+            {storeData?.logo && (
+              <img src={storeData.logo} alt="Logo" style={{ width: 44, height: 44, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} onError={e => { e.target.style.display = 'none'; }} />
+            )}
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ color: 'white', fontWeight: 800, fontSize: 20, lineHeight: 1.2 }}>{storeData?.name || 'Loja'}</div>
+              <div style={{ fontSize: 12, fontWeight: 600, marginTop: 2, color: open ? '#00C851' : '#ff4444' }}>{open ? '● Loja Aberta' : '● Loja Fechada'}</div>
             </div>
-          ))}
+            <div style={{ color: 'white', fontWeight: 800, fontSize: 40, fontVariantNumeric: 'tabular-nums', letterSpacing: 3 }}>{tvTime}</div>
+            <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexShrink: 0 }}>
+              <button
+                onClick={() => setTvLocked(v => !v)}
+                title={tvLocked ? 'Desbloquear — permite fechar' : 'Bloquear — impede fechar acidentalmente'}
+                style={{ width: 44, height: 44, borderRadius: 10, background: tvLocked ? 'rgba(255,180,0,0.15)' : 'rgba(255,255,255,0.07)', border: tvLocked ? '1px solid rgba(255,180,0,0.45)' : '1px solid rgba(255,255,255,0.12)', color: tvLocked ? '#ffb400' : 'rgba(255,255,255,0.5)', fontSize: 20, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                {tvLocked ? '🔒' : '🔓'}
+              </button>
+              <button
+                onClick={() => { if (!tvLocked) setShowTV(false); }}
+                title={tvLocked ? 'Desbloqueie o cadeado primeiro' : 'Fechar TV'}
+                style={{ width: 44, height: 44, borderRadius: 10, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: tvLocked ? 'rgba(255,255,255,0.15)' : 'rgba(255,255,255,0.65)', fontSize: 22, cursor: tvLocked ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700 }}>
+                ✕
+              </button>
+            </div>
+          </div>
+
+          {/* Barra de stats */}
+          {(() => {
+            const tvActive = pendingOrders;
+            const cntPronto = tvActive.filter(o => o.status === 'ready').length;
+            const cntPrep = tvActive.filter(o => ['confirmed', 'preparing'].includes(o.status)).length;
+            const cntCaminho = tvActive.filter(o => ['assigned', 'picked_up', 'in_transit', 'arriving'].includes(o.status)).length;
+            const tvGroups = [
+              { label: 'PRONTOS', color: '#00C851', bg: 'rgba(0,200,81,0.1)', border: 'rgba(0,200,81,0.25)', orders: tvActive.filter(o => o.status === 'ready') },
+              { label: 'PREPARANDO', color: '#33b5e5', bg: 'rgba(51,181,229,0.08)', border: 'rgba(51,181,229,0.22)', orders: tvActive.filter(o => ['confirmed', 'preparing'].includes(o.status)) },
+              { label: 'A CAMINHO', color: '#aa66cc', bg: 'rgba(170,102,204,0.08)', border: 'rgba(170,102,204,0.22)', orders: tvActive.filter(o => ['assigned', 'picked_up', 'in_transit', 'arriving'].includes(o.status)) },
+            ].filter(g => g.orders.length > 0);
+            return (
+              <>
+                <div style={{ display: 'flex', gap: 10, padding: '10px 28px', borderBottom: '1px solid rgba(255,255,255,0.05)', flexShrink: 0 }}>
+                  {[
+                    { label: 'Ativos', value: tvActive.length, color: 'rgba(255,255,255,0.9)', bg: 'rgba(255,255,255,0.06)', border: 'rgba(255,255,255,0.1)' },
+                    { label: 'Prontos', value: cntPronto, color: '#00C851', bg: 'rgba(0,200,81,0.1)', border: 'rgba(0,200,81,0.25)' },
+                    { label: 'Preparando', value: cntPrep, color: '#33b5e5', bg: 'rgba(51,181,229,0.08)', border: 'rgba(51,181,229,0.22)' },
+                    { label: 'A Caminho', value: cntCaminho, color: '#aa66cc', bg: 'rgba(170,102,204,0.08)', border: 'rgba(170,102,204,0.22)' },
+                  ].map(s => (
+                    <div key={s.label} style={{ flex: 1, textAlign: 'center', padding: '8px 12px', background: s.bg, borderRadius: 8, border: `1px solid ${s.border}` }}>
+                      <div style={{ color: 'rgba(255,255,255,0.45)', fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: 1 }}>{s.label}</div>
+                      <div style={{ color: s.color, fontSize: 28, fontWeight: 800, lineHeight: 1.2 }}>{s.value}</div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Cards de pedidos */}
+                <div style={{ flex: 1, overflow: 'auto', padding: '20px 28px' }}>
+                  {tvActive.length === 0 ? (
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: 'rgba(255,255,255,0.25)', fontSize: 22, fontWeight: 600 }}>
+                      Nenhum pedido ativo no momento
+                    </div>
+                  ) : (
+                    <div style={{ display: 'flex', gap: 20, alignItems: 'flex-start' }}>
+                      {tvGroups.map(group => (
+                        <div key={group.label} style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12, padding: '7px 14px', background: group.bg, borderRadius: 8, border: `1px solid ${group.border}` }}>
+                            <div style={{ width: 8, height: 8, borderRadius: '50%', background: group.color, flexShrink: 0 }} />
+                            <span style={{ color: group.color, fontSize: 13, fontWeight: 800, letterSpacing: 1, textTransform: 'uppercase' }}>{group.label}</span>
+                            <span style={{ color: group.color, fontSize: 13, fontWeight: 700, marginLeft: 'auto', opacity: 0.8 }}>{group.orders.length}</span>
+                          </div>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                            {group.orders.map(o => (
+                              <div key={o.id} style={{ background: 'rgba(255,255,255,0.05)', borderRadius: 12, padding: '14px 16px', border: `1px solid ${group.border}` }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 6 }}>
+                                  <div>
+                                    <div style={{ color: 'white', fontWeight: 700, fontSize: 16, lineHeight: 1.2 }}>{o.customer_name}</div>
+                                    <div style={{ color: 'rgba(255,255,255,0.35)', fontSize: 11, marginTop: 2 }}>
+                                      #{String(o.id).slice(-4)} · {new Date(o.created_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                                    </div>
+                                  </div>
+                                  <div style={{ color: group.color, fontWeight: 800, fontSize: 17, whiteSpace: 'nowrap' }}>
+                                    R$ {o.total.toFixed(2)}
+                                  </div>
+                                </div>
+                                {o.items && o.items.length > 0 && (
+                                  <div style={{ color: 'rgba(255,255,255,0.45)', fontSize: 12, borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: 6, marginTop: 4 }}>
+                                    {o.items.slice(0, 2).map((it, i) => (
+                                      <span key={i}>{it.quantity}x {it.product_name}{i < Math.min(o.items.length, 2) - 1 ? ' · ' : ''}</span>
+                                    ))}{o.items.length > 2 ? ` +${o.items.length - 2}` : ''}
+                                  </div>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </>
+            );
+          })()}
         </div>
       )}
     </div>
