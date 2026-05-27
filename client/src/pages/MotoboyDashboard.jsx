@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useSocket } from '../contexts/SocketContext';
+import { APP_BUILD } from '../version';
 import { MapContainer, TileLayer, Marker, useMap } from 'react-leaflet';
 import RoutePolyline, { useRoute, NavSteps } from '../components/RouteMap';
 import L from 'leaflet';
@@ -1167,8 +1168,9 @@ export default function MotoboyDashboard() {
       <div style={{
         position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 300,
         background: 'white', borderTop: '1px solid var(--border)',
-        display: 'flex', padding: '6px 0', paddingBottom: 'env(safe-area-inset-bottom, 6px)'
+        flexDirection: 'column', paddingBottom: 'env(safe-area-inset-bottom, 4px)'
       }}>
+        <div style={{ display: 'flex', padding: '6px 0' }}>
         {tabs.map(tab => (
           <button key={tab.key}
             onClick={() => setPageTab(tab.key)}
@@ -1186,6 +1188,10 @@ export default function MotoboyDashboard() {
             </span>
           </button>
         ))}
+        </div>
+        <div style={{ textAlign: 'center', fontSize: 9, color: '#ccc', fontFamily: 'monospace', letterSpacing: 0.5, paddingBottom: 2 }}>
+          build #{APP_BUILD}
+        </div>
       </div>
 
       {fsOrder && (

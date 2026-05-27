@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useSocket } from '../contexts/SocketContext';
+import { APP_BUILD } from '../version';
 import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
 import RoutePolyline from '../components/RouteMap';
 import StoreMessages from '../components/StoreMessages';
@@ -1517,6 +1518,9 @@ export default function StoreDashboard() {
               style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, padding: '7px 12px', background: 'none', color: '#C62828', border: '1px solid #ffcdd2', borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
               🚪 Sair
             </button>
+            <div style={{ textAlign: 'center', fontSize: 10, color: '#ccc', marginTop: 8, fontFamily: 'monospace', letterSpacing: 0.5 }}>
+              build #{APP_BUILD}
+            </div>
           </div>
         </div>
       )}
@@ -1665,9 +1669,10 @@ export default function StoreDashboard() {
         const cntPrep = tvActive.filter(o => ['confirmed', 'preparing'].includes(o.status)).length;
         const cntCaminho = tvActive.filter(o => ['assigned', 'picked_up', 'in_transit', 'arriving'].includes(o.status)).length;
         const tvGroups = [
-          { label: 'PRONTOS', color: '#00a844', bg: 'rgba(0,168,68,0.1)', border: 'rgba(0,168,68,0.28)', orders: tvActive.filter(o => o.status === 'ready') },
-          { label: 'PREPARANDO', color: '#1e88e5', bg: 'rgba(30,136,229,0.08)', border: 'rgba(30,136,229,0.25)', orders: tvActive.filter(o => ['confirmed', 'preparing'].includes(o.status)) },
-          { label: 'A CAMINHO', color: '#8e24aa', bg: 'rgba(142,36,170,0.08)', border: 'rgba(142,36,170,0.25)', orders: tvActive.filter(o => ['assigned', 'picked_up', 'in_transit', 'arriving'].includes(o.status)) },
+          { label: 'PREPARAR',   emoji: '🔥', color: '#E65100', bg: 'rgba(230,81,0,0.1)',    border: 'rgba(230,81,0,0.28)',    orders: tvActive.filter(o => o.status === 'confirmed') },
+          { label: 'PREPARANDO', emoji: '⏳', color: '#1e88e5', bg: 'rgba(30,136,229,0.08)', border: 'rgba(30,136,229,0.25)', orders: tvActive.filter(o => o.status === 'preparing') },
+          { label: 'PRONTOS',    emoji: '✅', color: '#00a844', bg: 'rgba(0,168,68,0.1)',    border: 'rgba(0,168,68,0.28)',    orders: tvActive.filter(o => o.status === 'ready') },
+          { label: 'A CAMINHO',  emoji: '🛵', color: '#8e24aa', bg: 'rgba(142,36,170,0.08)', border: 'rgba(142,36,170,0.25)', orders: tvActive.filter(o => ['assigned', 'picked_up', 'in_transit', 'arriving'].includes(o.status)) },
         ].filter(g => g.orders.length > 0);
 
         const btnBase = { width: 44, height: 44, borderRadius: 10, fontSize: 20, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', border: tvLight ? '1px solid #ddd' : '1px solid rgba(255,255,255,0.12)' };
@@ -1742,12 +1747,12 @@ export default function StoreDashboard() {
                     <div key={group.label}>
                       {/* Cabeçalho do grupo */}
                       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12, padding: '6px 14px', background: group.bg, borderRadius: 8, border: `1px solid ${group.border}`, width: 'fit-content' }}>
-                        <div style={{ width: 8, height: 8, borderRadius: '50%', background: group.color }} />
+                        <span style={{ fontSize: 15 }}>{group.emoji}</span>
                         <span style={{ color: group.color, fontSize: 13, fontWeight: 800, letterSpacing: 1, textTransform: 'uppercase' }}>{group.label}</span>
                         <span style={{ color: group.color, fontSize: 13, fontWeight: 700, opacity: 0.75 }}>· {group.orders.length}</span>
                       </div>
-                      {/* Grid de cards — 2 por linha */}
-                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+                      {/* Grid de cards — 3 por linha */}
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 14 }}>
                         {group.orders.map(o => {
                           const action = actionMap[o.status];
                           return (
