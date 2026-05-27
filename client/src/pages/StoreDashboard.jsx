@@ -1190,109 +1190,204 @@ export default function StoreDashboard() {
     const totalPedidosHoje = orders.filter(o => new Date(o.created_at).toDateString() === new Date().toDateString()).length;
     const faturamentoHoje = orders.filter(o => o.payment_status === 'paid' && new Date(o.created_at).toDateString() === new Date().toDateString()).reduce((s, o) => s + o.total, 0);
     const totalProdutos = products.filter(p => p.active).length;
-    const motoboysAtivos = motoboys.length;
+
+    const statusColors = {
+      confirmed:  { bg: '#FFF3E0', color: '#E65100', border: '#FFE0B2' },
+      preparing:  { bg: '#E3F2FD', color: '#1565C0', border: '#BBDEFB' },
+      ready:      { bg: '#E8F5E9', color: '#2E7D32', border: '#C8E6C9' },
+      assigned:   { bg: '#F3E5F5', color: '#6A1B9A', border: '#E1BEE7' },
+      picked_up:  { bg: '#F3E5F5', color: '#6A1B9A', border: '#E1BEE7' },
+      in_transit: { bg: '#EDE7F6', color: '#4527A0', border: '#D1C4E9' },
+      arriving:   { bg: '#FCE4EC', color: '#880E4F', border: '#F8BBD0' },
+    };
 
     return (
       <div>
-        <div style={{ marginBottom: 24 }}>
-          <div style={{ fontSize: 26, fontWeight: 800, color: '#1a1a1a' }}>
-            Olá, {storeData?.name || 'Loja'}! 👋
-          </div>
-          <div style={{ fontSize: 14, color: '#888', marginTop: 4 }}>
-            {new Date().toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' })}
-          </div>
-        </div>
-
-        <div style={{ display: 'flex', gap: 12, marginBottom: 20 }}>
-          <div style={{ background: '#F8F4FC', borderRadius: 16, padding: '16px 20px', border: '1px solid #E1BEE7', display: 'flex', flexDirection: 'column', gap: 12 }}>
-            <div>
-              <div style={{ fontSize: 10, color: '#888', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5 }}>Pedidos hoje</div>
-              <div style={{ fontSize: 26, fontWeight: 800, color: '#1a1a1a', lineHeight: 1.2 }}>{totalPedidosHoje}</div>
+        {/* ─── KPI Row ─── */}
+        {isDesktop ? (
+          <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1fr 1fr', gap: 12, marginBottom: 20 }}>
+            {/* Faturamento destacado */}
+            <div style={{
+              background: 'linear-gradient(135deg, #6A1B9A 0%, #9C27B0 55%, #CE93D8 100%)',
+              borderRadius: 14, padding: '18px 22px', color: 'white', position: 'relative', overflow: 'hidden'
+            }}>
+              <div style={{ position: 'absolute', top: -15, right: -15, width: 90, height: 90, borderRadius: '50%', background: 'rgba(255,255,255,0.08)' }} />
+              <div style={{ fontSize: 10, opacity: 0.85, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.6 }}>Faturamento Hoje</div>
+              <div style={{ fontSize: 32, fontWeight: 800, marginTop: 6, lineHeight: 1.1 }}>R$ {faturamentoHoje.toFixed(2)}</div>
+              <div style={{ fontSize: 12, opacity: 0.75, marginTop: 6 }}>{totalPedidosHoje} pedido{totalPedidosHoje !== 1 ? 's' : ''} hoje</div>
             </div>
-            <div>
-              <div style={{ fontSize: 10, color: '#888', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5 }}>Loja</div>
-              <div style={{ fontSize: 15, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 6 }}>
-                <span style={{ width: 8, height: 8, borderRadius: '50%', background: open ? '#43a047' : '#e53935', display: 'inline-block' }} />
-                {open ? 'Aberta' : 'Fechada'}
+            {/* Ativos */}
+            <div onClick={() => { setOrderFilter('ativos'); setView('pedidos'); }} style={{
+              background: '#F3E5F5', borderRadius: 14, padding: '18px 16px', cursor: 'pointer',
+              border: '1px solid #E1BEE7', display: 'flex', flexDirection: 'column', justifyContent: 'space-between'
+            }}>
+              <div style={{ fontSize: 10, color: '#7B1FA2', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5 }}>Ativos</div>
+              <div style={{ fontSize: 34, fontWeight: 800, color: '#6A1B9A', lineHeight: 1 }}>{pendingOrders.length}</div>
+            </div>
+            {/* Pendentes */}
+            <div onClick={() => { setOrderFilter('pendentes'); setView('pedidos'); }} style={{
+              background: '#FFF3E0', borderRadius: 14, padding: '18px 16px', cursor: 'pointer',
+              border: '1px solid #FFE0B2', display: 'flex', flexDirection: 'column', justifyContent: 'space-between'
+            }}>
+              <div style={{ fontSize: 10, color: '#E65100', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5 }}>Pendentes</div>
+              <div style={{ fontSize: 34, fontWeight: 800, color: '#E65100', lineHeight: 1 }}>{pedidosPendentes}</div>
+            </div>
+            {/* Concluídos */}
+            <div onClick={() => { setOrderFilter('concluidos'); setView('pedidos'); }} style={{
+              background: '#E8F5E9', borderRadius: 14, padding: '18px 16px', cursor: 'pointer',
+              border: '1px solid #C8E6C9', display: 'flex', flexDirection: 'column', justifyContent: 'space-between'
+            }}>
+              <div style={{ fontSize: 10, color: '#2E7D32', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5 }}>Concluídos</div>
+              <div style={{ fontSize: 34, fontWeight: 800, color: '#2E7D32', lineHeight: 1 }}>{concludedOrders.length}</div>
+            </div>
+            {/* Status loja */}
+            <div style={{
+              background: open ? '#E8F5E9' : '#FFEBEE', borderRadius: 14, padding: '18px 16px',
+              border: `1px solid ${open ? '#C8E6C9' : '#FFCDD2'}`, display: 'flex', flexDirection: 'column', justifyContent: 'space-between'
+            }}>
+              <div style={{ fontSize: 10, color: open ? '#2E7D32' : '#C62828', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5 }}>Loja</div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+                <span style={{ width: 10, height: 10, borderRadius: '50%', background: open ? '#43a047' : '#e53935', display: 'inline-block', flexShrink: 0 }} />
+                <span style={{ fontSize: 15, fontWeight: 700, color: open ? '#2E7D32' : '#C62828' }}>{open ? 'Aberta' : 'Fechada'}</span>
               </div>
             </div>
-            <div>
-              <div style={{ fontSize: 10, color: '#888', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5 }}>Produtos</div>
-              <div style={{ fontSize: 26, fontWeight: 800, color: '#1a1a1a', lineHeight: 1.2 }}>{totalProdutos}</div>
+          </div>
+        ) : (
+          /* Mobile: layout compacto */
+          <>
+            <div style={{ marginBottom: 14 }}>
+              <div style={{ fontSize: 21, fontWeight: 800, color: '#1a1a1a' }}>Olá, {storeData?.name || 'Loja'}! 👋</div>
+              <div style={{ fontSize: 13, color: '#888', marginTop: 2 }}>
+                {new Date().toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' })}
+              </div>
             </div>
-          </div>
-          <div style={{
-            flex: 1, background: 'linear-gradient(135deg, #6A1B9A 0%, #9C27B0 55%, #CE93D8 100%)',
-            borderRadius: 16, padding: '20px 24px', color: 'white',
-            position: 'relative', overflow: 'hidden', display: 'flex', flexDirection: 'column', justifyContent: 'center'
-          }}>
-            <div style={{ position: 'absolute', top: -20, right: -20, width: 110, height: 110, borderRadius: '50%', background: 'rgba(255,255,255,0.08)' }} />
-            <div style={{ position: 'absolute', bottom: -30, left: -10, width: 80, height: 80, borderRadius: '50%', background: 'rgba(255,255,255,0.05)' }} />
-            <div style={{ fontSize: 13, opacity: 0.8, fontWeight: 500 }}>Faturamento Hoje</div>
-            <div style={{ fontSize: 34, fontWeight: 800, marginTop: 6 }}>R$ {faturamentoHoje.toFixed(2)}</div>
-          </div>
-        </div>
-
-        <div style={{ display: 'grid', gridTemplateColumns: isDesktop ? '1fr 1fr 1fr' : '1fr 1fr', gap: 12, marginBottom: 20 }}>
-          <div onClick={() => { setOrderFilter('pendentes'); setView('pedidos'); }} style={{ background: '#FFF3E0', borderRadius: 16, padding: 18, cursor: 'pointer', border: '1px solid #FFE0B2' }}>
-            <div style={{ fontSize: 28, fontWeight: 800, color: '#E65100' }}>{pedidosPendentes}</div>
-            <div style={{ fontSize: 13, color: '#E65100', fontWeight: 600, marginTop: 2 }}>Pendentes</div>
-          </div>
-          <div onClick={() => { setOrderFilter('ativos'); setView('pedidos'); }} style={{ background: '#F3E5F5', borderRadius: 16, padding: 18, cursor: 'pointer', border: '1px solid #E1BEE7' }}>
-            <div style={{ fontSize: 28, fontWeight: 800, color: '#6A1B9A' }}>{pendingOrders.length}</div>
-            <div style={{ fontSize: 13, color: '#6A1B9A', fontWeight: 600, marginTop: 2 }}>Ativos</div>
-          </div>
-          {isDesktop && (
-            <div onClick={() => { setOrderFilter('concluidos'); setView('pedidos'); }} style={{ background: '#E3F2FD', borderRadius: 16, padding: 18, cursor: 'pointer', border: '1px solid #BBDEFB' }}>
-              <div style={{ fontSize: 28, fontWeight: 800, color: '#1565C0' }}>{concludedOrders.length}</div>
-              <div style={{ fontSize: 13, color: '#1565C0', fontWeight: 600, marginTop: 2 }}>Concluídos</div>
+            <div style={{ display: 'flex', gap: 12, marginBottom: 14 }}>
+              <div style={{ background: '#F8F4FC', borderRadius: 14, padding: '14px 16px', border: '1px solid #E1BEE7', display: 'flex', flexDirection: 'column', gap: 10, flexShrink: 0 }}>
+                <div>
+                  <div style={{ fontSize: 10, color: '#888', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5 }}>Pedidos hoje</div>
+                  <div style={{ fontSize: 22, fontWeight: 800, color: '#1a1a1a' }}>{totalPedidosHoje}</div>
+                </div>
+                <div>
+                  <div style={{ fontSize: 10, color: '#888', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5 }}>Loja</div>
+                  <div style={{ fontSize: 13, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 5 }}>
+                    <span style={{ width: 7, height: 7, borderRadius: '50%', background: open ? '#43a047' : '#e53935', display: 'inline-block' }} />
+                    {open ? 'Aberta' : 'Fechada'}
+                  </div>
+                </div>
+                <div>
+                  <div style={{ fontSize: 10, color: '#888', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5 }}>Produtos</div>
+                  <div style={{ fontSize: 22, fontWeight: 800, color: '#1a1a1a' }}>{totalProdutos}</div>
+                </div>
+              </div>
+              <div style={{
+                flex: 1, background: 'linear-gradient(135deg, #6A1B9A 0%, #9C27B0 55%, #CE93D8 100%)',
+                borderRadius: 14, padding: '18px 20px', color: 'white', position: 'relative', overflow: 'hidden',
+                display: 'flex', flexDirection: 'column', justifyContent: 'center'
+              }}>
+                <div style={{ position: 'absolute', top: -15, right: -15, width: 80, height: 80, borderRadius: '50%', background: 'rgba(255,255,255,0.08)' }} />
+                <div style={{ fontSize: 12, opacity: 0.8, fontWeight: 500 }}>Faturamento Hoje</div>
+                <div style={{ fontSize: 28, fontWeight: 800, marginTop: 4 }}>R$ {faturamentoHoje.toFixed(2)}</div>
+              </div>
             </div>
-          )}
-        </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 14 }}>
+              <div onClick={() => { setOrderFilter('pendentes'); setView('pedidos'); }} style={{ background: '#FFF3E0', borderRadius: 14, padding: 14, cursor: 'pointer', border: '1px solid #FFE0B2' }}>
+                <div style={{ fontSize: 26, fontWeight: 800, color: '#E65100' }}>{pedidosPendentes}</div>
+                <div style={{ fontSize: 12, color: '#E65100', fontWeight: 600, marginTop: 2 }}>Pendentes</div>
+              </div>
+              <div onClick={() => { setOrderFilter('ativos'); setView('pedidos'); }} style={{ background: '#F3E5F5', borderRadius: 14, padding: 14, cursor: 'pointer', border: '1px solid #E1BEE7' }}>
+                <div style={{ fontSize: 26, fontWeight: 800, color: '#6A1B9A' }}>{pendingOrders.length}</div>
+                <div style={{ fontSize: 12, color: '#6A1B9A', fontWeight: 600, marginTop: 2 }}>Ativos</div>
+              </div>
+            </div>
+          </>
+        )}
 
+        {/* ─── Alerta estoque baixo ─── */}
         {lowStockProducts.length > 0 && (
           <div style={{
-            background: '#FFF3E0', borderRadius: 16, padding: 16, marginBottom: 16,
+            background: '#FFF3E0', borderRadius: 14, padding: '12px 16px', marginBottom: 16,
             border: '1px solid #FFE082', display: 'flex', alignItems: 'center', justifyContent: 'space-between'
           }}>
             <div>
-              <div style={{ fontSize: 14, fontWeight: 700, color: '#E65100' }}>⚠️ Estoque baixo</div>
-              <div style={{ fontSize: 13, color: '#BF360C', marginTop: 2 }}>
+              <div style={{ fontSize: 13, fontWeight: 700, color: '#E65100' }}>⚠️ Estoque baixo</div>
+              <div style={{ fontSize: 12, color: '#BF360C', marginTop: 1 }}>
                 {lowStockProducts.length} produto(s) precisam de reposição
               </div>
             </div>
-            <button className="btn btn-sm" style={{ background: '#E65100', color: 'white', border: 'none', borderRadius: 8, padding: '8px 16px', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}
+            <button style={{ background: '#E65100', color: 'white', border: 'none', borderRadius: 8, padding: '7px 14px', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}
               onClick={() => setView('produtos')}>
               Ver
             </button>
           </div>
         )}
 
-        <div style={{ background: 'white', borderRadius: 16, padding: 18, border: '1px solid #f0f0f0' }}>
+        {/* ─── Pedidos em andamento ─── */}
+        <div>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-            <span style={{ fontWeight: 700, fontSize: 16, color: '#1a1a1a' }}>🕐 Últimos pedidos</span>
-            <span onClick={() => setView('pedidos')} style={{ fontSize: 13, color: '#6A1B9A', fontWeight: 600, cursor: 'pointer' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span style={{ fontWeight: 700, fontSize: 15, color: '#1a1a1a' }}>Pedidos em andamento</span>
+              {pendingOrders.length > 0 && (
+                <span style={{ background: '#6A1B9A', color: 'white', borderRadius: 10, padding: '2px 8px', fontSize: 11, fontWeight: 700 }}>
+                  {pendingOrders.length}
+                </span>
+              )}
+            </div>
+            <span onClick={() => setView('pedidos')} style={{ fontSize: 12, color: '#6A1B9A', fontWeight: 600, cursor: 'pointer' }}>
               Ver todos →
             </span>
           </div>
-          {orders.slice(0, 5).length === 0 ? (
-            <div style={{ fontSize: 13, color: '#888', padding: '12px 0', textAlign: 'center' }}>Nenhum pedido ainda</div>
-          ) : orders.slice(0, 5).map(o => (
-            <div key={o.id} style={{
-              display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-              padding: '10px 0', borderBottom: '1px solid #f5f5f5'
-            }}>
-              <div>
-                <div style={{ fontSize: 14, fontWeight: 600, color: '#333' }}>{o.customer_name}</div>
-                <div style={{ fontSize: 12, color: '#999', marginTop: 2 }}>
-                  R$ {o.total.toFixed(2)} • {new Date(o.created_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
-                </div>
-              </div>
-              <span className={`badge ${o.payment_status === 'paid' ? 'badge-success' : 'badge-warning'}`} style={{ fontSize: 10 }}>
-                {o.payment_status === 'paid' ? 'Pago' : 'Pendente'}
-              </span>
+
+          {pendingOrders.length === 0 ? (
+            <div style={{ textAlign: 'center', padding: '40px 20px', color: '#bbb', fontSize: 14, background: 'white', borderRadius: 14, border: '1px solid #f0f0f0' }}>
+              Nenhum pedido ativo no momento
             </div>
-          ))}
+          ) : (
+            <div style={{ display: 'grid', gridTemplateColumns: isDesktop ? 'repeat(3, 1fr)' : '1fr', gap: 12 }}>
+              {pendingOrders.map(o => {
+                const action = actionMap[o.status];
+                const sc = statusColors[o.status] || { bg: '#f5f5f5', color: '#666', border: '#e0e0e0' };
+                const allItems = o.items || o.order_items || [];
+                const itemsSummary = allItems.slice(0, 2).map(it => `${it.quantity}x ${it.product_name || it.products?.name || 'Item'}`).join(' · ') + (allItems.length > 2 ? ` +${allItems.length - 2}` : '');
+                return (
+                  <div key={o.id} style={{
+                    background: 'white', borderRadius: 14, padding: '14px 16px',
+                    border: `1px solid ${sc.border}`, display: 'flex', flexDirection: 'column', gap: 8
+                  }}>
+                    {/* Header: nome + status */}
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8 }}>
+                      <div style={{ fontWeight: 700, fontSize: 14, color: '#1a1a1a', flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        {o.customer_name}
+                      </div>
+                      <span style={{ background: sc.bg, color: sc.color, borderRadius: 8, padding: '3px 8px', fontSize: 10, fontWeight: 700, whiteSpace: 'nowrap', flexShrink: 0 }}>
+                        {statusLabels[o.status] || o.status}
+                      </span>
+                    </div>
+                    {/* Itens */}
+                    {itemsSummary && (
+                      <div style={{ fontSize: 12, color: '#888', lineHeight: 1.4, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        {itemsSummary}
+                      </div>
+                    )}
+                    {/* Rodapé: valor + botão */}
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 2 }}>
+                      <div style={{ fontSize: 14, fontWeight: 700, color: '#333' }}>R$ {o.total.toFixed(2)}</div>
+                      {action ? (
+                        <button
+                          onClick={() => updateStatus(o.id, action.next)}
+                          style={{ background: '#6A1B9A', color: 'white', border: 'none', borderRadius: 8, padding: '7px 14px', fontSize: 12, fontWeight: 700, cursor: 'pointer' }}>
+                          {action.label}
+                        </button>
+                      ) : (
+                        <span style={{ fontSize: 11, color: '#bbb' }}>
+                          {new Date(o.created_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </div>
       </div>
     );
