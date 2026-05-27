@@ -790,19 +790,24 @@ export default function MotoboyDashboard() {
           </div>
         ))}
 
-        {activeDeliveries.length === 0 && (
-          availableOrders.length === 0 ? (
-            <div className="card empty-state" style={{ paddingTop: 40, paddingBottom: 40 }}>
-              <div className="empty-state-icon">
-                <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
-                  <circle cx="32" cy="28" r="16" stroke="var(--border)" strokeWidth="2"/>
-                  <path d="M32 20v8l5 5" stroke="var(--border)" strokeWidth="2" strokeLinecap="round"/>
-                </svg>
-              </div>
-              <p>Nenhum pedido disponível no momento</p>
+        {availableOrders.length === 0 && activeDeliveries.length === 0 ? (
+          <div className="card empty-state" style={{ paddingTop: 40, paddingBottom: 40 }}>
+            <div className="empty-state-icon">
+              <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
+                <circle cx="32" cy="28" r="16" stroke="var(--border)" strokeWidth="2"/>
+                <path d="M32 20v8l5 5" stroke="var(--border)" strokeWidth="2" strokeLinecap="round"/>
+              </svg>
             </div>
-          ) : (
-            availableOrders.map(order => (
+            <p>Nenhum pedido disponível no momento</p>
+          </div>
+        ) : availableOrders.length > 0 ? (
+          <>
+            {activeDeliveries.length > 0 && (
+              <div style={{ fontSize: 12, fontWeight: 700, color: '#6A1B9A', marginBottom: 8, marginTop: 4, textTransform: 'uppercase', letterSpacing: 0.5 }}>
+                Novos pedidos disponíveis
+              </div>
+            )}
+            {availableOrders.map(order => (
               <div key={order.id} className="card">
                 <div className="flex-between" style={{ marginBottom: 6 }}>
                   <div>
@@ -818,9 +823,9 @@ export default function MotoboyDashboard() {
                   <button className="btn btn-sm btn-primary" onClick={() => acceptOrder(order.id)}>Aceitar Entrega</button>
                 </div>
               </div>
-            ))
-          )
-        )}
+            ))}
+          </>
+        ) : null}
       </>
     );
   }
