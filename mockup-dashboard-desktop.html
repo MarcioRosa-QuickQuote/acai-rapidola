@@ -1,0 +1,1344 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Açaí Rapidola · Painel da Loja — Mockup Desktop</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --primary:        #6A1B9A;
+    --primary-dark:   #4A148C;
+    --primary-light:  #F3E5F5;
+    --primary-mid:    #CE93D8;
+    --sidebar-w:      240px;
+    --header-h:       60px;
+    --border:         #EEE;
+    --text:           #1A1A1A;
+    --text-muted:     #888;
+    --radius:         12px;
+    --shadow:         0 1px 4px rgba(0,0,0,.07), 0 4px 16px rgba(0,0,0,.05);
+    --shadow-sm:      0 1px 3px rgba(0,0,0,.08);
+    --green:          #2E7D32;
+    --green-bg:       #E8F5E9;
+    --green-bright:   #00C853;
+    --yellow:         #F57F17;
+    --yellow-bg:      #FFF8E1;
+    --blue:           #1565C0;
+    --blue-bg:        #E3F2FD;
+    --red:            #C62828;
+    --red-bg:         #FFEBEE;
+    --purple-bg:      #EDE7F6;
+  }
+
+  html, body {
+    height: 100%;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    font-size: 14px;
+    color: var(--text);
+    background: #F7F4FB;
+  }
+
+  /* ───── LAYOUT SHELL ───── */
+  .shell {
+    display: flex;
+    height: 100vh;
+    overflow: hidden;
+  }
+
+  /* ───── SIDEBAR ───── */
+  .sidebar {
+    width: var(--sidebar-w);
+    flex-shrink: 0;
+    background: #fff;
+    border-right: 1.5px solid #F0E6F6;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    position: fixed;
+    top: 0; left: 0;
+    z-index: 100;
+  }
+
+  .sidebar-brand {
+    padding: 20px 18px 16px;
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    border-bottom: 1px solid #F5F0FA;
+  }
+
+  .brand-avatar {
+    width: 42px; height: 42px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    display: flex; align-items: center; justify-content: center;
+    color: #fff;
+    font-weight: 800;
+    font-size: 18px;
+    flex-shrink: 0;
+    letter-spacing: -.5px;
+  }
+
+  .brand-info { overflow: hidden; }
+  .brand-name {
+    font-weight: 700;
+    font-size: 13.5px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: var(--text);
+    line-height: 1.2;
+  }
+  .brand-sub {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-top: 2px;
+  }
+
+  /* NAV */
+  .sidebar-nav {
+    flex: 1;
+    padding: 10px 10px 0;
+    overflow-y: auto;
+  }
+
+  .nav-section-label {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: #BBB;
+    padding: 14px 8px 6px;
+  }
+
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 13.5px;
+    font-weight: 500;
+    color: #444;
+    margin-bottom: 2px;
+    transition: background .12s, color .12s;
+    border-left: 3px solid transparent;
+    position: relative;
+  }
+  .nav-item:hover { background: #FAFAFA; color: var(--text); }
+  .nav-item.active {
+    background: var(--primary-light);
+    color: var(--primary-dark);
+    font-weight: 600;
+    border-left-color: var(--primary);
+  }
+  .nav-item .nav-icon { font-size: 16px; line-height: 1; flex-shrink: 0; }
+  .nav-badge {
+    margin-left: auto;
+    background: var(--primary);
+    color: #fff;
+    font-size: 10px;
+    font-weight: 700;
+    border-radius: 20px;
+    padding: 1px 6px;
+    min-width: 18px;
+    text-align: center;
+  }
+
+  .nav-divider {
+    height: 1px;
+    background: #F2EDF8;
+    margin: 8px 10px;
+  }
+
+  /* SIDEBAR FOOTER */
+  .sidebar-footer {
+    padding: 12px 14px 18px;
+    border-top: 1px solid #F5F0FA;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .store-status {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #F9F9F9;
+    border-radius: 9px;
+    padding: 9px 12px;
+  }
+  .store-status-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+  }
+  .store-status.open .store-status-label { color: var(--green); }
+  .store-status.closed .store-status-label { color: var(--red); }
+
+  /* Toggle switch */
+  .toggle {
+    width: 36px; height: 20px;
+    border-radius: 20px;
+    position: relative;
+    cursor: pointer;
+    transition: background .2s;
+    flex-shrink: 0;
+  }
+  .toggle.on { background: #43A047; }
+  .toggle.off { background: #CCC; }
+  .toggle::after {
+    content: '';
+    position: absolute;
+    width: 16px; height: 16px;
+    border-radius: 50%;
+    background: #fff;
+    top: 2px;
+    transition: left .2s;
+    box-shadow: 0 1px 3px rgba(0,0,0,.2);
+  }
+  .toggle.on::after { left: 18px; }
+  .toggle.off::after { left: 2px; }
+
+  .btn-tv {
+    width: 100%;
+    padding: 9px 12px;
+    border-radius: 9px;
+    border: 1.5px solid var(--primary);
+    background: transparent;
+    color: var(--primary);
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    transition: background .12s, color .12s;
+  }
+  .btn-tv:hover {
+    background: var(--primary-light);
+  }
+  .btn-tv .tv-icon { font-size: 15px; }
+
+  /* ───── MAIN AREA ───── */
+  .main {
+    margin-left: var(--sidebar-w);
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    overflow: hidden;
+  }
+
+  /* ───── HEADER ───── */
+  .header {
+    height: var(--header-h);
+    background: #fff;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    padding: 0 28px;
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    gap: 16px;
+    box-shadow: 0 1px 0 #EEE, 0 2px 8px rgba(0,0,0,.03);
+  }
+
+  .header-breadcrumb {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text);
+    flex: 1;
+  }
+  .header-breadcrumb span {
+    color: var(--text-muted);
+    font-weight: 400;
+    font-size: 13px;
+    margin-right: 6px;
+  }
+
+  .header-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .header-icon-btn {
+    width: 36px; height: 36px;
+    border-radius: 9px;
+    border: none;
+    background: #F5F5F5;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 17px;
+    position: relative;
+    transition: background .12s;
+  }
+  .header-icon-btn:hover { background: #EEE; }
+
+  .notif-dot {
+    position: absolute;
+    top: 6px; right: 6px;
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: #E53935;
+    border: 2px solid #fff;
+  }
+
+  .header-avatar {
+    width: 36px; height: 36px;
+    border-radius: 9px;
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    display: flex; align-items: center; justify-content: center;
+    color: #fff;
+    font-weight: 700;
+    font-size: 14px;
+    cursor: pointer;
+  }
+
+  /* ───── CONTENT ───── */
+  .content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 28px;
+  }
+
+  .content-title {
+    font-size: 20px;
+    font-weight: 800;
+    color: var(--text);
+    margin-bottom: 6px;
+  }
+  .content-sub {
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-bottom: 24px;
+  }
+
+  /* METRICS GRID */
+  .metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 28px;
+  }
+
+  .metric-card {
+    background: #fff;
+    border-radius: var(--radius);
+    padding: 20px;
+    box-shadow: var(--shadow);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    position: relative;
+    overflow: hidden;
+  }
+  .metric-card::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    border-radius: var(--radius) var(--radius) 0 0;
+  }
+  .metric-card.purple::after { background: var(--primary); }
+  .metric-card.green::after  { background: #43A047; }
+  .metric-card.blue::after   { background: #1E88E5; }
+  .metric-card.orange::after { background: #FB8C00; }
+
+  .metric-label {
+    font-size: 11.5px;
+    font-weight: 600;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+  .metric-value {
+    font-size: 28px;
+    font-weight: 800;
+    line-height: 1;
+    color: var(--text);
+    letter-spacing: -.5px;
+  }
+  .metric-value.money { font-size: 22px; letter-spacing: -.3px; }
+  .metric-delta {
+    font-size: 11.5px;
+    color: var(--green);
+    font-weight: 600;
+  }
+  .metric-icon {
+    font-size: 22px;
+    position: absolute;
+    bottom: 14px; right: 16px;
+    opacity: .15;
+    font-size: 32px;
+  }
+
+  /* SECTION HEADER */
+  .section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+  }
+  .section-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text);
+  }
+  .section-action {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--primary);
+    cursor: pointer;
+    text-decoration: none;
+  }
+  .section-action:hover { text-decoration: underline; }
+
+  /* ORDERS TABLE */
+  .orders-card {
+    background: #fff;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+  }
+
+  .orders-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  .orders-table th {
+    padding: 12px 18px;
+    text-align: left;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    background: #FAFAFA;
+    border-bottom: 1px solid var(--border);
+  }
+  .orders-table td {
+    padding: 13px 18px;
+    font-size: 13px;
+    border-bottom: 1px solid #F5F5F5;
+    vertical-align: middle;
+  }
+  .orders-table tr:last-child td { border-bottom: none; }
+  .orders-table tr:hover td { background: #FDFAFF; }
+
+  .order-id {
+    font-weight: 700;
+    color: var(--primary-dark);
+    font-size: 12.5px;
+    font-variant-numeric: tabular-nums;
+  }
+  .order-customer { font-weight: 500; }
+  .order-items {
+    color: var(--text-muted);
+    font-size: 12px;
+    max-width: 200px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .order-time { color: var(--text-muted); font-size: 12px; font-variant-numeric: tabular-nums; }
+  .order-total { font-weight: 700; font-variant-numeric: tabular-nums; }
+
+  /* STATUS BADGES */
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 11.5px;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .badge::before { content: ''; width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+
+  .badge-pending    { background: var(--yellow-bg); color: var(--yellow); }
+  .badge-pending::before    { background: var(--yellow); }
+  .badge-preparing  { background: var(--blue-bg);   color: var(--blue);   }
+  .badge-preparing::before  { background: var(--blue); }
+  .badge-ready      { background: #E8F5E9; color: #1B5E20; }
+  .badge-ready::before      { background: #43A047; }
+  .badge-transit    { background: var(--purple-bg); color: var(--primary-dark); }
+  .badge-transit::before    { background: var(--primary); }
+  .badge-delivered  { background: #E8F5E9; color: var(--green); }
+  .badge-delivered::before  { background: var(--green); }
+  .badge-cancelled  { background: var(--red-bg);    color: var(--red);    }
+  .badge-cancelled::before  { background: var(--red); }
+
+  /* ORDER ACTION BTN */
+  .order-action {
+    padding: 5px 12px;
+    border-radius: 7px;
+    border: 1px solid var(--border);
+    background: #fff;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--primary);
+    cursor: pointer;
+    transition: background .1s;
+    font-family: inherit;
+  }
+  .order-action:hover { background: var(--primary-light); border-color: var(--primary-mid); }
+
+  /* SPLIT BOTTOM */
+  .content-row {
+    display: grid;
+    grid-template-columns: 1fr 320px;
+    gap: 16px;
+    margin-top: 20px;
+  }
+
+  /* QUICK STATS */
+  .quick-card {
+    background: #fff;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 20px;
+  }
+  .quick-title {
+    font-size: 13px;
+    font-weight: 700;
+    margin-bottom: 14px;
+    color: var(--text);
+  }
+  .quick-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 9px 0;
+    border-bottom: 1px solid #F5F5F5;
+    font-size: 13px;
+  }
+  .quick-row:last-child { border-bottom: none; }
+  .quick-row-label { color: #555; font-weight: 500; }
+  .quick-row-val { font-weight: 700; color: var(--text); }
+
+  /* ─────────────────────────────────────────
+     TV MODE OVERLAY
+  ───────────────────────────────────────── */
+  .tv-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: #0D0D1A;
+    z-index: 9999;
+    flex-direction: column;
+    font-family: 'Inter', system-ui, sans-serif;
+  }
+  .tv-overlay.visible { display: flex; }
+
+  /* TV Header */
+  .tv-header {
+    height: 72px;
+    background: #12122A;
+    border-bottom: 1px solid rgba(255,255,255,.07);
+    display: flex;
+    align-items: center;
+    padding: 0 36px;
+    gap: 20px;
+    flex-shrink: 0;
+  }
+  .tv-logo {
+    width: 48px; height: 48px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #9C27B0, var(--primary-dark));
+    display: flex; align-items: center; justify-content: center;
+    color: #fff;
+    font-weight: 800;
+    font-size: 22px;
+  }
+  .tv-store-name {
+    font-size: 20px;
+    font-weight: 700;
+    color: #fff;
+  }
+  .tv-store-sub {
+    font-size: 13px;
+    color: rgba(255,255,255,.45);
+    margin-top: 2px;
+  }
+  .tv-spacer { flex: 1; }
+  .tv-clock {
+    font-size: 36px;
+    font-weight: 800;
+    color: #fff;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -.5px;
+  }
+  .tv-date {
+    font-size: 13px;
+    color: rgba(255,255,255,.45);
+    text-align: right;
+    margin-top: 2px;
+  }
+  .tv-close {
+    width: 44px; height: 44px;
+    border-radius: 10px;
+    background: rgba(255,255,255,.08);
+    border: none;
+    color: rgba(255,255,255,.7);
+    font-size: 22px;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    margin-left: 16px;
+    transition: background .15s;
+  }
+  .tv-close:hover { background: rgba(255,255,255,.15); color: #fff; }
+
+  /* TV Body */
+  .tv-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 28px 36px;
+  }
+
+  .tv-section-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,.35);
+    margin-bottom: 16px;
+  }
+
+  .tv-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 16px;
+    margin-bottom: 32px;
+  }
+
+  /* TV Order Card */
+  .tv-card {
+    background: #16163A;
+    border-radius: 14px;
+    padding: 20px 22px;
+    border: 1px solid rgba(255,255,255,.06);
+    position: relative;
+    overflow: hidden;
+    transition: transform .15s;
+  }
+  .tv-card:hover { transform: translateY(-2px); }
+
+  .tv-card-accent {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    border-radius: 14px 14px 0 0;
+  }
+  .tv-card.pending   .tv-card-accent { background: #FFD600; }
+  .tv-card.preparing .tv-card-accent { background: #2979FF; }
+  .tv-card.ready     .tv-card-accent { background: var(--green-bright); }
+  .tv-card.transit   .tv-card-accent { background: #CE93D8; }
+
+  .tv-card-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 14px;
+  }
+  .tv-order-num {
+    font-size: 13px;
+    font-weight: 700;
+    color: rgba(255,255,255,.5);
+    letter-spacing: .05em;
+  }
+  .tv-customer {
+    font-size: 20px;
+    font-weight: 800;
+    color: #fff;
+    margin-top: 2px;
+    line-height: 1.15;
+  }
+
+  /* TV Status Badge */
+  .tv-badge {
+    padding: 5px 14px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    flex-shrink: 0;
+    margin-left: 8px;
+    margin-top: 2px;
+  }
+  .tv-badge.pending   { background: rgba(255,214,0,.15);  color: #FFD600; border: 1px solid rgba(255,214,0,.3); }
+  .tv-badge.preparing { background: rgba(41,121,255,.15); color: #82B1FF; border: 1px solid rgba(41,121,255,.3); }
+  .tv-badge.ready     { background: rgba(0,200,83,.18);   color: #69F0AE; border: 1px solid rgba(0,200,83,.35);
+                         animation: pulse-green 1.5s ease-in-out infinite; }
+  .tv-badge.transit   { background: rgba(206,147,216,.15);color: #CE93D8; border: 1px solid rgba(206,147,216,.3); }
+
+  @keyframes pulse-green {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(0,200,83,.0); }
+    50%       { box-shadow: 0 0 0 6px rgba(0,200,83,.15); }
+  }
+
+  .tv-items {
+    font-size: 15px;
+    color: rgba(255,255,255,.65);
+    line-height: 1.5;
+    margin-bottom: 12px;
+  }
+  .tv-item-row { display: flex; align-items: center; gap: 8px; }
+  .tv-item-qty {
+    background: rgba(255,255,255,.08);
+    border-radius: 5px;
+    padding: 1px 7px;
+    font-size: 13px;
+    font-weight: 700;
+    color: rgba(255,255,255,.8);
+    flex-shrink: 0;
+  }
+
+  .tv-card-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 14px;
+    padding-top: 12px;
+    border-top: 1px solid rgba(255,255,255,.06);
+  }
+  .tv-time-ago {
+    font-size: 12px;
+    color: rgba(255,255,255,.35);
+    font-variant-numeric: tabular-nums;
+  }
+  .tv-total {
+    font-size: 17px;
+    font-weight: 800;
+    color: #fff;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* TV STATS BAR */
+  .tv-stats {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+  .tv-stat {
+    background: #16163A;
+    border-radius: 10px;
+    padding: 14px 20px;
+    border: 1px solid rgba(255,255,255,.06);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex: 1;
+  }
+  .tv-stat-icon { font-size: 24px; }
+  .tv-stat-val {
+    font-size: 26px;
+    font-weight: 800;
+    color: #fff;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+  }
+  .tv-stat-label {
+    font-size: 12px;
+    color: rgba(255,255,255,.4);
+    margin-top: 2px;
+  }
+
+  /* ───── INTERACTIVE ───── */
+  .nav-item { user-select: none; }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 5px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: #DDD; border-radius: 10px; }
+  ::-webkit-scrollbar-thumb:hover { background: #CCC; }
+</style>
+</head>
+<body>
+
+<!-- ════════════════════════════════════════
+     SHELL
+════════════════════════════════════════ -->
+<div class="shell">
+
+  <!-- ── SIDEBAR ── -->
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <div class="brand-avatar">A</div>
+      <div class="brand-info">
+        <div class="brand-name">Açaí da Praça</div>
+        <div class="brand-sub">Loja parceira · Belém</div>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Operação</div>
+
+      <div class="nav-item active" onclick="setView('painel', this)">
+        <span class="nav-icon">📊</span> Painel
+      </div>
+      <div class="nav-item" onclick="setView('pedidos', this)">
+        <span class="nav-icon">📋</span> Pedidos
+        <span class="nav-badge">3</span>
+      </div>
+      <div class="nav-item" onclick="setView('produtos', this)">
+        <span class="nav-icon">🧾</span> Produtos
+      </div>
+      <div class="nav-item" onclick="setView('financeiro', this)">
+        <span class="nav-icon">💰</span> Financeiro
+      </div>
+
+      <div class="nav-divider"></div>
+      <div class="nav-section-label">Configurações</div>
+
+      <div class="nav-item" onclick="setView('perfil', this)">
+        <span class="nav-icon">👤</span> Perfil & Dados
+      </div>
+      <div class="nav-item" onclick="setView('endereco', this)">
+        <span class="nav-icon">📍</span> Endereço
+      </div>
+      <div class="nav-item" onclick="setView('motoboys', this)">
+        <span class="nav-icon">🏍️</span> Motoboys
+      </div>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="store-status open" id="storeStatus">
+        <span class="store-status-label" id="storeStatusLabel">● Aberta agora</span>
+        <div class="toggle on" id="storeToggle" onclick="toggleStore()" title="Abrir/fechar loja"></div>
+      </div>
+      <button class="btn-tv" onclick="openTV()">
+        <span class="tv-icon">📺</span>
+        Ver na TV
+      </button>
+    </div>
+  </aside>
+
+  <!-- ── MAIN ── -->
+  <div class="main">
+
+    <!-- HEADER -->
+    <header class="header">
+      <div class="header-breadcrumb" id="headerBreadcrumb">
+        <span>Açaí da Praça /</span> Painel
+      </div>
+      <div class="header-actions">
+        <button class="header-icon-btn" title="Notificações">
+          🔔
+          <span class="notif-dot"></span>
+        </button>
+        <div class="header-avatar" title="Perfil">A</div>
+      </div>
+    </header>
+
+    <!-- CONTENT -->
+    <main class="content" id="mainContent">
+
+      <!-- VIEW: PAINEL -->
+      <div id="view-painel">
+        <div class="content-title">Bom dia! 👋</div>
+        <div class="content-sub">Terça-feira, 27 de maio de 2026 · Aqui está o resumo de hoje.</div>
+
+        <!-- METRICS -->
+        <div class="metrics-grid">
+          <div class="metric-card purple">
+            <div class="metric-label">Pedidos hoje</div>
+            <div class="metric-value">12</div>
+            <div class="metric-delta">↑ 3 a mais que ontem</div>
+            <div class="metric-icon">📋</div>
+          </div>
+          <div class="metric-card green">
+            <div class="metric-label">Faturamento</div>
+            <div class="metric-value money">R$ 487,50</div>
+            <div class="metric-delta">↑ 18% vs. semana passada</div>
+            <div class="metric-icon">💰</div>
+          </div>
+          <div class="metric-card blue">
+            <div class="metric-label">Em preparo</div>
+            <div class="metric-value">3</div>
+            <div class="metric-delta">Tempo médio: 12 min</div>
+            <div class="metric-icon">🫙</div>
+          </div>
+          <div class="metric-card orange">
+            <div class="metric-label">A caminho</div>
+            <div class="metric-value">2</div>
+            <div class="metric-delta">Estimativa: ~8 min</div>
+            <div class="metric-icon">🏍️</div>
+          </div>
+        </div>
+
+        <!-- ORDERS -->
+        <div class="section-header">
+          <div class="section-title">Pedidos recentes</div>
+          <a class="section-action" onclick="setViewByName('pedidos')">Ver todos →</a>
+        </div>
+        <div class="orders-card">
+          <table class="orders-table">
+            <thead>
+              <tr>
+                <th>Pedido</th>
+                <th>Cliente</th>
+                <th>Itens</th>
+                <th>Horário</th>
+                <th>Total</th>
+                <th>Status</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><span class="order-id">#0041</span></td>
+                <td><span class="order-customer">Marcos Figueiredo</span></td>
+                <td><span class="order-items">2× Açaí 500ml, 1× Granola Extra</span></td>
+                <td><span class="order-time">14:32</span></td>
+                <td><span class="order-total">R$ 52,00</span></td>
+                <td><span class="badge badge-preparing">Preparando</span></td>
+                <td><button class="order-action">Ver</button></td>
+              </tr>
+              <tr>
+                <td><span class="order-id">#0040</span></td>
+                <td><span class="order-customer">Ana Beatriz Costa</span></td>
+                <td><span class="order-items">1× Açaí 1L Tradicional</span></td>
+                <td><span class="order-time">14:18</span></td>
+                <td><span class="order-total">R$ 38,00</span></td>
+                <td><span class="badge badge-transit">A caminho</span></td>
+                <td><button class="order-action">Ver</button></td>
+              </tr>
+              <tr>
+                <td><span class="order-id">#0039</span></td>
+                <td><span class="order-customer">Pedro Mendonça</span></td>
+                <td><span class="order-items">3× Açaí 300ml, 2× Tapioca</span></td>
+                <td><span class="order-time">14:05</span></td>
+                <td><span class="order-total">R$ 74,50</span></td>
+                <td><span class="badge badge-ready">Pronto</span></td>
+                <td><button class="order-action">Ver</button></td>
+              </tr>
+              <tr>
+                <td><span class="order-id">#0038</span></td>
+                <td><span class="order-customer">Júlia Rodrigues</span></td>
+                <td><span class="order-items">1× Açaí 700ml com Leite Ninho</span></td>
+                <td><span class="order-time">13:47</span></td>
+                <td><span class="order-total">R$ 44,00</span></td>
+                <td><span class="badge badge-transit">A caminho</span></td>
+                <td><button class="order-action">Ver</button></td>
+              </tr>
+              <tr>
+                <td><span class="order-id">#0037</span></td>
+                <td><span class="order-customer">Roberto Alves</span></td>
+                <td><span class="order-items">2× Açaí 500ml Zero</span></td>
+                <td><span class="order-time">13:21</span></td>
+                <td><span class="order-total">R$ 56,00</span></td>
+                <td><span class="badge badge-delivered">Entregue</span></td>
+                <td><button class="order-action">Ver</button></td>
+              </tr>
+              <tr>
+                <td><span class="order-id">#0036</span></td>
+                <td><span class="order-customer">Camila Sousa</span></td>
+                <td><span class="order-items">1× Açaí 1L, 1× Pudim de Açaí</span></td>
+                <td><span class="order-time">12:58</span></td>
+                <td><span class="order-total">R$ 62,00</span></td>
+                <td><span class="badge badge-delivered">Entregue</span></td>
+                <td><button class="order-action">Ver</button></td>
+              </tr>
+              <tr>
+                <td><span class="order-id">#0035</span></td>
+                <td><span class="order-customer">Thiago Lima</span></td>
+                <td><span class="order-items">4× Açaí 300ml Kids</span></td>
+                <td><span class="order-time">12:34</span></td>
+                <td><span class="order-total">R$ 88,00</span></td>
+                <td><span class="badge badge-pending">Pendente</span></td>
+                <td><button class="order-action">Aceitar</button></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- BOTTOM ROW -->
+        <div class="content-row">
+          <!-- Blank (future chart area) -->
+          <div class="quick-card" style="min-height:160px; display:flex; align-items:center; justify-content:center; color:#CCC; flex-direction:column; gap:8px;">
+            <span style="font-size:32px">📈</span>
+            <span style="font-size:13px; font-weight:600;">Gráfico de vendas por hora</span>
+            <span style="font-size:11px;">(em breve)</span>
+          </div>
+          <!-- Quick stats -->
+          <div class="quick-card">
+            <div class="quick-title">Resumo do dia</div>
+            <div class="quick-row">
+              <span class="quick-row-label">Ticket médio</span>
+              <span class="quick-row-val">R$ 40,63</span>
+            </div>
+            <div class="quick-row">
+              <span class="quick-row-label">Taxa de entrega arrecadada</span>
+              <span class="quick-row-val">R$ 72,00</span>
+            </div>
+            <div class="quick-row">
+              <span class="quick-row-label">Cancelamentos</span>
+              <span class="quick-row-val" style="color:var(--red)">0</span>
+            </div>
+            <div class="quick-row">
+              <span class="quick-row-label">Motoboys ativos</span>
+              <span class="quick-row-val" style="color:var(--green)">2</span>
+            </div>
+            <div class="quick-row">
+              <span class="quick-row-label">Avaliação média</span>
+              <span class="quick-row-val">⭐ 4,8</span>
+            </div>
+          </div>
+        </div>
+      </div><!-- /view-painel -->
+
+      <!-- PLACEHOLDER VIEWS -->
+      <div id="view-pedidos" style="display:none;">
+        <div class="content-title">📋 Pedidos</div>
+        <div class="content-sub">Gerenciamento de todos os pedidos da loja.</div>
+        <div class="orders-card" style="padding:60px; text-align:center; color:#BBB;">
+          <div style="font-size:40px;margin-bottom:12px">📋</div>
+          <div style="font-weight:600;">Tela de pedidos completa vai aqui</div>
+        </div>
+      </div>
+      <div id="view-produtos" style="display:none;">
+        <div class="content-title">🧾 Produtos</div>
+        <div class="content-sub">Cardápio e estoque da loja.</div>
+        <div class="orders-card" style="padding:60px; text-align:center; color:#BBB;">
+          <div style="font-size:40px;margin-bottom:12px">🧾</div>
+          <div style="font-weight:600;">Tela de produtos vai aqui</div>
+        </div>
+      </div>
+      <div id="view-financeiro" style="display:none;">
+        <div class="content-title">💰 Financeiro</div>
+        <div class="content-sub">Faturamento, repasses e extrato.</div>
+        <div class="orders-card" style="padding:60px; text-align:center; color:#BBB;">
+          <div style="font-size:40px;margin-bottom:12px">💰</div>
+          <div style="font-weight:600;">Tela financeira vai aqui</div>
+        </div>
+      </div>
+      <div id="view-perfil" style="display:none;">
+        <div class="content-title">👤 Perfil & Dados</div>
+        <div class="content-sub">Dados da loja, logo e informações de pagamento.</div>
+        <div class="orders-card" style="padding:60px; text-align:center; color:#BBB;">
+          <div style="font-size:40px;margin-bottom:12px">👤</div>
+          <div style="font-weight:600;">Tela de perfil vai aqui</div>
+        </div>
+      </div>
+      <div id="view-endereco" style="display:none;">
+        <div class="content-title">📍 Endereço</div>
+        <div class="content-sub">Localização e mapa da loja.</div>
+        <div class="orders-card" style="padding:60px; text-align:center; color:#BBB;">
+          <div style="font-size:40px;margin-bottom:12px">📍</div>
+          <div style="font-weight:600;">Formulário de endereço vai aqui</div>
+        </div>
+      </div>
+      <div id="view-motoboys" style="display:none;">
+        <div class="content-title">🏍️ Motoboys</div>
+        <div class="content-sub">Equipe de entregadores e convites.</div>
+        <div class="orders-card" style="padding:60px; text-align:center; color:#BBB;">
+          <div style="font-size:40px;margin-bottom:12px">🏍️</div>
+          <div style="font-weight:600;">Tela de motoboys vai aqui</div>
+        </div>
+      </div>
+
+    </main><!-- /content -->
+  </div><!-- /main -->
+</div><!-- /shell -->
+
+
+<!-- ════════════════════════════════════════
+     TV MODE OVERLAY
+════════════════════════════════════════ -->
+<div class="tv-overlay" id="tvOverlay">
+
+  <div class="tv-header">
+    <div class="tv-logo">A</div>
+    <div>
+      <div class="tv-store-name">Açaí da Praça</div>
+      <div class="tv-store-sub">Painel de pedidos · ao vivo</div>
+    </div>
+    <div class="tv-spacer"></div>
+    <div style="text-align:right;">
+      <div class="tv-clock" id="tvClock">--:--</div>
+      <div class="tv-date" id="tvDate">Carregando...</div>
+    </div>
+    <button class="tv-close" onclick="closeTV()" title="Fechar (Esc)">✕</button>
+  </div>
+
+  <div class="tv-body">
+
+    <!-- Stats bar -->
+    <div class="tv-stats">
+      <div class="tv-stat">
+        <span class="tv-stat-icon">📋</span>
+        <div>
+          <div class="tv-stat-val">12</div>
+          <div class="tv-stat-label">Pedidos hoje</div>
+        </div>
+      </div>
+      <div class="tv-stat">
+        <span class="tv-stat-icon">🫙</span>
+        <div>
+          <div class="tv-stat-val" style="color:#82B1FF;">3</div>
+          <div class="tv-stat-label">Em preparo</div>
+        </div>
+      </div>
+      <div class="tv-stat">
+        <span class="tv-stat-icon">🏍️</span>
+        <div>
+          <div class="tv-stat-val" style="color:#CE93D8;">2</div>
+          <div class="tv-stat-label">A caminho</div>
+        </div>
+      </div>
+      <div class="tv-stat">
+        <span class="tv-stat-icon">💰</span>
+        <div>
+          <div class="tv-stat-val" style="color:#69F0AE; font-size:20px;">R$ 487,50</div>
+          <div class="tv-stat-label">Faturamento</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PRONTO (destaque) -->
+    <div class="tv-section-label">🟢 Prontos para retirada — aguardando motoboy</div>
+    <div class="tv-grid" id="tvReady">
+
+      <div class="tv-card ready">
+        <div class="tv-card-accent"></div>
+        <div class="tv-card-top">
+          <div>
+            <div class="tv-order-num">#0039</div>
+            <div class="tv-customer">Pedro Mendonça</div>
+          </div>
+          <span class="tv-badge ready">✓ PRONTO</span>
+        </div>
+        <div class="tv-items">
+          <div class="tv-item-row"><span class="tv-item-qty">3×</span> Açaí 300ml</div>
+          <div class="tv-item-row"><span class="tv-item-qty">2×</span> Tapioca</div>
+        </div>
+        <div class="tv-card-footer">
+          <span class="tv-time-ago">⏱ 22 min atrás</span>
+          <span class="tv-total">R$ 74,50</span>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- PREPARANDO -->
+    <div class="tv-section-label">🔵 Em preparo</div>
+    <div class="tv-grid">
+
+      <div class="tv-card preparing">
+        <div class="tv-card-accent"></div>
+        <div class="tv-card-top">
+          <div>
+            <div class="tv-order-num">#0041</div>
+            <div class="tv-customer">Marcos Figueiredo</div>
+          </div>
+          <span class="tv-badge preparing">PREPARANDO</span>
+        </div>
+        <div class="tv-items">
+          <div class="tv-item-row"><span class="tv-item-qty">2×</span> Açaí 500ml</div>
+          <div class="tv-item-row"><span class="tv-item-qty">1×</span> Granola Extra</div>
+        </div>
+        <div class="tv-card-footer">
+          <span class="tv-time-ago">⏱ 5 min atrás</span>
+          <span class="tv-total">R$ 52,00</span>
+        </div>
+      </div>
+
+      <div class="tv-card preparing">
+        <div class="tv-card-accent"></div>
+        <div class="tv-card-top">
+          <div>
+            <div class="tv-order-num">#0038</div>
+            <div class="tv-customer">Júlia Rodrigues</div>
+          </div>
+          <span class="tv-badge preparing">PREPARANDO</span>
+        </div>
+        <div class="tv-items">
+          <div class="tv-item-row"><span class="tv-item-qty">1×</span> Açaí 700ml Leite Ninho</div>
+        </div>
+        <div class="tv-card-footer">
+          <span class="tv-time-ago">⏱ 20 min atrás</span>
+          <span class="tv-total">R$ 44,00</span>
+        </div>
+      </div>
+
+      <div class="tv-card preparing">
+        <div class="tv-card-accent"></div>
+        <div class="tv-card-top">
+          <div>
+            <div class="tv-order-num">#0035</div>
+            <div class="tv-customer">Thiago Lima</div>
+          </div>
+          <span class="tv-badge preparing">PREPARANDO</span>
+        </div>
+        <div class="tv-items">
+          <div class="tv-item-row"><span class="tv-item-qty">4×</span> Açaí 300ml Kids</div>
+        </div>
+        <div class="tv-card-footer">
+          <span class="tv-time-ago">⏱ 33 min atrás</span>
+          <span class="tv-total">R$ 88,00</span>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- A CAMINHO -->
+    <div class="tv-section-label">🟣 A caminho — em entrega</div>
+    <div class="tv-grid">
+
+      <div class="tv-card transit">
+        <div class="tv-card-accent"></div>
+        <div class="tv-card-top">
+          <div>
+            <div class="tv-order-num">#0040</div>
+            <div class="tv-customer">Ana Beatriz Costa</div>
+          </div>
+          <span class="tv-badge transit">A CAMINHO</span>
+        </div>
+        <div class="tv-items">
+          <div class="tv-item-row"><span class="tv-item-qty">1×</span> Açaí 1L Tradicional</div>
+        </div>
+        <div class="tv-card-footer">
+          <span class="tv-time-ago">⏱ 19 min atrás</span>
+          <span class="tv-total">R$ 38,00</span>
+        </div>
+      </div>
+
+      <div class="tv-card transit">
+        <div class="tv-card-accent"></div>
+        <div class="tv-card-top">
+          <div>
+            <div class="tv-order-num">#0036</div>
+            <div class="tv-customer">Camila Sousa</div>
+          </div>
+          <span class="tv-badge transit">A CAMINHO</span>
+        </div>
+        <div class="tv-items">
+          <div class="tv-item-row"><span class="tv-item-qty">1×</span> Açaí 1L</div>
+          <div class="tv-item-row"><span class="tv-item-qty">1×</span> Pudim de Açaí</div>
+        </div>
+        <div class="tv-card-footer">
+          <span class="tv-time-ago">⏱ 29 min atrás</span>
+          <span class="tv-total">R$ 62,00</span>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- PENDENTE -->
+    <div class="tv-section-label">🟡 Aguardando confirmação</div>
+    <div class="tv-grid">
+      <div class="tv-card pending">
+        <div class="tv-card-accent"></div>
+        <div class="tv-card-top">
+          <div>
+            <div class="tv-order-num">#0042</div>
+            <div class="tv-customer">Fernanda Nunes</div>
+          </div>
+          <span class="tv-badge pending">NOVO</span>
+        </div>
+        <div class="tv-items">
+          <div class="tv-item-row"><span class="tv-item-qty">2×</span> Açaí 500ml Zero</div>
+        </div>
+        <div class="tv-card-footer">
+          <span class="tv-time-ago">⏱ 1 min atrás</span>
+          <span class="tv-total">R$ 46,00</span>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /tv-body -->
+</div><!-- /tv-overlay -->
+
+
+<script>
+  // ── NAVIGATION ──────────────────────────────────────────
+  const views = ['painel','pedidos','produtos','financeiro','perfil','endereco','motoboys'];
+  const viewLabels = {
+    painel:'Painel', pedidos:'Pedidos', produtos:'Produtos',
+    financeiro:'Financeiro', perfil:'Perfil & Dados',
+    endereco:'Endereço', motoboys:'Motoboys'
+  };
+
+  function setView(name, el) {
+    views.forEach(v => {
+      document.getElementById('view-' + v).style.display = (v === name) ? '' : 'none';
+    });
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    if (el) el.classList.add('active');
+    document.getElementById('headerBreadcrumb').innerHTML =
+      `<span>Açaí da Praça /</span> ${viewLabels[name] || name}`;
+  }
+
+  function setViewByName(name) {
+    const items = document.querySelectorAll('.nav-item');
+    items.forEach(item => {
+      if (item.textContent.trim().toLowerCase().startsWith(viewLabels[name]?.toLowerCase().slice(0,4))) {
+        setView(name, item);
+      }
+    });
+  }
+
+  // ── STORE TOGGLE ─────────────────────────────────────────
+  let isOpen = true;
+  function toggleStore() {
+    isOpen = !isOpen;
+    const toggle = document.getElementById('storeToggle');
+    const status = document.getElementById('storeStatus');
+    const label  = document.getElementById('storeStatusLabel');
+    toggle.classList.toggle('on',  isOpen);
+    toggle.classList.toggle('off', !isOpen);
+    status.className = 'store-status ' + (isOpen ? 'open' : 'closed');
+    label.textContent = isOpen ? '● Aberta agora' : '● Fechada';
+  }
+
+  // ── TV MODE ───────────────────────────────────────────────
+  function openTV() {
+    document.getElementById('tvOverlay').classList.add('visible');
+    updateTVClock();
+    if (!clockInterval) clockInterval = setInterval(updateTVClock, 1000);
+    document.addEventListener('keydown', handleTVKey);
+  }
+
+  function closeTV() {
+    document.getElementById('tvOverlay').classList.remove('visible');
+    document.removeEventListener('keydown', handleTVKey);
+  }
+
+  function handleTVKey(e) { if (e.key === 'Escape') closeTV(); }
+
+  let clockInterval = null;
+  const DAYS   = ['Domingo','Segunda','Terça','Quarta','Quinta','Sexta','Sábado'];
+  const MONTHS = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+
+  function updateTVClock() {
+    const now = new Date();
+    const h = String(now.getHours()).padStart(2,'0');
+    const m = String(now.getMinutes()).padStart(2,'0');
+    const s = String(now.getSeconds()).padStart(2,'0');
+    document.getElementById('tvClock').textContent = `${h}:${m}`;
+    document.getElementById('tvDate').textContent =
+      `${DAYS[now.getDay()]}, ${now.getDate()} de ${MONTHS[now.getMonth()]} de ${now.getFullYear()}`;
+  }
+
+  // Init clock immediately
+  updateTVClock();
+</script>
+</body>
+</html>
