@@ -1620,37 +1620,50 @@ export default function StoreDashboard() {
                         <span style={{ color: group.color, fontSize: 13, fontWeight: 800, letterSpacing: 1, textTransform: 'uppercase' }}>{group.label}</span>
                         <span style={{ color: group.color, fontSize: 13, fontWeight: 700, opacity: 0.75 }}>· {group.orders.length}</span>
                       </div>
-                      {/* Grid de cards */}
-                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 12 }}>
-                        {group.orders.map(o => (
-                          <div key={o.id} style={{ background: tvCard, borderRadius: 12, padding: '14px 16px', border: `1px solid ${group.border}` }}>
-                            {/* Linha topo: nome + status */}
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
-                              <div style={{ color: tvText, fontWeight: 700, fontSize: 15, lineHeight: 1.3 }}>{o.customer_name}</div>
-                              <span style={{ color: group.color, fontSize: 11, fontWeight: 700, background: group.bg, padding: '2px 8px', borderRadius: 6, border: `1px solid ${group.border}`, whiteSpace: 'nowrap', marginLeft: 8 }}>
-                                {statusLabels[o.status] || o.status}
-                              </span>
-                            </div>
-                            {/* Divider + detalhes */}
-                            <div style={{ borderTop: `1px solid ${tvDivider}`, paddingTop: 8, marginBottom: 6 }}>
-                              <div style={{ color: tvSub, fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 }}>Detalhes do Pedido</div>
-                              {(o.items || o.order_items || []).map((it, i) => (
-                                <div key={i} style={{ color: tvText, fontSize: 13, marginBottom: 2 }}>
-                                  {it.quantity}x {it.product_name || it.products?.name || 'Produto'}
-                                </div>
-                              ))}
-                            </div>
-                            {o.motoboy_name && (
-                              <div style={{ color: tvSub, fontSize: 12, marginTop: 4 }}>
-                                Motoboy: <span style={{ color: tvText, fontWeight: 600 }}>{o.motoboy_name}</span>
+                      {/* Grid de cards — 2 por linha */}
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+                        {group.orders.map(o => {
+                          const action = actionMap[o.status];
+                          return (
+                            <div key={o.id} style={{ background: tvCard, borderRadius: 14, padding: '18px 20px', border: `1px solid ${group.border}` }}>
+                              {/* Linha topo: nome + badge status */}
+                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10 }}>
+                                <div style={{ color: tvText, fontWeight: 800, fontSize: 18, lineHeight: 1.3 }}>{o.customer_name}</div>
+                                <span style={{ color: group.color, fontSize: 12, fontWeight: 700, background: group.bg, padding: '3px 10px', borderRadius: 6, border: `1px solid ${group.border}`, whiteSpace: 'nowrap', marginLeft: 10, flexShrink: 0 }}>
+                                  {statusLabels[o.status] || o.status}
+                                </span>
                               </div>
-                            )}
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 8, paddingTop: 8, borderTop: `1px solid ${tvDivider}` }}>
-                              <div style={{ color: tvSub, fontSize: 11 }}>#{String(o.id).slice(-4)} · {new Date(o.created_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</div>
-                              <div style={{ color: group.color, fontWeight: 800, fontSize: 16 }}>R$ {o.total.toFixed(2)}</div>
+                              {/* Divider + itens */}
+                              <div style={{ borderTop: `1px solid ${tvDivider}`, paddingTop: 10, marginBottom: 8 }}>
+                                <div style={{ color: tvSub, fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 6 }}>Detalhes do Pedido</div>
+                                {(o.items || o.order_items || []).map((it, i) => (
+                                  <div key={i} style={{ color: tvText, fontSize: 15, marginBottom: 3, fontWeight: 500 }}>
+                                    {it.quantity}x {it.product_name || it.products?.name || 'Produto'}
+                                  </div>
+                                ))}
+                              </div>
+                              {o.motoboy_name && (
+                                <div style={{ color: tvSub, fontSize: 13, marginBottom: 8 }}>
+                                  Motoboy: <span style={{ color: tvText, fontWeight: 700 }}>{o.motoboy_name}</span>
+                                </div>
+                              )}
+                              {/* Rodapé: id+hora + valor + botão ação */}
+                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 10, paddingTop: 10, borderTop: `1px solid ${tvDivider}` }}>
+                                <div>
+                                  <div style={{ color: tvSub, fontSize: 12 }}>#{String(o.id).slice(-4)} · {new Date(o.created_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</div>
+                                  <div style={{ color: group.color, fontWeight: 800, fontSize: 18, marginTop: 2 }}>R$ {o.total.toFixed(2)}</div>
+                                </div>
+                                {action && (
+                                  <button
+                                    onClick={() => updateStatus(o.id, action.next)}
+                                    style={{ background: group.color, color: 'white', border: 'none', borderRadius: 10, padding: '10px 16px', fontSize: 14, fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap' }}>
+                                    {action.label}
+                                  </button>
+                                )}
+                              </div>
                             </div>
-                          </div>
-                        ))}
+                          );
+                        })}
                       </div>
                     </div>
                   ))}
