@@ -26,24 +26,15 @@ export default memo(function StoreAddressForm({ settings, setSettings, saveSetti
   const [locating, setLocating] = useState(false);
   const [mapLat, setMapLat] = useState(null);
   const [mapLng, setMapLng] = useState(null);
-  const [knownCity, setKnownCity] = useState('');
   const debounce = useRef(null);
   const inited = useRef(false);
 
   useEffect(() => {
     if (!inited.current) {
       setLocalAddr(settings.address || '');
-      const lat = settings.lat || null;
-      const lng = settings.lng || null;
-      setMapLat(lat);
-      setMapLng(lng);
+      setMapLat(settings.lat || null);
+      setMapLng(settings.lng || null);
       inited.current = true;
-      if (lat && lng) {
-        fetch(`/api/orders/reverse-geocode?lat=${lat}&lng=${lng}`)
-          .then(r => r.json())
-          .then(d => { if (d.display_name) setKnownCity(extractCity(d.display_name)); })
-          .catch(() => {});
-      }
     }
   }, []);
 
@@ -64,10 +55,7 @@ export default memo(function StoreAddressForm({ settings, setSettings, saveSetti
     setSearching(true);
     debounce.current = setTimeout(async () => {
       try {
-        const searchQ = knownCity ? `${q}, ${knownCity}` : q;
-        const params = new URLSearchParams({ q: searchQ });
-        if (mapLat) params.set('lat', mapLat);
-        if (mapLng) params.set('lng', mapLng);
+        const params = new URLSearchParams({ q });
         const res = await fetch(`/api/orders/places-autocomplete?${params}`);
         const data = await res.json();
         let results = (data.results || []).map(r => ({
@@ -111,8 +99,6 @@ export default memo(function StoreAddressForm({ settings, setSettings, saveSetti
         } else {
           results = results.map(r => ({ ...r, display_name: shortAddr(r.display_name), _city: extractCity(r.display_name) }));
         }
-        if (knownCity)
-          results = results.filter(r => !r._city || r._city.toLowerCase().includes(knownCity.toLowerCase().slice(0, 6)));
         setSuggestions(results);
         setShowSugs(results.length > 0);
       } catch { setShowSugs(false); }
