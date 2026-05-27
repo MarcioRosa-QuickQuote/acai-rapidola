@@ -1,6 +1,20 @@
 import { useState, useRef, useEffect, memo } from 'react';
 import { MapContainer, TileLayer, Marker } from 'react-leaflet';
 
+function shortAddr(full) {
+  if (!full) return '';
+  const parts = full.split(',').map(s => s.trim()).filter(Boolean);
+  if (!parts.length) return '';
+  let s = parts[0];
+  let n = '', h = '', c = 1;
+  if (parts[c] && /^\d+(\s*-?\s*\d+)?$/.test(parts[c].replace(/\s/g, ''))) { n = parts[c]; c++; }
+  if (parts[c]) h = parts[c];
+  let r = s.replace(/\bPassagem\b/gi, 'Pass.').replace(/\bTravessa\b/gi, 'Tv.').replace(/\bAvenida\b/gi, 'Av.').replace(/\bAlameda\b/gi, 'Al.').replace(/\bPraça\b/gi, 'Praç.').replace(/\bRodovia\b/gi, 'Rod.').replace(/\bEstrada\b/gi, 'Est.');
+  if (n) r += `, ${n}`;
+  if (h) r += ` - ${h.replace(/\bPassagem\b/gi, 'Pass.').replace(/\bTravessa\b/gi, 'Tv.').replace(/\bAvenida\b/gi, 'Av.').replace(/\bAlameda\b/gi, 'Al.').replace(/\bPraça\b/gi, 'Praç.').replace(/\bRodovia\b/gi, 'Rod.').replace(/\bEstrada\b/gi, 'Est.')}`;
+  return r;
+}
+
 export default memo(function StoreAddressForm({ settings, setSettings, saveSettings, uploading, saveMsg, setSaveMsg }) {
   const [localAddr, setLocalAddr] = useState('');
   const [suggestions, setSuggestions] = useState([]);
@@ -56,6 +70,40 @@ export default memo(function StoreAddressForm({ settings, setSettings, saveSetti
           place_id: r.place_id || null,
           _city: extractCity(r.display_name),
         }));
+        const numInQuery = q.match(/(\d[\d\s\-]*)$/);
+        if (results.length === 0 && q.length >= 5) {
+          const latLng = (mapLat && mapLng);
+          const viewbox = latLng ? `&viewbox=${mapLng - 0.05},${mapLat + 0.05},${mapLng + 0.05},${mapLat - 0.05}&bounded=1` : '';
+          if (numInQuery) {
+            const streetQ = searchQ.replace(numInQuery[0], '').trim();
+            const nomRes = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(streetQ)}&countrycodes=br&limit=5&addressdetails=1${viewbox}`, { headers: { 'User-Agent': 'AcaiRapidola/1.0' } });
+            const nomData = await nomRes.json();
+            results = (nomData || []).map(r => {
+              const short = shortAddr(r.display_name);
+              const withNum = short.replace(/(,\s*\d+)?\s*-\s*/, `, ${numInQuery[1].trim()} - `);
+              return { display_name: withNum, _city: extractCity(r.display_name), lat: r.lat, lon: r.lon, place_id: null };
+            });
+          } else {
+            const nomRes = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(searchQ)}&countrycodes=br&limit=7&addressdetails=1${viewbox}`, { headers: { 'User-Agent': 'AcaiRapidola/1.0' } });
+            const nomData = await nomRes.json();
+            results = (nomData || []).map(r => {
+              const short = shortAddr(r.display_name);
+              return { display_name: short, _city: extractCity(r.display_name), lat: r.lat, lon: r.lon, place_id: null };
+            });
+          }
+        } else if (results.length > 0 && numInQuery) {
+          results = results.map(r => {
+            const short = shortAddr(r.display_name);
+            const hasNum = short.match(/\d+/);
+            if (!hasNum) {
+              const streetOnly = short.replace(/,\s*\d+\s*-\s*/, ' - ').replace(/,\s*\d+$/, '');
+              return { ...r, display_name: `${streetOnly}, ${numInQuery[1].trim()}`, _city: extractCity(r.display_name) };
+            }
+            return { ...r, display_name: short, _city: extractCity(r.display_name) };
+          });
+        } else {
+          results = results.map(r => ({ ...r, display_name: shortAddr(r.display_name), _city: extractCity(r.display_name) }));
+        }
         if (knownCity)
           results = results.filter(r => !r._city || r._city.toLowerCase().includes(knownCity.toLowerCase().slice(0, 6)));
         setSuggestions(results);
