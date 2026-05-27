@@ -38,9 +38,9 @@ L.Icon.Default.mergeOptions({
 });
 
 const statusLabels = {
-  pending: 'Aguardando pgto', confirmed: 'Preparar', preparing: 'Preparando',
-  ready: 'Saiu pra entrega', assigned: 'Saiu pra entrega', picked_up: 'Saiu pra entrega',
-  in_transit: 'Saiu pra entrega', arriving: 'Saiu pra entrega',
+  pending: 'Aguardando pgto', confirmed: 'Aguardando preparo', preparing: 'Preparando',
+  ready: 'Pronto — aguarda motoboy', assigned: 'Motoboy a caminho',
+  picked_up: 'Saiu pra entrega', in_transit: 'Saiu pra entrega', arriving: 'Chegando!',
   delivered: 'Entregue', cancelled: 'Cancelado'
 };
 
@@ -53,7 +53,8 @@ const statusColors = {
 
 const actionMap = {
   confirmed: { label: 'Preparar', next: 'preparing' },
-  preparing: { label: 'Saiu pra entrega', next: 'ready' }
+  preparing: { label: 'Pronto! ✅', next: 'ready' },
+  assigned:  { label: 'Confirmar Saída 🛵', next: 'picked_up' }
 };
 
 export default function StoreDashboard() {
@@ -1436,9 +1437,11 @@ export default function StoreDashboard() {
             </div>
           ) : (() => {
             const grupos = [
-              { key: 'preparar',  label: 'Preparar',          emoji: '🔥', accentColor: '#E65100', bgColor: '#FFF3E0', statuses: ['confirmed'] },
-              { key: 'preparando',label: 'Preparando',         emoji: '⏳', accentColor: '#1565C0', bgColor: '#E3F2FD', statuses: ['preparing'] },
-              { key: 'entrega',   label: 'Saiu pra entrega',   emoji: '🛵', accentColor: '#6A1B9A', bgColor: '#F3E5F5', statuses: ['ready', 'assigned', 'picked_up', 'in_transit', 'arriving'] },
+              { key: 'preparar',   label: 'Preparar',              emoji: '🔥', accentColor: '#E65100', bgColor: '#FFF3E0', statuses: ['confirmed'] },
+              { key: 'preparando', label: 'Preparando',             emoji: '⏳', accentColor: '#1565C0', bgColor: '#E3F2FD', statuses: ['preparing'] },
+              { key: 'pronto',     label: 'Pronto — aguarda motoboy', emoji: '✅', accentColor: '#2E7D32', bgColor: '#E8F5E9', statuses: ['ready'] },
+              { key: 'motoboy',    label: 'Motoboy na loja',        emoji: '🛵', accentColor: '#6A1B9A', bgColor: '#EDE7F6', statuses: ['assigned'] },
+              { key: 'entrega',    label: 'Saiu pra entrega',       emoji: '🚀', accentColor: '#00695C', bgColor: '#E0F2F1', statuses: ['picked_up', 'in_transit', 'arriving'] },
             ].map(g => ({ ...g, orders: pendingOrders.filter(o => g.statuses.includes(o.status)) }))
              .filter(g => g.orders.length > 0);
 
@@ -1836,10 +1839,11 @@ export default function StoreDashboard() {
         const cntPrep = tvActive.filter(o => ['confirmed', 'preparing'].includes(o.status)).length;
         const cntCaminho = tvActive.filter(o => ['assigned', 'picked_up', 'in_transit', 'arriving'].includes(o.status)).length;
         const tvGroups = [
-          { label: 'PREPARAR',   emoji: '🔥', color: '#E65100', bg: 'rgba(230,81,0,0.1)',    border: 'rgba(230,81,0,0.28)',    orders: tvActive.filter(o => o.status === 'confirmed') },
-          { label: 'PREPARANDO', emoji: '⏳', color: '#1e88e5', bg: 'rgba(30,136,229,0.08)', border: 'rgba(30,136,229,0.25)', orders: tvActive.filter(o => o.status === 'preparing') },
-          { label: 'PRONTOS',    emoji: '✅', color: '#00a844', bg: 'rgba(0,168,68,0.1)',    border: 'rgba(0,168,68,0.28)',    orders: tvActive.filter(o => o.status === 'ready') },
-          { label: 'A CAMINHO',  emoji: '🛵', color: '#8e24aa', bg: 'rgba(142,36,170,0.08)', border: 'rgba(142,36,170,0.25)', orders: tvActive.filter(o => ['assigned', 'picked_up', 'in_transit', 'arriving'].includes(o.status)) },
+          { label: 'PREPARAR',        emoji: '🔥', color: '#E65100', bg: 'rgba(230,81,0,0.1)',    border: 'rgba(230,81,0,0.28)',    orders: tvActive.filter(o => o.status === 'confirmed') },
+          { label: 'PREPARANDO',      emoji: '⏳', color: '#1e88e5', bg: 'rgba(30,136,229,0.08)', border: 'rgba(30,136,229,0.25)', orders: tvActive.filter(o => o.status === 'preparing') },
+          { label: 'PRONTO',          emoji: '✅', color: '#00a844', bg: 'rgba(0,168,68,0.1)',    border: 'rgba(0,168,68,0.28)',    orders: tvActive.filter(o => o.status === 'ready') },
+          { label: 'MOTOBOY NA LOJA', emoji: '🛵', color: '#8e24aa', bg: 'rgba(142,36,170,0.08)', border: 'rgba(142,36,170,0.25)', orders: tvActive.filter(o => o.status === 'assigned') },
+          { label: 'SAIU',            emoji: '🚀', color: '#00695C', bg: 'rgba(0,105,92,0.08)',  border: 'rgba(0,105,92,0.25)',   orders: tvActive.filter(o => ['picked_up', 'in_transit', 'arriving'].includes(o.status)) },
         ].filter(g => g.orders.length > 0);
 
         const btnBase = { width: 44, height: 44, borderRadius: 10, fontSize: 20, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', border: tvLight ? '1px solid #ddd' : '1px solid rgba(255,255,255,0.12)' };

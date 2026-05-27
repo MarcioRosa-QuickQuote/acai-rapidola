@@ -29,13 +29,12 @@ const statusColors = {
 };
 
 const nextStatus = {
-  assigned: 'picked_up',
+  // assigned → picked_up: confirmado pela LOJA (não pelo motoboy)
   picked_up: 'delivered'
 };
 
 const nextStatusLabel = {
-  assigned: 'Retirei o pedido',
-  picked_up: 'Entregue'
+  picked_up: 'Entregue ✓'
 };
 
 function FollowMotoboy({ pos, follow }) {
@@ -619,6 +618,16 @@ export default function MotoboyDashboard() {
   const [isEmployee, setIsEmployee] = useState(false);
   const [earnings, setEarnings] = useState({ total: 0, pending: 0, list: [] });
   const [fullscreenOrder, setFullscreenOrder] = useState(null);
+  const restoredNav = useRef(false);
+
+  const openNav = (order) => {
+    localStorage.setItem('mb_nav_order', order.id);
+    setFullscreenOrder(order);
+  };
+  const closeNav = () => {
+    localStorage.removeItem('mb_nav_order');
+    setFullscreenOrder(null);
+  };
   const [finPeriod, setFinPeriod] = useState('dia');
 
   useEffect(() => {
@@ -653,7 +662,21 @@ export default function MotoboyDashboard() {
     ]);
     if (avail.data) setAvailableOrders(avail.data);
     if (mine.data) {
-      setMyOrders(mine.data.filter(o => o.motoboy_id === user?.id));
+      const filtered = mine.data.filter(o => o.motoboy_id === user?.id);
+      setMyOrders(filtered);
+
+      // Restaurar rota ativa após refresh
+      if (!restoredNav.current) {
+        restoredNav.current = true;
+        const savedId = localStorage.getItem('mb_nav_order');
+        if (savedId) {
+          const active = filtered.find(o =>
+            o.id === savedId && ['assigned', 'picked_up', 'in_transit', 'arriving'].includes(o.status)
+          );
+          if (active) setFullscreenOrder(active);
+          else localStorage.removeItem('mb_nav_order');
+        }
+      }
     }
     setLoading(false);
   }
@@ -668,7 +691,7 @@ export default function MotoboyDashboard() {
     if (mine.data) {
       setMyOrders(mine.data.filter(o => o.motoboy_id === user?.id));
       const accepted = mine.data.find(o => o.id === orderId);
-      if (accepted) setFullscreenOrder(accepted);
+      if (accepted) openNav(accepted);
     }
     setLoading(false);
   }
@@ -775,7 +798,7 @@ export default function MotoboyDashboard() {
 
         {activeDeliveries.length > 0 && activeDeliveries.map(order => (
           <div key={order.id} className="card" style={{ marginBottom: 12, border: '2px solid var(--primary)', cursor: 'pointer' }}
-            onClick={() => setFullscreenOrder(order)}>
+            onClick={() => openNav(order)}>
             <div className="flex-between" style={{ marginBottom: 4 }}>
               <span className="font-bold">#{order.id.slice(0, 8)}</span>
               <span className="badge badge-success">R$ {order.total.toFixed(2)}</span>
@@ -880,7 +903,7 @@ export default function MotoboyDashboard() {
             <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--primary)', marginBottom: 8 }}>Em andamento</div>
             {active.map(order => (
               <div key={order.id} className="card" style={{ cursor: 'pointer', border: '2px solid var(--primary)' }}
-                onClick={() => setFullscreenOrder(order)}>
+                onClick={() => openNav(order)}>
                 <div className="flex-between" style={{ marginBottom: 4 }}>
                   <span className="font-bold">#{order.id.slice(0, 8)}</span>
                   <span className={`badge ${statusColors[order.status] || 'badge-primary'}`}>{statusLabels[order.status] || order.status}</span>
@@ -905,7 +928,7 @@ export default function MotoboyDashboard() {
               const deliveredTime = order.status === 'delivered' ? order.updated_at : null;
               return (
                 <div key={order.id} className="card" style={{ cursor: 'pointer' }}
-                  onClick={() => setFullscreenOrder(order)}>
+                  onClick={() => openNav(order)}>
                   <div className="flex-between" style={{ marginBottom: 4 }}>
                     <span className="font-bold">#{order.id.slice(0, 8)}</span>
                     <span className="badge badge-success">R$ {order.total.toFixed(2)}</span>
@@ -1197,8 +1220,8 @@ export default function MotoboyDashboard() {
       </div>
 
       {fsOrder && (
-        <NavScreen order={fsOrder} onClose={() => setFullscreenOrder(null)}
-          onStatusUpdate={() => { updateStatus(fsOrder.id); setFullscreenOrder(null); }}
+        <NavScreen order={fsOrder} onClose={closeNav}
+          onStatusUpdate={() => { updateStatus(fsOrder.id); closeNav(); }}
           statusLabel={nextStatus[fsOrder.status] ? nextStatusLabel[fsOrder.status] : null} />
       )}
 
