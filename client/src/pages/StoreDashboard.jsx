@@ -782,17 +782,17 @@ export default function StoreDashboard() {
                 <label className="label">Nome</label>
                 <input className="input" type="text" value={productForm.name}
                   onChange={e => setProductForm(p => ({ ...p, name: e.target.value }))}
-                  placeholder="Ex: Acai 500ml" />
+                  placeholder="Ex: Açaí 500ml" />
               </div>
               <div className="form-group">
-                <label className="label">Descricao</label>
+                <label className="label">Descrição</label>
                 <input className="input" type="text" value={productForm.description}
                   onChange={e => setProductForm(p => ({ ...p, description: e.target.value }))}
-                  placeholder="Acai puro batido com guarana" />
+                  placeholder="Açaí puro batido com guaraná" />
               </div>
               <div className="flex-row" style={{ gap: 8 }}>
                 <div className="form-group" style={{ flex: 1 }}>
-                  <label className="label">Preco (R$)</label>
+                  <label className="label">Preço (R$)</label>
                   <input className="input" type="number" step="0.01" value={productForm.price}
                     onChange={e => setProductForm(p => ({ ...p, price: e.target.value }))}
                     placeholder="25.00" />
@@ -928,7 +928,7 @@ export default function StoreDashboard() {
             <label className="label">Chave PIX</label>
             <input className="input" type="text" value={settings.pix_key}
               onChange={e => setSettings(s => ({ ...s, pix_key: e.target.value }))}
-              placeholder="CPF, telefone, e-mail ou chave aleatoria" />
+              placeholder="CPF, telefone, e-mail ou chave aleatória" />
           </div>
           <div className="form-group">
             <label className="label">Logo da Loja</label>

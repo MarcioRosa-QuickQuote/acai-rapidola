@@ -76,7 +76,7 @@ router.patch('/notifications/:id/read', authMiddleware, async (req, res) => {
 
 router.post('/create-preference', authMiddleware, async (req, res) => {
   const { order_id } = req.body;
-  if (!order_id) return res.status(400).json({ error: 'ID do pedido obrigatorio' });
+  if (!order_id) return res.status(400).json({ error: 'ID do pedido obrigatório' });
 
   const { data: order } = await supabase.from('orders').select('*').eq('id', order_id).single();
   if (!order) return res.status(404).json({ error: 'Pedido não encontrado' });

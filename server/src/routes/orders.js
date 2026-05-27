@@ -237,7 +237,7 @@ router.get('/place-details', async (req, res) => {
 
 router.get('/reverse-geocode', async (req, res) => {
   const { lat, lng } = req.query;
-  if (!lat || !lng) return res.json({ error: 'lat e lng obrigatorios' });
+  if (!lat || !lng) return res.json({ error: 'Latitude e longitude são obrigatórias' });
   try {
     const resp = await fetch(
       `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&addressdetails=1&countrycodes=BR&zoom=18`,

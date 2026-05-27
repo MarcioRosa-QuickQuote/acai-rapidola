@@ -17,8 +17,10 @@ L.Icon.Default.mergeOptions({
 });
 
 const statusLabels = {
-  assigned: 'Retirar na loja', picked_up: 'Saiu pra entrega',
-  arriving: 'Chegando!', delivered: 'Entregue'
+  pending: 'Aguardando pgto', confirmed: 'Aguardando preparo', preparing: 'Preparando',
+  ready: 'Pronto p/ retirar', assigned: 'Retirar na loja',
+  picked_up: 'Saiu pra entrega', in_transit: 'Saiu pra entrega',
+  arriving: 'Chegando!', delivered: 'Entregue', cancelled: 'Cancelado'
 };
 
 const statusColors = {
@@ -1071,7 +1073,7 @@ export default function MotoboyDashboard() {
         <div className="form-group">
           <label className="label">Chave PIX</label>
           <input className="input" type="text" value={pixKey} onChange={e => setPixKey(e.target.value)}
-            placeholder="CPF, telefone, e-mail ou chave aleatoria" />
+            placeholder="CPF, telefone, e-mail ou chave aleatória" />
         </div>
         {pixMsg && <div style={{ fontSize: 13, fontWeight: 600, padding: '10px 14px', borderRadius: 8, marginBottom: 12,
           background: pixMsg.includes('Erro') ? '#FFEBEE' : '#E8F5E9', color: pixMsg.includes('Erro') ? '#C62828' : '#2E7D32' }}>{pixMsg}</div>}
