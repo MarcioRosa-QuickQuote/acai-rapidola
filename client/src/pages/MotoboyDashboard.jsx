@@ -953,43 +953,49 @@ export default function MotoboyDashboard() {
           </div>
         )}
 
-        {/* Motoboy avulso: precisa aceitar manualmente */}
-        {!isLinked && filteredAvailable.length === 0 && activeDeliveries.length === 0 ? (
-          <div className="card empty-state" style={{ paddingTop: 40, paddingBottom: 40 }}>
-            <div className="empty-state-icon">
-              <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
-                <circle cx="32" cy="28" r="16" stroke="var(--border)" strokeWidth="2"/>
-                <path d="M32 20v8l5 5" stroke="var(--border)" strokeWidth="2" strokeLinecap="round"/>
-              </svg>
-            </div>
-            <p>Nenhum pedido disponível no momento</p>
-          </div>
-        ) : !isLinked && filteredAvailable.length > 0 ? (
+        {/* Motoboy avulso: divisória + pedidos disponíveis para aceitar */}
+        {!isLinked && (
           <>
-            {activeDeliveries.length > 0 && (
-              <div style={{ fontSize: 12, fontWeight: 700, color: '#6A1B9A', marginBottom: 8, marginTop: 4, textTransform: 'uppercase', letterSpacing: 0.5 }}>
-                Novos pedidos disponíveis
-              </div>
-            )}
-            {filteredAvailable.map(order => (
-              <div key={order.id} className="card">
-                <div className="flex-between" style={{ marginBottom: 6 }}>
-                  <div>
-                    <span style={{ fontSize: 11, color: '#bbb', fontFamily: 'monospace', letterSpacing: 0.3, userSelect: 'all' }}>#{order.id.slice(0, 8)}</span>
-                    <span className="text-sm text-muted" style={{ marginLeft: 8 }}>{order.customer_name}</span>
+            {filteredAvailable.length > 0 ? (
+              <>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10, margin: '16px 0 12px' }}>
+                  <div style={{ flex: 1, height: 1, background: '#E0E0E0' }} />
+                  <span style={{ fontSize: 11, fontWeight: 700, color: '#9E9E9E', textTransform: 'uppercase', letterSpacing: 0.6, whiteSpace: 'nowrap' }}>
+                    Disponíveis para aceitar
+                  </span>
+                  <div style={{ flex: 1, height: 1, background: '#E0E0E0' }} />
+                </div>
+                {filteredAvailable.map(order => (
+                  <div key={order.id} className="card">
+                    <div className="flex-between" style={{ marginBottom: 6 }}>
+                      <div>
+                        <span style={{ fontSize: 11, color: '#bbb', fontFamily: 'monospace', letterSpacing: 0.3, userSelect: 'all' }}>#{order.id.slice(0, 8)}</span>
+                        <span className="text-sm text-muted" style={{ marginLeft: 8 }}>{order.customer_name}</span>
+                      </div>
+                      <span className="badge badge-success">R$ {order.total.toFixed(2)}</span>
+                    </div>
+                    <div className="text-sm text-muted" style={{ marginBottom: 6 }}>Loja: {order.store_name}</div>
+                    <div className="text-sm text-muted" style={{ marginBottom: 8 }}>{fmtAddr(order.customer_address)}</div>
+                    <div className="flex-between">
+                      <span className={`badge ${statusColors[order.status] || 'badge-primary'}`}>{statusLabels[order.status] || order.status}</span>
+                      <button className="btn btn-sm btn-primary" onClick={() => acceptOrder(order.id)}>Aceitar Entrega</button>
+                    </div>
                   </div>
-                  <span className="badge badge-success">R$ {order.total.toFixed(2)}</span>
+                ))}
+              </>
+            ) : activeDeliveries.length === 0 ? (
+              <div className="card empty-state" style={{ paddingTop: 40, paddingBottom: 40 }}>
+                <div className="empty-state-icon">
+                  <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
+                    <circle cx="32" cy="28" r="16" stroke="var(--border)" strokeWidth="2"/>
+                    <path d="M32 20v8l5 5" stroke="var(--border)" strokeWidth="2" strokeLinecap="round"/>
+                  </svg>
                 </div>
-                <div className="text-sm text-muted" style={{ marginBottom: 6 }}>Loja: {order.store_name}</div>
-                <div className="text-sm text-muted" style={{ marginBottom: 8 }}>{fmtAddr(order.customer_address)}</div>
-                <div className="flex-between">
-                  <span className={`badge ${statusColors[order.status] || 'badge-primary'}`}>{statusLabels[order.status] || order.status}</span>
-                  <button className="btn btn-sm btn-primary" onClick={() => acceptOrder(order.id)}>Aceitar Entrega</button>
-                </div>
+                <p>Nenhum pedido disponível no momento</p>
               </div>
-            ))}
+            ) : null}
           </>
-        ) : null}
+        )}
       </>
     );
   }
@@ -1018,9 +1024,8 @@ export default function MotoboyDashboard() {
 
   function renderPedidos() {
     const completed = myOrders.filter(o => o.status === 'delivered');
-    const active = myOrders.filter(o => o.status !== 'delivered');
 
-    if (completed.length === 0 && active.length === 0) {
+    if (completed.length === 0) {
       return (
         <div className="empty-state" style={{ paddingTop: 40 }}>
           <div className="empty-state-icon">
@@ -1029,40 +1034,13 @@ export default function MotoboyDashboard() {
               <circle cx="32" cy="36" r="4" stroke="var(--border)" strokeWidth="2"/>
             </svg>
           </div>
-          <p>Nenhum pedido ainda</p>
+          <p>Nenhuma entrega concluída ainda</p>
         </div>
       );
     }
 
     return (
       <>
-        {active.length > 0 && (
-          <>
-            <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--primary)', marginBottom: 8 }}>Em andamento</div>
-            {active.map(order => (
-              <div key={order.id} className="card" style={{ cursor: 'pointer', border: '2px solid var(--primary)' }}
-                onClick={() => openNav(order)}>
-                <div className="flex-between" style={{ marginBottom: 4 }}>
-                  <span style={{ fontSize: 11, color: '#bbb', fontFamily: 'monospace', letterSpacing: 0.3, userSelect: 'all' }}>#{order.id.slice(0, 8)}</span>
-                  <span className={`badge ${statusColors[order.status] || 'badge-primary'}`}>{statusLabels[order.status] || order.status}</span>
-                </div>
-                {order.store_address && (
-                  <div className="text-sm text-muted" style={{ marginBottom: 2 }}>
-                    🏪 <strong>{order.store_name}</strong> — {order.store_address}
-                  </div>
-                )}
-                <div className="text-sm text-muted"><strong>{order.customer_name}</strong></div>
-                <div className="text-sm text-muted">📍 {fmtAddr(order.customer_address)}</div>
-                {nextStatus[order.status] && (
-                  <button className="btn btn-sm btn-primary mt-2" onClick={(e) => { e.stopPropagation(); updateStatus(order.id); }}>
-                    {nextStatusLabel[order.status]}
-                  </button>
-                )}
-              </div>
-            ))}
-          </>
-        )}
-
         {Object.entries(groupByDate(completed)).reverse().map(([date, orders]) => (
           <div key={date}>
             <div style={{ fontSize: 13, fontWeight: 700, color: '#999', margin: '12px 0 8px' }}>{date}</div>
