@@ -28,6 +28,26 @@ const statusColors = {
   arriving: 'badge-accent', delivered: 'badge-success'
 };
 
+// Reformata endereços no padrão "BR, 2629, Avenida X, Bairro, Cidade, Estado"
+// (código de rodovia federal retornado pelo Nominatim) → "Av. X, 2629 - Bairro"
+function fmtAddr(full) {
+  if (!full) return '';
+  const parts = full.split(',').map(s => s.trim()).filter(Boolean);
+  if (!parts.length) return '';
+  if (
+    parts.length >= 3 &&
+    /^[A-Z]{2}(-\d+)?$/i.test(parts[0]) &&
+    /^\d+$/.test(parts[1]) &&
+    /^(Avenida|Rua|Travessa|Alameda|Passagem|Rodovia|Estrada|Praça)/i.test(parts[2])
+  ) {
+    const street = abbrevStreet(parts[2]);
+    const hood = parts[3] || '';
+    const isCity = /^(Belém|Manaus|São Paulo|Rio|Salvador|Fortaleza|Recife|Curitiba|Porto Alegre|Brasília|Goiânia|Pará|Amazonas|Bahia|Ceará|Minas|Paraná|Santa|Mato|Goiás|Piauí|Maranhão|Sergipe|Alagoas|Pernambuco|Paraíba|Tocantins|Rondônia|Roraima|Amapá|Acre)/i.test(hood);
+    return `${street}, ${parts[1]}${hood && !isCity ? ` - ${hood}` : ''}`;
+  }
+  return abbrevStreet(parts.slice(0, 2).join(', '));
+}
+
 const nextStatus = {
   // assigned → picked_up: confirmado pela LOJA (não pelo motoboy)
   picked_up: 'delivered'
@@ -331,7 +351,7 @@ function NavScreen({ order, onClose, onStatusUpdate, statusLabel }) {
           <div style={{ fontSize: 14, color: '#444', fontWeight: 500, marginBottom: 4, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
             {isToStore
               ? `Por ${order.store_address || order.store_name || 'loja'}`
-              : `Por ${order.customer_address || order.customer_name}`}
+              : `Por ${fmtAddr(order.customer_address) || order.customer_name}`}
           </div>
           <div style={{ fontSize: 13, color: '#888', marginBottom: 24 }}>
             {isToStore ? 'Retirar pedido na loja' : 'Melhor rota, Trânsito normal'}
@@ -873,7 +893,7 @@ export default function MotoboyDashboard() {
               </div>
             )}
             <div className="text-sm text-muted">Cliente: <strong>{order.customer_name}</strong></div>
-            <div className="text-sm text-muted" style={{ marginBottom: 6 }}>📍 {order.customer_address}</div>
+            <div className="text-sm text-muted" style={{ marginBottom: 6 }}>📍 {fmtAddr(order.customer_address)}</div>
             <div className="flex-between">
               <span className={`badge ${statusColors[order.status] || 'badge-primary'}`}>{statusLabels[order.status] || order.status}</span>
               {nextStatus[order.status] && (
@@ -924,7 +944,7 @@ export default function MotoboyDashboard() {
                   <span className="badge badge-success">R$ {order.total.toFixed(2)}</span>
                 </div>
                 <div className="text-sm text-muted" style={{ marginBottom: 6 }}>Loja: {order.store_name}</div>
-                <div className="text-sm text-muted" style={{ marginBottom: 8 }}>{order.customer_address}</div>
+                <div className="text-sm text-muted" style={{ marginBottom: 8 }}>{fmtAddr(order.customer_address)}</div>
                 <div className="flex-between">
                   <span className={`badge ${statusColors[order.status] || 'badge-primary'}`}>{statusLabels[order.status] || order.status}</span>
                   <button className="btn btn-sm btn-primary" onClick={() => acceptOrder(order.id)}>Aceitar Entrega</button>
@@ -995,7 +1015,7 @@ export default function MotoboyDashboard() {
                   </div>
                 )}
                 <div className="text-sm text-muted"><strong>{order.customer_name}</strong></div>
-                <div className="text-sm text-muted">📍 {order.customer_address}</div>
+                <div className="text-sm text-muted">📍 {fmtAddr(order.customer_address)}</div>
                 {nextStatus[order.status] && (
                   <button className="btn btn-sm btn-primary mt-2" onClick={(e) => { e.stopPropagation(); updateStatus(order.id); }}>
                     {nextStatusLabel[order.status]}
@@ -1020,7 +1040,7 @@ export default function MotoboyDashboard() {
                     <span className="badge badge-success">R$ {order.total.toFixed(2)}</span>
                   </div>
                   <div className="text-sm text-muted"><strong>{order.customer_name}</strong></div>
-                  <div className="text-sm text-muted" style={{ marginBottom: 4 }}>{order.customer_address}</div>
+                  <div className="text-sm text-muted" style={{ marginBottom: 4 }}>{fmtAddr(order.customer_address)}</div>
                   <div className="flex-between text-xs" style={{ color: '#888' }}>
                     <span>🕐 Saiu: {formatTime(pickedTime)}</span>
                     <span>✅ Entregue: {formatTime(deliveredTime)}</span>

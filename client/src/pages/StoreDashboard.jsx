@@ -16,6 +16,19 @@ function shortAddress(full) {
   if (!full) return '';
   const parts = full.split(',').map(s => s.trim()).filter(Boolean);
   if (parts.length === 0) return '';
+  // Detecta padrão de rodovia federal: "BR, 2629, Avenida X, Bairro, Cidade, Estado"
+  // → reordena para "Av. X, 2629 - Bairro"
+  if (
+    parts.length >= 3 &&
+    /^[A-Z]{2}(-\d+)?$/i.test(parts[0]) &&
+    /^\d+$/.test(parts[1]) &&
+    /^(Avenida|Rua|Travessa|Alameda|Passagem|Rodovia|Estrada|Praça)/i.test(parts[2])
+  ) {
+    const street = abbr(parts[2]);
+    const hood = parts[3] || '';
+    const isCity = /^(Belém|Manaus|São Paulo|Rio|Salvador|Fortaleza|Recife|Curitiba|Porto Alegre|Brasília|Goiânia|Pará|Amazonas|Bahia|Ceará|Minas|Paraná|Santa|Mato|Goiás|Piauí|Maranhão|Sergipe|Alagoas|Pernambuco|Paraíba|Tocantins|Rondônia|Roraima|Amapá|Acre)/i.test(hood);
+    return `${street}, ${parts[1]}${hood && !isCity ? ` - ${hood}` : ''}`;
+  }
   const street = parts[0];
   let num = '';
   let hood = '';

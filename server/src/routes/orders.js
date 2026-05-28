@@ -150,8 +150,12 @@ function formatPhotonAddress(p) {
 
 function formatNominatimAddress(a) {
   const stateAbbr = BR_STATES[a.state] || '';
-  const road = a.road || a.pedestrian || a.footway || a.path || '';
+  let road = a.road || a.pedestrian || a.footway || a.path || '';
   const number = a.house_number || '';
+  // Se road é código de rodovia (ex: "BR", "BR-316", "AM-010"), tenta campos mais específicos
+  if (/^[A-Z]{2}(-\d+)?$/i.test(road.trim())) {
+    road = a.hamlet || a.allotments || a.isolated_dwelling || road;
+  }
   const neighborhood = a.suburb || a.neighbourhood || a.quarter || a.district || '';
   const city = a.city || a.town || a.municipality || '';
   let addr = road;
