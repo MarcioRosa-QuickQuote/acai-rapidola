@@ -15,9 +15,11 @@ router.get('/available', authMiddleware, roleMiddleware('motoboy'), async (req, 
     .in('status', ['confirmed', 'preparing', 'ready']);
 
   if (storeIds.length > 0) {
+    // Vinculado: só vê pedidos da sua loja sem motoboy atribuído
     query = query.in('store_id', storeIds).is('motoboy_id', null);
   } else {
-    query = query.or(`motoboy_id.is.null,motoboy_id.eq.${req.user.id}`);
+    // Avulso: só pedidos sem motoboy (os já aceitos aparecem em myOrders, não aqui)
+    query = query.is('motoboy_id', null);
   }
 
   const { data } = await query.order('created_at', { ascending: true });

@@ -49,11 +49,12 @@ function fmtAddr(full) {
 }
 
 const nextStatus = {
-  // assigned → picked_up: confirmado pela LOJA (não pelo motoboy)
+  assigned:  'picked_up',  // motoboy confirma que saiu da loja com o pedido
   picked_up: 'delivered'
 };
 
 const nextStatusLabel = {
+  assigned:  'Saí da loja ✓',
   picked_up: 'Entregue ✓'
 };
 
@@ -846,7 +847,13 @@ export default function MotoboyDashboard() {
     { key: 'perfil', label: 'Perfil', icon: '👤' },
   ];
 
-  const activeDeliveries = myOrders.filter(o => o.status !== 'delivered');
+  // Só mostra no "ativo" pedidos que o motoboy já aceitou e está em rota
+  const activeDeliveries = myOrders.filter(o =>
+    ['assigned', 'picked_up', 'in_transit', 'arriving'].includes(o.status)
+  );
+  // Remove da lista "disponível" pedidos que já estão nos ativos (evita duplicata)
+  const activeIds = new Set(activeDeliveries.map(o => o.id));
+  const filteredAvailable = availableOrders.filter(o => !activeIds.has(o.id));
 
   function renderInicio() {
     return (
@@ -917,7 +924,7 @@ export default function MotoboyDashboard() {
         )}
 
         {/* Motoboy avulso: precisa aceitar manualmente */}
-        {!isLinked && availableOrders.length === 0 && activeDeliveries.length === 0 ? (
+        {!isLinked && filteredAvailable.length === 0 && activeDeliveries.length === 0 ? (
           <div className="card empty-state" style={{ paddingTop: 40, paddingBottom: 40 }}>
             <div className="empty-state-icon">
               <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
@@ -927,14 +934,14 @@ export default function MotoboyDashboard() {
             </div>
             <p>Nenhum pedido disponível no momento</p>
           </div>
-        ) : !isLinked && availableOrders.length > 0 ? (
+        ) : !isLinked && filteredAvailable.length > 0 ? (
           <>
             {activeDeliveries.length > 0 && (
               <div style={{ fontSize: 12, fontWeight: 700, color: '#6A1B9A', marginBottom: 8, marginTop: 4, textTransform: 'uppercase', letterSpacing: 0.5 }}>
                 Novos pedidos disponíveis
               </div>
             )}
-            {availableOrders.map(order => (
+            {filteredAvailable.map(order => (
               <div key={order.id} className="card">
                 <div className="flex-between" style={{ marginBottom: 6 }}>
                   <div>
@@ -1327,7 +1334,16 @@ export default function MotoboyDashboard() {
 
       {fsOrder && (
         <NavScreen order={fsOrder} onClose={closeNav}
-          onStatusUpdate={() => { updateStatus(fsOrder.id); closeNav(); }}
+          onStatusUpdate={async () => {
+            const wasAssigned = fsOrder.status === 'assigned';
+            await updateStatus(fsOrder.id);
+            if (wasAssigned) {
+              // Não fecha o nav — troca destino da loja para o cliente
+              setFullscreenOrder(o => o ? { ...o, status: 'picked_up' } : o);
+            } else {
+              closeNav();
+            }
+          }}
           statusLabel={nextStatus[fsOrder.status] ? nextStatusLabel[fsOrder.status] : null} />
       )}
 
