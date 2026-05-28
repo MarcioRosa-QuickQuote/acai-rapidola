@@ -49,7 +49,8 @@ router.get('/stats', adminOnly, async (req, res) => {
 
   const now = new Date();
   const premiumActive = stores.filter(s =>
-    s.plan === 'premium' && s.subscription_active === 1
+    s.plan === 'premium' && s.subscription_active === 1 &&
+    (!s.premium_until || new Date(s.premium_until) > now)
   ).length;
 
   const today = new Date(); today.setHours(0,0,0,0);
@@ -76,7 +77,7 @@ router.get('/stats', adminOnly, async (req, res) => {
 router.get('/stores', adminOnly, async (req, res) => {
   const { data: stores } = await supabase
     .from('stores')
-    .select('id, name, address, plan, subscription_active, created_at, owner_id, logo');
+    .select('id, name, address, plan, subscription_active, premium_until, created_at, owner_id, logo');
 
   if (!stores) return res.json([]);
 
@@ -104,9 +105,13 @@ router.get('/stores', adminOnly, async (req, res) => {
     if (o.status !== 'cancelled') countMap[o.store_id].revenue += (o.total || 0);
   }
 
+  const now = new Date();
   const result = stores.map(s => {
-    const isPremium = s.plan === 'premium' && s.subscription_active === 1;
-    const daysLeft = null; // premium_until não existe ainda no banco
+    const isPremium = s.plan === 'premium' && s.subscription_active === 1 &&
+      (!s.premium_until || new Date(s.premium_until) > now);
+    const daysLeft = s.premium_until
+      ? Math.max(0, Math.ceil((new Date(s.premium_until) - now) / 86400000))
+      : null;
     return {
       ...s,
       owner: owners[s.owner_id] || null,
@@ -147,44 +152,57 @@ router.get('/stores/:id', adminOnly, async (req, res) => {
     .order('created_at', { ascending: false })
     .limit(20);
 
-  const isPremium = store.plan === 'premium' && store.subscription_active === 1;
+  const now = new Date();
+  const isPremium = store.plan === 'premium' && store.subscription_active === 1 &&
+    (!store.premium_until || new Date(store.premium_until) > now);
+  const daysLeft = store.premium_until
+    ? Math.max(0, Math.ceil((new Date(store.premium_until) - now) / 86400000))
+    : null;
 
   res.json({
-    ...store, owner, isPremium, daysLeft: null,
+    ...store, owner, isPremium, daysLeft,
     logs: (logs || []).map(l => ({ ...l, admin_name: l.users?.name })),
     recentOrders: orders || []
   });
 });
 
-// ── Alterar plano ─────────────────────────────────────────────────────────────
-// Nota: premium_until e subscription_logs ainda não existem no banco.
-// Por ora: grant = plan='premium', revoke = plan='basico'.
-// Quando o acesso ao Supabase for recuperado rodar admin_migration.sql
-// e as features de expiração por dias e histórico serão ativadas.
+// ── Alterar plano / dar dias grátis ──────────────────────────────────────────
 router.patch('/stores/:id/plan', adminOnly, async (req, res) => {
-  const { action, note } = req.body;
+  const { action, days, note } = req.body;
+  // action: 'grant_premium' | 'revoke_premium' | 'reset_expiry'
   if (!action) return res.status(400).json({ error: 'action é obrigatório' });
 
-  const { data: store } = await supabase.from('stores').select('id').eq('id', req.params.id).single();
+  const { data: store } = await supabase.from('stores').select('*').eq('id', req.params.id).single();
   if (!store) return res.status(404).json({ error: 'Loja não encontrada' });
 
+  const now = new Date();
   let update = {};
-  if (action === 'grant_premium' || action === 'set_permanent_premium') {
-    update = { plan: 'premium', subscription_active: 1 };
+
+  if (action === 'grant_premium') {
+    const d = parseInt(days) || 30;
+    // Se já tem premium_until no futuro, extend; senão, começa de agora
+    const base = store.premium_until && new Date(store.premium_until) > now
+      ? new Date(store.premium_until)
+      : now;
+    const newUntil = new Date(base.getTime() + d * 86400000);
+    update = { plan: 'premium', subscription_active: 1, premium_until: newUntil.toISOString() };
   } else if (action === 'revoke_premium') {
-    update = { plan: 'basico' };
+    update = { plan: 'basico', premium_until: null };
+  } else if (action === 'set_permanent_premium') {
+    update = { plan: 'premium', subscription_active: 1, premium_until: null };
   } else {
     return res.status(400).json({ error: 'action inválido' });
   }
 
-  const { error } = await supabase.from('stores').update(update).eq('id', req.params.id);
-  if (error) return res.status(500).json({ error: error.message });
+  await supabase.from('stores').update(update).eq('id', req.params.id);
 
-  // Tenta gravar log (silencioso se tabela ainda não existir)
+  // Log
   await supabase.from('subscription_logs').insert({
     id: uuid(), store_id: req.params.id, admin_id: req.user.id,
-    action, note: note || '', created_at: new Date().toISOString()
-  }).catch(() => {});
+    action, days: parseInt(days) || null,
+    note: note || '',
+    created_at: now.toISOString()
+  });
 
   const { data: updated } = await supabase.from('stores').select('*').eq('id', req.params.id).single();
   res.json({ ok: true, store: updated });
@@ -205,21 +223,18 @@ router.patch('/stores/:id/active', adminOnly, async (req, res) => {
     action: active ? 'activate' : 'deactivate',
     note: req.body.note || '',
     created_at: new Date().toISOString()
-  }).catch(() => {}); // silencioso se tabela ainda não existir
+  });
 
   res.json({ ok: true });
 });
 
 // ── Logs de assinatura (globais) ──────────────────────────────────────────────
 router.get('/logs', adminOnly, async (req, res) => {
-  // Retorna vazio silenciosamente se a tabela ainda não existir
-  const { data: logs, error } = await supabase
+  const { data: logs } = await supabase
     .from('subscription_logs')
     .select('*, stores(name), users!subscription_logs_admin_id_fkey(name)')
     .order('created_at', { ascending: false })
     .limit(100);
-
-  if (error) return res.json([]); // tabela ainda não existe
 
   res.json((logs || []).map(l => ({
     ...l,
