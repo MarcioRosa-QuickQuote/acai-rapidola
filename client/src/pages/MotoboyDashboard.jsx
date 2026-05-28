@@ -821,7 +821,7 @@ export default function MotoboyDashboard() {
       body: JSON.stringify({ status: next })
     });
 
-    loadData();
+    await loadData();
   }
 
   async function optimizeRoute() {

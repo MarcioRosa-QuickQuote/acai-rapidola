@@ -67,8 +67,18 @@ const statusColors = {
 const actionMap = {
   confirmed: { label: 'Preparar', next: 'preparing' },
   preparing: { label: 'Pronto! ✅', next: 'ready' },
-  assigned:  { label: 'Confirmar Saída 🛵', next: 'picked_up' }
+  // 'ready' só mostra o botão quando o motoboy já está atribuído (motoboy_id set)
+  ready:     { label: 'Saiu da Loja 🛵', next: 'picked_up' },
+  assigned:  { label: 'Saiu da Loja 🛵', next: 'picked_up' }
 };
+
+// Retorna a ação disponível para o pedido, respeitando a regra de 'ready'
+function getAction(order) {
+  const a = actionMap[order.status];
+  if (!a) return null;
+  if (order.status === 'ready' && !order.motoboy_id) return null;
+  return a;
+}
 
 export default function StoreDashboard() {
   const { user, store: storeData, apiFetch, logout, setStore } = useAuth();
@@ -758,7 +768,7 @@ export default function StoreDashboard() {
         ) : (
           <div style={isDesktop ? { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 } : {}}>
           {displayOrders.map(order => {
-            const hasAction = order.payment_status === 'paid' && actionMap[order.status];
+            const hasAction = order.payment_status === 'paid' && getAction(order);
             const showMap = showMapForOrder === order.id;
             return (
               <div key={order.id} className="card" style={{ cursor: 'pointer' }}
@@ -773,8 +783,8 @@ export default function StoreDashboard() {
                   </div>
                   {hasAction ? (
                     <button className="btn btn-sm btn-primary"
-                      onClick={(e) => { e.stopPropagation(); updateStatus(order.id, actionMap[order.status].next); }}>
-                      {actionMap[order.status].label}
+                      onClick={(e) => { e.stopPropagation(); updateStatus(order.id, getAction(order).next); }}>
+                      {getAction(order).label}
                     </button>
                   ) : (
                     <span className={`badge ${statusColors[order.status] || 'badge-warning'}`} style={{ fontSize: 11 }}>
@@ -1494,7 +1504,7 @@ export default function StoreDashboard() {
              .filter(g => g.orders.length > 0);
 
             const renderCard = (o) => {
-              const action = actionMap[o.status];
+              const action = getAction(o);
               const sc = statusColors[o.status] || { bg: '#f5f5f5', color: '#666', border: '#e0e0e0' };
               const allItems = o.items || o.order_items || [];
               const itemsSummary = allItems.slice(0, 2).map(it => `${it.quantity}x ${it.product_name || it.products?.name || 'Item'}`).join(' · ') + (allItems.length > 2 ? ` +${allItems.length - 2}` : '');
@@ -1970,7 +1980,7 @@ export default function StoreDashboard() {
                       {/* Grid de cards — responsivo por largura da tela */}
                       <div style={{ display: 'grid', gridTemplateColumns: `repeat(${window.innerWidth >= 2560 ? 5 : window.innerWidth >= 1920 ? 4 : 3}, 1fr)`, gap: 14 }}>
                         {group.orders.map(o => {
-                          const action = actionMap[o.status];
+                          const action = getAction(o);
                           return (
                             <div key={o.id} style={{ background: tvCard, borderRadius: 14, padding: '18px 20px', border: `1px solid ${group.border}` }}>
                               {/* Linha topo: nome + badge status */}

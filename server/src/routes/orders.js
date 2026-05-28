@@ -371,41 +371,49 @@ router.patch('/:id/status', authMiddleware, async (req, res) => {
     const motoboyAmount = parseFloat((order.delivery_fee || order.total * 0.2).toFixed(2));
     const storeAmount = parseFloat((order.total - motoboyAmount).toFixed(2));
 
-    // Motoboy: registra e tenta transferir
+    // Motoboy: registra e tenta transferir (nunca deixa a entrega falhar por erro de PIX)
     if (order.motoboy_id) {
       await supabase.from('motoboy_earnings').insert({
         id: uuid(), motoboy_id: order.motoboy_id, order_id: req.params.id,
         amount: motoboyAmount, status: 'pending'
       }).catch(() => {});
 
-      const { data: motoboy } = await supabase.from('users').select('pix_key, name').eq('id', order.motoboy_id).single();
-      if (motoboy?.pix_key) {
-        const ok = await sendPixTransfer(motoboyAmount, motoboy.pix_key, `Entrega #${req.params.id.slice(0, 8)}`);
-        if (ok) {
-          await supabase.from('motoboy_earnings').update({ status: 'paid', paid_at: new Date().toISOString() })
-            .eq('order_id', req.params.id).eq('motoboy_id', order.motoboy_id);
-          await notifyUser(order.motoboy_id, 'Pagamento enviado!', `R$ ${motoboyAmount.toFixed(2)} enviado para sua chave Pix.`, 'payment');
+      try {
+        const { data: motoboy } = await supabase.from('users').select('pix_key, name').eq('id', order.motoboy_id).single();
+        if (motoboy?.pix_key) {
+          const ok = await sendPixTransfer(motoboyAmount, motoboy.pix_key, `Entrega #${req.params.id.slice(0, 8)}`);
+          if (ok) {
+            await supabase.from('motoboy_earnings').update({ status: 'paid', paid_at: new Date().toISOString() })
+              .eq('order_id', req.params.id).eq('motoboy_id', order.motoboy_id);
+            await notifyUser(order.motoboy_id, 'Pagamento enviado!', `R$ ${motoboyAmount.toFixed(2)} enviado para sua chave Pix.`, 'payment');
+          }
         }
+      } catch (pixErr) {
+        console.error('[Orders] PIX motoboy error:', pixErr?.message);
       }
     }
 
-    // Loja: registra e tenta transferir
+    // Loja: registra e tenta transferir (nunca deixa a entrega falhar por erro de PIX)
     await supabase.from('store_earnings').insert({
       id: uuid(), store_id: order.store_id, order_id: req.params.id,
       amount: storeAmount, status: 'pending'
     }).catch(() => {});
 
-    const { data: store } = await supabase.from('stores').select('owner_id, pix_key').eq('id', order.store_id).single();
-    if (store?.pix_key) {
-      const ok = await sendPixTransfer(storeAmount, store.pix_key, `Pedido #${req.params.id.slice(0, 8)}`);
-      if (ok) {
-        await supabase.from('store_earnings').update({ status: 'paid', paid_at: new Date().toISOString() })
-          .eq('order_id', req.params.id).eq('store_id', order.store_id);
-        if (store.owner_id) await notifyUser(store.owner_id, 'Pagamento enviado!', `R$ ${storeAmount.toFixed(2)} enviado para sua chave Pix.`, 'payment');
+    try {
+      const { data: store } = await supabase.from('stores').select('owner_id, pix_key').eq('id', order.store_id).single();
+      if (store?.pix_key) {
+        const ok = await sendPixTransfer(storeAmount, store.pix_key, `Pedido #${req.params.id.slice(0, 8)}`);
+        if (ok) {
+          await supabase.from('store_earnings').update({ status: 'paid', paid_at: new Date().toISOString() })
+            .eq('order_id', req.params.id).eq('store_id', order.store_id);
+          if (store.owner_id) await notifyUser(store.owner_id, 'Pagamento enviado!', `R$ ${storeAmount.toFixed(2)} enviado para sua chave Pix.`, 'payment');
+        }
       }
-    }
-    if (store?.owner_id && !store?.pix_key) {
-      await notifyUser(store.owner_id, 'Pedido Entregue!', `R$ ${storeAmount.toFixed(2)} a receber — cadastre sua chave Pix para receber automaticamente.`, 'delivery');
+      if (store?.owner_id && !store?.pix_key) {
+        await notifyUser(store.owner_id, 'Pedido Entregue!', `R$ ${storeAmount.toFixed(2)} a receber — cadastre sua chave Pix para receber automaticamente.`, 'delivery');
+      }
+    } catch (pixErr) {
+      console.error('[Orders] PIX loja error:', pixErr?.message);
     }
   }
 
