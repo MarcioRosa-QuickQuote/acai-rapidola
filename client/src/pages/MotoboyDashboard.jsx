@@ -48,13 +48,12 @@ function fmtAddr(full) {
   return abbrevStreet(parts.slice(0, 2).join(', '));
 }
 
+// Motoboy só confirma a entrega — a saída da loja é confirmada pela loja
 const nextStatus = {
-  assigned:  'picked_up',  // motoboy confirma que saiu da loja com o pedido
   picked_up: 'delivered'
 };
 
 const nextStatusLabel = {
-  assigned:  'Saí da loja ✓',
   picked_up: 'Entregue ✓'
 };
 
@@ -706,6 +705,17 @@ export default function MotoboyDashboard() {
   const [fullscreenOrder, setFullscreenOrder] = useState(null);
   const restoredNav = useRef(false);
 
+  // Quando a loja confirma a saída (assigned → picked_up), myOrders atualiza via
+  // polling/socket e este efeito propaga o novo status para o fullscreenOrder,
+  // fazendo o nav trocar automaticamente o destino (loja → cliente)
+  useEffect(() => {
+    if (!fullscreenOrder) return;
+    const updated = myOrders.find(o => o.id === fullscreenOrder.id);
+    if (updated && updated.status !== fullscreenOrder.status) {
+      setFullscreenOrder(updated);
+    }
+  }, [myOrders]);
+
   const openNav = (order) => {
     localStorage.setItem('mb_nav_order', order.id);
     setFullscreenOrder(order);
@@ -1335,14 +1345,9 @@ export default function MotoboyDashboard() {
       {fsOrder && (
         <NavScreen order={fsOrder} onClose={closeNav}
           onStatusUpdate={async () => {
-            const wasAssigned = fsOrder.status === 'assigned';
+            // Só chega aqui para picked_up → delivered (motoboy confirma entrega)
             await updateStatus(fsOrder.id);
-            if (wasAssigned) {
-              // Não fecha o nav — troca destino da loja para o cliente
-              setFullscreenOrder(o => o ? { ...o, status: 'picked_up' } : o);
-            } else {
-              closeNav();
-            }
+            closeNav();
           }}
           statusLabel={nextStatus[fsOrder.status] ? nextStatusLabel[fsOrder.status] : null} />
       )}
