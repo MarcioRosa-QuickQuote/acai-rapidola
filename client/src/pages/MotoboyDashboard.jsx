@@ -776,7 +776,9 @@ export default function MotoboyDashboard() {
     ]);
     if (avail.data) setAvailableOrders(avail.data);
     if (mine.data) {
-      const filtered = mine.data.filter(o => o.motoboy_id === user?.id);
+      // Filtra por motoboy_id != null: o servidor retorna (meus pedidos) OU (disponíveis com null).
+      // Não usar user?.id aqui — closure pode capturar user=null na primeira renderização.
+      const filtered = mine.data.filter(o => o.motoboy_id != null);
       setMyOrders(filtered);
 
       // Restaurar rota ativa após refresh
@@ -803,7 +805,7 @@ export default function MotoboyDashboard() {
       apiFetch('/orders')
     ]);
     if (mine.data) {
-      setMyOrders(mine.data.filter(o => o.motoboy_id === user?.id));
+      setMyOrders(mine.data.filter(o => o.motoboy_id != null));
       const accepted = mine.data.find(o => o.id === orderId);
       if (accepted) openNav(accepted);
     }
@@ -876,11 +878,10 @@ export default function MotoboyDashboard() {
     { key: 'perfil', label: 'Perfil', icon: '👤' },
   ];
 
-  // Mostra como ativo qualquer pedido já atribuído a este motoboy (não entregue)
-  // Inclui confirmed/preparing/ready para quando a loja ainda não finalizou o preparo
-  const activeDeliveries = myOrders.filter(o =>
-    o.motoboy_id === user?.id && o.status !== 'delivered'
-  );
+  // myOrders só contém pedidos com motoboy_id preenchido (os do motoboy logado).
+  // Mostra tudo que ainda não foi entregue — inclui confirmed/preparing/ready
+  // para quando a loja ainda não finalizou o preparo.
+  const activeDeliveries = myOrders.filter(o => o.status !== 'delivered');
   // Remove da lista "disponível" pedidos que já estão nos ativos (evita duplicata)
   const activeIds = new Set(activeDeliveries.map(o => o.id));
   const filteredAvailable = availableOrders.filter(o => !activeIds.has(o.id));
