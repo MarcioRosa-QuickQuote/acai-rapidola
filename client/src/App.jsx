@@ -16,6 +16,7 @@ import CustomerPagamentos from './pages/CustomerPagamentos';
 import CustomerNotificacoes from './pages/CustomerNotificacoes';
 import StoreDashboard from './pages/StoreDashboard';
 import MotoboyDashboard from './pages/MotoboyDashboard';
+import AdminPanel from './pages/AdminPanel';
 
 function ProtectedRoute({ role, children }) {
   const { user, loading } = useAuth();
@@ -42,8 +43,8 @@ export default function App() {
     <>
       <ScrollToTop />
       <Routes>
-      <Route path="/login" element={user ? <Navigate to={`/${user.role}`} /> : <Login />} />
-      <Route path="/register" element={user ? <Navigate to={`/${user.role}`} /> : <Register />} />
+      <Route path="/login" element={user ? <Navigate to={`/${user.role === 'customer' ? 'customer' : user.role}`} /> : <Login />} />
+      <Route path="/register" element={user ? <Navigate to={`/${user.role === 'customer' ? 'customer' : user.role}`} /> : <Register />} />
       <Route path="/privacidade" element={<Legal />} />
       <Route path="/termos" element={<Legal />} />
 
@@ -89,8 +90,12 @@ export default function App() {
         <ProtectedRoute role="motoboy"><MotoboyDashboard /></ProtectedRoute>
       } />
 
+      <Route path="/admin/*" element={
+        <ProtectedRoute role="admin"><AdminPanel /></ProtectedRoute>
+      } />
+
       <Route path="*" element={
-        user ? <Navigate to={`/${user.role === 'customer' ? 'customer' : user.role}`} /> : <Navigate to="/login" />
+        user ? <Navigate to={`/${user.role === 'customer' ? 'customer' : user.role === 'admin' ? 'admin' : user.role}`} /> : <Navigate to="/login" />
       } />
     </Routes>
     </>
