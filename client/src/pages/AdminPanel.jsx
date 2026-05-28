@@ -116,8 +116,7 @@ function GrantModal({ store, onClose, onDone, api }) {
         <div style={{ marginBottom: 16 }}>
           <div style={{ fontSize: 12, fontWeight: 600, color: '#555', marginBottom: 6 }}>Ação</div>
           {[
-            ['grant_premium', '🎁 Conceder Premium por X dias'],
-            ['set_permanent_premium', '♾️ Premium permanente (sem expiração)'],
+            ['grant_premium', '⭐ Ativar Premium'],
             ['revoke_premium', '🔴 Remover Premium → Básico'],
           ].map(([val, lbl]) => (
             <label key={val} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8, cursor: 'pointer' }}>
@@ -128,29 +127,8 @@ function GrantModal({ store, onClose, onDone, api }) {
         </div>
 
         {action === 'grant_premium' && (
-          <div style={{ marginBottom: 16 }}>
-            <div style={{ fontSize: 12, fontWeight: 600, color: '#555', marginBottom: 6 }}>Dias de Premium</div>
-            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 8 }}>
-              {['7','14','30','60','90','365'].map(d => (
-                <button key={d} onClick={() => setDays(d)} style={{
-                  padding: '4px 12px', borderRadius: 8, border: '1.5px solid',
-                  borderColor: days === d ? '#6A1B9A' : '#ddd',
-                  background: days === d ? '#F3E5F5' : 'white',
-                  color: days === d ? '#6A1B9A' : '#555',
-                  fontWeight: days === d ? 700 : 400, cursor: 'pointer', fontSize: 13
-                }}>{d}d</button>
-              ))}
-            </div>
-            <input
-              type="number" min="1" value={days} onChange={e => setDays(e.target.value)}
-              style={{ width: '100%', padding: '8px 12px', borderRadius: 8, border: '1.5px solid #ddd', fontSize: 14 }}
-              placeholder="Ou digitar número de dias"
-            />
-            {store.premium_until && new Date(store.premium_until) > new Date() && (
-              <div style={{ fontSize: 11, color: '#6A1B9A', marginTop: 4 }}>
-                ℹ️ Já tem premium até {fmtDate(store.premium_until)} — os dias serão somados
-              </div>
-            )}
+          <div style={{ fontSize: 12, color: '#888', marginBottom: 16, padding: '8px 12px', background: '#f9f6ff', borderRadius: 8 }}>
+            ℹ️ Premium ativado como permanente. Controle por dias disponível após atualização do banco.
           </div>
         )}
 
@@ -237,9 +215,6 @@ function StoreDrawer({ storeId, api, onClose, onRefresh }) {
                 <div style={{ fontSize: 12, color: '#888', marginTop: 2 }}>{data.address}</div>
                 <div style={{ marginTop: 6, display: 'flex', gap: 6, flexWrap: 'wrap' }}>
                   <PlanBadge store={data} />
-                  {data.daysLeft !== null && data.plan === 'premium' && (
-                    <Badge color="#1565C0" bg="#E3F2FD">{fmtDays(data.daysLeft)}</Badge>
-                  )}
                 </div>
               </div>
               <button onClick={onClose} style={{ background: 'none', border: 'none', fontSize: 22, cursor: 'pointer', color: '#888', padding: 4 }}>✕</button>
@@ -280,7 +255,7 @@ function StoreDrawer({ storeId, api, onClose, onRefresh }) {
                 {[
                   ['Plano', data.plan === 'premium' ? 'Premium' : 'Básico'],
                   ['Status', data.subscription_active === 1 ? 'Ativa' : 'Inativa'],
-                  ['Premium até', data.premium_until ? fmtDate(data.premium_until) : (data.plan === 'premium' ? 'Permanente' : '—')],
+                  ['Premium até', data.plan === 'premium' ? 'Permanente' : '—'],
                   ['Loja criada em', fmtDate(data.created_at)],
                 ].map(([k, v]) => (
                   <div key={k} style={{ background: '#fafafa', borderRadius: 8, padding: '8px 10px' }}>
@@ -486,10 +461,7 @@ export default function AdminPanel() {
                       <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
                         <div style={{ fontWeight: 700, fontSize: 15 }}>{s.name}</div>
                         <PlanBadge store={s} />
-                        {s.daysLeft !== null && s.plan === 'premium' && s.subscription_active === 1 && (
-                          <span style={{ fontSize: 11, color: '#888' }}>{fmtDays(s.daysLeft)}</span>
-                        )}
-                      </div>
+                          </div>
                       <div style={{ fontSize: 12, color: '#888', marginTop: 2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                         {s.owner?.name || '—'} · {s.owner?.phone || '—'}
                       </div>
