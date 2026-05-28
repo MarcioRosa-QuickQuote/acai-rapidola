@@ -133,7 +133,10 @@ export default function StoreDashboard() {
   const [tvLocked, setTvLocked] = useState(false);
   const [tvTime, setTvTime] = useState('');
   const [tvLight, setTvLight] = useState(false);
+  const [tvLayout, setTvLayout] = useState('kanban'); // 'kanban' | 'fila' | 'linha'
+  const [tvShowPrices, setTvShowPrices] = useState(false);
   const tvScrollRef = useRef(null);
+  const storeIdRef = useRef(null); // ref para evitar stale closure no socket listener
   const [motoboyAlert, setMotoboyAlert] = useState(null); // { name, orderId, type, distanceMeters }
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const addrSearchRef = useRef(null);
@@ -182,6 +185,8 @@ export default function StoreDashboard() {
       });
       setMapCenter([storeData.lat, storeData.lng]);
     }
+    // Mantém ref sempre atualizada para o socket listener não ter stale closure
+    storeIdRef.current = storeData?.id ?? null;
   }, [storeData]);
 
   useEffect(() => {
@@ -223,8 +228,20 @@ export default function StoreDashboard() {
   }, [view, perfilTab, storeData]);
 
   useEffect(() => {
-    if (storeData) loadMessages();
+    if (storeData) {
+      storeIdRef.current = storeData.id;
+      loadMessages();
+    }
   }, [storeData]);
+
+  // Polling de mensagens a cada 30s — garante que novas mensagens aparecem
+  // mesmo se o socket falhar ou a notificação for perdida
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (storeIdRef.current) loadMessages();
+    }, 30000);
+    return () => clearInterval(interval);
+  }, []);
 
   useEffect(() => {
     const low = products.filter(p => p.active && p.stock_quantity != null && p.min_stock_alert != null && p.stock_quantity <= p.min_stock_alert);
@@ -238,8 +255,11 @@ export default function StoreDashboard() {
   }
 
   async function loadMessages() {
-    if (!storeData) return;
-    const data = await apiFetch(`/messages/${storeData.id}`);
+    // Usa ref para evitar stale closure: mesmo a versão capturada pelo socket
+    // listener lê o valor atual do storeId (refs são mutáveis e persistem entre renders)
+    const sid = storeIdRef.current ?? storeData?.id;
+    if (!sid) return;
+    const data = await apiFetch(`/messages/${sid}`);
     if (data.data) {
       setStoreMessages(data.data);
       setUnreadMessages(data.data.filter(m => !m.read).length);
@@ -546,7 +566,7 @@ export default function StoreDashboard() {
     };
     const iv = setInterval(tick, 30); // ~33px/s
     return () => { clearInterval(iv); timers.forEach(clearTimeout); };
-  }, [showTV]);
+  }, [showTV, tvLayout]);
 
   // WakeLock: impede a tela de dormir no modo TV
   useEffect(() => {
@@ -1893,6 +1913,8 @@ export default function StoreDashboard() {
         const cntPronto = tvActive.filter(o => o.status === 'ready').length;
         const cntPrep = tvActive.filter(o => ['confirmed', 'preparing'].includes(o.status)).length;
         const cntCaminho = tvActive.filter(o => ['assigned', 'picked_up', 'in_transit', 'arriving'].includes(o.status)).length;
+
+        // Groups for kanban view
         const tvGroups = [
           { label: 'PREPARAR',        emoji: '🔥', color: '#E65100', bg: 'rgba(230,81,0,0.1)',    border: 'rgba(230,81,0,0.28)',    orders: tvActive.filter(o => o.status === 'confirmed') },
           { label: 'PREPARANDO',      emoji: '⏳', color: '#1e88e5', bg: 'rgba(30,136,229,0.08)', border: 'rgba(30,136,229,0.25)', orders: tvActive.filter(o => o.status === 'preparing') },
@@ -1903,11 +1925,248 @@ export default function StoreDashboard() {
 
         const btnBase = { width: 44, height: 44, borderRadius: 10, fontSize: 20, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', border: tvLight ? '1px solid #ddd' : '1px solid rgba(255,255,255,0.12)' };
 
+        // QR code discreto no canto
+        const qrBg = tvLight ? 'f0f2f5' : '0d0d1a';
+        const qrFg = tvLight ? '1a1a1a' : 'ffffff';
+        const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=${encodeURIComponent(window.location.origin)}&bgcolor=${qrBg}&color=${qrFg}&qzone=1`;
+        const QRCorner = (
+          <div style={{ position: 'absolute', bottom: 14, right: 18, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3, pointerEvents: 'none', opacity: 0.45 }}>
+            <img src={qrUrl} alt="QR App" style={{ width: 64, height: 64, borderRadius: 6 }} />
+            <div style={{ color: tvSub, fontSize: 9, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.4, textAlign: 'center', lineHeight: 1.4 }}>
+              🍇 Pé de Açaí<br/>Baixe nosso app
+            </div>
+          </div>
+        );
+
+        // ── View 1: KANBAN ────────────────────────────────────────────────────
+        const renderKanban = () => (
+          <div ref={tvScrollRef} style={{ flex: 1, overflow: 'auto', padding: '20px 28px', position: 'relative' }}>
+            {tvActive.length === 0 ? (
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: tvSub, fontSize: 22, fontWeight: 600 }}>
+                Nenhum pedido ativo no momento
+              </div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+                {tvGroups.map(group => (
+                  <div key={group.label}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12, padding: '6px 14px', background: group.bg, borderRadius: 8, border: `1px solid ${group.border}`, width: 'fit-content' }}>
+                      <span style={{ fontSize: 15 }}>{group.emoji}</span>
+                      <span style={{ color: group.color, fontSize: 13, fontWeight: 800, letterSpacing: 1, textTransform: 'uppercase' }}>{group.label}</span>
+                      <span style={{ color: group.color, fontSize: 13, fontWeight: 700, opacity: 0.75 }}>· {group.orders.length}</span>
+                    </div>
+                    <div style={{ display: 'grid', gridTemplateColumns: `repeat(${window.innerWidth >= 2560 ? 5 : window.innerWidth >= 1920 ? 4 : 3}, 1fr)`, gap: 14 }}>
+                      {group.orders.map(o => {
+                        const action = getAction(o);
+                        return (
+                          <div key={o.id} style={{ background: tvCard, borderRadius: 14, padding: '18px 20px', border: `1px solid ${group.border}` }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10 }}>
+                              <div style={{ color: tvText, fontWeight: 800, fontSize: 18, lineHeight: 1.3 }}>{o.customer_name}</div>
+                              <span style={{ color: group.color, fontSize: 12, fontWeight: 700, background: group.bg, padding: '3px 10px', borderRadius: 6, border: `1px solid ${group.border}`, whiteSpace: 'nowrap', marginLeft: 10, flexShrink: 0 }}>
+                                {group.emoji} {group.label}
+                              </span>
+                            </div>
+                            <div style={{ borderTop: `1px solid ${tvDivider}`, paddingTop: 10, marginBottom: 8 }}>
+                              <div style={{ color: tvSub, fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 6 }}>Detalhes do Pedido</div>
+                              {(o.items || o.order_items || []).map((it, i) => (
+                                <div key={i} style={{ color: tvText, fontSize: 15, marginBottom: 3, fontWeight: 500 }}>
+                                  {it.quantity}x {it.product_name || it.products?.name || 'Produto'}
+                                </div>
+                              ))}
+                            </div>
+                            {o.motoboy_name && (
+                              <div style={{ color: tvSub, fontSize: 14, marginBottom: 8 }}>
+                                🛵 <span style={{ color: tvText, fontWeight: 800, fontSize: 17 }}>{o.motoboy_name}</span>
+                              </div>
+                            )}
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 10, paddingTop: 10, borderTop: `1px solid ${tvDivider}` }}>
+                              <div>
+                                <div style={{ color: tvSub, fontSize: 12 }}>#{String(o.id).slice(-4)} · {new Date(o.created_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</div>
+                                {tvShowPrices && <div style={{ color: group.color, fontWeight: 800, fontSize: 18, marginTop: 2 }}>R$ {o.total.toFixed(2)}</div>}
+                              </div>
+                              {action && (
+                                <button onClick={() => updateStatus(o.id, action.next)}
+                                  style={{ background: group.color, color: 'white', border: 'none', borderRadius: 10, padding: '10px 16px', fontSize: 14, fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap' }}>
+                                  {action.label}
+                                </button>
+                              )}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+            {QRCorner}
+          </div>
+        );
+
+        // ── View 2: FILA (virado para o cliente) ─────────────────────────────
+        const filaPrep = tvActive.filter(o => ['confirmed', 'preparing', 'ready', 'assigned'].includes(o.status));
+        const filaCaminho = tvActive.filter(o => ['picked_up', 'in_transit', 'arriving'].includes(o.status));
+        const filaStatusLabel = { confirmed: 'Confirmado', preparing: 'Preparando...', ready: 'Pronto! ✅', assigned: 'Motoboy chegou 🛵' };
+        const filaStatusColor = { confirmed: '#E65100', preparing: '#1e88e5', ready: '#00a844', assigned: '#8e24aa' };
+
+        const renderFila = () => (
+          <div ref={tvScrollRef} style={{ flex: 1, overflow: 'auto', padding: '16px 28px', position: 'relative' }}>
+            {tvActive.length === 0 ? (
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', color: tvSub, gap: 12 }}>
+                <span style={{ fontSize: 56 }}>🍇</span>
+                <span style={{ fontSize: 24, fontWeight: 600 }}>Nenhum pedido ativo no momento</span>
+              </div>
+            ) : (
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24, alignItems: 'start' }}>
+                {/* Coluna esquerda — Em Preparo */}
+                <div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14, padding: '10px 18px', background: 'rgba(30,136,229,0.1)', borderRadius: 10, border: '1px solid rgba(30,136,229,0.3)' }}>
+                    <span style={{ fontSize: 22 }}>🍳</span>
+                    <span style={{ color: '#1e88e5', fontSize: 15, fontWeight: 900, letterSpacing: 1.5, textTransform: 'uppercase' }}>Em Preparo</span>
+                    <span style={{ color: '#1e88e5', fontSize: 22, fontWeight: 800, marginLeft: 'auto' }}>{filaPrep.length}</span>
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                    {filaPrep.length === 0 ? (
+                      <div style={{ color: tvSub, fontSize: 16, textAlign: 'center', padding: '40px 0', fontStyle: 'italic' }}>Nenhum pedido em preparo</div>
+                    ) : filaPrep.map(o => (
+                      <div key={o.id} style={{ background: tvCard, borderRadius: 14, padding: '16px 20px', border: `1px solid ${tvDivider}`, borderLeft: `5px solid ${filaStatusColor[o.status] || '#1e88e5'}` }}>
+                        <div style={{ color: tvText, fontWeight: 900, fontSize: 28, lineHeight: 1.2, marginBottom: 6 }}>{o.customer_name}</div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <div style={{ color: tvSub, fontSize: 14 }}>
+                            {(o.items || o.order_items || []).length} {(o.items || o.order_items || []).length === 1 ? 'item' : 'itens'} · #{String(o.id).slice(-4)}
+                          </div>
+                          <span style={{ color: filaStatusColor[o.status] || '#1e88e5', fontSize: 13, fontWeight: 800, background: `${filaStatusColor[o.status]}22`, padding: '4px 12px', borderRadius: 20, whiteSpace: 'nowrap' }}>
+                            {filaStatusLabel[o.status] || o.status}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Coluna direita — Saiu para Entrega */}
+                <div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14, padding: '10px 18px', background: 'rgba(0,105,92,0.1)', borderRadius: 10, border: '1px solid rgba(0,105,92,0.3)' }}>
+                    <span style={{ fontSize: 22 }}>🛵</span>
+                    <span style={{ color: '#00695C', fontSize: 15, fontWeight: 900, letterSpacing: 1.5, textTransform: 'uppercase' }}>Saiu para Entrega</span>
+                    <span style={{ color: '#00695C', fontSize: 22, fontWeight: 800, marginLeft: 'auto' }}>{filaCaminho.length}</span>
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                    {filaCaminho.length === 0 ? (
+                      <div style={{ color: tvSub, fontSize: 16, textAlign: 'center', padding: '40px 0', fontStyle: 'italic' }}>Nenhum pedido a caminho</div>
+                    ) : filaCaminho.map(o => (
+                      <div key={o.id} style={{ background: tvCard, borderRadius: 14, padding: '16px 20px', border: `1px solid ${tvDivider}`, borderLeft: '5px solid #00695C' }}>
+                        <div style={{ color: tvText, fontWeight: 900, fontSize: 28, lineHeight: 1.2, marginBottom: 6 }}>{o.customer_name}</div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <div style={{ color: tvSub, fontSize: 14 }}>
+                            {o.motoboy_name ? `🛵 ${o.motoboy_name}` : `#${String(o.id).slice(-4)}`}
+                          </div>
+                          <span style={{ color: '#00695C', fontSize: 13, fontWeight: 800, background: 'rgba(0,105,92,0.12)', padding: '4px 12px', borderRadius: 20 }}>
+                            A caminho 🚀
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+            {QRCorner}
+          </div>
+        );
+
+        // ── View 3: LINHA — lista compacta KDS ───────────────────────────────
+        const urgencyOrder = { arriving: 0, in_transit: 1, picked_up: 2, assigned: 3, ready: 4, preparing: 5, confirmed: 6 };
+        const linhaOrders = [...tvActive].sort((a, b) => (urgencyOrder[a.status] ?? 99) - (urgencyOrder[b.status] ?? 99));
+        const linhaStatusInfo = {
+          confirmed:  { label: 'Novo',        color: '#E65100', bg: 'rgba(230,81,0,0.12)' },
+          preparing:  { label: 'Preparando',  color: '#1e88e5', bg: 'rgba(30,136,229,0.12)' },
+          ready:      { label: 'Pronto ✅',   color: '#00a844', bg: 'rgba(0,168,68,0.12)' },
+          assigned:   { label: 'Motoboy 🛵',  color: '#8e24aa', bg: 'rgba(142,36,170,0.12)' },
+          picked_up:  { label: 'Saiu 🚀',     color: '#00695C', bg: 'rgba(0,105,92,0.12)' },
+          in_transit: { label: 'A caminho',   color: '#00695C', bg: 'rgba(0,105,92,0.12)' },
+          arriving:   { label: '⚡ Chegando!', color: '#f44336', bg: 'rgba(244,67,54,0.14)' },
+        };
+        const thS = { color: tvSub, fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.8, padding: '10px 14px', borderBottom: `2px solid ${tvDivider}`, whiteSpace: 'nowrap', textAlign: 'left' };
+        const tdS = { padding: '11px 14px', borderBottom: `1px solid ${tvDivider}`, verticalAlign: 'middle' };
+
+        const renderLinha = () => (
+          <div ref={tvScrollRef} style={{ flex: 1, overflow: 'auto', padding: '16px 24px', position: 'relative' }}>
+            {tvActive.length === 0 ? (
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: tvSub, fontSize: 22, fontWeight: 600 }}>
+                Nenhum pedido ativo no momento
+              </div>
+            ) : (
+              <table style={{ width: '100%', borderCollapse: 'collapse', background: tvCard, borderRadius: 14, overflow: 'hidden', border: `1px solid ${tvDivider}` }}>
+                <thead>
+                  <tr style={{ background: tvLight ? '#f8f8f8' : 'rgba(255,255,255,0.04)' }}>
+                    <th style={thS}>Hora</th>
+                    <th style={thS}>#</th>
+                    <th style={thS}>Cliente</th>
+                    <th style={thS}>Itens</th>
+                    <th style={{ ...thS, textAlign: 'center' }}>Status</th>
+                    <th style={thS}>Motoboy</th>
+                    {tvShowPrices && <th style={{ ...thS, textAlign: 'right' }}>Valor</th>}
+                    <th style={{ ...thS, textAlign: 'center', width: 160 }}>Ação</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {linhaOrders.map((o, idx) => {
+                    const action = getAction(o);
+                    const si = linhaStatusInfo[o.status] || { label: o.status, color: tvSub, bg: tvStatBg };
+                    return (
+                      <tr key={o.id} style={{ background: idx % 2 === 0 ? 'transparent' : tvLight ? 'rgba(0,0,0,0.02)' : 'rgba(255,255,255,0.02)' }}>
+                        <td style={{ ...tdS, color: tvSub, fontSize: 14, fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap' }}>
+                          {new Date(o.created_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                        </td>
+                        <td style={{ ...tdS, color: tvSub, fontSize: 13, fontFamily: 'monospace' }}>
+                          …{String(o.id).slice(-4)}
+                        </td>
+                        <td style={{ ...tdS, color: tvText, fontWeight: 800, fontSize: 18, whiteSpace: 'nowrap' }}>
+                          {o.customer_name}
+                        </td>
+                        <td style={{ ...tdS, color: tvText, fontSize: 14, maxWidth: 280 }}>
+                          {(o.items || o.order_items || []).map((it, i) => (
+                            <span key={i} style={{ display: 'block', lineHeight: 1.5 }}>
+                              {it.quantity}× {it.product_name || it.products?.name || 'Produto'}
+                            </span>
+                          ))}
+                        </td>
+                        <td style={{ ...tdS, textAlign: 'center' }}>
+                          <span style={{ color: si.color, fontWeight: 800, fontSize: 12, background: si.bg, padding: '4px 12px', borderRadius: 20, whiteSpace: 'nowrap' }}>
+                            {si.label}
+                          </span>
+                        </td>
+                        <td style={{ ...tdS, color: tvText, fontSize: 15, fontWeight: o.motoboy_name ? 700 : 400, whiteSpace: 'nowrap' }}>
+                          {o.motoboy_name || <span style={{ color: tvSub, fontStyle: 'italic', fontSize: 13 }}>—</span>}
+                        </td>
+                        {tvShowPrices && (
+                          <td style={{ ...tdS, textAlign: 'right', color: tvText, fontWeight: 800, fontSize: 16, fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap' }}>
+                            R$ {o.total.toFixed(2)}
+                          </td>
+                        )}
+                        <td style={{ ...tdS, textAlign: 'center' }}>
+                          {action ? (
+                            <button onClick={() => updateStatus(o.id, action.next)}
+                              style={{ background: si.color, color: 'white', border: 'none', borderRadius: 8, padding: '8px 14px', fontSize: 13, fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap' }}>
+                              {action.label}
+                            </button>
+                          ) : <span style={{ color: tvSub, fontSize: 12 }}>—</span>}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            )}
+            {QRCorner}
+          </div>
+        );
+
         return (
           <div style={{ position: 'fixed', inset: 0, background: tvBg, zIndex: 9999, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
 
             {/* Barra superior */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '12px 28px', borderBottom: `1px solid ${tvHdrBorder}`, flexShrink: 0, background: tvHdrBg }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '12px 28px', borderBottom: `1px solid ${tvHdrBorder}`, flexShrink: 0, background: tvHdrBg }}>
               {storeData?.logo && (
                 <img src={storeData.logo} alt="Logo" style={{ width: 42, height: 42, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} onError={e => { e.target.style.display = 'none'; }} />
               )}
@@ -1916,7 +2175,38 @@ export default function StoreDashboard() {
                 <div style={{ fontSize: 12, fontWeight: 600, marginTop: 2, color: open ? '#00a844' : '#e53935' }}>{open ? '● Loja Aberta' : '● Loja Fechada'}</div>
               </div>
               <div style={{ color: tvText, fontWeight: 800, fontSize: 38, fontVariantNumeric: 'tabular-nums', letterSpacing: 2 }}>{tvTime}</div>
-              <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexShrink: 0 }}>
+              <div style={{ display: 'flex', gap: 7, alignItems: 'center', flexShrink: 0 }}>
+
+                {/* Seletor de visualização */}
+                {[
+                  { id: 'kanban', icon: '⊞', title: 'Kanban — grupos por status' },
+                  { id: 'fila',   icon: '📋', title: 'Fila — virado para clientes' },
+                  { id: 'linha',  icon: '≡',  title: 'Lista compacta (KDS)' },
+                ].map(l => (
+                  <button key={l.id} onClick={() => setTvLayout(l.id)} title={l.title}
+                    style={{ ...btnBase, fontSize: l.id === 'linha' ? 26 : 19,
+                      background: tvLayout === l.id ? (tvLight ? '#e3f2fd' : 'rgba(30,136,229,0.18)') : tvLight ? '#f0f0f0' : 'rgba(255,255,255,0.07)',
+                      border: tvLayout === l.id ? '1px solid #1e88e5' : btnBase.border,
+                      color: tvLayout === l.id ? '#1e88e5' : tvLight ? '#555' : 'rgba(255,255,255,0.55)' }}>
+                    {l.icon}
+                  </button>
+                ))}
+
+                {/* Separador */}
+                <div style={{ width: 1, height: 28, background: tvHdrBorder, margin: '0 3px' }} />
+
+                {/* Toggle preço R$ */}
+                <button onClick={() => setTvShowPrices(v => !v)} title={tvShowPrices ? 'Ocultar preços' : 'Mostrar preços'}
+                  style={{ ...btnBase, fontSize: 13, fontWeight: 800,
+                    background: tvShowPrices ? 'rgba(0,168,68,0.15)' : tvLight ? '#f0f0f0' : 'rgba(255,255,255,0.07)',
+                    border: tvShowPrices ? '1px solid rgba(0,168,68,0.45)' : btnBase.border,
+                    color: tvShowPrices ? '#00a844' : tvLight ? '#777' : 'rgba(255,255,255,0.45)' }}>
+                  R$
+                </button>
+
+                {/* Separador */}
+                <div style={{ width: 1, height: 28, background: tvHdrBorder, margin: '0 3px' }} />
+
                 {/* Tema claro/escuro */}
                 <button onClick={() => setTvLight(v => !v)} title={tvLight ? 'Mudar para tema escuro' : 'Mudar para tema claro'}
                   style={{ ...btnBase, background: tvLight ? '#f0f0f0' : 'rgba(255,255,255,0.07)', color: tvLight ? '#e65100' : 'rgba(255,255,255,0.6)' }}>
@@ -1933,11 +2223,13 @@ export default function StoreDashboard() {
                     </svg>
                   )}
                 </button>
+
                 {/* Cadeado */}
                 <button onClick={() => setTvLocked(v => !v)} title={tvLocked ? 'Desbloquear — permite fechar' : 'Bloquear — impede fechar acidentalmente'}
                   style={{ ...btnBase, background: tvLocked ? 'rgba(255,180,0,0.15)' : tvLight ? '#f0f0f0' : 'rgba(255,255,255,0.07)', border: tvLocked ? '1px solid rgba(255,180,0,0.45)' : btnBase.border, color: tvLocked ? '#ffb400' : tvLight ? '#555' : 'rgba(255,255,255,0.5)' }}>
                   {tvLocked ? '🔒' : '🔓'}
                 </button>
+
                 {/* Fechar */}
                 <button onClick={() => { if (!tvLocked) setShowTV(false); }} title={tvLocked ? 'Desbloqueie o cadeado primeiro' : 'Fechar TV'}
                   style={{ ...btnBase, background: tvLight ? '#f0f0f0' : 'rgba(255,255,255,0.05)', color: tvLocked ? (tvLight ? '#ccc' : 'rgba(255,255,255,0.15)') : tvLight ? '#333' : 'rgba(255,255,255,0.65)', cursor: tvLocked ? 'not-allowed' : 'pointer', fontWeight: 700, fontSize: 22 }}>
@@ -1949,10 +2241,10 @@ export default function StoreDashboard() {
             {/* Barra de stats */}
             <div style={{ display: 'flex', gap: 10, padding: '10px 28px', borderBottom: `1px solid ${tvHdrBorder}`, flexShrink: 0, background: tvHdrBg }}>
               {[
-                { label: 'Ativos', value: tvActive.length, color: tvText, bg: tvStatBg, border: tvStatBorder },
-                { label: 'Prontos', value: cntPronto, color: '#00a844', bg: 'rgba(0,168,68,0.08)', border: 'rgba(0,168,68,0.25)' },
+                { label: 'Ativos',     value: tvActive.length, color: tvText, bg: tvStatBg, border: tvStatBorder },
+                { label: 'Prontos',    value: cntPronto, color: '#00a844', bg: 'rgba(0,168,68,0.08)', border: 'rgba(0,168,68,0.25)' },
                 { label: 'Preparando', value: cntPrep, color: '#1e88e5', bg: 'rgba(30,136,229,0.08)', border: 'rgba(30,136,229,0.22)' },
-                { label: 'A Caminho', value: cntCaminho, color: '#8e24aa', bg: 'rgba(142,36,170,0.08)', border: 'rgba(142,36,170,0.22)' },
+                { label: 'A Caminho',  value: cntCaminho, color: '#8e24aa', bg: 'rgba(142,36,170,0.08)', border: 'rgba(142,36,170,0.22)' },
               ].map(s => (
                 <div key={s.label} style={{ flex: 1, textAlign: 'center', padding: '8px 12px', background: s.bg, borderRadius: 8, border: `1px solid ${s.border}` }}>
                   <div style={{ color: tvSub, fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1 }}>{s.label}</div>
@@ -1961,72 +2253,10 @@ export default function StoreDashboard() {
               ))}
             </div>
 
-            {/* Cards de pedidos */}
-            <div ref={tvScrollRef} style={{ flex: 1, overflow: 'auto', padding: '20px 28px' }}>
-              {tvActive.length === 0 ? (
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: tvSub, fontSize: 22, fontWeight: 600 }}>
-                  Nenhum pedido ativo no momento
-                </div>
-              ) : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
-                  {tvGroups.map(group => (
-                    <div key={group.label}>
-                      {/* Cabeçalho do grupo */}
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12, padding: '6px 14px', background: group.bg, borderRadius: 8, border: `1px solid ${group.border}`, width: 'fit-content' }}>
-                        <span style={{ fontSize: 15 }}>{group.emoji}</span>
-                        <span style={{ color: group.color, fontSize: 13, fontWeight: 800, letterSpacing: 1, textTransform: 'uppercase' }}>{group.label}</span>
-                        <span style={{ color: group.color, fontSize: 13, fontWeight: 700, opacity: 0.75 }}>· {group.orders.length}</span>
-                      </div>
-                      {/* Grid de cards — responsivo por largura da tela */}
-                      <div style={{ display: 'grid', gridTemplateColumns: `repeat(${window.innerWidth >= 2560 ? 5 : window.innerWidth >= 1920 ? 4 : 3}, 1fr)`, gap: 14 }}>
-                        {group.orders.map(o => {
-                          const action = getAction(o);
-                          return (
-                            <div key={o.id} style={{ background: tvCard, borderRadius: 14, padding: '18px 20px', border: `1px solid ${group.border}` }}>
-                              {/* Linha topo: nome + badge status */}
-                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10 }}>
-                                <div style={{ color: tvText, fontWeight: 800, fontSize: 18, lineHeight: 1.3 }}>{o.customer_name}</div>
-                                <span style={{ color: group.color, fontSize: 12, fontWeight: 700, background: group.bg, padding: '3px 10px', borderRadius: 6, border: `1px solid ${group.border}`, whiteSpace: 'nowrap', marginLeft: 10, flexShrink: 0 }}>
-                                  {group.emoji} {group.label}
-                                </span>
-                              </div>
-                              {/* Divider + itens */}
-                              <div style={{ borderTop: `1px solid ${tvDivider}`, paddingTop: 10, marginBottom: 8 }}>
-                                <div style={{ color: tvSub, fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 6 }}>Detalhes do Pedido</div>
-                                {(o.items || o.order_items || []).map((it, i) => (
-                                  <div key={i} style={{ color: tvText, fontSize: 15, marginBottom: 3, fontWeight: 500 }}>
-                                    {it.quantity}x {it.product_name || it.products?.name || 'Produto'}
-                                  </div>
-                                ))}
-                              </div>
-                              {o.motoboy_name && (
-                                <div style={{ color: tvSub, fontSize: 14, marginBottom: 8 }}>
-                                  🛵 <span style={{ color: tvText, fontWeight: 800, fontSize: 17 }}>{o.motoboy_name}</span>
-                                </div>
-                              )}
-                              {/* Rodapé: id+hora + valor + botão ação */}
-                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 10, paddingTop: 10, borderTop: `1px solid ${tvDivider}` }}>
-                                <div>
-                                  <div style={{ color: tvSub, fontSize: 12 }}>#{String(o.id).slice(-4)} · {new Date(o.created_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</div>
-                                  <div style={{ color: group.color, fontWeight: 800, fontSize: 18, marginTop: 2 }}>R$ {o.total.toFixed(2)}</div>
-                                </div>
-                                {action && (
-                                  <button
-                                    onClick={() => updateStatus(o.id, action.next)}
-                                    style={{ background: group.color, color: 'white', border: 'none', borderRadius: 10, padding: '10px 16px', fontSize: 14, fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap' }}>
-                                    {action.label}
-                                  </button>
-                                )}
-                              </div>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
+            {/* Conteúdo da view selecionada */}
+            {tvLayout === 'kanban' && renderKanban()}
+            {tvLayout === 'fila'   && renderFila()}
+            {tvLayout === 'linha'  && renderLinha()}
           </div>
         );
       })()}

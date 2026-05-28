@@ -42,10 +42,13 @@ function OrderDetails({ orderId, apiFetch }) {
 function Conversation({ group, apiFetch, storeId, onBack, onReload }) {
   const [replyText, setReplyText] = useState('');
   const [replySending, setReplySending] = useState(false);
-  const [showOrderFor, setShowOrderFor] = useState(null);
+  const [showOrder, setShowOrder] = useState(false);
   const bottomRef = useRef(null);
 
   const sorted = [...group.messages].sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+
+  // Pega o order_id único da conversa (todas as msgs do cliente têm o mesmo pedido)
+  const orderId = sorted.find(m => m.order_id)?.order_id ?? null;
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -54,7 +57,7 @@ function Conversation({ group, apiFetch, storeId, onBack, onReload }) {
   async function sendReply() {
     if (!replyText.trim()) return;
     setReplySending(true);
-      const data = await apiFetch('/messages/reply', {
+    const data = await apiFetch('/messages/reply', {
       method: 'POST',
       body: JSON.stringify({ customer_id: group.customer_id, store_id: storeId, message: replyText.trim() })
     });
@@ -64,18 +67,45 @@ function Conversation({ group, apiFetch, storeId, onBack, onReload }) {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 160px)' }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
-        <div onClick={onBack} style={{
-          width: 36, height: 36, borderRadius: '50%',
-          background: '#F3E5F5', display: 'flex', alignItems: 'center', justifyContent: 'center',
-          cursor: 'pointer', fontSize: 18, fontWeight: 700, color: '#6A1B9A', flexShrink: 0
-        }}>‹</div>
-        <div>
-          <div style={{ fontWeight: 700, fontSize: 16 }}>{group.customer_name || 'Cliente'}</div>
-          <div style={{ fontSize: 12, color: '#888' }}>{sorted.length} mensagens</div>
+
+      {/* Cabeçalho fixo com nome + btn Ver Pedido */}
+      <div style={{ marginBottom: 10 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <div onClick={onBack} style={{
+            width: 36, height: 36, borderRadius: '50%',
+            background: '#F3E5F5', display: 'flex', alignItems: 'center', justifyContent: 'center',
+            cursor: 'pointer', fontSize: 18, fontWeight: 700, color: '#6A1B9A', flexShrink: 0
+          }}>‹</div>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontWeight: 700, fontSize: 16 }}>{group.customer_name || 'Cliente'}</div>
+            <div style={{ fontSize: 12, color: '#888' }}>{sorted.length} mensagens</div>
+          </div>
+          {orderId && (
+            <button
+              onClick={() => setShowOrder(v => !v)}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 5,
+                background: showOrder ? '#6A1B9A' : '#F3E5F5',
+                color: showOrder ? 'white' : '#6A1B9A',
+                border: '1px solid #D1A8F0',
+                borderRadius: 20, padding: '6px 12px',
+                fontSize: 13, fontWeight: 700, cursor: 'pointer',
+                flexShrink: 0, transition: 'all 0.15s'
+              }}>
+              📋 {showOrder ? 'Fechar pedido' : 'Ver pedido'}
+            </button>
+          )}
         </div>
+
+        {/* Painel do pedido — expande abaixo do cabeçalho */}
+        {showOrder && orderId && (
+          <div style={{ marginTop: 8 }}>
+            <OrderDetails orderId={orderId} apiFetch={apiFetch} />
+          </div>
+        )}
       </div>
 
+      {/* Mensagens — sem botão "Ver pedido" em cada uma */}
       <div style={{ flex: 1, overflowY: 'auto', padding: '0 4px' }}>
         {sorted.map(msg => {
           const isStore = msg.from_store;
@@ -96,15 +126,6 @@ function Conversation({ group, apiFetch, storeId, onBack, onReload }) {
                   {new Date(msg.created_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
                 </div>
               </div>
-              {!isStore && msg.order_id && (
-                <div style={{ marginTop: 4, marginLeft: 4 }}>
-                  <span onClick={() => setShowOrderFor(showOrderFor === msg.id ? null : msg.id)}
-                    style={{ fontSize: 12, color: '#6A1B9A', fontWeight: 600, cursor: 'pointer', textDecoration: 'underline' }}>
-                    📋 {showOrderFor === msg.id ? 'Esconder pedido' : 'Ver pedido'}
-                  </span>
-                  {showOrderFor === msg.id && <OrderDetails orderId={msg.order_id} apiFetch={apiFetch} />}
-                </div>
-              )}
             </div>
           );
         })}
