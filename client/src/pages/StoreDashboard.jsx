@@ -156,7 +156,7 @@ export default function StoreDashboard() {
       joinStore(storeData.id);
       setOpen(!!storeData.open);
     }
-    const pollTimer = setInterval(loadOrders, 15000);
+    const pollTimer = setInterval(loadOrders, 6000); // 6s: TV mode precisa de dados frescos
     return () => clearInterval(pollTimer);
   }, [storeData]);
 
@@ -1977,7 +1977,7 @@ export default function StoreDashboard() {
                               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10 }}>
                                 <div style={{ color: tvText, fontWeight: 800, fontSize: 18, lineHeight: 1.3 }}>{o.customer_name}</div>
                                 <span style={{ color: group.color, fontSize: 12, fontWeight: 700, background: group.bg, padding: '3px 10px', borderRadius: 6, border: `1px solid ${group.border}`, whiteSpace: 'nowrap', marginLeft: 10, flexShrink: 0 }}>
-                                  {statusLabels[o.status] || o.status}
+                                  {group.emoji} {group.label}
                                 </span>
                               </div>
                               {/* Divider + itens */}

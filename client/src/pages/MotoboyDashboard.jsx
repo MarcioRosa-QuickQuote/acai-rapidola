@@ -48,13 +48,18 @@ function fmtAddr(full) {
   return abbrevStreet(parts.slice(0, 2).join(', '));
 }
 
-// Motoboy só confirma a entrega — a saída da loja é confirmada pela loja
+// Motoboy confirma entrega a partir de picked_up, in_transit ou arriving
+// A saída da loja (assigned → picked_up) é confirmada pela loja
 const nextStatus = {
-  picked_up: 'delivered'
+  picked_up: 'delivered',
+  in_transit: 'delivered',
+  arriving:   'delivered',
 };
 
 const nextStatusLabel = {
-  picked_up: 'Entregue ✓'
+  picked_up: 'Entregue ✓',
+  in_transit: 'Entregue ✓',
+  arriving:   'Entregue ✓',
 };
 
 function FollowMotoboy({ pos, follow }) {
