@@ -928,7 +928,8 @@ export default function MotoboyDashboard() {
             <div className="flex-between">
               <span className={`badge ${statusColors[order.status] || 'badge-primary'}`}>{statusLabels[order.status] || order.status}</span>
               {nextStatus[order.status] && (
-                <button className="btn btn-sm btn-primary" onClick={() => updateStatus(order.id)}>
+                <button className="btn btn-sm btn-primary"
+                  onClick={(e) => { e.stopPropagation(); updateStatus(order.id); }}>
                   {nextStatusLabel[order.status]}
                 </button>
               )}
