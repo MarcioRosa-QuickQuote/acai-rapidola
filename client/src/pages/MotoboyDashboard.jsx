@@ -446,7 +446,7 @@ function NavScreen({ order, onClose, onStatusUpdate, statusLabel }) {
                       <ellipse cx="24" cy="44" rx="5" ry="7" fill="rgba(0,0,0,0.25)"/>
                     </svg>
                   </div>
-                  {(step?.street || step?.text) && (
+                  {step?.street && (
                     <div style={{ position: 'relative', marginTop: 0, pointerEvents: 'none' }}>
                       <div style={{
                         position: 'absolute', top: -5, left: '50%',
@@ -470,7 +470,7 @@ function NavScreen({ order, onClose, onStatusUpdate, statusLabel }) {
                         boxShadow: '0 2px 10px rgba(0,0,0,0.35)',
                         letterSpacing: 0.1
                       }}>
-                        {abbrevStreet(step.street || step.text)}
+                        {abbrevStreet(step.street)}
                       </div>
                     </div>
                   )}
@@ -532,8 +532,8 @@ function NavScreen({ order, onClose, onStatusUpdate, statusLabel }) {
               display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0
             }}>
               <DirectionArrow
-                type={nextStep?.type || step.type || 'straight'}
-                modifier={nextStep?.modifier || step.modifier || ''}
+                type={nextStep ? (nextStep.type || 'straight') : 'arrive'}
+                modifier={nextStep ? (nextStep.modifier ?? '') : ''}
                 size={30}
                 color="white"
               />
@@ -543,12 +543,26 @@ function NavScreen({ order, onClose, onStatusUpdate, statusLabel }) {
               <div style={{ color: 'rgba(255,255,255,0.8)', fontSize: 14, fontWeight: 700, marginBottom: 2 }}>
                 {remaining < 1000 ? `${remaining} m` : `${(remaining / 1000).toFixed(1)} km`}
               </div>
-              {/* Nome da rua em que vai entrar (próximo passo) — abreviado */}
+              {/* Próxima manobra: nome da rua em que vai dobrar OU "Siga em frente" */}
               <div style={{
                 color: 'white', fontWeight: 800, fontSize: 19, lineHeight: 1.25,
                 overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap'
               }}>
-                {abbrevStreet(nextStep?.street || step.street || step.text)}
+                {(() => {
+                  if (!nextStep || nextStep.type === 'arrive') return abbrevStreet(step.street) || 'Chegando…';
+                  const mod = nextStep.modifier ?? '';
+                  const typ = nextStep.type ?? '';
+                  // Siga em frente: modifier vazio em passo de continuação, ou modifier='straight'
+                  const isStraight = mod === 'straight' ||
+                    (mod === '' && (typ === 'continue' || typ === 'new name' || typ === 'depart'));
+                  if (isStraight) return 'Siga em frente';
+                  // Curva: nome da rua que vai entrar
+                  if (nextStep.street) return abbrevStreet(nextStep.street);
+                  // Fallback descritivo quando não há nome de rua
+                  if (mod.includes('left'))  return 'Vire à esquerda';
+                  if (mod.includes('right')) return 'Vire à direita';
+                  return 'Siga em frente';
+                })()}
               </div>
               {/* Sub-label contextual */}
               {isToStore && (
