@@ -123,6 +123,7 @@ export default function StoreDashboard() {
   const [tvLocked, setTvLocked] = useState(false);
   const [tvTime, setTvTime] = useState('');
   const [tvLight, setTvLight] = useState(false);
+  const tvScrollRef = useRef(null);
   const [motoboyAlert, setMotoboyAlert] = useState(null); // { name, orderId, type, distanceMeters }
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const addrSearchRef = useRef(null);
@@ -510,6 +511,50 @@ export default function StoreDashboard() {
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, [showTV, tvLocked]);
+
+  // Auto-scroll TV: desce devagar, pausa no fim e volta ao topo
+  useEffect(() => {
+    if (!showTV) return;
+    const el = tvScrollRef.current;
+    if (!el) return;
+    let paused = false;
+    let timers = [];
+    const tick = () => {
+      if (paused) return;
+      if (el.scrollHeight <= el.clientHeight + 5) return; // cabe tudo, não precisa
+      if (el.scrollTop + el.clientHeight >= el.scrollHeight - 8) {
+        paused = true;
+        const t1 = setTimeout(() => {
+          el.scrollTo({ top: 0, behavior: 'smooth' });
+          const t2 = setTimeout(() => { paused = false; }, 1800);
+          timers.push(t2);
+        }, 3500); // aguarda 3,5s no fim antes de voltar ao topo
+        timers.push(t1);
+      } else {
+        el.scrollTop += 1;
+      }
+    };
+    const iv = setInterval(tick, 30); // ~33px/s
+    return () => { clearInterval(iv); timers.forEach(clearTimeout); };
+  }, [showTV]);
+
+  // WakeLock: impede a tela de dormir no modo TV
+  useEffect(() => {
+    if (!showTV) return;
+    let lock = null;
+    const acquire = async () => {
+      try {
+        if ('wakeLock' in navigator) lock = await navigator.wakeLock.request('screen');
+      } catch {}
+    };
+    acquire();
+    const onVis = () => { if (document.visibilityState === 'visible') acquire(); };
+    document.addEventListener('visibilitychange', onVis);
+    return () => {
+      document.removeEventListener('visibilitychange', onVis);
+      if (lock) lock.release().catch(() => {});
+    };
+  }, [showTV]);
 
   if (loading) return (
     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh' }}>
@@ -1906,7 +1951,7 @@ export default function StoreDashboard() {
             </div>
 
             {/* Cards de pedidos */}
-            <div style={{ flex: 1, overflow: 'auto', padding: '20px 28px' }}>
+            <div ref={tvScrollRef} style={{ flex: 1, overflow: 'auto', padding: '20px 28px' }}>
               {tvActive.length === 0 ? (
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: tvSub, fontSize: 22, fontWeight: 600 }}>
                   Nenhum pedido ativo no momento
