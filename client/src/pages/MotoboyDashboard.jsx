@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo, useRef } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useSocket } from '../contexts/SocketContext';
 import { APP_BUILD } from '../version';
-import { MapContainer, TileLayer, Marker, useMap } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, useMap, useMapEvents } from 'react-leaflet';
 import RoutePolyline, { useRoute, abbrevStreet, DirectionArrow } from '../components/RouteMap';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -91,12 +91,18 @@ function snapToRoute(pos, coords) {
   return { snappedPos, routeBearing };
 }
 
-// Mantém o mapa Leaflet (overview) centralizado na posição do motoboy
+// Mantém o mapa Leaflet centralizado na posição do motoboy (usado na nav ativa)
 function LeafletRecenter({ pos }) {
   const map = useMap();
   useEffect(() => {
     if (pos) map.setView([pos.lat, pos.lng], map.getZoom(), { animate: true, duration: 0.5 });
   }, [pos?.lat, pos?.lng]);
+  return null;
+}
+
+// Detecta quando o usuário arrasta o mapa manualmente
+function PanDetector({ onPan }) {
+  useMapEvents({ dragstart: () => onPan() });
   return null;
 }
 
@@ -113,6 +119,7 @@ function NavScreen({ order, onClose, onStatusUpdate, statusLabel }) {
   const lastRouteOriginRef = useRef(null);
   const [routeOrigin, setRouteOrigin] = useState(null);
   const [showOverview, setShowOverview] = useState(false);
+  const [overviewPanned, setOverviewPanned] = useState(false); // usuário soltou a mão no overview
 
   const isToStore = order.status === 'assigned';
 
@@ -257,18 +264,33 @@ function NavScreen({ order, onClose, onStatusUpdate, statusLabel }) {
                 attribution='&copy; <a href="https://carto.com">CARTO</a>'
                 url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
               />
-              <LeafletRecenter pos={pos} />
+              {/* Detecta pan manual; se pan ativo não auto-centraliza */}
+              <PanDetector onPan={() => setOverviewPanned(true)} />
+              {!overviewPanned && <LeafletRecenter pos={pos} />}
               {pos && <Marker position={[pos.lat, pos.lng]} icon={motoboyIcon} />}
-              {/* Mostra apenas o marcador do DESTINO atual */}
-              {isToStore
-                ? <Marker position={[order.store_lat, order.store_lng]} icon={storeIcon} />
-                : <Marker position={[order.customer_lat, order.customer_lng]} icon={destIcon} />
-              }
+              {/* Loja SEMPRE visível como logo_placa */}
+              {order.store_lat && <Marker position={[order.store_lat, order.store_lng]} icon={storeIcon} />}
+              {/* Destino do cliente (quando indo ao cliente) */}
+              {!isToStore && <Marker position={[order.customer_lat, order.customer_lng]} icon={destIcon} />}
               <RoutePolyline
                 from={routeOrigin || (pos ? pos : storeCoords)}
                 to={routeDest}
                 color="#4A148C" weight={8} />
             </MapContainer>
+          </div>
+        )}
+
+        {/* Botão recentralizar — aparece quando usuário soltou o mapa */}
+        {overviewPanned && pos && (
+          <div onClick={() => setOverviewPanned(false)} style={{
+            position: 'absolute', bottom: 240, right: 20, zIndex: 22,
+            width: 46, height: 46, borderRadius: 23,
+            background: 'white', boxShadow: '0 3px 12px rgba(0,0,0,0.25)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer'
+          }}>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="#4A148C">
+              <path d="M12 8c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4zm8.94 3c-.46-4.17-3.77-7.48-7.94-7.94V1h-2v2.06C6.83 3.52 3.52 6.83 3.06 11H1v2h2.06c.46 4.17 3.77 7.48 7.94 7.94V23h2v-2.06c4.17-.46 7.48-3.77 7.94-7.94H23v-2h-2.06zM12 19c-3.87 0-7-3.13-7-7s3.13-7 7-7 7 3.13 7 7-3.13 7-7 7z"/>
+            </svg>
           </div>
         )}
 
@@ -374,16 +396,15 @@ function NavScreen({ order, onClose, onStatusUpdate, statusLabel }) {
               </Source>
             )}
 
-            {/* Pin do destino — mostra apenas o destino atual */}
-            {isToStore ? (
-              /* Indo para a loja: mostra logo_placa no endereço da loja */
-              order.store_lat ? (
-                <MLMarker longitude={order.store_lng} latitude={order.store_lat} anchor="bottom">
-                  <img src="/logo_placa.png" style={{ width: 52, height: 52, objectFit: 'contain', filter: 'drop-shadow(0 3px 8px rgba(0,0,0,0.6))' }} />
-                </MLMarker>
-              ) : null
-            ) : (
-              /* Indo para o cliente: mostra pino roxo no endereço do cliente */
+            {/* Loja: logo_placa SEMPRE visível como referência */}
+            {order.store_lat ? (
+              <MLMarker longitude={order.store_lng} latitude={order.store_lat} anchor="bottom">
+                <img src="/logo_placa.png" style={{ width: 52, height: 52, objectFit: 'contain', filter: 'drop-shadow(0 3px 8px rgba(0,0,0,0.6))' }} />
+              </MLMarker>
+            ) : null}
+
+            {/* Cliente: pino roxo aparece apenas quando indo ao cliente */}
+            {!isToStore && (
               <MLMarker longitude={order.customer_lng} latitude={order.customer_lat} anchor="bottom">
                 <svg width="32" height="42" viewBox="0 0 32 42" xmlns="http://www.w3.org/2000/svg">
                   <circle cx="16" cy="16" r="16" fill="#4A148C"/>
@@ -452,10 +473,10 @@ function NavScreen({ order, onClose, onStatusUpdate, statusLabel }) {
               />
               <LeafletRecenter pos={pos} />
               {pos && <Marker position={[pos.lat, pos.lng]} icon={motoboyIcon} />}
-              {isToStore
-                ? <Marker position={[order.store_lat, order.store_lng]} icon={storeIcon} />
-                : <Marker position={[order.customer_lat, order.customer_lng]} icon={destIcon} />
-              }
+              {/* Loja sempre visível */}
+              {order.store_lat && <Marker position={[order.store_lat, order.store_lng]} icon={storeIcon} />}
+              {/* Pino do cliente só quando indo ao cliente */}
+              {!isToStore && <Marker position={[order.customer_lat, order.customer_lng]} icon={destIcon} />}
               <RoutePolyline from={routeOrigin || (pos ? pos : storeCoords)} to={routeDest} color="#4A148C" weight={8} />
             </MapContainer>
           )}
@@ -846,8 +867,13 @@ export default function MotoboyDashboard() {
               <span className="font-bold">#{order.id.slice(0, 8)}</span>
               <span className="badge badge-success">R$ {order.total.toFixed(2)}</span>
             </div>
+            {order.store_address && (
+              <div className="text-sm text-muted" style={{ marginBottom: 2 }}>
+                🏪 {order.store_name} — {order.store_address}
+              </div>
+            )}
             <div className="text-sm text-muted">Cliente: <strong>{order.customer_name}</strong></div>
-            <div className="text-sm text-muted" style={{ marginBottom: 6 }}>Endereço: {order.customer_address}</div>
+            <div className="text-sm text-muted" style={{ marginBottom: 6 }}>📍 {order.customer_address}</div>
             <div className="flex-between">
               <span className={`badge ${statusColors[order.status] || 'badge-primary'}`}>{statusLabels[order.status] || order.status}</span>
               {nextStatus[order.status] && (
@@ -963,8 +989,13 @@ export default function MotoboyDashboard() {
                   <span className="font-bold">#{order.id.slice(0, 8)}</span>
                   <span className={`badge ${statusColors[order.status] || 'badge-primary'}`}>{statusLabels[order.status] || order.status}</span>
                 </div>
+                {order.store_address && (
+                  <div className="text-sm text-muted" style={{ marginBottom: 2 }}>
+                    🏪 <strong>{order.store_name}</strong> — {order.store_address}
+                  </div>
+                )}
                 <div className="text-sm text-muted"><strong>{order.customer_name}</strong></div>
-                <div className="text-sm text-muted">{order.customer_address}</div>
+                <div className="text-sm text-muted">📍 {order.customer_address}</div>
                 {nextStatus[order.status] && (
                   <button className="btn btn-sm btn-primary mt-2" onClick={(e) => { e.stopPropagation(); updateStatus(order.id); }}>
                     {nextStatusLabel[order.status]}
