@@ -82,7 +82,7 @@ function getAction(order) {
 
 export default function StoreDashboard() {
   const { user, store: storeData, apiFetch, logout, setStore } = useAuth();
-  const { socket, joinStore, toast, setToast } = useSocket();
+  const { socket, joinStore, toast, setToast, notifications } = useSocket();
   const [orders, setOrders] = useState([]);
   const [open, setOpen] = useState(true);
   const [loading, setLoading] = useState(true);
@@ -242,6 +242,16 @@ export default function StoreDashboard() {
     }, 30000);
     return () => clearInterval(interval);
   }, []);
+
+  // Recarrega mensagens quando chega qualquer notificação via socket.
+  // Usar notifications[] como dep garante que loadMessages() usada aqui é
+  // sempre a versão mais recente (sem stale closure), pois o effect re-executa
+  // a cada nova notificação no array.
+  useEffect(() => {
+    if (notifications.length === 0) return;
+    const last = notifications[0];
+    if (last?.type === 'message') loadMessages();
+  }, [notifications]);
 
   useEffect(() => {
     const low = products.filter(p => p.active && p.stock_quantity != null && p.min_stock_alert != null && p.stock_quantity <= p.min_stock_alert);

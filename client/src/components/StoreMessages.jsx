@@ -164,8 +164,12 @@ export default function StoreMessages({ messages, storeId, apiFetch, onReload })
   });
 
   if (selectedCustomer) {
+    // Sempre usa o grupo "ao vivo" calculado a partir do prop messages atualizado.
+    // Se usássemos selectedCustomer diretamente (snapshot do momento em que o usuário
+    // clicou), novas mensagens que chegam via socket/poll nunca apareceriam na tela.
+    const liveGroup = groups[selectedCustomer.customer_id] || selectedCustomer;
     return (
-      <Conversation group={selectedCustomer} apiFetch={apiFetch} storeId={storeId}
+      <Conversation group={liveGroup} apiFetch={apiFetch} storeId={storeId}
         onBack={() => setSelectedCustomer(null)} onReload={onReload} />
     );
   }
