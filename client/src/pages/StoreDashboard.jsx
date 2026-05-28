@@ -1312,7 +1312,7 @@ export default function StoreDashboard() {
       <div>
         {/* ─── KPI Row ─── */}
         {isDesktop ? (
-          <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1fr 1fr', gap: 12, marginBottom: 20 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1fr', gap: 12, marginBottom: 20 }}>
             {/* Faturamento destacado */}
             <div style={{
               background: 'linear-gradient(135deg, #6A1B9A 0%, #9C27B0 55%, #CE93D8 100%)',
@@ -1346,17 +1346,6 @@ export default function StoreDashboard() {
             }}>
               <div style={{ fontSize: 10, color: '#2E7D32', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5 }}>Concluídos</div>
               <div style={{ fontSize: 34, fontWeight: 800, color: '#2E7D32', lineHeight: 1 }}>{concludedOrders.length}</div>
-            </div>
-            {/* Status loja */}
-            <div style={{
-              background: open ? '#E8F5E9' : '#FFEBEE', borderRadius: 14, padding: '18px 16px',
-              border: `1px solid ${open ? '#C8E6C9' : '#FFCDD2'}`, display: 'flex', flexDirection: 'column', justifyContent: 'space-between'
-            }}>
-              <div style={{ fontSize: 10, color: open ? '#2E7D32' : '#C62828', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5 }}>Loja</div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
-                <span style={{ width: 10, height: 10, borderRadius: '50%', background: open ? '#43a047' : '#e53935', display: 'inline-block', flexShrink: 0 }} />
-                <span style={{ fontSize: 15, fontWeight: 700, color: open ? '#2E7D32' : '#C62828' }}>{open ? 'Aberta' : 'Fechada'}</span>
-              </div>
             </div>
           </div>
         ) : (
