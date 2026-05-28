@@ -915,7 +915,7 @@ export default function MotoboyDashboard() {
           <div key={order.id} className="card" style={{ marginBottom: 12, border: '2px solid var(--primary)', cursor: 'pointer' }}
             onClick={() => openNav(order)}>
             <div className="flex-between" style={{ marginBottom: 4 }}>
-              <span className="font-bold">#{order.id.slice(0, 8)}</span>
+              <span style={{ fontSize: 11, color: '#bbb', fontFamily: 'monospace', letterSpacing: 0.3, userSelect: 'all' }}>#{order.id.slice(0, 8)}</span>
               <span className="badge badge-success">R$ {order.total.toFixed(2)}</span>
             </div>
             {order.store_address && (
@@ -970,7 +970,7 @@ export default function MotoboyDashboard() {
               <div key={order.id} className="card">
                 <div className="flex-between" style={{ marginBottom: 6 }}>
                   <div>
-                    <span className="font-bold">#{order.id.slice(0, 8)}</span>
+                    <span style={{ fontSize: 11, color: '#bbb', fontFamily: 'monospace', letterSpacing: 0.3, userSelect: 'all' }}>#{order.id.slice(0, 8)}</span>
                     <span className="text-sm text-muted" style={{ marginLeft: 8 }}>{order.customer_name}</span>
                   </div>
                   <span className="badge badge-success">R$ {order.total.toFixed(2)}</span>
@@ -1038,7 +1038,7 @@ export default function MotoboyDashboard() {
               <div key={order.id} className="card" style={{ cursor: 'pointer', border: '2px solid var(--primary)' }}
                 onClick={() => openNav(order)}>
                 <div className="flex-between" style={{ marginBottom: 4 }}>
-                  <span className="font-bold">#{order.id.slice(0, 8)}</span>
+                  <span style={{ fontSize: 11, color: '#bbb', fontFamily: 'monospace', letterSpacing: 0.3, userSelect: 'all' }}>#{order.id.slice(0, 8)}</span>
                   <span className={`badge ${statusColors[order.status] || 'badge-primary'}`}>{statusLabels[order.status] || order.status}</span>
                 </div>
                 {order.store_address && (
@@ -1068,7 +1068,7 @@ export default function MotoboyDashboard() {
                 <div key={order.id} className="card" style={{ cursor: 'pointer' }}
                   onClick={() => openNav(order)}>
                   <div className="flex-between" style={{ marginBottom: 4 }}>
-                    <span className="font-bold">#{order.id.slice(0, 8)}</span>
+                    <span style={{ fontSize: 11, color: '#bbb', fontFamily: 'monospace', letterSpacing: 0.3, userSelect: 'all' }}>#{order.id.slice(0, 8)}</span>
                     <span className="badge badge-success">R$ {order.total.toFixed(2)}</span>
                   </div>
                   <div className="text-sm text-muted"><strong>{order.customer_name}</strong></div>

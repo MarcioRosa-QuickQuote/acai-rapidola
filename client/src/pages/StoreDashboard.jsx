@@ -769,6 +769,7 @@ export default function StoreDashboard() {
                     {order.payment_status !== 'paid' && (
                       <span className="badge badge-warning" style={{ marginLeft: 8, fontSize: 11 }}>Pendente</span>
                     )}
+                    <span style={{ fontSize: 10, color: '#bbb', marginLeft: 8, fontFamily: 'monospace', letterSpacing: 0.3, userSelect: 'all' }}>#{order.id.slice(0,8)}</span>
                   </div>
                   {hasAction ? (
                     <button className="btn btn-sm btn-primary"
