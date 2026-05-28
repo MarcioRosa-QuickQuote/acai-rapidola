@@ -9,7 +9,8 @@ const router = Router();
 // ── Middleware: apenas admin ──────────────────────────────────────────────────
 const adminOnly = [authMiddleware, roleMiddleware('admin')];
 
-// ── Setup: cria o primeiro usuário admin (requer ADMIN_SETUP_SECRET no env) ──
+// ── Setup: cria o usuário admin com role='store' (compatível sem migração SQL) ──
+// Autenticação real via ADMIN_PHONES no env — role no DB não precisa ser 'admin'
 router.post('/setup', async (req, res) => {
   const { secret, name, phone, password } = req.body;
   const expected = process.env.ADMIN_SETUP_SECRET;
@@ -25,11 +26,13 @@ router.post('/setup', async (req, res) => {
 
   const id = uuid();
   const hash = bcrypt.hashSync(password, 10);
+  // role='store' para compatibilidade com a constraint atual (sem migração SQL)
+  // O login vai sobrescrever para 'admin' via ADMIN_PHONES env var
   const { error } = await supabase.from('users').insert({
-    id, name, phone, password_hash: hash, role: 'admin', email: phone + '@admin.local'
+    id, name, phone, password_hash: hash, role: 'store', email: phone + '@admin.local'
   });
   if (error) return res.status(500).json({ error: error.message });
-  res.json({ ok: true, message: 'Admin criado com sucesso. Faça login normalmente.' });
+  res.json({ ok: true, message: `Admin criado. Adicione ADMIN_PHONES=${phone} no Render e faça login.` });
 });
 
 // ── Stats gerais ──────────────────────────────────────────────────────────────

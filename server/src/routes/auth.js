@@ -127,6 +127,12 @@ router.post('/google', async (req, res) => {
   }
 });
 
+// ── Helper: verifica se o telefone é admin (via env ADMIN_PHONES) ──────────────
+function isAdminPhone(phone) {
+  const list = (process.env.ADMIN_PHONES || '').split(',').map(p => p.trim()).filter(Boolean);
+  return list.includes(phone);
+}
+
 router.post('/login', async (req, res) => {
   const { phone, password } = req.body;
   if (!phone || !password) {
@@ -139,11 +145,13 @@ router.post('/login', async (req, res) => {
   const valid = bcrypt.compareSync(password, user.password_hash);
   if (!valid) return res.status(401).json({ error: 'Telefone ou senha inválidos' });
 
-  const payload = { id: user.id, name: user.name, role: user.role, phone: user.phone, email: user.email || '', address: user.address || '', lat: user.lat, lng: user.lng, photo_url: user.photo_url || '' };
+  // Se o telefone consta na lista de admins, força role='admin' no JWT
+  const role = isAdminPhone(user.phone) ? 'admin' : user.role;
+  const payload = { id: user.id, name: user.name, role, phone: user.phone, email: user.email || '', address: user.address || '', lat: user.lat, lng: user.lng, photo_url: user.photo_url || '' };
   const token = signToken(payload);
 
   let store = null;
-  if (user.role === 'store') {
+  if (user.role === 'store' && role !== 'admin') {
     const { data: s } = await supabase.from('stores').select('*').eq('owner_id', user.id).single();
     store = s;
   }
@@ -158,13 +166,17 @@ router.get('/me', authMiddleware, async (req, res) => {
 
   if (!user) return res.status(404).json({ error: 'Usuário não encontrado' });
 
+  // Aplica override de admin se telefone estiver na lista ADMIN_PHONES
+  const role = isAdminPhone(user.phone) ? 'admin' : user.role;
+  const userOut = { ...user, role };
+
   let store = null;
-  if (user.role === 'store') {
+  if (user.role === 'store' && role !== 'admin') {
     const { data: s } = await supabase.from('stores').select('*').eq('owner_id', user.id).single();
     store = s;
   }
 
-  res.json({ user, store });
+  res.json({ user: userOut, store });
 });
 
 router.patch('/profile', authMiddleware, async (req, res) => {
