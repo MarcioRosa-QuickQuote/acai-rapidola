@@ -3,7 +3,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useSocket } from '../contexts/SocketContext';
 import { APP_BUILD } from '../version';
 import { MapContainer, TileLayer, Marker, useMap } from 'react-leaflet';
-import RoutePolyline, { useRoute, NavSteps } from '../components/RouteMap';
+import RoutePolyline, { useRoute, abbrevStreet, DirectionArrow } from '../components/RouteMap';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import MLMap, { Marker as MLMarker, Source, Layer } from 'react-map-gl/maplibre';
@@ -89,6 +89,15 @@ function snapToRoute(pos, coords) {
     }
   }
   return { snappedPos, routeBearing };
+}
+
+// Mantém o mapa Leaflet (overview) centralizado na posição do motoboy
+function LeafletRecenter({ pos }) {
+  const map = useMap();
+  useEffect(() => {
+    if (pos) map.setView([pos.lat, pos.lng], map.getZoom(), { animate: true, duration: 0.5 });
+  }, [pos?.lat, pos?.lng]);
+  return null;
 }
 
 function NavScreen({ order, onClose, onStatusUpdate, statusLabel }) {
@@ -192,7 +201,19 @@ function NavScreen({ order, onClose, onStatusUpdate, statusLabel }) {
     } catch (_) {}
   }, [pos?.lat, pos?.lng, heading, follow, navStarted]);
 
+  // Auto-avança para próximo passo quando motoboy está a < 30m da próxima manobra
+  useEffect(() => {
+    if (!pos || !steps.length) return;
+    const nextStep = steps[currentStepIdx + 1];
+    if (!nextStep?.location) return;
+    const distToNext = haversineKm(pos, nextStep.location) * 1000; // metros
+    if (distToNext < 30 && currentStepIdx < steps.length - 1) {
+      setCurrentStepIdx(i => i + 1);
+    }
+  }, [pos?.lat, pos?.lng, steps, currentStepIdx]);
+
   const step = steps[currentStepIdx];
+  const nextStep = steps[currentStepIdx + 1]; // próxima manobra (o que o motoboy vai fazer)
   const remaining = steps.slice(currentStepIdx).reduce((s, st) => s + st.dist, 0);
   const hasRoute = order.store_lat && order.customer_lat;
   const mapCenterLeaflet = pos
@@ -236,11 +257,15 @@ function NavScreen({ order, onClose, onStatusUpdate, statusLabel }) {
                 attribution='&copy; <a href="https://carto.com">CARTO</a>'
                 url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
               />
+              <LeafletRecenter pos={pos} />
               {pos && <Marker position={[pos.lat, pos.lng]} icon={motoboyIcon} />}
-              <Marker position={[order.customer_lat, order.customer_lng]} icon={destIcon} />
-              {order.store_lat && <Marker position={[order.store_lat, order.store_lng]} icon={storeIcon} />}
+              {/* Mostra apenas o marcador do DESTINO atual */}
+              {isToStore
+                ? <Marker position={[order.store_lat, order.store_lng]} icon={storeIcon} />
+                : <Marker position={[order.customer_lat, order.customer_lng]} icon={destIcon} />
+              }
               <RoutePolyline
-                from={routeOrigin || storeCoords}
+                from={routeOrigin || (pos ? pos : storeCoords)}
                 to={routeDest}
                 color="#4A148C" weight={8} />
             </MapContainer>
@@ -349,19 +374,22 @@ function NavScreen({ order, onClose, onStatusUpdate, statusLabel }) {
               </Source>
             )}
 
-            {/* Pin do destino (cliente) */}
-            <MLMarker longitude={order.customer_lng} latitude={order.customer_lat} anchor="bottom">
-              <svg width="32" height="42" viewBox="0 0 32 42" xmlns="http://www.w3.org/2000/svg">
-                <circle cx="16" cy="16" r="16" fill="#4A148C"/>
-                <line x1="16" y1="30" x2="16" y2="42" stroke="#4A148C" strokeWidth="4"/>
-                <circle cx="16" cy="16" r="7" fill="white"/>
-              </svg>
-            </MLMarker>
-
-            {/* Pin da loja */}
-            {order.store_lat && (
-              <MLMarker longitude={order.store_lng} latitude={order.store_lat} anchor="center">
-                <img src="/logo_placa.png" style={{ width: 44, height: 44, objectFit: 'contain', filter: 'drop-shadow(0 2px 6px rgba(0,0,0,0.5))' }} />
+            {/* Pin do destino — mostra apenas o destino atual */}
+            {isToStore ? (
+              /* Indo para a loja: mostra logo_placa no endereço da loja */
+              order.store_lat ? (
+                <MLMarker longitude={order.store_lng} latitude={order.store_lat} anchor="bottom">
+                  <img src="/logo_placa.png" style={{ width: 52, height: 52, objectFit: 'contain', filter: 'drop-shadow(0 3px 8px rgba(0,0,0,0.6))' }} />
+                </MLMarker>
+              ) : null
+            ) : (
+              /* Indo para o cliente: mostra pino roxo no endereço do cliente */
+              <MLMarker longitude={order.customer_lng} latitude={order.customer_lat} anchor="bottom">
+                <svg width="32" height="42" viewBox="0 0 32 42" xmlns="http://www.w3.org/2000/svg">
+                  <circle cx="16" cy="16" r="16" fill="#4A148C"/>
+                  <line x1="16" y1="30" x2="16" y2="42" stroke="#4A148C" strokeWidth="4"/>
+                  <circle cx="16" cy="16" r="7" fill="white"/>
+                </svg>
               </MLMarker>
             )}
 
@@ -391,17 +419,17 @@ function NavScreen({ order, onClose, onStatusUpdate, statusLabel }) {
                         background: isDaytime ? 'white' : 'rgba(28,28,44,0.97)',
                         color: isDaytime ? '#1a1a2e' : 'white',
                         fontWeight: 700,
-                        fontSize: 11,
-                        padding: '5px 12px',
+                        fontSize: 12,
+                        padding: '5px 14px',
                         borderRadius: 20,
                         whiteSpace: 'nowrap',
-                        maxWidth: 160,
+                        maxWidth: 240,
                         overflow: 'hidden',
                         textOverflow: 'ellipsis',
                         boxShadow: '0 2px 10px rgba(0,0,0,0.35)',
                         letterSpacing: 0.1
                       }}>
-                        {step.street || step.text}
+                        {abbrevStreet(step.street || step.text)}
                       </div>
                     </div>
                   )}
@@ -422,10 +450,13 @@ function NavScreen({ order, onClose, onStatusUpdate, statusLabel }) {
                 attribution='&copy; <a href="https://carto.com">CARTO</a>'
                 url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
               />
+              <LeafletRecenter pos={pos} />
               {pos && <Marker position={[pos.lat, pos.lng]} icon={motoboyIcon} />}
-              <Marker position={[order.customer_lat, order.customer_lng]} icon={destIcon} />
-              {order.store_lat && <Marker position={[order.store_lat, order.store_lng]} icon={storeIcon} />}
-              <RoutePolyline from={routeOrigin || storeCoords} to={routeDest} color="#4A148C" weight={8} />
+              {isToStore
+                ? <Marker position={[order.store_lat, order.store_lng]} icon={storeIcon} />
+                : <Marker position={[order.customer_lat, order.customer_lng]} icon={destIcon} />
+              }
+              <RoutePolyline from={routeOrigin || (pos ? pos : storeCoords)} to={routeDest} color="#4A148C" weight={8} />
             </MapContainer>
           )}
           {/* Botão voltar à primeira pessoa */}
@@ -450,49 +481,61 @@ function NavScreen({ order, onClose, onStatusUpdate, statusLabel }) {
         paddingTop: 'max(10px, env(safe-area-inset-top, 10px))',
         paddingBottom: 10, paddingLeft: 16, paddingRight: 16
       }}>
-        {isToStore ? (
+        {/* Instrução unificada para ir à loja OU ao cliente:
+            seta = próxima manobra, nome = rua em que vai entrar */}
+        {step ? (
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            {/* Ícone de direção (SVG, sem problema de renderização) */}
             <div style={{
-              width: 44, height: 44, borderRadius: 12, background: 'rgba(255,255,255,0.2)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden'
+              width: 52, height: 52, borderRadius: 14, background: 'rgba(255,255,255,0.18)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0
             }}>
-              <img src="/logo_placa.png" style={{ width: 36, height: 36, objectFit: 'contain' }} />
+              <DirectionArrow
+                type={nextStep?.type || step.type || 'straight'}
+                modifier={nextStep?.modifier || step.modifier || ''}
+                size={30}
+                color="white"
+              />
             </div>
-            <div>
-              <div style={{ color: 'rgba(255,255,255,0.75)', fontSize: 13 }}>Primeiro, vá até</div>
-              <div style={{ color: 'white', fontWeight: 800, fontSize: 20, lineHeight: 1.2 }}>
-                {order.store_name || 'Loja'} — Retirar pedido
-              </div>
-            </div>
-          </div>
-        ) : step ? (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-            <div style={{
-              width: 44, height: 44, borderRadius: 12, background: 'rgba(255,255,255,0.15)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: 22, flexShrink: 0
-            }}>{step.icon}</div>
             <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ color: 'rgba(255,255,255,0.75)', fontSize: 13, marginBottom: 2, fontWeight: 600 }}>
+              {/* Distância até a próxima manobra */}
+              <div style={{ color: 'rgba(255,255,255,0.8)', fontSize: 14, fontWeight: 700, marginBottom: 2 }}>
                 {remaining < 1000 ? `${remaining} m` : `${(remaining / 1000).toFixed(1)} km`}
               </div>
+              {/* Nome da rua em que vai entrar (próximo passo) — abreviado */}
               <div style={{
-                color: 'white', fontWeight: 800, fontSize: 20, lineHeight: 1.2,
+                color: 'white', fontWeight: 800, fontSize: 19, lineHeight: 1.25,
                 overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap'
               }}>
-                {step.street || step.text}
+                {abbrevStreet(nextStep?.street || step.street || step.text)}
               </div>
+              {/* Sub-label contextual */}
+              {isToStore && (
+                <div style={{ color: 'rgba(255,255,255,0.6)', fontSize: 11, marginTop: 2 }}>
+                  Retirar pedido — {order.store_name || 'Loja'}
+                </div>
+              )}
             </div>
           </div>
         ) : (
-          <div style={{ color: 'white', fontWeight: 800, fontSize: 18 }}>
-            Chegando em {order.customer_name}…
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <div style={{
+              width: 52, height: 52, borderRadius: 14, background: 'rgba(255,255,255,0.18)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0
+            }}>
+              <DirectionArrow type="arrive" size={30} color="white" />
+            </div>
+            <div style={{ color: 'white', fontWeight: 800, fontSize: 18 }}>
+              {isToStore
+                ? `Chegando em ${order.store_name || 'Loja'}…`
+                : `Chegando em ${order.customer_name || 'destino'}…`}
+            </div>
           </div>
         )}
 
         {/* Bolinhas de progresso */}
-        {!isToStore && steps.length > 1 && (
-          <div style={{ display: 'flex', gap: 4, marginTop: 12, justifyContent: 'center' }}>
+        {steps.length > 1 && (
+          <div style={{ display: 'flex', gap: 4, marginTop: 10, justifyContent: 'center' }}>
             {steps.map((_, i) => (
               <div key={i} style={{
                 width: i === currentStepIdx ? 20 : 6, height: 4, borderRadius: 2,
