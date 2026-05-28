@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import CustomerBottomNav from '../components/CustomerBottomNav';
@@ -339,10 +339,11 @@ export default function CustomerTracking() {
   const [order, setOrder] = useState(null);
   const [motoboyPos, setMotoboyPos] = useState(null);
   const [eta, setEta] = useState(null);
-  const [showMsgModal, setShowMsgModal] = useState(false);
+  const [showChatModal, setShowChatModal] = useState(false);
+  const [chatMessages, setChatMessages] = useState([]);
   const [msgText, setMsgText] = useState('');
   const [msgSending, setMsgSending] = useState(false);
-  const [msgSent, setMsgSent] = useState(false);
+  const chatBottomRef = useRef(null);
 
   useEffect(() => {
     joinOrder(id);
@@ -371,9 +372,15 @@ export default function CustomerTracking() {
         }
       }
     });
+    socket.on('notification', (notif) => {
+      if (notif.type === 'message' && order?.store_id) {
+        loadChat(order.store_id);
+      }
+    });
     return () => {
       socket.off('order_status');
       socket.off('motoboy_location');
+      socket.off('notification');
     };
   }, [socket, id, order]);
 
@@ -389,6 +396,20 @@ export default function CustomerTracking() {
       }
     }
   }
+
+  async function loadChat(storeId) {
+    if (!storeId) return;
+    const data = await apiFetch(`/messages/conversation/${storeId}`);
+    if (data.data) setChatMessages(data.data);
+  }
+
+  useEffect(() => {
+    if (order?.store_id) loadChat(order.store_id);
+  }, [order?.store_id]);
+
+  useEffect(() => {
+    if (showChatModal) chatBottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [chatMessages.length, showChatModal]);
 
   if (!order) return (
     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh' }}>
@@ -527,9 +548,10 @@ export default function CustomerTracking() {
             <span style={{ color: '#888' }}>Loja: </span><span className="font-bold">{order.store_name}</span>
           </div>
           <div style={{ marginTop: 8 }}>
-            <button onClick={(e) => { e.stopPropagation(); setShowMsgModal(true); setMsgSent(false); setMsgText(''); }}
-              style={{ fontSize: 13, color: 'var(--primary)', fontWeight: 600, background: 'none', border: 'none', cursor: 'pointer', padding: 0, textDecoration: 'underline' }}>
+            <button onClick={(e) => { e.stopPropagation(); setShowChatModal(true); setMsgText(''); loadChat(order.store_id); }}
+              style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, color: 'var(--primary)', fontWeight: 600, background: 'none', border: 'none', cursor: 'pointer', padding: 0, textDecoration: 'underline' }}>
               💬 Falar com a loja
+              {chatMessages.some(m => m.from_store) && <span style={{ background: '#6A1B9A', color: 'white', borderRadius: 10, fontSize: 10, fontWeight: 700, padding: '1px 5px' }}>{chatMessages.filter(m => m.from_store).length}</span>}
             </button>
           </div>
           <div className="text-sm" style={{ marginTop: 4 }}>
@@ -556,51 +578,102 @@ export default function CustomerTracking() {
       <div style={{ height: 80 }} />
       <CustomerBottomNav />
 
-      {showMsgModal && (
+      {showChatModal && (
         <div style={{ position: 'fixed', inset: 0, zIndex: 2000, display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }}
-          onClick={() => setShowMsgModal(false)}>
-          <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.4)' }} />
+          onClick={() => setShowChatModal(false)}>
+          <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.45)' }} />
           <div onClick={e => e.stopPropagation()} style={{
-            position: 'relative', background: 'white', width: '100%', maxWidth: 500,
-            borderTopLeftRadius: 20, borderTopRightRadius: 20, padding: '24px 20px',
-            paddingBottom: 'calc(20px + env(safe-area-inset-bottom, 0px))',
-            boxShadow: '0 -4px 24px rgba(0,0,0,0.15)'
+            position: 'relative', background: 'white', width: '100%', maxWidth: 520,
+            borderTopLeftRadius: 20, borderTopRightRadius: 20,
+            paddingBottom: 'env(safe-area-inset-bottom, 0px)',
+            boxShadow: '0 -4px 24px rgba(0,0,0,0.15)',
+            display: 'flex', flexDirection: 'column', maxHeight: '82vh'
           }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-              <span style={{ fontWeight: 700, fontSize: 18 }}>Falar com a loja</span>
-              <div onClick={() => setShowMsgModal(false)} style={{ cursor: 'pointer', fontSize: 22, color: '#999', lineHeight: 1 }}>✕</div>
-            </div>
-            {msgSent ? (
-              <div style={{ textAlign: 'center', padding: 20 }}>
-                <div style={{ fontSize: 40, marginBottom: 12 }}>✅</div>
-                <div style={{ fontWeight: 600, fontSize: 16, marginBottom: 8 }}>Mensagem enviada!</div>
-                <div className="text-muted" style={{ fontSize: 13 }}>A loja responderá em breve.</div>
-                <button className="btn btn-primary" style={{ marginTop: 20, width: '100%' }} onClick={() => setShowMsgModal(false)}>
-                  OK
-                </button>
+            {/* Header */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 20px', borderBottom: '1px solid #f0f0f0' }}>
+              <div>
+                <div style={{ fontWeight: 700, fontSize: 16 }}>💬 {order.store_name || 'Loja'}</div>
+                <div style={{ fontSize: 12, color: '#888', marginTop: 2 }}>Chat com a loja</div>
               </div>
-            ) : (
-              <>
-                <div className="form-group">
-                  <textarea className="input" value={msgText} onChange={e => setMsgText(e.target.value)}
-                    placeholder="Digite sua mensagem para a loja (dúvidas, reclamações, etc.)"
-                    style={{ minHeight: 120, resize: 'vertical', fontSize: 15 }} />
+              <div onClick={() => setShowChatModal(false)} style={{ cursor: 'pointer', fontSize: 22, color: '#999', lineHeight: 1, padding: '4px 8px' }}>✕</div>
+            </div>
+
+            {/* Mensagens */}
+            <div style={{ flex: 1, overflowY: 'auto', padding: '12px 16px', background: '#F8F4FC' }}>
+              {chatMessages.length === 0 && (
+                <div style={{ textAlign: 'center', color: '#bbb', fontSize: 13, padding: 24 }}>
+                  Nenhuma mensagem ainda. Escreva para a loja!
                 </div>
-                <button className="btn btn-primary" style={{ width: '100%' }} disabled={!msgText.trim() || msgSending}
-                  onClick={async () => {
-                    if (!msgText.trim() || !order) return;
+              )}
+              {chatMessages.map(msg => {
+                const isCustomer = !msg.from_store; // cliente = direita
+                return (
+                  <div key={msg.id} style={{ display: 'flex', flexDirection: 'column', alignItems: isCustomer ? 'flex-end' : 'flex-start', marginBottom: 10 }}>
+                    <div style={{
+                      maxWidth: '82%',
+                      background: isCustomer ? '#6A1B9A' : '#fff',
+                      color: isCustomer ? 'white' : '#333',
+                      borderRadius: isCustomer ? '16px 16px 4px 16px' : '16px 16px 16px 4px',
+                      padding: '10px 14px',
+                      fontSize: 14,
+                      lineHeight: 1.4,
+                      wordBreak: 'break-word',
+                      boxShadow: '0 1px 4px rgba(0,0,0,0.08)'
+                    }}>
+                      {!isCustomer && (
+                        <div style={{ fontSize: 11, fontWeight: 700, color: '#6A1B9A', marginBottom: 4 }}>
+                          {order.store_name || 'Loja'}
+                        </div>
+                      )}
+                      <div>{msg.message}</div>
+                      <div style={{ fontSize: 10, marginTop: 4, color: isCustomer ? 'rgba(255,255,255,0.6)' : '#aaa', textAlign: 'right' }}>
+                        {new Date(msg.created_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+              <div ref={chatBottomRef} />
+            </div>
+
+            {/* Input */}
+            <div style={{ padding: '12px 16px', borderTop: '1px solid #f0f0f0', display: 'flex', gap: 8, alignItems: 'flex-end', background: 'white' }}>
+              <textarea className="input" value={msgText} onChange={e => setMsgText(e.target.value)}
+                placeholder="Mensagem para a loja..."
+                style={{ flex: 1, minHeight: 40, maxHeight: 100, resize: 'none', fontSize: 14, borderRadius: 20, padding: '10px 14px' }}
+                onKeyDown={e => {
+                  if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    if (!msgText.trim() || msgSending) return;
                     setMsgSending(true);
-                    const data = await apiFetch('/messages', {
+                    apiFetch('/messages', {
                       method: 'POST',
                       body: JSON.stringify({ store_id: order.store_id, message: msgText.trim(), order_id: order.id })
+                    }).then(data => {
+                      setMsgSending(false);
+                      if (data.ok) { setMsgText(''); loadChat(order.store_id); }
                     });
-                    setMsgSending(false);
-                    if (data.ok) { setMsgSent(true); } else { alert('Erro ao enviar mensagem'); }
-                  }}>
-                  {msgSending ? 'Enviando...' : 'Enviar Mensagem'}
-                </button>
-              </>
-            )}
+                  }
+                }} />
+              <button
+                style={{ width: 44, height: 44, borderRadius: '50%', background: msgText.trim() ? '#6A1B9A' : '#ddd', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: msgText.trim() ? 'pointer' : 'default', flexShrink: 0, transition: 'background 0.2s' }}
+                disabled={!msgText.trim() || msgSending}
+                onClick={async () => {
+                  if (!msgText.trim() || !order || msgSending) return;
+                  setMsgSending(true);
+                  const data = await apiFetch('/messages', {
+                    method: 'POST',
+                    body: JSON.stringify({ store_id: order.store_id, message: msgText.trim(), order_id: order.id })
+                  });
+                  setMsgSending(false);
+                  if (data.ok) { setMsgText(''); loadChat(order.store_id); }
+                  else { alert('Erro ao enviar mensagem'); }
+                }}>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill={msgText.trim() ? 'white' : '#aaa'}>
+                  <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+                </svg>
+              </button>
+            </div>
           </div>
         </div>
       )}

@@ -71,7 +71,7 @@ function Conversation({ group, apiFetch, storeId, onBack, onReload }) {
           cursor: 'pointer', fontSize: 18, fontWeight: 700, color: '#6A1B9A', flexShrink: 0
         }}>‹</div>
         <div>
-          <div style={{ fontWeight: 700, fontSize: 16 }}>{group.customer_name}</div>
+          <div style={{ fontWeight: 700, fontSize: 16 }}>{group.customer_name || 'Cliente'}</div>
           <div style={{ fontSize: 12, color: '#888' }}>{sorted.length} mensagens</div>
         </div>
       </div>
@@ -130,8 +130,9 @@ export default function StoreMessages({ messages, storeId, apiFetch, onReload })
 
   const groups = {};
   messages.forEach(msg => {
-    const key = msg.from_store ? 'store' : msg.customer_id;
-    if (!groups[key]) groups[key] = { customer_id: msg.customer_id, customer_name: msg.customer_name, messages: [] };
+    const key = msg.customer_id; // sempre agrupa pelo cliente, independente de quem enviou
+    if (!groups[key]) groups[key] = { customer_id: msg.customer_id, customer_name: msg.from_store ? null : msg.customer_name, messages: [] };
+    if (!msg.from_store && !groups[key].customer_name) groups[key].customer_name = msg.customer_name;
     groups[key].messages.push(msg);
   });
 
@@ -172,7 +173,7 @@ export default function StoreMessages({ messages, storeId, apiFetch, onReload })
         setSelectedCustomer(group);
       }}>
         <div className="flex-between" style={{ marginBottom: 4 }}>
-          <span style={{ fontWeight: 700, fontSize: 15 }}>{group.customer_name}</span>
+          <span style={{ fontWeight: 700, fontSize: 15 }}>{group.customer_name || 'Cliente'}</span>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
             {unread && <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#6A1B9A' }} />}
             <span style={{ fontSize: 12, color: '#999' }}>

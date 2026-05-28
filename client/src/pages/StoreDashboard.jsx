@@ -1046,7 +1046,7 @@ export default function StoreDashboard() {
           <div className="card" style={{ background: '#E3F2FD', border: '1px solid #BBDEFB', marginBottom: 16 }}>
             <p className="text-xs text-muted" style={{ marginBottom: 4, fontWeight: 600 }}>Como funciona:</p>
             <p className="text-xs text-muted" style={{ marginBottom: 4 }}>
-              <strong>Parceiro:</strong> voce gera um link de convite, o motoboy se cadastra e recebe pedidos automaticamente.
+              <strong>Parceiro:</strong> você gera um link de convite, o motoboy se cadastra e recebe pedidos automaticamente.
             </p>
             <p className="text-xs text-muted">
               <strong>Independente:</strong> motoboys se cadastram sozinhos e escolhem quais pedidos aceitar.
@@ -1059,7 +1059,7 @@ export default function StoreDashboard() {
               <div className="flex-row" style={{ gap: 8 }}>
                 <input className="input" type="text" value={motoboyPhone}
                   onChange={e => setMotoboyPhone(e.target.value)}
-                  placeholder="WhatsApp do motoboy (ex: 11999999999)"
+                  placeholder="WhatsApp do motoboy"
                   style={{ flex: 1 }} />
                 <button className="btn btn-primary btn-sm"
                   onClick={generateInvite}
@@ -1531,26 +1531,32 @@ export default function StoreDashboard() {
           display: 'flex', flexDirection: 'column', zIndex: 100
         }}>
           {/* Marca */}
-          <div style={{ padding: '18px 16px 14px', borderBottom: '1px solid var(--border)' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <div style={{ padding: '16px 16px 14px', borderBottom: '1px solid var(--border)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
               {storeData?.logo ? (
                 <img src={storeData.logo} alt="Logo"
-                  style={{ width: 40, height: 40, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }}
+                  style={{ width: 56, height: 56, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }}
                   onError={e => { e.target.style.display = 'none'; }} />
               ) : (
                 <div style={{
-                  width: 40, height: 40, borderRadius: '50%', flexShrink: 0,
+                  width: 56, height: 56, borderRadius: '50%', flexShrink: 0,
                   background: 'linear-gradient(135deg, var(--primary), var(--primary-dark))',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  color: 'white', fontWeight: 800, fontSize: 18
+                  color: 'white', fontWeight: 800, fontSize: 24
                 }}>{(storeData?.name || 'L').charAt(0)}</div>
               )}
-              <div style={{ minWidth: 0 }}>
-                <div style={{ fontWeight: 700, fontSize: 13, color: '#1a1a1a', lineHeight: 1.3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              <div style={{ minWidth: 0, flex: 1 }}>
+                <div style={{ fontWeight: 800, fontSize: 15, color: '#1a1a1a', lineHeight: 1.3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                   {storeData?.name || 'Loja'}
                 </div>
-                <div style={{ fontSize: 11, fontWeight: 600, marginTop: 2, color: open ? 'var(--success)' : 'var(--danger)' }}>
-                  {open ? '● Aberta' : '● Fechada'}
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 6 }}>
+                  <div className="toggle-switch" onClick={toggleOpen} title={open ? 'Fechar loja' : 'Abrir loja'} style={{ transform: 'scale(0.85)', transformOrigin: 'left center' }}>
+                    <input type="checkbox" checked={open} readOnly />
+                    <span className="toggle-slider" />
+                  </div>
+                  <span style={{ fontSize: 11, fontWeight: 600, color: open ? 'var(--success)' : 'var(--danger)' }}>
+                    {open ? 'Aberta' : 'Fechada'}
+                  </span>
                 </div>
               </div>
             </div>
@@ -1597,15 +1603,6 @@ export default function StoreDashboard() {
 
           {/* Rodapé sidebar */}
           <div style={{ padding: '12px 16px', borderTop: '1px solid var(--border)', display: 'flex', flexDirection: 'column', gap: 8 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <div className="toggle-switch" onClick={toggleOpen} title={open ? 'Fechar loja' : 'Abrir loja'}>
-                <input type="checkbox" checked={open} readOnly />
-                <span className="toggle-slider" />
-              </div>
-              <span style={{ fontSize: 12, fontWeight: 600, color: open ? 'var(--success)' : 'var(--danger)' }}>
-                {open ? 'Loja Aberta' : 'Loja Fechada'}
-              </span>
-            </div>
             <button onClick={() => { if (storeData?.plan === 'premium') { setShowTV(true); } else { setShowUpgradeModal(true); } }}
               style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, padding: '8px 12px', background: '#1a1a2e', color: '#c8c8ff', border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
               📺 Ver na TV {storeData?.plan !== 'premium' && <span style={{ fontSize: 10, opacity: 0.6 }}>⭐</span>}

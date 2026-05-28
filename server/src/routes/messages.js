@@ -96,6 +96,21 @@ router.post('/reply', authMiddleware, async (req, res) => {
   res.json({ ok: true, id });
 });
 
+// Rota para o cliente ver sua conversa com uma loja
+router.get('/conversation/:storeId', authMiddleware, async (req, res) => {
+  const { storeId } = req.params;
+  const customerId = req.user.id;
+
+  const { data } = await supabase.from('store_messages')
+    .select('*')
+    .eq('store_id', storeId)
+    .eq('customer_id', customerId)
+    .order('created_at', { ascending: true })
+    .limit(100);
+
+  res.json({ data: data || [] });
+});
+
 router.get('/:storeId', authMiddleware, async (req, res) => {
   const { storeId } = req.params;
   const { data: store } = await supabase.from('stores').select('id, owner_id').eq('id', storeId).single();
