@@ -876,9 +876,10 @@ export default function MotoboyDashboard() {
     { key: 'perfil', label: 'Perfil', icon: '👤' },
   ];
 
-  // Só mostra no "ativo" pedidos que o motoboy já aceitou e está em rota
+  // Mostra como ativo qualquer pedido já atribuído a este motoboy (não entregue)
+  // Inclui confirmed/preparing/ready para quando a loja ainda não finalizou o preparo
   const activeDeliveries = myOrders.filter(o =>
-    ['assigned', 'picked_up', 'in_transit', 'arriving'].includes(o.status)
+    o.motoboy_id === user?.id && o.status !== 'delivered'
   );
   // Remove da lista "disponível" pedidos que já estão nos ativos (evita duplicata)
   const activeIds = new Set(activeDeliveries.map(o => o.id));
