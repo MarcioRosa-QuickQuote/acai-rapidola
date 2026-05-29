@@ -20,6 +20,10 @@ function initSocket(httpServer) {
 
         socket.join(`user:${user.id}`);
 
+        if (user.role === 'motoboy') {
+          socket.join('role:motoboy');
+        }
+
         if (user.role === 'store') {
           try {
             const { supabase } = require('../database');

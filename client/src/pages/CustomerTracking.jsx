@@ -350,11 +350,11 @@ export default function CustomerTracking() {
     joinOrder(id);
     loadOrder();
 
-    // Intervalo adaptativo: 8s se chegando/a caminho, 20s nos outros status.
-    // Reduz ~3x o uso de egress do Supabase sem perder responsividade no momento crítico.
+    // Polling como fallback de segurança — socket cobre atualizações em real-time.
+    // 10s durante entrega ativa, 60s nos demais estados (aguardando preparo, etc.)
     const interval = setInterval(() => {
       loadOrder();
-    }, order && ['arriving', 'in_transit', 'picked_up'].includes(order.status) ? 8000 : 20000);
+    }, order && ['arriving', 'in_transit', 'picked_up'].includes(order.status) ? 10000 : 60000);
     return () => { clearInterval(interval); };
   }, [id, order?.status]);
 
@@ -362,7 +362,10 @@ export default function CustomerTracking() {
     if (!socket) return;
     socket.on('order_status', (data) => {
       if (data.orderId === id) {
+        // Atualiza status imediatamente (sem esperar loadOrder)
         setOrder(prev => prev ? { ...prev, status: data.status } : prev);
+        // Recarrega completo para pegar motoboy_id, motoboy_name, etc.
+        loadOrder();
       }
     });
     socket.on('motoboy_location', (data) => {

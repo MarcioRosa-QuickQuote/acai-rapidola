@@ -169,7 +169,7 @@ export default function StoreDashboard() {
       joinStore(storeData.id);
       setOpen(!!storeData.open);
     }
-    const pollTimer = setInterval(loadOrders, 6000); // 6s: TV mode precisa de dados frescos
+    const pollTimer = setInterval(loadOrders, 30000); // fallback: socket cobre em real-time, 30s de segurança
     return () => clearInterval(pollTimer);
   }, [storeData]);
 

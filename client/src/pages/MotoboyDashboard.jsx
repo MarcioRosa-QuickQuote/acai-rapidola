@@ -755,17 +755,18 @@ export default function MotoboyDashboard() {
       if (d.employments && d.employments.length > 0) setIsLinked(true);
       if (d.total !== undefined) setEarnings({ total: d.total, pending: d.pending, list: d.earnings || [] });
     });
-    const interval = setInterval(loadData, 15000);
+    const interval = setInterval(loadData, 30000); // fallback — socket cobre em real-time
     return () => clearInterval(interval);
   }, []);
 
   useEffect(() => {
     if (!socket) return;
     socket.on('order_updated', () => loadData());
-    socket.on('new_order', () => loadData());
+    // new_available_order: servidor emite para sala role:motoboy quando pedido novo chega
+    socket.on('new_available_order', () => loadData());
     return () => {
       socket.off('order_updated');
-      socket.off('new_order');
+      socket.off('new_available_order');
     };
   }, [socket]);
 

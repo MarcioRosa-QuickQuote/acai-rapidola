@@ -103,6 +103,8 @@ router.post('/', authMiddleware, roleMiddleware('customer'), async (req, res) =>
   const io = getIO();
   if (io) {
     io.to(`store:${store_id}`).emit('new_order', { orderId, total, customer: req.user.name, address });
+    // Avisa motoboys vinculados/avulsos que há novo pedido disponível
+    io.to('role:motoboy').emit('new_available_order', { orderId, storeId: store_id });
   }
 
   await notifyUser(store.owner_id, 'Novo Pedido!', `${req.user.name} fez um pedido de R$ ${total.toFixed(2)}`, 'order');
@@ -436,6 +438,8 @@ router.patch('/:id/status', authMiddleware, async (req, res) => {
   const io = getIO();
   if (io) {
     io.to(`order:${req.params.id}`).emit('order_status', { orderId: req.params.id, status });
+    // Loja recebe atualizações de qualquer origem (motoboy entregou, cliente cancelou, etc.)
+    io.to(`store:${order.store_id}`).emit('order_status', { orderId: req.params.id, status });
     if (order.motoboy_id) {
       io.to(`user:${order.motoboy_id}`).emit('order_updated', { orderId: req.params.id, status });
     }
