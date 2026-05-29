@@ -360,6 +360,8 @@ export default function CustomerTracking() {
 
   useEffect(() => {
     if (!socket) return;
+    // Ao reconectar: re-entra na sala do pedido e recarrega (eventos perdidos durante o drop)
+    socket.on('connect', () => { joinOrder(id); loadOrder(); });
     socket.on('order_status', (data) => {
       if (data.orderId === id) {
         // Atualiza status imediatamente (sem esperar loadOrder)
@@ -386,6 +388,7 @@ export default function CustomerTracking() {
       }
     });
     return () => {
+      socket.off('connect');
       socket.off('order_status');
       socket.off('motoboy_location');
       socket.off('notification');

@@ -761,10 +761,13 @@ export default function MotoboyDashboard() {
 
   useEffect(() => {
     if (!socket) return;
+    // Ao reconectar: recarrega dados imediatamente (eventos perdidos durante o drop)
+    socket.on('connect', () => loadData());
     socket.on('order_updated', () => loadData());
     // new_available_order: servidor emite para sala role:motoboy quando pedido novo chega
     socket.on('new_available_order', () => loadData());
     return () => {
+      socket.off('connect');
       socket.off('order_updated');
       socket.off('new_available_order');
     };

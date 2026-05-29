@@ -191,6 +191,11 @@ export default function StoreDashboard() {
 
   useEffect(() => {
     if (!socket) return;
+    // Ao reconectar: recarrega dados e re-entra na sala da loja (servidor perde membros no drop)
+    socket.on('connect', () => {
+      loadOrders();
+      if (storeIdRef.current) joinStore(storeIdRef.current);
+    });
     socket.on('new_order', () => loadOrders());
     socket.on('order_paid', () => { loadOrders(); setToast('Pagamento confirmado! Prepare o açaí!'); });
     socket.on('order_status', (data) => {
@@ -213,6 +218,7 @@ export default function StoreDashboard() {
     });
     if (storeData) joinStore(storeData.id);
     return () => {
+      socket.off('connect');
       socket.off('new_order');
       socket.off('order_paid');
       socket.off('order_status');
