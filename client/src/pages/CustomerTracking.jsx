@@ -607,6 +607,11 @@ export default function CustomerTracking() {
               )}
               {chatMessages.map(msg => {
                 const isCustomer = !msg.from_store; // cliente = direita
+                // Para mensagem da loja usa store_name do pedido (nome oficial da loja);
+                // para mensagem do cliente usa customer_name gravado no DB.
+                const senderName = isCustomer
+                  ? (msg.customer_name || 'Você')
+                  : (order.store_name || msg.customer_name || 'Loja');
                 return (
                   <div key={msg.id} style={{ display: 'flex', flexDirection: 'column', alignItems: isCustomer ? 'flex-end' : 'flex-start', marginBottom: 10 }}>
                     <div style={{
@@ -614,17 +619,19 @@ export default function CustomerTracking() {
                       background: isCustomer ? '#6A1B9A' : '#fff',
                       color: isCustomer ? 'white' : '#333',
                       borderRadius: isCustomer ? '16px 16px 4px 16px' : '16px 16px 16px 4px',
-                      padding: '10px 14px',
+                      padding: '8px 14px 10px',
                       fontSize: 14,
                       lineHeight: 1.4,
                       wordBreak: 'break-word',
                       boxShadow: '0 1px 4px rgba(0,0,0,0.08)'
                     }}>
-                      {!isCustomer && (
-                        <div style={{ fontSize: 11, fontWeight: 700, color: '#6A1B9A', marginBottom: 4 }}>
-                          {order.store_name || 'Loja'}
-                        </div>
-                      )}
+                      {/* Nome do remetente — estilo zap */}
+                      <div style={{
+                        fontSize: 11, fontWeight: 700, marginBottom: 3,
+                        color: isCustomer ? 'rgba(255,255,255,0.75)' : '#6A1B9A'
+                      }}>
+                        {senderName}
+                      </div>
                       <div>{msg.message}</div>
                       <div style={{ fontSize: 10, marginTop: 4, color: isCustomer ? 'rgba(255,255,255,0.6)' : '#aaa', textAlign: 'right' }}>
                         {new Date(msg.created_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}

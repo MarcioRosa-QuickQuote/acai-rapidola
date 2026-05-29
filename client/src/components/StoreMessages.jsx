@@ -105,10 +105,13 @@ function Conversation({ group, apiFetch, storeId, onBack, onReload }) {
         )}
       </div>
 
-      {/* Mensagens — sem botão "Ver pedido" em cada uma */}
+      {/* Mensagens */}
       <div style={{ flex: 1, overflowY: 'auto', padding: '0 4px' }}>
         {sorted.map(msg => {
           const isStore = msg.from_store;
+          // customer_name no DB guarda o nome de quem enviou:
+          // from_store=0 → nome do cliente; from_store=1 → nome do atendente
+          const senderName = msg.customer_name || (isStore ? 'Loja' : 'Cliente');
           return (
             <div key={msg.id} style={{ display: 'flex', flexDirection: 'column', alignItems: isStore ? 'flex-end' : 'flex-start', marginBottom: 10 }}>
               <div style={{
@@ -116,11 +119,18 @@ function Conversation({ group, apiFetch, storeId, onBack, onReload }) {
                 background: isStore ? '#6A1B9A' : '#F0F0F0',
                 color: isStore ? 'white' : '#333',
                 borderRadius: isStore ? '16px 16px 4px 16px' : '16px 16px 16px 4px',
-                padding: '10px 14px',
+                padding: '8px 14px 10px',
                 fontSize: 14,
                 lineHeight: 1.4,
                 wordBreak: 'break-word'
               }}>
+                {/* Nome do remetente — estilo zap */}
+                <div style={{
+                  fontSize: 11, fontWeight: 700, marginBottom: 3,
+                  color: isStore ? 'rgba(255,255,255,0.75)' : '#6A1B9A'
+                }}>
+                  {senderName}
+                </div>
                 <div>{msg.message}</div>
                 <div style={{ fontSize: 10, marginTop: 4, color: isStore ? 'rgba(255,255,255,0.6)' : '#999', textAlign: 'right' }}>
                   {new Date(msg.created_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
