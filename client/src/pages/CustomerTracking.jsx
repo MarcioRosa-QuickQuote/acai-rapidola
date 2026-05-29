@@ -338,7 +338,39 @@ export default function CustomerTracking() {
   const navigate = useNavigate();
   const [order, setOrder] = useState(null);
   const [motoboyPos, setMotoboyPos] = useState(null);
+  const [displayPos, setDisplayPos] = useState(null);   // posição interpolada (suave)
+  const displayPosRef = useRef(null);                   // ref para acessar dentro de callbacks
+  const animFrameRef = useRef(null);
+  const animStartRef = useRef(null);
+  const animFromRef  = useRef(null);
+  const animToRef    = useRef(null);
   const [eta, setEta] = useState(null);
+
+  // Anima o marcador do motoboy suavemente da posição atual até a nova posição real.
+  // Duração = intervalo de envio do GPS (~14s), então o marcador chega junto com o próximo update.
+  function animateToPos(to) {
+    cancelAnimationFrame(animFrameRef.current);
+    const from = displayPosRef.current || to;
+    animFromRef.current  = from;
+    animToRef.current    = to;
+    animStartRef.current = Date.now();
+    const DURATION = 14000; // ms
+
+    function tick() {
+      const t = Math.min((Date.now() - animStartRef.current) / DURATION, 1);
+      // Ease-out: começa rápido, desacelera no final
+      const ease = 1 - Math.pow(1 - t, 2);
+      const pos = {
+        lat:  from.lat  + (to.lat  - from.lat)  * ease,
+        lng:  from.lng  + (to.lng  - from.lng)  * ease,
+        name: to.name,
+      };
+      displayPosRef.current = pos;
+      setDisplayPos({ ...pos });
+      if (t < 1) animFrameRef.current = requestAnimationFrame(tick);
+    }
+    tick();
+  }
   const [showChatModal, setShowChatModal] = useState(false);
   const [showChatOrder, setShowChatOrder] = useState(false);
   const [chatMessages, setChatMessages] = useState([]);
@@ -372,7 +404,10 @@ export default function CustomerTracking() {
     });
     socket.on('motoboy_location', (data) => {
       if (data.orderId === id) {
-        setMotoboyPos({ lat: data.lat, lng: data.lng, name: data.motoboyName });
+        const newPos = { lat: data.lat, lng: data.lng, name: data.motoboyName };
+        setMotoboyPos(newPos);
+        // Inicia animação suave até a nova posição real
+        animateToPos(newPos);
         if (data.lat && data.lng && order) {
           const dist = Math.sqrt(
             Math.pow(data.lat - (order.customer_lat || -23.55), 2) +
@@ -402,7 +437,13 @@ export default function CustomerTracking() {
       if (data.motoboy_id) {
         const locData = await apiFetch(`/motoboy/location/${data.motoboy_id}`);
         if (locData.lat) {
-          setMotoboyPos({ lat: locData.lat, lng: locData.lng });
+          const pos = { lat: locData.lat, lng: locData.lng };
+          setMotoboyPos(pos);
+          // Primeira posição: coloca direto (sem animação) para não partir do zero
+          if (!displayPosRef.current) {
+            displayPosRef.current = pos;
+            setDisplayPos(pos);
+          }
         }
       }
     }
@@ -417,6 +458,11 @@ export default function CustomerTracking() {
   useEffect(() => {
     if (order?.store_id) loadChat(order.store_id);
   }, [order?.store_id]);
+
+  // Cancela animação ao desmontar (evita setState em componente morto)
+  useEffect(() => {
+    return () => cancelAnimationFrame(animFrameRef.current);
+  }, []);
 
   useEffect(() => {
     if (showChatModal) chatBottomRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -528,8 +574,11 @@ export default function CustomerTracking() {
                   <TileLayer attribution='&copy; OSM' url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
                   <Marker position={[order.store_lat, order.store_lng]} icon={L.divIcon({ html: '<img src="/logo_placa.png" style="width:44px;height:44px;object-fit:contain;filter:drop-shadow(0 2px 6px rgba(0,0,0,0.5))"/>', className: '', iconSize: [44, 44], iconAnchor: [22, 22] })} />
                   <Marker position={[order.customer_lat, order.customer_lng]} />
-                  {motoboyPos && (
-                    <Marker position={[motoboyPos.lat, motoboyPos.lng]} icon={L.divIcon({ html: '<img src="/saco_acai.png" style="width:52px;height:52px;object-fit:contain;filter:drop-shadow(0 2px 8px rgba(0,0,0,0.6))"/>', className: '', iconSize: [52, 52], iconAnchor: [26, 26] })} />
+                  {(displayPos || motoboyPos) && (
+                    <Marker
+                      position={[(displayPos || motoboyPos).lat, (displayPos || motoboyPos).lng]}
+                      icon={L.divIcon({ html: '<img src="/saco_acai.png" style="width:52px;height:52px;object-fit:contain;filter:drop-shadow(0 2px 8px rgba(0,0,0,0.6))"/>', className: '', iconSize: [52, 52], iconAnchor: [26, 26] })}
+                    />
                   )}
                   <RoutePolyline from={{ lat: order.store_lat, lng: order.store_lng }} to={{ lat: order.customer_lat, lng: order.customer_lng }} />
                 </MapContainer>
