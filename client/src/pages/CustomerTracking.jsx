@@ -547,13 +547,6 @@ export default function CustomerTracking() {
           <div className="text-sm" style={{ marginTop: 4 }}>
             <span style={{ color: '#888' }}>Loja: </span><span className="font-bold">{order.store_name}</span>
           </div>
-          <div style={{ marginTop: 8 }}>
-            <button onClick={(e) => { e.stopPropagation(); setShowChatModal(true); setMsgText(''); loadChat(order.store_id); }}
-              style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, color: 'var(--primary)', fontWeight: 600, background: 'none', border: 'none', cursor: 'pointer', padding: 0, textDecoration: 'underline' }}>
-              💬 Falar com a loja
-              {chatMessages.some(m => m.from_store) && <span style={{ background: '#6A1B9A', color: 'white', borderRadius: 10, fontSize: 10, fontWeight: 700, padding: '1px 5px' }}>{chatMessages.filter(m => m.from_store).length}</span>}
-            </button>
-          </div>
           <div className="text-sm" style={{ marginTop: 4 }}>
             <span style={{ color: '#888' }}>Endereço: </span><span>{order.customer_address}</span>
           </div>
@@ -573,6 +566,28 @@ export default function CustomerTracking() {
               ))}
             </div>
           )}
+          {/* Botão Falar com a loja — fixo no final do card */}
+          <button
+            onClick={(e) => { e.stopPropagation(); setShowChatModal(true); setMsgText(''); loadChat(order.store_id); }}
+            style={{
+              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+              width: '100%', marginTop: 14,
+              padding: '11px 16px',
+              background: 'white', color: '#6A1B9A',
+              border: '2px solid #6A1B9A', borderRadius: 12,
+              fontSize: 14, fontWeight: 700, cursor: 'pointer',
+              transition: 'background 0.15s, color 0.15s'
+            }}
+            onMouseEnter={e => { e.currentTarget.style.background = '#6A1B9A'; e.currentTarget.style.color = 'white'; }}
+            onMouseLeave={e => { e.currentTarget.style.background = 'white'; e.currentTarget.style.color = '#6A1B9A'; }}
+          >
+            💬 Falar com a loja
+            {chatMessages.some(m => m.from_store && !m.read) && (
+              <span style={{ background: '#6A1B9A', color: 'white', borderRadius: 10, fontSize: 10, fontWeight: 700, padding: '2px 7px', marginLeft: 2 }}>
+                {chatMessages.filter(m => m.from_store && !m.read).length}
+              </span>
+            )}
+          </button>
         </div>
       </div>
       <div style={{ height: 80 }} />
