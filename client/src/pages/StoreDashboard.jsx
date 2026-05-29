@@ -1941,10 +1941,10 @@ export default function StoreDashboard() {
 
         const btnBase = { width: 44, height: 44, borderRadius: 10, fontSize: 20, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', border: tvLight ? '1px solid #ddd' : '1px solid rgba(255,255,255,0.12)' };
 
-        // QR code — renderizado direto no topbar
+        // QR code — canto inferior direito da TV
         const qrBg = tvLight ? 'f0f2f5' : '0d0d1a';
         const qrFg = tvLight ? '1a1a1a' : 'ffffff';
-        const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=${encodeURIComponent(window.location.origin)}&bgcolor=${qrBg}&color=${qrFg}&qzone=1`;
+        const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${encodeURIComponent(window.location.origin)}&bgcolor=${qrBg}&color=${qrFg}&qzone=1`;
 
         // ── View 1: KANBAN ────────────────────────────────────────────────────
         const renderKanban = () => (
@@ -2195,14 +2195,6 @@ export default function StoreDashboard() {
               </div>
               <div style={{ color: tvText, fontWeight: 800, fontSize: 38, fontVariantNumeric: 'tabular-nums', letterSpacing: 2 }}>{tvTime}</div>
 
-              {/* QR code fixo no topbar — não interfere no scroll */}
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, opacity: 0.45, flexShrink: 0 }}>
-                <img src={qrUrl} alt="QR" style={{ width: 46, height: 46, borderRadius: 5 }} />
-                <div style={{ color: tvSub, fontSize: 7, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.3, textAlign: 'center', lineHeight: 1.4 }}>
-                  🍇 Baixe o app
-                </div>
-              </div>
-
               <div style={{ display: 'flex', gap: 7, alignItems: 'center', flexShrink: 0 }}>
 
                 {/* Dropdown de visualização */}
@@ -2284,6 +2276,18 @@ export default function StoreDashboard() {
             {tvLayout === 'kanban' && renderKanban()}
             {tvLayout === 'fila'   && renderFila()}
             {tvLayout === 'linha'  && renderLinha()}
+
+            {/* QR fixo no canto inferior direito — visível em todos os layouts */}
+            <div style={{
+              position: 'absolute', bottom: 24, right: 28, zIndex: 10,
+              display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6,
+              opacity: 0.55, pointerEvents: 'none'
+            }}>
+              <img src={qrUrl} alt="QR" style={{ width: 90, height: 90, borderRadius: 8, display: 'block' }} />
+              <div style={{ color: tvSub, fontSize: 9, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, textAlign: 'center', lineHeight: 1.4 }}>
+                🍇 Baixe o app
+              </div>
+            </div>
           </div>
         );
       })()}
