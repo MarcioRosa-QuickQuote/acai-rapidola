@@ -6,7 +6,7 @@ import { useSocket } from '../contexts/SocketContext';
 import { MapContainer, TileLayer, Marker } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import RoutePolyline from '../components/RouteMap';
+import RoutePolyline, { useRoute, snapToRoute } from '../components/RouteMap';
 
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
@@ -340,14 +340,16 @@ export default function CustomerTracking() {
   const [motoboyPos, setMotoboyPos] = useState(null);
   const [displayPos, setDisplayPos] = useState(null);   // posição interpolada (suave)
   const displayPosRef = useRef(null);                   // ref para acessar dentro de callbacks
-  const animFrameRef = useRef(null);
-  const animStartRef = useRef(null);
-  const animFromRef  = useRef(null);
-  const animToRef    = useRef(null);
+  const animFrameRef   = useRef(null);
+  const animStartRef   = useRef(null);
+  const animFromRef    = useRef(null);
+  const animToRef      = useRef(null);
+  const routeCoordsRef = useRef(null); // coords da rota OSRM — atualizado via useEffect
   const [eta, setEta] = useState(null);
 
-  // Anima o marcador do motoboy suavemente da posição atual até a nova posição real.
-  // Duração = intervalo de envio do GPS (~14s), então o marcador chega junto com o próximo update.
+  // Anima o marcador suavemente até a nova posição GPS real.
+  // A cada frame, projeta a posição interpolada na rota (snap to route)
+  // para que o saquinho nunca apareça fora da rua.
   function animateToPos(to) {
     cancelAnimationFrame(animFrameRef.current);
     const from = displayPosRef.current || to;
@@ -358,13 +360,16 @@ export default function CustomerTracking() {
 
     function tick() {
       const t = Math.min((Date.now() - animStartRef.current) / DURATION, 1);
-      // Ease-out: começa rápido, desacelera no final
-      const ease = 1 - Math.pow(1 - t, 2);
-      const pos = {
-        lat:  from.lat  + (to.lat  - from.lat)  * ease,
-        lng:  from.lng  + (to.lng  - from.lng)  * ease,
-        name: to.name,
+      const ease = 1 - Math.pow(1 - t, 2); // ease-out
+      const raw = {
+        lat: from.lat + (to.lat - from.lat) * ease,
+        lng: from.lng + (to.lng - from.lng) * ease,
       };
+      // Projeta na rua mais próxima da rota calculada — sem snap não tem rota ainda
+      const snapped = routeCoordsRef.current
+        ? snapToRoute(raw, routeCoordsRef.current)
+        : raw;
+      const pos = { ...snapped, name: to.name };
       displayPosRef.current = pos;
       setDisplayPos({ ...pos });
       if (t < 1) animFrameRef.current = requestAnimationFrame(tick);
@@ -377,6 +382,14 @@ export default function CustomerTracking() {
   const [msgText, setMsgText] = useState('');
   const [msgSending, setMsgSending] = useState(false);
   const chatBottomRef = useRef(null);
+
+  // Rota loja → cliente via OSRM (mesma rota que aparece no mapa).
+  // Usada pelo animateToPos para manter o saquinho sobre as ruas.
+  const { coords: routeCoords } = useRoute(
+    order ? { lat: order.store_lat,    lng: order.store_lng }    : {},
+    order ? { lat: order.customer_lat, lng: order.customer_lng } : {}
+  );
+  useEffect(() => { routeCoordsRef.current = routeCoords ?? null; }, [routeCoords]);
 
   useEffect(() => {
     joinOrder(id);

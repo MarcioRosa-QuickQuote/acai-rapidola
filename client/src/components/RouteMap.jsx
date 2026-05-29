@@ -89,6 +89,30 @@ function parseInstruction(step) {
   return { type, modifier, text, dist, street, location };
 }
 
+// Pé perpendicular do ponto p sobre o segmento a→b
+function closestPointOnSegment(p, a, b) {
+  const dx = b.lng - a.lng, dy = b.lat - a.lat;
+  const lenSq = dx * dx + dy * dy;
+  if (lenSq === 0) return a;
+  const t = Math.max(0, Math.min(1, ((p.lng - a.lng) * dx + (p.lat - a.lat) * dy) / lenSq));
+  return { lat: a.lat + t * dy, lng: a.lng + t * dx };
+}
+
+// Projeta pos no segmento mais próximo da rota — mantém o marcador na rua
+// coords: array [[lat, lng], ...] retornado por useRoute
+export function snapToRoute(pos, coords) {
+  if (!coords || coords.length < 2) return pos;
+  let minDist = Infinity, best = pos;
+  for (let i = 0; i < coords.length - 1; i++) {
+    const a = { lat: coords[i][0],     lng: coords[i][1] };
+    const b = { lat: coords[i + 1][0], lng: coords[i + 1][1] };
+    const foot = closestPointOnSegment(pos, a, b);
+    const d = Math.hypot(pos.lat - foot.lat, pos.lng - foot.lng);
+    if (d < minDist) { minDist = d; best = foot; }
+  }
+  return best;
+}
+
 export function useRoute(from, to) {
   const [routeData, setRouteData] = useState(null);
   // Mantém última rota boa enquanto carrega nova (sem piscar)
