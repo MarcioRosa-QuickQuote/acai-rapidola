@@ -1935,22 +1935,14 @@ export default function StoreDashboard() {
 
         const btnBase = { width: 44, height: 44, borderRadius: 10, fontSize: 20, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', border: tvLight ? '1px solid #ddd' : '1px solid rgba(255,255,255,0.12)' };
 
-        // QR code discreto no canto
+        // QR code — renderizado direto no topbar
         const qrBg = tvLight ? 'f0f2f5' : '0d0d1a';
         const qrFg = tvLight ? '1a1a1a' : 'ffffff';
         const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=${encodeURIComponent(window.location.origin)}&bgcolor=${qrBg}&color=${qrFg}&qzone=1`;
-        const QRCorner = (
-          <div style={{ position: 'absolute', bottom: 14, right: 18, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3, pointerEvents: 'none', opacity: 0.45 }}>
-            <img src={qrUrl} alt="QR App" style={{ width: 64, height: 64, borderRadius: 6 }} />
-            <div style={{ color: tvSub, fontSize: 9, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.4, textAlign: 'center', lineHeight: 1.4 }}>
-              🍇 Pé de Açaí<br/>Baixe nosso app
-            </div>
-          </div>
-        );
 
         // ── View 1: KANBAN ────────────────────────────────────────────────────
         const renderKanban = () => (
-          <div ref={tvScrollRef} style={{ flex: 1, overflow: 'auto', padding: '20px 28px', position: 'relative' }}>
+          <div ref={tvScrollRef} style={{ flex: 1, overflow: 'auto', padding: '20px 28px' }}>
             {tvActive.length === 0 ? (
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: tvSub, fontSize: 22, fontWeight: 600 }}>
                 Nenhum pedido ativo no momento
@@ -2008,7 +2000,6 @@ export default function StoreDashboard() {
                 ))}
               </div>
             )}
-            {QRCorner}
           </div>
         );
 
@@ -2019,7 +2010,7 @@ export default function StoreDashboard() {
         const filaStatusColor = { confirmed: '#E65100', preparing: '#1e88e5', ready: '#00a844', assigned: '#8e24aa' };
 
         const renderFila = () => (
-          <div ref={tvScrollRef} style={{ flex: 1, overflow: 'auto', padding: '16px 28px', position: 'relative' }}>
+          <div ref={tvScrollRef} style={{ flex: 1, overflow: 'auto', padding: '16px 28px' }}>
             {tvActive.length === 0 ? (
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', color: tvSub, gap: 12 }}>
                 <span style={{ fontSize: 56 }}>🍇</span>
@@ -2039,15 +2030,21 @@ export default function StoreDashboard() {
                       <div style={{ color: tvSub, fontSize: 16, textAlign: 'center', padding: '40px 0', fontStyle: 'italic' }}>Nenhum pedido em preparo</div>
                     ) : filaPrep.map(o => (
                       <div key={o.id} style={{ background: tvCard, borderRadius: 14, padding: '16px 20px', border: `1px solid ${tvDivider}`, borderLeft: `5px solid ${filaStatusColor[o.status] || '#1e88e5'}` }}>
-                        <div style={{ color: tvText, fontWeight: 900, fontSize: 28, lineHeight: 1.2, marginBottom: 6 }}>{o.customer_name}</div>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                          <div style={{ color: tvSub, fontSize: 14 }}>
-                            {(o.items || o.order_items || []).length} {(o.items || o.order_items || []).length === 1 ? 'item' : 'itens'} · #{String(o.id).slice(-4)}
-                          </div>
-                          <span style={{ color: filaStatusColor[o.status] || '#1e88e5', fontSize: 13, fontWeight: 800, background: `${filaStatusColor[o.status]}22`, padding: '4px 12px', borderRadius: 20, whiteSpace: 'nowrap' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
+                          <div style={{ color: tvText, fontWeight: 900, fontSize: 26, lineHeight: 1.2 }}>{o.customer_name}</div>
+                          <span style={{ color: filaStatusColor[o.status] || '#1e88e5', fontSize: 12, fontWeight: 800, background: `${filaStatusColor[o.status]}22`, padding: '4px 10px', borderRadius: 20, whiteSpace: 'nowrap', marginLeft: 10, flexShrink: 0 }}>
                             {filaStatusLabel[o.status] || o.status}
                           </span>
                         </div>
+                        {/* Itens do pedido */}
+                        <div style={{ borderTop: `1px solid ${tvDivider}`, paddingTop: 8, marginBottom: 6 }}>
+                          {(o.items || o.order_items || []).map((it, i) => (
+                            <div key={i} style={{ color: tvText, fontSize: 15, fontWeight: 600, lineHeight: 1.6 }}>
+                              {it.quantity}× {it.product_name || it.products?.name || 'Produto'}
+                            </div>
+                          ))}
+                        </div>
+                        <div style={{ color: tvSub, fontSize: 12 }}>#{String(o.id).slice(-4)}</div>
                       </div>
                     ))}
                   </div>
@@ -2065,14 +2062,22 @@ export default function StoreDashboard() {
                       <div style={{ color: tvSub, fontSize: 16, textAlign: 'center', padding: '40px 0', fontStyle: 'italic' }}>Nenhum pedido a caminho</div>
                     ) : filaCaminho.map(o => (
                       <div key={o.id} style={{ background: tvCard, borderRadius: 14, padding: '16px 20px', border: `1px solid ${tvDivider}`, borderLeft: '5px solid #00695C' }}>
-                        <div style={{ color: tvText, fontWeight: 900, fontSize: 28, lineHeight: 1.2, marginBottom: 6 }}>{o.customer_name}</div>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                          <div style={{ color: tvSub, fontSize: 14 }}>
-                            {o.motoboy_name ? `🛵 ${o.motoboy_name}` : `#${String(o.id).slice(-4)}`}
-                          </div>
-                          <span style={{ color: '#00695C', fontSize: 13, fontWeight: 800, background: 'rgba(0,105,92,0.12)', padding: '4px 12px', borderRadius: 20 }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
+                          <div style={{ color: tvText, fontWeight: 900, fontSize: 26, lineHeight: 1.2 }}>{o.customer_name}</div>
+                          <span style={{ color: '#00695C', fontSize: 12, fontWeight: 800, background: 'rgba(0,105,92,0.12)', padding: '4px 10px', borderRadius: 20, whiteSpace: 'nowrap', marginLeft: 10, flexShrink: 0 }}>
                             A caminho 🚀
                           </span>
+                        </div>
+                        {/* Itens do pedido */}
+                        <div style={{ borderTop: `1px solid ${tvDivider}`, paddingTop: 8, marginBottom: 6 }}>
+                          {(o.items || o.order_items || []).map((it, i) => (
+                            <div key={i} style={{ color: tvText, fontSize: 15, fontWeight: 600, lineHeight: 1.6 }}>
+                              {it.quantity}× {it.product_name || it.products?.name || 'Produto'}
+                            </div>
+                          ))}
+                        </div>
+                        <div style={{ color: tvSub, fontSize: 13 }}>
+                          {o.motoboy_name ? `🛵 ${o.motoboy_name}` : `#${String(o.id).slice(-4)}`}
                         </div>
                       </div>
                     ))}
@@ -2080,7 +2085,6 @@ export default function StoreDashboard() {
                 </div>
               </div>
             )}
-            {QRCorner}
           </div>
         );
 
@@ -2100,7 +2104,7 @@ export default function StoreDashboard() {
         const tdS = { padding: '11px 14px', borderBottom: `1px solid ${tvDivider}`, verticalAlign: 'middle' };
 
         const renderLinha = () => (
-          <div ref={tvScrollRef} style={{ flex: 1, overflow: 'auto', padding: '16px 24px', position: 'relative' }}>
+          <div ref={tvScrollRef} style={{ flex: 1, overflow: 'auto', padding: '16px 24px' }}>
             {tvActive.length === 0 ? (
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: tvSub, fontSize: 22, fontWeight: 600 }}>
                 Nenhum pedido ativo no momento
@@ -2168,7 +2172,6 @@ export default function StoreDashboard() {
                 </tbody>
               </table>
             )}
-            {QRCorner}
           </div>
         );
 
@@ -2185,22 +2188,30 @@ export default function StoreDashboard() {
                 <div style={{ fontSize: 12, fontWeight: 600, marginTop: 2, color: open ? '#00a844' : '#e53935' }}>{open ? '● Loja Aberta' : '● Loja Fechada'}</div>
               </div>
               <div style={{ color: tvText, fontWeight: 800, fontSize: 38, fontVariantNumeric: 'tabular-nums', letterSpacing: 2 }}>{tvTime}</div>
+
+              {/* QR code fixo no topbar — não interfere no scroll */}
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, opacity: 0.45, flexShrink: 0 }}>
+                <img src={qrUrl} alt="QR" style={{ width: 46, height: 46, borderRadius: 5 }} />
+                <div style={{ color: tvSub, fontSize: 7, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.3, textAlign: 'center', lineHeight: 1.4 }}>
+                  🍇 Baixe o app
+                </div>
+              </div>
+
               <div style={{ display: 'flex', gap: 7, alignItems: 'center', flexShrink: 0 }}>
 
-                {/* Seletor de visualização */}
-                {[
-                  { id: 'kanban', icon: '⊞', title: 'Kanban — grupos por status' },
-                  { id: 'fila',   icon: '📋', title: 'Fila — virado para clientes' },
-                  { id: 'linha',  icon: '≡',  title: 'Lista compacta (KDS)' },
-                ].map(l => (
-                  <button key={l.id} onClick={() => setTvLayout(l.id)} title={l.title}
-                    style={{ ...btnBase, fontSize: l.id === 'linha' ? 26 : 19,
-                      background: tvLayout === l.id ? (tvLight ? '#e3f2fd' : 'rgba(30,136,229,0.18)') : tvLight ? '#f0f0f0' : 'rgba(255,255,255,0.07)',
-                      border: tvLayout === l.id ? '1px solid #1e88e5' : btnBase.border,
-                      color: tvLayout === l.id ? '#1e88e5' : tvLight ? '#555' : 'rgba(255,255,255,0.55)' }}>
-                    {l.icon}
-                  </button>
-                ))}
+                {/* Dropdown de visualização */}
+                <select value={tvLayout} onChange={e => setTvLayout(e.target.value)}
+                  style={{
+                    height: 38, padding: '0 10px', borderRadius: 8, fontSize: 13, fontWeight: 700, cursor: 'pointer',
+                    background: tvLight ? '#f0f0f0' : 'rgba(255,255,255,0.08)',
+                    color: tvLight ? '#333' : 'rgba(255,255,255,0.85)',
+                    border: tvLight ? '1px solid #ddd' : '1px solid rgba(255,255,255,0.18)',
+                    outline: 'none', appearance: 'auto'
+                  }}>
+                  <option value="kanban">⊞  Kanban</option>
+                  <option value="fila">📋  Fila</option>
+                  <option value="linha">≡  Lista compacta</option>
+                </select>
 
                 {/* Separador */}
                 <div style={{ width: 1, height: 28, background: tvHdrBorder, margin: '0 3px' }} />
