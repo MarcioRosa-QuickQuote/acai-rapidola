@@ -350,9 +350,13 @@ export default function CustomerTracking() {
     joinOrder(id);
     loadOrder();
 
-    const interval = setInterval(loadOrder, 5000);
+    // Intervalo adaptativo: 8s se chegando/a caminho, 20s nos outros status.
+    // Reduz ~3x o uso de egress do Supabase sem perder responsividade no momento crítico.
+    const interval = setInterval(() => {
+      loadOrder();
+    }, order && ['arriving', 'in_transit', 'picked_up'].includes(order.status) ? 8000 : 20000);
     return () => { clearInterval(interval); };
-  }, [id]);
+  }, [id, order?.status]);
 
   useEffect(() => {
     if (!socket) return;

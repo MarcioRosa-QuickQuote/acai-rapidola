@@ -755,7 +755,7 @@ export default function MotoboyDashboard() {
       if (d.employments && d.employments.length > 0) setIsLinked(true);
       if (d.total !== undefined) setEarnings({ total: d.total, pending: d.pending, list: d.earnings || [] });
     });
-    const interval = setInterval(loadData, 10000);
+    const interval = setInterval(loadData, 15000);
     return () => clearInterval(interval);
   }, []);
 
