@@ -340,6 +340,7 @@ export default function CustomerTracking() {
   const [motoboyPos, setMotoboyPos] = useState(null);
   const [eta, setEta] = useState(null);
   const [showChatModal, setShowChatModal] = useState(false);
+  const [showChatOrder, setShowChatOrder] = useState(false);
   const [chatMessages, setChatMessages] = useState([]);
   const [msgText, setMsgText] = useState('');
   const [msgSending, setMsgSending] = useState(false);
@@ -605,12 +606,54 @@ export default function CustomerTracking() {
             display: 'flex', flexDirection: 'column', maxHeight: '82vh'
           }}>
             {/* Header */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 20px', borderBottom: '1px solid #f0f0f0' }}>
-              <div>
-                <div style={{ fontWeight: 700, fontSize: 16 }}>💬 {order.store_name || 'Loja'}</div>
-                <div style={{ fontSize: 12, color: '#888', marginTop: 2 }}>Chat com a loja</div>
+            <div style={{ borderBottom: '1px solid #f0f0f0', flexShrink: 0 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '14px 20px' }}>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontWeight: 700, fontSize: 16 }}>💬 {order.store_name || 'Loja'}</div>
+                  <div style={{ fontSize: 12, color: '#888', marginTop: 2 }}>Chat com a loja</div>
+                </div>
+                {/* Botão Ver pedido — igual ao chat da loja */}
+                <button
+                  onClick={() => setShowChatOrder(v => !v)}
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: 5,
+                    background: showChatOrder ? '#6A1B9A' : '#F3E5F5',
+                    color: showChatOrder ? 'white' : '#6A1B9A',
+                    border: '1px solid #D1A8F0',
+                    borderRadius: 20, padding: '6px 12px',
+                    fontSize: 13, fontWeight: 700, cursor: 'pointer',
+                    flexShrink: 0, transition: 'all 0.15s'
+                  }}>
+                  📋 {showChatOrder ? 'Fechar pedido' : 'Ver pedido'}
+                </button>
+                <div onClick={() => setShowChatModal(false)} style={{ cursor: 'pointer', fontSize: 22, color: '#999', lineHeight: 1, padding: '4px 4px', flexShrink: 0 }}>✕</div>
               </div>
-              <div onClick={() => setShowChatModal(false)} style={{ cursor: 'pointer', fontSize: 22, color: '#999', lineHeight: 1, padding: '4px 8px' }}>✕</div>
+              {/* Painel do pedido expansível */}
+              {showChatOrder && (
+                <div style={{ padding: '0 20px 14px', borderTop: '1px solid #f0f0f0' }}>
+                  <div style={{ marginTop: 12, padding: 12, background: '#F3E5F5', borderRadius: 10, border: '1px solid #E1BEE7' }}>
+                    <div style={{ fontWeight: 700, fontSize: 13, color: '#6A1B9A', marginBottom: 8 }}>
+                      📋 Pedido #{order.id?.slice(-8)}
+                    </div>
+                    {(order.items || []).map((item, i) => (
+                      <div key={i} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, marginBottom: 3 }}>
+                        <span>{item.quantity}x {item.product_name || 'Produto'}</span>
+                        <span style={{ fontWeight: 600 }}>R$ {(item.unit_price * item.quantity).toFixed(2)}</span>
+                      </div>
+                    ))}
+                    {order.delivery_fee > 0 && (
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, marginTop: 4 }}>
+                        <span style={{ color: '#888' }}>Frete</span>
+                        <span>R$ {order.delivery_fee.toFixed(2)}</span>
+                      </div>
+                    )}
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 14, fontWeight: 700, color: '#6A1B9A', marginTop: 8, borderTop: '1px solid #E1BEE7', paddingTop: 8 }}>
+                      <span>Total</span>
+                      <span>R$ {order.total?.toFixed(2)}</span>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Mensagens */}
