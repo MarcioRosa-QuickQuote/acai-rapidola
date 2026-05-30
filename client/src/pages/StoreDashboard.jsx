@@ -1948,7 +1948,7 @@ export default function StoreDashboard() {
 
         // ── View 1: KANBAN ────────────────────────────────────────────────────
         const renderKanban = () => (
-          <div ref={tvScrollRef} style={{ flex: 1, overflow: 'auto', padding: '20px 28px' }}>
+          <div ref={tvScrollRef} style={{ flex: 1, overflow: 'auto', padding: '20px 28px', paddingBottom: 140 }}>
             {tvActive.length === 0 ? (
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: tvSub, fontSize: 22, fontWeight: 600 }}>
                 Nenhum pedido ativo no momento
@@ -2016,7 +2016,7 @@ export default function StoreDashboard() {
         const filaStatusColor = { confirmed: '#E65100', preparing: '#1e88e5', ready: '#00a844', assigned: '#8e24aa' };
 
         const renderFila = () => (
-          <div ref={tvScrollRef} style={{ flex: 1, overflow: 'auto', padding: '16px 28px' }}>
+          <div ref={tvScrollRef} style={{ flex: 1, overflow: 'auto', padding: '16px 28px', paddingBottom: 140 }}>
             {tvActive.length === 0 ? (
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', color: tvSub, gap: 12 }}>
                 <span style={{ fontSize: 56 }}>🍇</span>
@@ -2110,7 +2110,7 @@ export default function StoreDashboard() {
         const tdS = { padding: '11px 14px', borderBottom: `1px solid ${tvDivider}`, verticalAlign: 'middle' };
 
         const renderLinha = () => (
-          <div ref={tvScrollRef} style={{ flex: 1, overflow: 'auto', padding: '16px 24px' }}>
+          <div ref={tvScrollRef} style={{ flex: 1, overflow: 'auto', padding: '16px 24px', paddingBottom: 140 }}>
             {tvActive.length === 0 ? (
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: tvSub, fontSize: 22, fontWeight: 600 }}>
                 Nenhum pedido ativo no momento
