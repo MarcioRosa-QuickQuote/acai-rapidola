@@ -944,8 +944,15 @@ export default function MotoboyDashboard() {
           }} onClick={() => openNav(primary)}>
             {/* Círculo decorativo */}
             <div style={{ position: 'absolute', top: -28, right: -28, width: 130, height: 130, borderRadius: '50%', background: 'rgba(255,255,255,0.06)', pointerEvents: 'none' }} />
-            <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.65)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 10 }}>
-              🏍️ Entrega em andamento
+            {/* Topo: label + valor no canto direito */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10 }}>
+              <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.65)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1.2 }}>
+                🏍️ Entrega em andamento
+              </div>
+              <div style={{ textAlign: 'right', flexShrink: 0, marginLeft: 12 }}>
+                <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.55)', marginBottom: 1 }}>Valor</div>
+                <div style={{ fontSize: 20, fontWeight: 800, color: 'white', lineHeight: 1 }}>R$ {primary.total.toFixed(2)}</div>
+              </div>
             </div>
             {/* Linha 1 — nome do cliente (grande) */}
             <div style={{ fontSize: 22, fontWeight: 800, color: 'white', lineHeight: 1.2, marginBottom: 4 }}>
@@ -955,19 +962,11 @@ export default function MotoboyDashboard() {
             <div style={{ fontSize: 14, color: 'rgba(255,255,255,0.8)', marginBottom: 16, lineHeight: 1.4 }}>
               📍 {fmtAddr(primary.customer_address)}
             </div>
-            {/* Linha 3 — valor + status + ação (pequeno) */}
+            {/* Linha 3 — loja + status */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <div>
-                <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.55)', marginBottom: 2 }}>Valor</div>
-                <div style={{ fontSize: 20, fontWeight: 800, color: 'white' }}>R$ {primary.total.toFixed(2)}</div>
-              </div>
-              <div style={{ textAlign: 'right' }}>
-                <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.55)', marginBottom: 4 }}>
-                  🏪 {primary.store_name}
-                </div>
-                <div style={{ fontSize: 12, fontWeight: 700, color: 'white', background: 'rgba(255,255,255,0.16)', padding: '4px 12px', borderRadius: 20, display: 'inline-block' }}>
-                  {statusLabels[primary.status] || primary.status}
-                </div>
+              <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.65)' }}>🏪 {primary.store_name}</div>
+              <div style={{ fontSize: 12, fontWeight: 700, color: 'white', background: 'rgba(255,255,255,0.16)', padding: '4px 12px', borderRadius: 20 }}>
+                {statusLabels[primary.status] || primary.status}
               </div>
             </div>
             {/* Navegar chip */}
@@ -1392,6 +1391,18 @@ export default function MotoboyDashboard() {
             style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 20, lineHeight: 1, padding: 2, opacity: 0.8 }}>
             {darkMode ? '☀️' : '🌙'}
           </button>
+          {/* Avatar (sem nome) */}
+          <div style={{ cursor: 'pointer' }} onClick={() => setPageTab('perfil')}>
+            {user?.photo_url ? (
+              <img src={user.photo_url} alt="Foto"
+                style={{ width: 36, height: 36, borderRadius: '50%', objectFit: 'cover', display: 'block' }}
+                onError={e => { e.target.style.display = 'none'; }} />
+            ) : (
+              <div style={{ width: 36, height: 36, borderRadius: '50%', background: 'linear-gradient(135deg, #CE93D8, #6A1B9A)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 700, fontSize: 16 }}>
+                {user?.name?.charAt(0)?.toUpperCase()}
+              </div>
+            )}
+          </div>
           {/* Sino */}
           <div style={{ position: 'relative', cursor: 'pointer' }}>
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none"
@@ -1404,20 +1415,6 @@ export default function MotoboyDashboard() {
                 {notifications.length > 9 ? '9+' : notifications.length}
               </div>
             )}
-          </div>
-          {/* Avatar + nome */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}
-            onClick={() => setPageTab('perfil')}>
-            {user?.photo_url ? (
-              <img src={user.photo_url} alt="Foto"
-                style={{ width: 36, height: 36, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }}
-                onError={e => { e.target.style.display = 'none'; }} />
-            ) : (
-              <div style={{ width: 36, height: 36, borderRadius: '50%', background: 'linear-gradient(135deg, #CE93D8, #6A1B9A)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 700, fontSize: 16, flexShrink: 0 }}>
-                {user?.name?.charAt(0)?.toUpperCase()}
-              </div>
-            )}
-            <div style={{ fontSize: 13, fontWeight: 700, color: mb.text }}>{user?.name?.split(' ')[0]}</div>
           </div>
         </div>
       </div>
