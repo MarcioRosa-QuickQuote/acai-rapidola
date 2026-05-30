@@ -184,6 +184,7 @@ export default function StoreDashboard() {
         address: storeData.address || '',
         lat: String(storeData.lat),
         lng: String(storeData.lng),
+        pix_key: storeData.pix_key || localStorage.getItem('store_pix_key') || '',
         cpf_cnpj: storeData.cpf_cnpj || ''
       });
       setMapCenter([storeData.lat, storeData.lng]);
@@ -343,9 +344,9 @@ export default function StoreDashboard() {
         cpf_cnpj: settings.cpf_cnpj
       })
     });
-    if (data.ok) {
+    if (!data.error) {
       localStorage.setItem('store_pix_key', settings.pix_key);
-      if (data.name) setStore(data);
+      if (data.id) setStore(data);
       setSaveMsg('Configurações salvas!');
       setTimeout(() => setSaveMsg(''), 3000);
     }
