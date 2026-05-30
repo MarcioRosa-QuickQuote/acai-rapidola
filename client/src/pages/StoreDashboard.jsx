@@ -136,7 +136,8 @@ export default function StoreDashboard() {
   const [tvLayout, setTvLayout] = useState('kanban'); // 'kanban' | 'fila' | 'linha'
   const [tvShowPrices, setTvShowPrices] = useState(false);
   const [tvQrVisible, setTvQrVisible] = useState(true);
-  const tvScrollRef = useRef(null);
+  const tvScrollRef  = useRef(null);
+  const tvOverlayRef = useRef(null); // ref do container fixo do modo TV
   const storeIdRef = useRef(null); // ref para evitar stale closure no socket listener
   const [motoboyAlert, setMotoboyAlert] = useState(null); // { name, orderId, type, distanceMeters }
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
@@ -585,26 +586,34 @@ export default function StoreDashboard() {
     return () => { clearInterval(iv); timers.forEach(clearTimeout); };
   }, [showTV, tvLayout]);
 
-  // Mostra QR apenas quando o conteúdo não preenche a tela toda.
-  // Usa ResizeObserver para medir DEPOIS que o browser terminou o layout —
-  // mais confiável que setTimeout para views com alturas variáveis.
+  // Mostra QR apenas quando o canto inferior direito está livre.
+  // Usa elementsFromPoint no pixel central do QR — se houver um elemento
+  // filho do scroll container nessa posição, há um card lá → esconde QR.
   useEffect(() => {
     if (!showTV) return;
     const check = () => {
-      const el = tvScrollRef.current;
-      if (!el) { setTvQrVisible(true); return; }
-      setTvQrVisible(el.scrollHeight <= el.clientHeight + 8);
+      const overlay   = tvOverlayRef.current;
+      const scrollEl  = tvScrollRef.current;
+      if (!overlay || !scrollEl) { setTvQrVisible(true); return; }
+
+      const rect = overlay.getBoundingClientRect();
+      // Centro do bloco QR: bottom 24 + 90/2 = 69px do baixo; right 28 + 90/2 = 73px da direita
+      const x = rect.right  - 73;
+      const y = rect.bottom - 69;
+
+      const els = document.elementsFromPoint(x, y) || [];
+      // Tem conteúdo se algum elemento for descendente do scroll (i.e., card real)
+      const hasCard = els.some(el =>
+        el !== overlay && el !== scrollEl &&
+        el !== document.body && el !== document.documentElement &&
+        scrollEl.contains(el)
+      );
+      setTvQrVisible(!hasCard);
     };
-    let observer = null;
-    // Aguarda um tick para o novo layout montar antes de observar
-    const t = setTimeout(() => {
-      check();
-      if (tvScrollRef.current && typeof ResizeObserver !== 'undefined') {
-        observer = new ResizeObserver(check);
-        observer.observe(tvScrollRef.current);
-      }
-    }, 60);
-    return () => { clearTimeout(t); observer?.disconnect(); };
+
+    // 200ms: aguarda React commit + browser layout dos novos cards
+    const t = setTimeout(check, 200);
+    return () => clearTimeout(t);
   }, [showTV, tvLayout, orders]);
 
   // WakeLock: impede a tela de dormir no modo TV
@@ -2205,7 +2214,7 @@ export default function StoreDashboard() {
         );
 
         return (
-          <div style={{ position: 'fixed', inset: 0, background: tvBg, zIndex: 9999, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+          <div ref={tvOverlayRef} style={{ position: 'fixed', inset: 0, background: tvBg, zIndex: 9999, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
 
             {/* Barra superior */}
             <div style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '12px 28px', borderBottom: `1px solid ${tvHdrBorder}`, flexShrink: 0, background: tvHdrBg }}>
@@ -2310,7 +2319,7 @@ export default function StoreDashboard() {
               transition: 'opacity 0.5s ease'
             }}>
               <div style={{ color: tvText, fontSize: 15, fontWeight: 800, letterSpacing: 0.5, textAlign: 'center', lineHeight: 1.2 }}>
-                🍇 Pé de Açaí
+                Pé de Açaí
               </div>
               <img src={qrUrl} alt="QR" style={{ width: 90, height: 90, borderRadius: 8, display: 'block' }} />
               <div style={{ color: tvSub, fontSize: 9, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, textAlign: 'center', lineHeight: 1.4 }}>
