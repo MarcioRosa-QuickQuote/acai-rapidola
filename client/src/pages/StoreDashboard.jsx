@@ -602,12 +602,9 @@ export default function StoreDashboard() {
       const y = rect.bottom - 69;
 
       const els = document.elementsFromPoint(x, y) || [];
-      // Tem conteúdo se algum elemento for descendente do scroll (i.e., card real)
-      const hasCard = els.some(el =>
-        el !== overlay && el !== scrollEl &&
-        el !== document.body && el !== document.documentElement &&
-        scrollEl.contains(el)
-      );
+      // Tem conteúdo apenas se houver um card real ([data-tv-card]) nesse ponto
+      // Wrapper divs/trs sem o atributo não contam como bloqueadores
+      const hasCard = els.some(el => el.closest?.('[data-tv-card]'));
       setTvQrVisible(!hasCard);
     };
 
@@ -1998,7 +1995,7 @@ export default function StoreDashboard() {
                       {group.orders.map(o => {
                         const action = getAction(o);
                         return (
-                          <div key={o.id} style={{ background: tvCard, borderRadius: 14, padding: '18px 20px', border: `1px solid ${group.border}` }}>
+                          <div key={o.id} data-tv-card="1" style={{ background: tvCard, borderRadius: 14, padding: '18px 20px', border: `1px solid ${group.border}` }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10 }}>
                               <div style={{ color: tvText, fontWeight: 800, fontSize: 18, lineHeight: 1.3 }}>{o.customer_name}</div>
                               <span style={{ color: group.color, fontSize: 12, fontWeight: 700, background: group.bg, padding: '3px 10px', borderRadius: 6, border: `1px solid ${group.border}`, whiteSpace: 'nowrap', marginLeft: 10, flexShrink: 0 }}>
@@ -2067,7 +2064,7 @@ export default function StoreDashboard() {
                     {filaPrep.length === 0 ? (
                       <div style={{ color: tvSub, fontSize: 16, textAlign: 'center', padding: '40px 0', fontStyle: 'italic' }}>Nenhum pedido em preparo</div>
                     ) : filaPrep.map(o => (
-                      <div key={o.id} style={{ background: tvCard, borderRadius: 14, padding: '16px 20px', border: `1px solid ${tvDivider}`, borderLeft: `5px solid ${filaStatusColor[o.status] || '#1e88e5'}` }}>
+                      <div key={o.id} data-tv-card="1" style={{ background: tvCard, borderRadius: 14, padding: '16px 20px', border: `1px solid ${tvDivider}`, borderLeft: `5px solid ${filaStatusColor[o.status] || '#1e88e5'}` }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
                           <div style={{ color: tvText, fontWeight: 900, fontSize: 26, lineHeight: 1.2 }}>{o.customer_name}</div>
                           <span style={{ color: filaStatusColor[o.status] || '#1e88e5', fontSize: 12, fontWeight: 800, background: `${filaStatusColor[o.status]}22`, padding: '4px 10px', borderRadius: 20, whiteSpace: 'nowrap', marginLeft: 10, flexShrink: 0 }}>
@@ -2099,7 +2096,7 @@ export default function StoreDashboard() {
                     {filaCaminho.length === 0 ? (
                       <div style={{ color: tvSub, fontSize: 16, textAlign: 'center', padding: '40px 0', fontStyle: 'italic' }}>Nenhum pedido a caminho</div>
                     ) : filaCaminho.map(o => (
-                      <div key={o.id} style={{ background: tvCard, borderRadius: 14, padding: '16px 20px', border: `1px solid ${tvDivider}`, borderLeft: '5px solid #00695C' }}>
+                      <div key={o.id} data-tv-card="1" style={{ background: tvCard, borderRadius: 14, padding: '16px 20px', border: `1px solid ${tvDivider}`, borderLeft: '5px solid #00695C' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
                           <div style={{ color: tvText, fontWeight: 900, fontSize: 26, lineHeight: 1.2 }}>{o.customer_name}</div>
                           <span style={{ color: '#00695C', fontSize: 12, fontWeight: 800, background: 'rgba(0,105,92,0.12)', padding: '4px 10px', borderRadius: 20, whiteSpace: 'nowrap', marginLeft: 10, flexShrink: 0 }}>
@@ -2166,7 +2163,7 @@ export default function StoreDashboard() {
                     const action = getAction(o);
                     const si = linhaStatusInfo[o.status] || { label: o.status, color: tvSub, bg: tvStatBg };
                     return (
-                      <tr key={o.id} style={{ background: idx % 2 === 0 ? 'transparent' : tvLight ? 'rgba(0,0,0,0.02)' : 'rgba(255,255,255,0.02)' }}>
+                      <tr key={o.id} data-tv-card="1" style={{ background: idx % 2 === 0 ? 'transparent' : tvLight ? 'rgba(0,0,0,0.02)' : 'rgba(255,255,255,0.02)' }}>
                         <td style={{ ...tdS, color: tvSub, fontSize: 14, fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap' }}>
                           {new Date(o.created_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
                         </td>
