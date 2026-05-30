@@ -685,7 +685,7 @@ function NavScreen({ order, onClose, onStatusUpdate, statusLabel }) {
 
 export default function MotoboyDashboard() {
   const { user, apiFetch, logout } = useAuth();
-  const { socket, setToast } = useSocket();
+  const { socket, setToast, notifications } = useSocket();
   const [availableOrders, setAvailableOrders] = useState([]);
   const [myOrders, setMyOrders] = useState([]);
   const [store, setStore] = useState(null);
@@ -1272,6 +1272,14 @@ export default function MotoboyDashboard() {
             setTimeout(() => setPwMsg(''), 4000);
           }} disabled={pwSaving}>{pwSaving ? 'Salvando...' : 'Alterar Senha'}</button>
         </div>
+
+        {/* Sair */}
+        <div style={{ borderTop: '1px solid var(--border)', marginTop: 24, paddingTop: 16 }}>
+          <button className="btn btn-outline" onClick={logout}
+            style={{ width: '100%', color: '#C62828', borderColor: '#FFCDD2', fontWeight: 600 }}>
+            🚪 Sair da Conta
+          </button>
+        </div>
       </div>
     );
   }
@@ -1282,29 +1290,45 @@ export default function MotoboyDashboard() {
         <div className="header-left" style={{ gap: 10 }}>
           <img src="/logo_placa.png" alt="Pé de Açaí" style={{ width: 90, height: 90, objectFit: 'contain', flexShrink: 0 }} />
         </div>
-        <div className="header-right" style={{ gap: 10 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer' }}
+        <div className="header-right" style={{ gap: 14 }}>
+          {/* Sino de notificações */}
+          <div style={{ position: 'relative', cursor: 'pointer' }}>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
+              stroke="var(--text-light)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+              <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+            </svg>
+            {notifications.length > 0 && (
+              <div style={{
+                position: 'absolute', top: -4, right: -4,
+                width: 16, height: 16, borderRadius: '50%',
+                background: '#C62828', color: 'white',
+                fontSize: 9, fontWeight: 700,
+                display: 'flex', alignItems: 'center', justifyContent: 'center'
+              }}>
+                {notifications.length > 9 ? '9+' : notifications.length}
+              </div>
+            )}
+          </div>
+          {/* Avatar + nome */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}
             onClick={() => setPageTab('perfil')}>
             {user?.photo_url ? (
               <img src={user.photo_url} alt="Foto"
-                style={{ width: 42, height: 42, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }}
+                style={{ width: 38, height: 38, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }}
                 onError={e => { e.target.style.display = 'none'; }} />
             ) : (
               <div style={{
-                width: 42, height: 42, borderRadius: '50%',
+                width: 38, height: 38, borderRadius: '50%',
                 background: 'linear-gradient(135deg, #42A5F5, #1565C0)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                color: 'white', fontWeight: 700, fontSize: 18, flexShrink: 0
+                color: 'white', fontWeight: 700, fontSize: 17, flexShrink: 0
               }}>
                 {user?.name?.charAt(0)?.toUpperCase()}
               </div>
             )}
-            <div>
-              <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text)' }}>{user?.name?.split(' ')[0]}</div>
-              <div onClick={(e) => { e.stopPropagation(); logout(); }}
-                style={{ fontSize: 12, color: 'var(--text-light)', cursor: 'pointer' }}>
-                Sair
-              </div>
+            <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text)' }}>
+              {user?.name?.split(' ')[0]}
             </div>
           </div>
         </div>
