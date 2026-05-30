@@ -675,7 +675,7 @@ export default function CustomerTracking() {
             borderTopLeftRadius: 20, borderTopRightRadius: 20,
             paddingBottom: 'env(safe-area-inset-bottom, 0px)',
             boxShadow: '0 -4px 24px rgba(0,0,0,0.15)',
-            display: 'flex', flexDirection: 'column', maxHeight: '82vh'
+            display: 'flex', flexDirection: 'column', height: '82vh'
           }}>
             {/* Header */}
             <div style={{ borderBottom: '1px solid #f0f0f0', flexShrink: 0 }}>

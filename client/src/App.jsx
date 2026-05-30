@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
-import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from './contexts/AuthContext';
+import { App as CapApp } from '@capacitor/app';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Legal from './pages/Legal';
@@ -32,6 +33,23 @@ function ScrollToTop() {
   return null;
 }
 
+function BackButtonHandler() {
+  const navigate = useNavigate();
+  const location = useLocation();
+  useEffect(() => {
+    let handler;
+    CapApp.addListener('backButton', () => {
+      if (window.history.length > 1) {
+        navigate(-1);
+      } else {
+        CapApp.exitApp();
+      }
+    }).then(h => { handler = h; });
+    return () => { handler?.remove(); };
+  }, [navigate, location]);
+  return null;
+}
+
 export default function App() {
   const { user, loading } = useAuth();
 
@@ -42,6 +60,7 @@ export default function App() {
   return (
     <>
       <ScrollToTop />
+      <BackButtonHandler />
       <Routes>
       <Route path="/login" element={user ? <Navigate to={`/${user.role === 'customer' ? 'customer' : user.role}`} /> : <Login />} />
       <Route path="/register" element={user ? <Navigate to={`/${user.role === 'customer' ? 'customer' : user.role}`} /> : <Register />} />

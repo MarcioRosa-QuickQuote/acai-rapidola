@@ -66,10 +66,10 @@ function Conversation({ group, apiFetch, storeId, onBack, onReload }) {
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 160px)' }}>
+    <div style={{ position: 'fixed', inset: 0, zIndex: 300, background: 'white', display: 'flex', flexDirection: 'column' }}>
 
       {/* Cabeçalho fixo com nome + btn Ver Pedido */}
-      <div style={{ marginBottom: 10 }}>
+      <div style={{ flexShrink: 0, borderBottom: '1px solid var(--border)', padding: '12px 16px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           <div onClick={onBack} style={{
             width: 36, height: 36, borderRadius: '50%',
@@ -106,7 +106,7 @@ function Conversation({ group, apiFetch, storeId, onBack, onReload }) {
       </div>
 
       {/* Mensagens */}
-      <div style={{ flex: 1, overflowY: 'auto', padding: '0 4px' }}>
+      <div style={{ flex: 1, overflowY: 'auto', padding: '12px 16px', background: '#F8F4FC' }}>
         {sorted.map(msg => {
           const isStore = msg.from_store;
           // customer_name no DB guarda o nome de quem enviou:
@@ -142,7 +142,7 @@ function Conversation({ group, apiFetch, storeId, onBack, onReload }) {
         <div ref={bottomRef} />
       </div>
 
-      <div style={{ borderTop: '1px solid var(--border)', padding: '12px 0', display: 'flex', gap: 8, alignItems: 'flex-end' }}>
+      <div style={{ flexShrink: 0, borderTop: '1px solid var(--border)', padding: '12px 16px', display: 'flex', gap: 8, alignItems: 'flex-end', background: 'white', paddingBottom: 'max(12px, env(safe-area-inset-bottom))' }}>
         <textarea className="input" value={replyText} onChange={e => setReplyText(e.target.value)}
           placeholder="Digite sua resposta..."
           style={{ flex: 1, minHeight: 44, maxHeight: 120, resize: 'none', fontSize: 14 }}

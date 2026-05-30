@@ -127,6 +127,7 @@ export default function StoreDashboard() {
   const [cepLoading, setCepLoading] = useState(false);
   const [savingAddr, setSavingAddr] = useState(false);
   const [storeMessages, setStoreMessages] = useState([]);
+  const [showMotoboyInfo, setShowMotoboyInfo] = useState(false);
   const [unreadMessages, setUnreadMessages] = useState(0);
   const [showDesktopMenu, setShowDesktopMenu] = useState(false);
   const [showTV, setShowTV] = useState(false);
@@ -1013,55 +1014,59 @@ export default function StoreDashboard() {
               products.map(p => {
                 const isLow = p.active && p.stock_quantity != null && p.min_stock_alert != null && p.stock_quantity <= p.min_stock_alert;
                 return (
-                <div key={p.id} className="flex-between card" style={{
+                <div key={p.id} className="card" style={{
                   padding: '12px 16px',
                   opacity: p.active ? 1 : 0.5,
                   background: p.active ? (isLow ? '#FFF8E1' : 'white') : '#F5F5F5'
                 }}>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div className="flex-row" style={{ gap: 8, alignItems: 'center', marginBottom: 2 }}>
-                      <span className="font-bold text-sm" style={{
-                        textDecoration: p.active ? 'none' : 'line-through'
-                      }}>{p.name}</span>
+                  {/* Linha 1: nome + badges */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 2 }}>
+                    <span className="font-bold text-sm" style={{
+                      flex: 1, minWidth: 0,
+                      overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                      textDecoration: p.active ? 'none' : 'line-through'
+                    }}>{p.name}</span>
+                    <span className="badge" style={{
+                      background: '#E8F5E9', color: '#2E7D32', fontSize: 11, whiteSpace: 'nowrap', flexShrink: 0
+                    }}>{p.size_ml}ml</span>
+                    {!p.active && (
                       <span className="badge" style={{
-                        background: '#E8F5E9', color: '#2E7D32', fontSize: 11, whiteSpace: 'nowrap'
-                      }}>{p.size_ml}ml</span>
-                      {!p.active && (
-                        <span className="badge" style={{
-                          background: '#FFEBEE', color: '#C62828', fontSize: 10
-                        }}>Inativo</span>
+                        background: '#FFEBEE', color: '#C62828', fontSize: 10, flexShrink: 0
+                      }}>Inativo</span>
+                    )}
+                  </div>
+                  {/* Linha 2: descrição */}
+                  {p.description && (
+                    <div className="text-xs text-muted" style={{ marginBottom: 4 }}>{p.description}</div>
+                  )}
+                  {/* Linha 3: preço + estoque */}
+                  <div style={{ display: 'flex', gap: 12, alignItems: 'center', marginBottom: 10 }}>
+                    <div className="text-sm font-bold" style={{ color: '#6A1B9A' }}>
+                      R$ {p.price.toFixed(2)}
+                    </div>
+                    <div style={{ fontSize: 12, color: isLow ? '#E65100' : '#555' }}>
+                      Estoque: {p.stock_quantity != null ? p.stock_quantity : '—'}
+                      {p.min_stock_alert != null && p.stock_quantity != null && (
+                        <span style={{ color: '#999', marginLeft: 4 }}>
+                          / min {p.min_stock_alert}
+                        </span>
                       )}
                     </div>
-                    {p.description && (
-                      <div className="text-xs text-muted" style={{ marginBottom: 2 }}>{p.description}</div>
-                    )}
-                    <div className="flex-row" style={{ gap: 12, alignItems: 'center', marginTop: 2 }}>
-                      <div className="text-sm font-bold" style={{ color: '#6A1B9A' }}>
-                        R$ {p.price.toFixed(2)}
-                      </div>
-                      <div style={{ fontSize: 12, color: isLow ? '#E65100' : '#555' }}>
-                        Estoque: {p.stock_quantity != null ? p.stock_quantity : '—'}
-                        {p.min_stock_alert != null && p.stock_quantity != null && (
-                          <span style={{ color: '#999', marginLeft: 4 }}>
-                            / min {p.min_stock_alert}
-                          </span>
-                        )}
-                      </div>
-                    </div>
                   </div>
-                  <div style={{ display: 'flex', gap: 6, alignItems: 'center', flexShrink: 0 }}>
+                  {/* Linha 4: ações */}
+                  <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
                     <button className="btn btn-sm"
-                      style={{ fontSize: 11, padding: '4px 10px', background: '#F3E5F5', color: '#6A1B9A', border: 'none' }}
+                      style={{ fontSize: 12, padding: '5px 14px', background: '#F3E5F5', color: '#6A1B9A', border: 'none' }}
                       onClick={() => editProduct(p)}>
                       Editar
                     </button>
                     <button className="btn btn-sm"
-                      style={{ fontSize: 11, padding: '4px 10px', background: p.active ? '#FFF3E0' : '#E8F5E9', color: p.active ? '#E65100' : '#2E7D32', border: 'none' }}
+                      style={{ fontSize: 12, padding: '5px 14px', background: p.active ? '#FFF3E0' : '#E8F5E9', color: p.active ? '#E65100' : '#2E7D32', border: 'none' }}
                       onClick={() => toggleProduct(p.id, p.active)}>
                       {p.active ? 'Desativar' : 'Ativar'}
                     </button>
                     <button className="btn btn-sm"
-                      style={{ fontSize: 11, padding: '4px 10px', background: '#FFEBEE', color: '#C62828', border: 'none' }}
+                      style={{ fontSize: 12, padding: '5px 14px', background: '#FFEBEE', color: '#C62828', border: 'none' }}
                       onClick={() => deleteProduct(p.id)}>
                       Excluir
                     </button>
@@ -1178,16 +1183,32 @@ export default function StoreDashboard() {
     if (perfilTab === 'motoboy') {
       return (
         <>
-          <div className="page-title">Motoboys</div>
-          <div className="card" style={{ background: '#E3F2FD', border: '1px solid #BBDEFB', marginBottom: 16 }}>
-            <p className="text-xs text-muted" style={{ marginBottom: 4, fontWeight: 600 }}>Como funciona:</p>
-            <p className="text-xs text-muted" style={{ marginBottom: 4 }}>
-              <strong>Parceiro:</strong> você gera um link de convite, o motoboy se cadastra e recebe pedidos automaticamente.
-            </p>
-            <p className="text-xs text-muted">
-              <strong>Independente:</strong> motoboys se cadastram sozinhos e escolhem quais pedidos aceitar.
-            </p>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
+            <div className="page-title" style={{ marginBottom: 0 }}>Motoboys</div>
+            <button
+              onClick={() => setShowMotoboyInfo(v => !v)}
+              style={{
+                width: 22, height: 22, borderRadius: '50%', border: '1.5px solid #1976D2',
+                background: showMotoboyInfo ? '#1976D2' : 'white',
+                color: showMotoboyInfo ? 'white' : '#1976D2',
+                fontSize: 12, fontWeight: 700, cursor: 'pointer',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                flexShrink: 0, lineHeight: 1
+              }}
+              title="Como funciona"
+            >i</button>
           </div>
+          {showMotoboyInfo && (
+            <div className="card" style={{ background: '#E3F2FD', border: '1px solid #BBDEFB', marginBottom: 16 }}>
+              <p className="text-xs text-muted" style={{ marginBottom: 4, fontWeight: 600 }}>Como funciona:</p>
+              <p className="text-xs text-muted" style={{ marginBottom: 4 }}>
+                <strong>Parceiro:</strong> você gera um link de convite, o motoboy se cadastra e recebe pedidos automaticamente.
+              </p>
+              <p className="text-xs text-muted">
+                <strong>Independente:</strong> motoboys se cadastram sozinhos e escolhem quais pedidos aceitar.
+              </p>
+            </div>
+          )}
 
           <div className="card">
             <div className="form-group">

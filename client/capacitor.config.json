@@ -1,0 +1,22 @@
+{
+  "appId": "com.pedeacai.app",
+  "appName": "Pé de Açaí",
+  "webDir": "dist",
+  "server": {
+    "url": "https://pedeacai.dream2app.com.br",
+    "cleartext": false
+  },
+  "android": {
+    "backgroundColor": "#6A1B9A",
+    "allowMixedContent": false,
+    "captureInput": true,
+    "webContentsDebuggingEnabled": false
+  },
+  "plugins": {
+    "SplashScreen": {
+      "launchShowDuration": 2000,
+      "backgroundColor": "#6A1B9A",
+      "showSpinner": false
+    }
+  }
+}
