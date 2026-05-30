@@ -585,8 +585,9 @@ export default function StoreDashboard() {
     return () => { clearInterval(iv); timers.forEach(clearTimeout); };
   }, [showTV, tvLayout]);
 
-  // Mostra QR apenas quando o conteúdo não preenche a tela toda
-  // (sem scroll = canto inferior direito está livre)
+  // Mostra QR apenas quando o conteúdo não preenche a tela toda.
+  // Usa ResizeObserver para medir DEPOIS que o browser terminou o layout —
+  // mais confiável que setTimeout para views com alturas variáveis.
   useEffect(() => {
     if (!showTV) return;
     const check = () => {
@@ -594,9 +595,17 @@ export default function StoreDashboard() {
       if (!el) { setTvQrVisible(true); return; }
       setTvQrVisible(el.scrollHeight <= el.clientHeight + 8);
     };
-    const t = setTimeout(check, 120); // aguarda render do DOM
-    return () => clearTimeout(t);
-  }, [showTV, tvLayout, orders]); // reavalia quando pedidos mudam
+    let observer = null;
+    // Aguarda um tick para o novo layout montar antes de observar
+    const t = setTimeout(() => {
+      check();
+      if (tvScrollRef.current && typeof ResizeObserver !== 'undefined') {
+        observer = new ResizeObserver(check);
+        observer.observe(tvScrollRef.current);
+      }
+    }, 60);
+    return () => { clearTimeout(t); observer?.disconnect(); };
+  }, [showTV, tvLayout, orders]);
 
   // WakeLock: impede a tela de dormir no modo TV
   useEffect(() => {
@@ -2300,7 +2309,9 @@ export default function StoreDashboard() {
               opacity: tvQrVisible ? 0.6 : 0,
               transition: 'opacity 0.5s ease'
             }}>
-              <img src="/logo_placa.png" alt="Logo" style={{ width: 52, height: 52, objectFit: 'contain', filter: 'drop-shadow(0 2px 6px rgba(0,0,0,0.4))' }} />
+              <div style={{ color: tvText, fontSize: 15, fontWeight: 800, letterSpacing: 0.5, textAlign: 'center', lineHeight: 1.2 }}>
+                🍇 Pé de Açaí
+              </div>
               <img src={qrUrl} alt="QR" style={{ width: 90, height: 90, borderRadius: 8, display: 'block' }} />
               <div style={{ color: tvSub, fontSize: 9, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, textAlign: 'center', lineHeight: 1.4 }}>
                 Baixe o app
