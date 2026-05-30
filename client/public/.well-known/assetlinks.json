@@ -1,0 +1,10 @@
+[{
+  "relation": ["delegate_permission/common.handle_all_urls"],
+  "target": {
+    "namespace": "android_app",
+    "package_name": "com.pedeacai.app",
+    "sha256_cert_fingerprints": [
+      "0E:FB:EB:BC:24:3B:FD:92:70:FB:4B:B6:BF:02:A7:5F:8E:82:00:EB:38:FD:62:28:5C:D6:B1:D2:95:9A:DC:07"
+    ]
+  }
+}]

@@ -1,0 +1,54 @@
+{
+  "packageId": "com.pedeacai.app",
+  "host": "pedeacai.dream2app.com.br",
+  "name": "Pé de Açaí",
+  "launcherName": "Pé de Açaí",
+  "display": "standalone",
+  "orientation": "portrait",
+  "themeColor": "#6A1B9A",
+  "navigationColor": "#6A1B9A",
+  "navigationColorDark": "#4A148C",
+  "navigationDividerColor": "#6A1B9A",
+  "navigationDividerColorDark": "#4A148C",
+  "backgroundColor": "#6A1B9A",
+  "enableNotifications": false,
+  "startUrl": "/",
+  "iconUrl": "https://pedeacai.dream2app.com.br/logo_placa.png",
+  "maskableIconUrl": "https://pedeacai.dream2app.com.br/logo_placa.png",
+  "monochromeIconUrl": "https://pedeacai.dream2app.com.br/logo_placa.png",
+  "shortcuts": [],
+  "webManifestUrl": "https://pedeacai.dream2app.com.br/manifest.json",
+  "generatorApp": "bubblewrap-cli",
+  "webManifest": {
+    "name": "Pé de Açaí",
+    "short_name": "Pé de Açaí",
+    "start_url": "/",
+    "display": "standalone",
+    "orientation": "portrait",
+    "background_color": "#6A1B9A",
+    "theme_color": "#6A1B9A",
+    "icons": [
+      { "src": "/logo_placa.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+      { "src": "/logo_placa.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+    ]
+  },
+  "minSdkVersion": 21,
+  "targetSdkVersion": 34,
+  "signingKey": {
+    "path": "./pedeacai.keystore",
+    "alias": "pedeacai"
+  },
+  "useBrowserOnChromeOS": true,
+  "splitConfig": false,
+  "enableSiteSettingsShortcut": true,
+  "isChromeOSOnly": false,
+  "isMetaQuest": false,
+  "fullScopeUrl": "https://pedeacai.dream2app.com.br/",
+  "features": {
+    "locationDelegation": { "enabled": false },
+    "playBilling": { "enabled": false }
+  },
+  "additionalTrustedOrigins": [],
+  "retainedBundles": [],
+  "splashScreenFadeOutDuration": 300
+}

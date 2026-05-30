@@ -117,6 +117,11 @@ if (!isVercel) {
   const publicDir = path.join(__dirname, '..', '..', 'public');
   app.use(express.static(clientDist));
   app.use(express.static(publicDir));
+  // Digital Asset Links para TWA Android (Play Store)
+  app.get('/.well-known/assetlinks.json', (req, res) => {
+    res.setHeader('Content-Type', 'application/json');
+    res.sendFile(path.join(clientDist, '.well-known', 'assetlinks.json'));
+  });
   app.get('*', (req, res) => {
     res.sendFile(path.join(clientDist, 'index.html'));
   });
