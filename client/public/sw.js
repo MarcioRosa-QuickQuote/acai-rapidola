@@ -31,12 +31,19 @@ const BYPASS = [
 ];
 
 // ── Install: precacheia shell ────────────────────────────────────────────────
+// NÃO chamamos skipWaiting() aqui — o novo SW fica em "waiting"
+// e só ativa quando o usuário confirmar o update via banner.
 self.addEventListener('install', e => {
   e.waitUntil(
-    caches.open(STATIC_V)
-      .then(c => c.addAll(PRECACHE))
-      .then(() => self.skipWaiting())
+    caches.open(STATIC_V).then(c => c.addAll(PRECACHE))
   );
+});
+
+// ── Mensagens vindas da página ───────────────────────────────────────────────
+self.addEventListener('message', e => {
+  if (e.data?.type === 'SKIP_WAITING') {
+    self.skipWaiting(); // usuário confirmou → ativa o novo SW
+  }
 });
 
 // ── Activate: remove caches antigos ─────────────────────────────────────────

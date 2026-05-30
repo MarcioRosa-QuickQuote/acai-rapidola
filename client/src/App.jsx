@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from './contexts/AuthContext';
 import { App as CapApp } from '@capacitor/app';
+import UpdateBanner from './components/UpdateBanner';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Legal from './pages/Legal';
@@ -61,6 +62,7 @@ export default function App() {
     <>
       <ScrollToTop />
       <BackButtonHandler />
+      <UpdateBanner />
       <Routes>
       <Route path="/login" element={user ? <Navigate to={`/${user.role === 'customer' ? 'customer' : user.role}`} /> : <Login />} />
       <Route path="/register" element={user ? <Navigate to={`/${user.role === 'customer' ? 'customer' : user.role}`} /> : <Register />} />
