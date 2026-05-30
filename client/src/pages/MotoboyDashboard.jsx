@@ -955,7 +955,7 @@ export default function MotoboyDashboard() {
                   {/* Topo: label + valor no canto direito */}
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10 }}>
                     <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.65)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1.2 }}>
-                      🏍️ {destLabel}
+                      {destLabel}
                     </div>
                     <div style={{ textAlign: 'right', flexShrink: 0, marginLeft: 12 }}>
                       <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.55)', marginBottom: 1 }}>Seu frete</div>

@@ -13,6 +13,7 @@ router.post('/register', async (req, res) => {
   const password = req.body.password || '';
   const role = sanitize(req.body.role, 20);
   const extra = req.body.extra || {};
+  const inviteToken = sanitize(req.body.inviteToken || extra.inviteToken || '', 200);
   const email = sanitize(extra.email, 200);
   if (!name || !phone || !password || !role) {
     return res.status(400).json({ error: 'Nome, telefone, senha e perfil são obrigatórios' });
@@ -234,7 +235,9 @@ router.post('/forgot-password', async (req, res) => {
   );
 
   if (upsertErr) {
-    return res.json({ ok: true, message: 'Código enviado se o email existir', code, _test: 'Modo simulado (sem tabela)' });
+    // Tabela ainda não existe — loga mas não expõe o código
+    console.warn('[Auth] password_reset_codes table missing, code not persisted');
+    return res.json({ ok: true, message: 'Código enviado se o email existir' });
   }
 
   try {
@@ -242,13 +245,14 @@ router.post('/forgot-password', async (req, res) => {
     await sendResetCode(email, code);
     const result = { ok: true, message: 'Código enviado se o email existir' };
     if (!hasEmailProvider()) {
-      result.code = code;
-      result._test = 'Nenhum provedor de email configurado. Use este código para testar.';
+      // Em desenvolvimento (sem provedor), loga no servidor mas NUNCA expõe na resposta HTTP
+      console.warn(`[Auth][DEV] Reset code for ${email}: ${code}`);
+      result._test = 'Sem provedor de email: código foi logado no servidor (não na resposta).';
     }
     res.json(result);
   } catch (err) {
     console.error('[Auth] Erro ao enviar email:', err?.message);
-    res.json({ ok: true, message: 'Código enviado se o email existir', code, _test: 'Modo simulado' });
+    res.json({ ok: true, message: 'Código enviado se o email existir' });
   }
 });
 

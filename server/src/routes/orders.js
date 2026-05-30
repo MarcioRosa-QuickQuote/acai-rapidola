@@ -370,7 +370,7 @@ router.patch('/:id/status', authMiddleware, async (req, res) => {
   }
 
   if (status === 'delivered') {
-    const motoboyAmount = parseFloat((order.delivery_fee || order.total * 0.2).toFixed(2));
+    const motoboyAmount = parseFloat((order.delivery_fee != null ? order.delivery_fee : order.total * 0.2).toFixed(2));
     const storeAmount = parseFloat((order.total - motoboyAmount).toFixed(2));
 
     // Motoboy: registra e tenta transferir (nunca deixa a entrega falhar por erro de PIX)
@@ -432,6 +432,10 @@ router.patch('/:id/status', authMiddleware, async (req, res) => {
       const io = getIO();
       if (io) io.to(`user:${motoboyId}`).emit('order_updated', { orderId: req.params.id, status: 'assigned' });
       await notifyUser(motoboyId, '🛵 Nova entrega!', 'Pedido atribuído para você — verifique o app', 'delivery');
+    } else {
+      // Nenhum motoboy vinculado online → notifica motoboys avulsos que há pedido disponível
+      const io = getIO();
+      if (io) io.to('role:motoboy').emit('new_available_order', { orderId: req.params.id, storeId: order.store_id });
     }
   }
 
