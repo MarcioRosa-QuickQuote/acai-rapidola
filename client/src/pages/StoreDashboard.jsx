@@ -134,7 +134,7 @@ export default function StoreDashboard() {
   const [tvTime, setTvTime] = useState('');
   const [tvLight, setTvLight] = useState(false);
   const [tvLayout, setTvLayout] = useState('kanban'); // 'kanban' | 'fila' | 'linha'
-  const [dashLayout, setDashLayout] = useState('default'); // 'default' | 'kanban' | 'fila' | 'linha'
+  const [dashLayout, setDashLayout] = useState('kanban'); // 'kanban' | 'fila' | 'linha'
   const [tvShowPrices, setTvShowPrices] = useState(false);
   const [tvQrVisible, setTvQrVisible] = useState(true);
   const tvScrollRef  = useRef(null);
@@ -665,7 +665,7 @@ export default function StoreDashboard() {
     return (now - created) > 2 * 60 * 60 * 1000;
   });
 
-  const concludedOrders = orders.filter(o => ['delivered', 'cancelled'].includes(o.status) && (now - new Date(o.created_at).getTime()) <= 24 * 60 * 60 * 1000);
+  const concludedOrders = orders.filter(o => ['delivered', 'cancelled'].includes(o.status));
   const displayOrders = orderFilter === 'pendentes' ? unpaidOrders.filter(o => {
     const created = new Date(o.created_at).getTime();
     return (now - created) <= 2 * 60 * 60 * 1000;
@@ -1554,7 +1554,6 @@ export default function StoreDashboard() {
             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
               <select value={dashLayout} onChange={e => setDashLayout(e.target.value)}
                 style={{ border: '1px solid #ddd', borderRadius: 8, padding: '5px 10px', fontSize: 12, color: '#6A1B9A', fontWeight: 600, background: 'white', cursor: 'pointer', outline: 'none' }}>
-                <option value="default">📋 Lista</option>
                 <option value="kanban">⊞ Kanban</option>
                 <option value="fila">⊟ Fila</option>
                 <option value="linha">▤ Compacto</option>
@@ -1570,79 +1569,7 @@ export default function StoreDashboard() {
               Nenhum pedido ativo no momento
             </div>
 
-          ) : dashLayout === 'default' ? (() => {
-            /* ── Lista agrupada (padrão) ── */
-            const grupos = [
-              { key: 'preparar',   label: 'Preparar',                emoji: '🔥', accentColor: '#E65100', bgColor: '#FFF3E0', statuses: ['confirmed'] },
-              { key: 'preparando', label: 'Preparando',               emoji: '⏳', accentColor: '#1565C0', bgColor: '#E3F2FD', statuses: ['preparing'] },
-              { key: 'pronto',     label: 'Pronto — aguarda motoboy', emoji: '✅', accentColor: '#2E7D32', bgColor: '#E8F5E9', statuses: ['ready'] },
-              { key: 'motoboy',    label: 'Motoboy na loja',          emoji: '🛵', accentColor: '#6A1B9A', bgColor: '#EDE7F6', statuses: ['assigned'] },
-              { key: 'entrega',    label: 'Saiu pra entrega',         emoji: '🚀', accentColor: '#00695C', bgColor: '#E0F2F1', statuses: ['picked_up', 'in_transit', 'arriving'] },
-            ].map(g => ({ ...g, orders: pendingOrders.filter(o => g.statuses.includes(o.status)) }))
-             .filter(g => g.orders.length > 0);
-
-            const renderCard = (o) => {
-              const action = getAction(o);
-              const sc = statusColors[o.status] || { bg: '#f5f5f5', color: '#666', border: '#e0e0e0' };
-              const allItems = o.items || o.order_items || [];
-              const itemsSummary = allItems.slice(0, 2).map(it => `${it.quantity}x ${it.product_name || it.products?.name || 'Item'}`).join(' · ') + (allItems.length > 2 ? ` +${allItems.length - 2}` : '');
-              return (
-                <div key={o.id} style={{
-                  background: 'white', borderRadius: 14, padding: '14px 16px',
-                  border: `1px solid ${sc.border}`, display: 'flex', flexDirection: 'column', gap: 8
-                }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8 }}>
-                    <div style={{ fontWeight: 700, fontSize: 14, color: '#1a1a1a', flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                      {o.customer_name}
-                    </div>
-                    <span style={{ background: sc.bg, color: sc.color, borderRadius: 8, padding: '3px 8px', fontSize: 10, fontWeight: 700, whiteSpace: 'nowrap', flexShrink: 0 }}>
-                      {statusLabels[o.status] || o.status}
-                    </span>
-                  </div>
-                  {itemsSummary && (
-                    <div style={{ fontSize: 12, color: '#888', lineHeight: 1.4, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                      {itemsSummary}
-                    </div>
-                  )}
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 2 }}>
-                    <div style={{ fontSize: 14, fontWeight: 700, color: '#333' }}>R$ {o.total.toFixed(2)}</div>
-                    {action ? (
-                      <button onClick={() => updateStatus(o.id, action.next)}
-                        style={{ background: '#6A1B9A', color: 'white', border: 'none', borderRadius: 8, padding: '7px 14px', fontSize: 12, fontWeight: 700, cursor: 'pointer' }}>
-                        {action.label}
-                      </button>
-                    ) : (
-                      <span style={{ fontSize: 11, color: '#bbb' }}>
-                        {new Date(o.created_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
-                      </span>
-                    )}
-                  </div>
-                </div>
-              );
-            };
-
-            return (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-                {grupos.map(g => (
-                  <div key={g.key}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
-                      <div style={{ background: g.bgColor, border: `1px solid ${g.bgColor}`, borderRadius: 8, padding: '4px 10px', display: 'flex', alignItems: 'center', gap: 6 }}>
-                        <span style={{ fontSize: 13 }}>{g.emoji}</span>
-                        <span style={{ fontSize: 12, fontWeight: 700, color: g.accentColor, textTransform: 'uppercase', letterSpacing: 0.5 }}>{g.label}</span>
-                        <span style={{ background: g.accentColor, color: 'white', borderRadius: 8, padding: '1px 7px', fontSize: 11, fontWeight: 700 }}>{g.orders.length}</span>
-                      </div>
-                      <div style={{ flex: 1, height: 1, background: '#f0f0f0' }} />
-                    </div>
-                    <div style={{ display: 'grid', gridTemplateColumns: isDesktop ? 'repeat(3, 1fr)' : '1fr', gap: 12 }}>
-                      {g.orders.map(renderCard)}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            );
-          })()
-
-          : dashLayout === 'kanban' ? (() => {
+          ) : dashLayout === 'kanban' ? (() => {
             /* ── Kanban ── */
             const groups = [
               { label: 'PREPARAR',        emoji: '🔥', color: '#E65100', bg: 'rgba(230,81,0,0.08)',    border: '#FFCDD2', orders: pendingOrders.filter(o => o.status === 'confirmed') },
