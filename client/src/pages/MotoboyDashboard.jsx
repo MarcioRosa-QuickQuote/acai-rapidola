@@ -997,18 +997,25 @@ export default function MotoboyDashboard() {
             border: `1px solid ${mb.accent}44`, cursor: 'pointer',
             display: 'flex', justifyContent: 'space-between', alignItems: 'center'
           }} onClick={() => openNav(order)}>
-            <div style={{ flex: 1, minWidth: 0 }}>
-              {/* Linha 1 */}
-              <div style={{ fontSize: 15, fontWeight: 700, color: mb.text, marginBottom: 3 }}>{order.customer_name}</div>
-              {/* Linha 2 */}
-              <div style={{ fontSize: 12, color: mb.sub, marginBottom: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                📍 {fmtAddr(order.customer_address)}
-              </div>
-              {/* Linha 3 */}
-              <div style={{ fontSize: 11, color: mb.sub }}>
-                #{order.id.slice(-4)} · {order.store_name}
-              </div>
-            </div>
+            {(() => {
+              const toStore = !['picked_up', 'in_transit', 'arriving', 'delivered'].includes(order.status);
+              return (
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  {/* Linha 1 */}
+                  <div style={{ fontSize: 15, fontWeight: 700, color: mb.text, marginBottom: 3 }}>
+                    {toStore ? order.store_name : order.customer_name}
+                  </div>
+                  {/* Linha 2 */}
+                  <div style={{ fontSize: 12, color: mb.sub, marginBottom: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    📍 {fmtAddr(toStore ? (order.store_address || order.store_name) : order.customer_address)}
+                  </div>
+                  {/* Linha 3 */}
+                  <div style={{ fontSize: 11, color: mb.sub }}>
+                    #{order.id.slice(-4)} · {toStore ? `👤 ${order.customer_name}` : `🏪 ${order.store_name}`}
+                  </div>
+                </div>
+              );
+            })()}
             <div style={{ textAlign: 'right', flexShrink: 0, marginLeft: 12 }}>
               <div style={{ fontSize: 16, fontWeight: 800, color: mb.accent }}>R$ {(order.delivery_fee ?? 0).toFixed(2)}</div>
               <div style={{ fontSize: 11, color: mb.sub, marginTop: 3 }}>{statusLabels[order.status]}</div>
@@ -1039,15 +1046,15 @@ export default function MotoboyDashboard() {
             </div>
             {filteredAvailable.map(order => (
               <div key={order.id} style={{ background: mb.card, borderRadius: 14, padding: '14px 16px', border: `1px solid ${mb.cardBorder}` }}>
-                {/* Linha 1 — cliente + valor */}
+                {/* Linha 1 — destino + valor */}
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 6 }}>
-                  <div style={{ fontSize: 16, fontWeight: 700, color: mb.text }}>{order.customer_name}</div>
+                  <div style={{ fontSize: 16, fontWeight: 700, color: mb.text }}>🏪 {order.store_name}</div>
                   <div style={{ fontSize: 18, fontWeight: 800, color: mb.green, flexShrink: 0, marginLeft: 10 }}>R$ {(order.delivery_fee ?? 0).toFixed(2)}</div>
                 </div>
-                {/* Linha 2 — endereço */}
-                <div style={{ fontSize: 13, color: mb.sub, marginBottom: 4 }}>📍 {fmtAddr(order.customer_address)}</div>
-                {/* Linha 3 — loja + ID */}
-                <div style={{ fontSize: 11, color: mb.sub, marginBottom: 12 }}>🏪 {order.store_name} · #{order.id.slice(-4)}</div>
+                {/* Linha 2 — endereço da loja */}
+                <div style={{ fontSize: 13, color: mb.sub, marginBottom: 4 }}>📍 {fmtAddr(order.store_address || order.store_name)}</div>
+                {/* Linha 3 — cliente + ID */}
+                <div style={{ fontSize: 11, color: mb.sub, marginBottom: 12 }}>👤 {order.customer_name} · #{order.id.slice(-4)}</div>
                 <button style={{
                   width: '100%', height: 44, background: mb.accent, color: 'white',
                   border: 'none', borderRadius: 12, fontSize: 14, fontWeight: 700, cursor: 'pointer'
