@@ -1551,28 +1551,14 @@ export default function StoreDashboard() {
                 </span>
               )}
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              {/* Botões de layout */}
-              <div style={{ display: 'flex', background: '#f0f0f4', borderRadius: 8, padding: 2, gap: 1 }}>
-                {[
-                  { key: 'default', icon: '≡',  title: 'Lista' },
-                  { key: 'kanban',  icon: '⊞',  title: 'Kanban' },
-                  { key: 'fila',    icon: '⊟',  title: 'Fila' },
-                  { key: 'linha',   icon: '▤',  title: 'Compacto' },
-                ].map(t => (
-                  <button key={t.key} title={t.title} onClick={() => setDashLayout(t.key)}
-                    style={{
-                      padding: '4px 9px', border: 'none', borderRadius: 6, fontSize: 13, cursor: 'pointer',
-                      background: dashLayout === t.key ? 'white' : 'transparent',
-                      color: dashLayout === t.key ? '#6A1B9A' : '#999',
-                      fontWeight: dashLayout === t.key ? 800 : 400,
-                      boxShadow: dashLayout === t.key ? '0 1px 3px rgba(0,0,0,0.12)' : 'none',
-                      transition: 'all 0.15s'
-                    }}>
-                    {t.icon}
-                  </button>
-                ))}
-              </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <select value={dashLayout} onChange={e => setDashLayout(e.target.value)}
+                style={{ border: '1px solid #ddd', borderRadius: 8, padding: '5px 10px', fontSize: 12, color: '#6A1B9A', fontWeight: 600, background: 'white', cursor: 'pointer', outline: 'none' }}>
+                <option value="default">📋 Lista</option>
+                <option value="kanban">⊞ Kanban</option>
+                <option value="fila">⊟ Fila</option>
+                <option value="linha">▤ Compacto</option>
+              </select>
               <span onClick={() => setView('pedidos')} style={{ fontSize: 12, color: '#6A1B9A', fontWeight: 600, cursor: 'pointer' }}>
                 Ver todos →
               </span>
