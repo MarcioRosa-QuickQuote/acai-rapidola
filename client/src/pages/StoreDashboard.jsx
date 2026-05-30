@@ -134,6 +134,7 @@ export default function StoreDashboard() {
   const [tvTime, setTvTime] = useState('');
   const [tvLight, setTvLight] = useState(false);
   const [tvLayout, setTvLayout] = useState('kanban'); // 'kanban' | 'fila' | 'linha'
+  const [dashLayout, setDashLayout] = useState('default'); // 'default' | 'kanban' | 'fila' | 'linha'
   const [tvShowPrices, setTvShowPrices] = useState(false);
   const [tvQrVisible, setTvQrVisible] = useState(true);
   const tvScrollRef  = useRef(null);
@@ -1540,6 +1541,7 @@ export default function StoreDashboard() {
 
         {/* ─── Pedidos em andamento ─── */}
         <div>
+          {/* Header com toggle de layout */}
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <span style={{ fontWeight: 700, fontSize: 15, color: '#1a1a1a' }}>Pedidos em andamento</span>
@@ -1549,22 +1551,47 @@ export default function StoreDashboard() {
                 </span>
               )}
             </div>
-            <span onClick={() => setView('pedidos')} style={{ fontSize: 12, color: '#6A1B9A', fontWeight: 600, cursor: 'pointer' }}>
-              Ver todos →
-            </span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              {/* Botões de layout */}
+              <div style={{ display: 'flex', background: '#f0f0f4', borderRadius: 8, padding: 2, gap: 1 }}>
+                {[
+                  { key: 'default', icon: '≡',  title: 'Lista' },
+                  { key: 'kanban',  icon: '⊞',  title: 'Kanban' },
+                  { key: 'fila',    icon: '⊟',  title: 'Fila' },
+                  { key: 'linha',   icon: '▤',  title: 'Compacto' },
+                ].map(t => (
+                  <button key={t.key} title={t.title} onClick={() => setDashLayout(t.key)}
+                    style={{
+                      padding: '4px 9px', border: 'none', borderRadius: 6, fontSize: 13, cursor: 'pointer',
+                      background: dashLayout === t.key ? 'white' : 'transparent',
+                      color: dashLayout === t.key ? '#6A1B9A' : '#999',
+                      fontWeight: dashLayout === t.key ? 800 : 400,
+                      boxShadow: dashLayout === t.key ? '0 1px 3px rgba(0,0,0,0.12)' : 'none',
+                      transition: 'all 0.15s'
+                    }}>
+                    {t.icon}
+                  </button>
+                ))}
+              </div>
+              <span onClick={() => setView('pedidos')} style={{ fontSize: 12, color: '#6A1B9A', fontWeight: 600, cursor: 'pointer' }}>
+                Ver todos →
+              </span>
+            </div>
           </div>
 
           {pendingOrders.length === 0 ? (
             <div style={{ textAlign: 'center', padding: '40px 20px', color: '#bbb', fontSize: 14, background: 'white', borderRadius: 14, border: '1px solid #f0f0f0' }}>
               Nenhum pedido ativo no momento
             </div>
-          ) : (() => {
+
+          ) : dashLayout === 'default' ? (() => {
+            /* ── Lista agrupada (padrão) ── */
             const grupos = [
-              { key: 'preparar',   label: 'Preparar',              emoji: '🔥', accentColor: '#E65100', bgColor: '#FFF3E0', statuses: ['confirmed'] },
-              { key: 'preparando', label: 'Preparando',             emoji: '⏳', accentColor: '#1565C0', bgColor: '#E3F2FD', statuses: ['preparing'] },
+              { key: 'preparar',   label: 'Preparar',                emoji: '🔥', accentColor: '#E65100', bgColor: '#FFF3E0', statuses: ['confirmed'] },
+              { key: 'preparando', label: 'Preparando',               emoji: '⏳', accentColor: '#1565C0', bgColor: '#E3F2FD', statuses: ['preparing'] },
               { key: 'pronto',     label: 'Pronto — aguarda motoboy', emoji: '✅', accentColor: '#2E7D32', bgColor: '#E8F5E9', statuses: ['ready'] },
-              { key: 'motoboy',    label: 'Motoboy na loja',        emoji: '🛵', accentColor: '#6A1B9A', bgColor: '#EDE7F6', statuses: ['assigned'] },
-              { key: 'entrega',    label: 'Saiu pra entrega',       emoji: '🚀', accentColor: '#00695C', bgColor: '#E0F2F1', statuses: ['picked_up', 'in_transit', 'arriving'] },
+              { key: 'motoboy',    label: 'Motoboy na loja',          emoji: '🛵', accentColor: '#6A1B9A', bgColor: '#EDE7F6', statuses: ['assigned'] },
+              { key: 'entrega',    label: 'Saiu pra entrega',         emoji: '🚀', accentColor: '#00695C', bgColor: '#E0F2F1', statuses: ['picked_up', 'in_transit', 'arriving'] },
             ].map(g => ({ ...g, orders: pendingOrders.filter(o => g.statuses.includes(o.status)) }))
              .filter(g => g.orders.length > 0);
 
@@ -1594,8 +1621,7 @@ export default function StoreDashboard() {
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 2 }}>
                     <div style={{ fontSize: 14, fontWeight: 700, color: '#333' }}>R$ {o.total.toFixed(2)}</div>
                     {action ? (
-                      <button
-                        onClick={() => updateStatus(o.id, action.next)}
+                      <button onClick={() => updateStatus(o.id, action.next)}
                         style={{ background: '#6A1B9A', color: 'white', border: 'none', borderRadius: 8, padding: '7px 14px', fontSize: 12, fontWeight: 700, cursor: 'pointer' }}>
                         {action.label}
                       </button>
@@ -1613,28 +1639,232 @@ export default function StoreDashboard() {
               <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
                 {grupos.map(g => (
                   <div key={g.key}>
-                    {/* Separador de grupo */}
                     <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
-                      <div style={{
-                        background: g.bgColor, border: `1px solid`, borderColor: g.bgColor,
-                        borderRadius: 8, padding: '4px 10px', display: 'flex', alignItems: 'center', gap: 6
-                      }}>
+                      <div style={{ background: g.bgColor, border: `1px solid ${g.bgColor}`, borderRadius: 8, padding: '4px 10px', display: 'flex', alignItems: 'center', gap: 6 }}>
                         <span style={{ fontSize: 13 }}>{g.emoji}</span>
-                        <span style={{ fontSize: 12, fontWeight: 700, color: g.accentColor, textTransform: 'uppercase', letterSpacing: 0.5 }}>
-                          {g.label}
-                        </span>
-                        <span style={{ background: g.accentColor, color: 'white', borderRadius: 8, padding: '1px 7px', fontSize: 11, fontWeight: 700 }}>
-                          {g.orders.length}
-                        </span>
+                        <span style={{ fontSize: 12, fontWeight: 700, color: g.accentColor, textTransform: 'uppercase', letterSpacing: 0.5 }}>{g.label}</span>
+                        <span style={{ background: g.accentColor, color: 'white', borderRadius: 8, padding: '1px 7px', fontSize: 11, fontWeight: 700 }}>{g.orders.length}</span>
                       </div>
                       <div style={{ flex: 1, height: 1, background: '#f0f0f0' }} />
                     </div>
-                    {/* Cards do grupo */}
                     <div style={{ display: 'grid', gridTemplateColumns: isDesktop ? 'repeat(3, 1fr)' : '1fr', gap: 12 }}>
                       {g.orders.map(renderCard)}
                     </div>
                   </div>
                 ))}
+              </div>
+            );
+          })()
+
+          : dashLayout === 'kanban' ? (() => {
+            /* ── Kanban ── */
+            const groups = [
+              { label: 'PREPARAR',        emoji: '🔥', color: '#E65100', bg: 'rgba(230,81,0,0.08)',    border: '#FFCDD2', orders: pendingOrders.filter(o => o.status === 'confirmed') },
+              { label: 'PREPARANDO',      emoji: '⏳', color: '#1565C0', bg: 'rgba(21,101,192,0.08)', border: '#BBDEFB', orders: pendingOrders.filter(o => o.status === 'preparing') },
+              { label: 'PRONTO',          emoji: '✅', color: '#2E7D32', bg: 'rgba(46,125,50,0.08)',  border: '#C8E6C9', orders: pendingOrders.filter(o => o.status === 'ready') },
+              { label: 'MOTOBOY NA LOJA', emoji: '🛵', color: '#6A1B9A', bg: 'rgba(106,27,154,0.08)', border: '#E1BEE7', orders: pendingOrders.filter(o => o.status === 'assigned') },
+              { label: 'SAIU',            emoji: '🚀', color: '#00695C', bg: 'rgba(0,105,92,0.08)',   border: '#B2DFDB', orders: pendingOrders.filter(o => ['picked_up', 'in_transit', 'arriving'].includes(o.status)) },
+            ].filter(g => g.orders.length > 0);
+
+            return (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+                {groups.map(group => (
+                  <div key={group.label}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10, padding: '5px 12px', background: group.bg, borderRadius: 8, border: `1px solid ${group.border}`, width: 'fit-content' }}>
+                      <span style={{ fontSize: 14 }}>{group.emoji}</span>
+                      <span style={{ color: group.color, fontSize: 12, fontWeight: 800, letterSpacing: 0.8, textTransform: 'uppercase' }}>{group.label}</span>
+                      <span style={{ color: group.color, fontSize: 12, fontWeight: 700, opacity: 0.75 }}>· {group.orders.length}</span>
+                    </div>
+                    <div style={{ display: 'grid', gridTemplateColumns: isDesktop ? 'repeat(3, 1fr)' : '1fr', gap: 12 }}>
+                      {group.orders.map(o => {
+                        const action = getAction(o);
+                        const allItems = o.items || o.order_items || [];
+                        return (
+                          <div key={o.id} style={{ background: 'white', borderRadius: 12, padding: '14px 16px', border: `1px solid ${group.border}`, display: 'flex', flexDirection: 'column', gap: 8 }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                              <div style={{ fontWeight: 700, fontSize: 14, color: '#1a1a1a', flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{o.customer_name}</div>
+                              <span style={{ color: group.color, fontSize: 10, fontWeight: 700, background: group.bg, padding: '2px 8px', borderRadius: 6, border: `1px solid ${group.border}`, whiteSpace: 'nowrap', marginLeft: 8, flexShrink: 0 }}>
+                                {group.emoji} {group.label}
+                              </span>
+                            </div>
+                            <div style={{ borderTop: '1px solid #f0f0f0', paddingTop: 8 }}>
+                              {allItems.map((it, i) => (
+                                <div key={i} style={{ fontSize: 12, color: '#555', lineHeight: 1.6 }}>
+                                  {it.quantity}× {it.product_name || it.products?.name || 'Produto'}
+                                </div>
+                              ))}
+                            </div>
+                            {o.motoboy_name && (
+                              <div style={{ fontSize: 12, color: '#666' }}>🛵 <strong>{o.motoboy_name}</strong></div>
+                            )}
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 2, paddingTop: 8, borderTop: '1px solid #f0f0f0' }}>
+                              <div>
+                                <div style={{ fontSize: 11, color: '#aaa' }}>#{String(o.id).slice(-4)} · {new Date(o.created_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</div>
+                                <div style={{ fontSize: 14, fontWeight: 800, color: group.color, marginTop: 2 }}>R$ {o.total.toFixed(2)}</div>
+                              </div>
+                              {action && (
+                                <button onClick={() => updateStatus(o.id, action.next)}
+                                  style={{ background: group.color, color: 'white', border: 'none', borderRadius: 8, padding: '7px 14px', fontSize: 12, fontWeight: 700, cursor: 'pointer' }}>
+                                  {action.label}
+                                </button>
+                              )}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            );
+          })()
+
+          : dashLayout === 'fila' ? (() => {
+            /* ── Fila (2 colunas: preparo | entrega) ── */
+            const filaPrep    = pendingOrders.filter(o => ['confirmed', 'preparing', 'ready', 'assigned'].includes(o.status));
+            const filaCaminho = pendingOrders.filter(o => ['picked_up', 'in_transit', 'arriving'].includes(o.status));
+            const filaStatusLabel = { confirmed: 'Confirmado', preparing: 'Preparando...', ready: 'Pronto ✅', assigned: 'Motoboy chegou 🛵' };
+            const filaStatusColor = { confirmed: '#E65100', preparing: '#1565C0', ready: '#2E7D32', assigned: '#6A1B9A' };
+
+            const filaCard = (o, color, border) => {
+              const action = getAction(o);
+              return (
+                <div key={o.id} style={{ background: 'white', borderRadius: 12, padding: '14px 16px', border: `1px solid ${border}`, borderLeft: `4px solid ${color}`, display: 'flex', flexDirection: 'column', gap: 6 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                    <div style={{ fontWeight: 800, fontSize: 15, color: '#1a1a1a' }}>{o.customer_name}</div>
+                    <span style={{ color, fontSize: 10, fontWeight: 800, background: `${color}18`, padding: '3px 8px', borderRadius: 12, whiteSpace: 'nowrap', marginLeft: 8, flexShrink: 0 }}>
+                      {filaStatusLabel[o.status] || statusLabels[o.status] || o.status}
+                    </span>
+                  </div>
+                  <div style={{ borderTop: '1px solid #f5f5f5', paddingTop: 6 }}>
+                    {(o.items || o.order_items || []).map((it, i) => (
+                      <div key={i} style={{ fontSize: 12, color: '#555', lineHeight: 1.6 }}>
+                        {it.quantity}× {it.product_name || it.products?.name || 'Produto'}
+                      </div>
+                    ))}
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ fontSize: 11, color: '#aaa' }}>#{String(o.id).slice(-4)}</span>
+                    {action && (
+                      <button onClick={() => updateStatus(o.id, action.next)}
+                        style={{ background: color, color: 'white', border: 'none', borderRadius: 8, padding: '6px 12px', fontSize: 11, fontWeight: 700, cursor: 'pointer' }}>
+                        {action.label}
+                      </button>
+                    )}
+                  </div>
+                </div>
+              );
+            };
+
+            return (
+              <div style={{ display: 'grid', gridTemplateColumns: isDesktop ? '1fr 1fr' : '1fr', gap: 20, alignItems: 'start' }}>
+                {/* Coluna esquerda — Em Preparo */}
+                <div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12, padding: '8px 14px', background: 'rgba(21,101,192,0.06)', borderRadius: 10, border: '1px solid #BBDEFB' }}>
+                    <span style={{ fontSize: 18 }}>🍳</span>
+                    <span style={{ color: '#1565C0', fontSize: 13, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.8 }}>Em Preparo</span>
+                    <span style={{ background: '#1565C0', color: 'white', borderRadius: 8, padding: '1px 7px', fontSize: 12, fontWeight: 800, marginLeft: 'auto' }}>{filaPrep.length}</span>
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                    {filaPrep.length === 0 ? (
+                      <div style={{ color: '#bbb', fontSize: 13, textAlign: 'center', padding: '24px 0', fontStyle: 'italic' }}>Nenhum pedido em preparo</div>
+                    ) : filaPrep.map(o => filaCard(o, filaStatusColor[o.status] || '#1565C0', '#BBDEFB'))}
+                  </div>
+                </div>
+                {/* Coluna direita — A caminho */}
+                <div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12, padding: '8px 14px', background: 'rgba(0,105,92,0.06)', borderRadius: 10, border: '1px solid #B2DFDB' }}>
+                    <span style={{ fontSize: 18 }}>🛵</span>
+                    <span style={{ color: '#00695C', fontSize: 13, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.8 }}>Saiu para Entrega</span>
+                    <span style={{ background: '#00695C', color: 'white', borderRadius: 8, padding: '1px 7px', fontSize: 12, fontWeight: 800, marginLeft: 'auto' }}>{filaCaminho.length}</span>
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                    {filaCaminho.length === 0 ? (
+                      <div style={{ color: '#bbb', fontSize: 13, textAlign: 'center', padding: '24px 0', fontStyle: 'italic' }}>Nenhum pedido a caminho</div>
+                    ) : filaCaminho.map(o => filaCard(o, '#00695C', '#B2DFDB'))}
+                  </div>
+                </div>
+              </div>
+            );
+          })()
+
+          : (() => {
+            /* ── Linha / Compacto (tabela) ── */
+            const urgencyOrder = { arriving: 0, in_transit: 1, picked_up: 2, assigned: 3, ready: 4, preparing: 5, confirmed: 6 };
+            const linhaOrders = [...pendingOrders].sort((a, b) => (urgencyOrder[a.status] ?? 99) - (urgencyOrder[b.status] ?? 99));
+            const linhaStatusInfo = {
+              confirmed:  { label: 'Novo',        color: '#E65100', bg: 'rgba(230,81,0,0.1)' },
+              preparing:  { label: 'Preparando',  color: '#1565C0', bg: 'rgba(21,101,192,0.1)' },
+              ready:      { label: 'Pronto ✅',   color: '#2E7D32', bg: 'rgba(46,125,50,0.1)' },
+              assigned:   { label: 'Motoboy 🛵',  color: '#6A1B9A', bg: 'rgba(106,27,154,0.1)' },
+              picked_up:  { label: 'Saiu 🚀',     color: '#00695C', bg: 'rgba(0,105,92,0.1)' },
+              in_transit: { label: 'A caminho',   color: '#00695C', bg: 'rgba(0,105,92,0.1)' },
+              arriving:   { label: '⚡ Chegando', color: '#C62828', bg: 'rgba(198,40,40,0.1)' },
+            };
+            const thS = { color: '#999', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.6, padding: '10px 12px', borderBottom: '2px solid #f0f0f0', textAlign: 'left', whiteSpace: 'nowrap' };
+            const tdS = { padding: '10px 12px', borderBottom: '1px solid #f5f5f5', verticalAlign: 'middle' };
+
+            return (
+              <div style={{ overflowX: 'auto' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', background: 'white', borderRadius: 12, overflow: 'hidden', border: '1px solid #f0f0f0' }}>
+                  <thead>
+                    <tr style={{ background: '#fafafa' }}>
+                      <th style={thS}>Hora</th>
+                      <th style={thS}>#</th>
+                      <th style={thS}>Cliente</th>
+                      <th style={thS}>Itens</th>
+                      <th style={{ ...thS, textAlign: 'center' }}>Status</th>
+                      <th style={thS}>Motoboy</th>
+                      <th style={{ ...thS, textAlign: 'right' }}>Valor</th>
+                      <th style={{ ...thS, textAlign: 'center', width: 120 }}>Ação</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {linhaOrders.map((o, idx) => {
+                      const action = getAction(o);
+                      const si = linhaStatusInfo[o.status] || { label: o.status, color: '#888', bg: '#f5f5f5' };
+                      return (
+                        <tr key={o.id} style={{ background: idx % 2 === 0 ? 'transparent' : 'rgba(0,0,0,0.012)' }}>
+                          <td style={{ ...tdS, color: '#aaa', fontSize: 12, fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap' }}>
+                            {new Date(o.created_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                          </td>
+                          <td style={{ ...tdS, color: '#bbb', fontSize: 11, fontFamily: 'monospace' }}>
+                            …{String(o.id).slice(-4)}
+                          </td>
+                          <td style={{ ...tdS, color: '#1a1a1a', fontWeight: 700, fontSize: 13, whiteSpace: 'nowrap' }}>
+                            {o.customer_name}
+                          </td>
+                          <td style={{ ...tdS, fontSize: 12, color: '#555', maxWidth: 200 }}>
+                            {(o.items || o.order_items || []).map((it, i) => (
+                              <span key={i} style={{ display: 'block', lineHeight: 1.5 }}>
+                                {it.quantity}× {it.product_name || it.products?.name || 'Produto'}
+                              </span>
+                            ))}
+                          </td>
+                          <td style={{ ...tdS, textAlign: 'center' }}>
+                            <span style={{ color: si.color, fontWeight: 700, fontSize: 11, background: si.bg, padding: '3px 10px', borderRadius: 12, whiteSpace: 'nowrap' }}>
+                              {si.label}
+                            </span>
+                          </td>
+                          <td style={{ ...tdS, fontSize: 12, color: '#555', whiteSpace: 'nowrap' }}>
+                            {o.motoboy_name || <span style={{ color: '#ddd' }}>—</span>}
+                          </td>
+                          <td style={{ ...tdS, textAlign: 'right', fontWeight: 700, fontSize: 13, color: '#333', whiteSpace: 'nowrap', fontVariantNumeric: 'tabular-nums' }}>
+                            R$ {o.total.toFixed(2)}
+                          </td>
+                          <td style={{ ...tdS, textAlign: 'center' }}>
+                            {action ? (
+                              <button onClick={() => updateStatus(o.id, action.next)}
+                                style={{ background: '#6A1B9A', color: 'white', border: 'none', borderRadius: 8, padding: '6px 12px', fontSize: 11, fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap' }}>
+                                {action.label}
+                              </button>
+                            ) : <span style={{ color: '#ddd', fontSize: 12 }}>—</span>}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
               </div>
             );
           })()}
