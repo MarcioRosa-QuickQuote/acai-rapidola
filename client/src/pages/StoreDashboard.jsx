@@ -135,6 +135,7 @@ export default function StoreDashboard() {
   const [tvLight, setTvLight] = useState(false);
   const [tvLayout, setTvLayout] = useState('kanban'); // 'kanban' | 'fila' | 'linha'
   const [tvShowPrices, setTvShowPrices] = useState(false);
+  const [tvQrVisible, setTvQrVisible] = useState(true);
   const tvScrollRef = useRef(null);
   const storeIdRef = useRef(null); // ref para evitar stale closure no socket listener
   const [motoboyAlert, setMotoboyAlert] = useState(null); // { name, orderId, type, distanceMeters }
@@ -583,6 +584,19 @@ export default function StoreDashboard() {
     const iv = setInterval(tick, 30); // ~33px/s
     return () => { clearInterval(iv); timers.forEach(clearTimeout); };
   }, [showTV, tvLayout]);
+
+  // Mostra QR apenas quando o conteúdo não preenche a tela toda
+  // (sem scroll = canto inferior direito está livre)
+  useEffect(() => {
+    if (!showTV) return;
+    const check = () => {
+      const el = tvScrollRef.current;
+      if (!el) { setTvQrVisible(true); return; }
+      setTvQrVisible(el.scrollHeight <= el.clientHeight + 8);
+    };
+    const t = setTimeout(check, 120); // aguarda render do DOM
+    return () => clearTimeout(t);
+  }, [showTV, tvLayout, orders]); // reavalia quando pedidos mudam
 
   // WakeLock: impede a tela de dormir no modo TV
   useEffect(() => {
@@ -2201,10 +2215,11 @@ export default function StoreDashboard() {
                 <select value={tvLayout} onChange={e => setTvLayout(e.target.value)}
                   style={{
                     height: 38, padding: '0 10px', borderRadius: 8, fontSize: 13, fontWeight: 700, cursor: 'pointer',
-                    background: tvLight ? '#f0f0f0' : 'rgba(255,255,255,0.08)',
-                    color: tvLight ? '#333' : 'rgba(255,255,255,0.85)',
+                    background: tvLight ? '#f0f0f0' : '#1e1e2e',
+                    color: tvLight ? '#333' : 'rgba(255,255,255,0.9)',
                     border: tvLight ? '1px solid #ddd' : '1px solid rgba(255,255,255,0.18)',
-                    outline: 'none', appearance: 'auto'
+                    outline: 'none', appearance: 'auto',
+                    colorScheme: tvLight ? 'light' : 'dark'
                   }}>
                   <option value="kanban">⊞  Kanban</option>
                   <option value="fila">📋  Fila</option>
@@ -2277,15 +2292,18 @@ export default function StoreDashboard() {
             {tvLayout === 'fila'   && renderFila()}
             {tvLayout === 'linha'  && renderLinha()}
 
-            {/* QR fixo no canto inferior direito — visível em todos os layouts */}
+            {/* QR fixo no canto inferior direito — aparece só quando o canto está livre */}
             <div style={{
               position: 'absolute', bottom: 24, right: 28, zIndex: 10,
               display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6,
-              opacity: 0.55, pointerEvents: 'none'
+              pointerEvents: 'none',
+              opacity: tvQrVisible ? 0.6 : 0,
+              transition: 'opacity 0.5s ease'
             }}>
+              <img src="/logo_placa.png" alt="Logo" style={{ width: 52, height: 52, objectFit: 'contain', filter: 'drop-shadow(0 2px 6px rgba(0,0,0,0.4))' }} />
               <img src={qrUrl} alt="QR" style={{ width: 90, height: 90, borderRadius: 8, display: 'block' }} />
               <div style={{ color: tvSub, fontSize: 9, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, textAlign: 'center', lineHeight: 1.4 }}>
-                🍇 Baixe o app
+                Baixe o app
               </div>
             </div>
           </div>
