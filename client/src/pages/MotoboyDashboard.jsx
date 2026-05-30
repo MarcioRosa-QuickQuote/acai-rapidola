@@ -944,31 +944,42 @@ export default function MotoboyDashboard() {
           }} onClick={() => openNav(primary)}>
             {/* Círculo decorativo */}
             <div style={{ position: 'absolute', top: -28, right: -28, width: 130, height: 130, borderRadius: '50%', background: 'rgba(255,255,255,0.06)', pointerEvents: 'none' }} />
-            {/* Topo: label + valor no canto direito */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10 }}>
-              <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.65)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1.2 }}>
-                🏍️ Entrega em andamento
-              </div>
-              <div style={{ textAlign: 'right', flexShrink: 0, marginLeft: 12 }}>
-                <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.55)', marginBottom: 1 }}>Valor</div>
-                <div style={{ fontSize: 20, fontWeight: 800, color: 'white', lineHeight: 1 }}>R$ {primary.total.toFixed(2)}</div>
-              </div>
-            </div>
-            {/* Linha 1 — nome do cliente (grande) */}
-            <div style={{ fontSize: 22, fontWeight: 800, color: 'white', lineHeight: 1.2, marginBottom: 4 }}>
-              {primary.customer_name}
-            </div>
-            {/* Linha 2 — endereço (médio) */}
-            <div style={{ fontSize: 14, color: 'rgba(255,255,255,0.8)', marginBottom: 16, lineHeight: 1.4 }}>
-              📍 {fmtAddr(primary.customer_address)}
-            </div>
-            {/* Linha 3 — loja + status */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.65)' }}>🏪 {primary.store_name}</div>
-              <div style={{ fontSize: 12, fontWeight: 700, color: 'white', background: 'rgba(255,255,255,0.16)', padding: '4px 12px', borderRadius: 20 }}>
-                {statusLabels[primary.status] || primary.status}
-              </div>
-            </div>
+            {(() => {
+              const isToStore = primary.status === 'assigned';
+              const destName    = isToStore ? primary.store_name    : primary.customer_name;
+              const destAddr    = isToStore ? (primary.store_address || primary.store_name) : primary.customer_address;
+              const destLabel   = isToStore ? '🏪 Buscar na loja' : '📦 Entregar ao cliente';
+              const secondLabel = isToStore ? `👤 ${primary.customer_name}` : `🏪 ${primary.store_name}`;
+              return (
+                <>
+                  {/* Topo: label + valor no canto direito */}
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10 }}>
+                    <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.65)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1.2 }}>
+                      🏍️ {destLabel}
+                    </div>
+                    <div style={{ textAlign: 'right', flexShrink: 0, marginLeft: 12 }}>
+                      <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.55)', marginBottom: 1 }}>Valor</div>
+                      <div style={{ fontSize: 20, fontWeight: 800, color: 'white', lineHeight: 1 }}>R$ {primary.total.toFixed(2)}</div>
+                    </div>
+                  </div>
+                  {/* Linha 1 — destino principal (grande) */}
+                  <div style={{ fontSize: 22, fontWeight: 800, color: 'white', lineHeight: 1.2, marginBottom: 4 }}>
+                    {destName}
+                  </div>
+                  {/* Linha 2 — endereço do destino */}
+                  <div style={{ fontSize: 14, color: 'rgba(255,255,255,0.8)', marginBottom: 16, lineHeight: 1.4 }}>
+                    📍 {fmtAddr(destAddr)}
+                  </div>
+                  {/* Linha 3 — info secundária + status */}
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.65)' }}>{secondLabel}</div>
+                    <div style={{ fontSize: 12, fontWeight: 700, color: 'white', background: 'rgba(255,255,255,0.16)', padding: '4px 12px', borderRadius: 20 }}>
+                      {statusLabels[primary.status] || primary.status}
+                    </div>
+                  </div>
+                </>
+              );
+            })()}
             {/* Navegar chip */}
             <div style={{ marginTop: 14, display: 'flex', alignItems: 'center', gap: 6, color: 'rgba(255,255,255,0.75)', fontSize: 12, fontWeight: 600 }}>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="rgba(255,255,255,0.75)">
