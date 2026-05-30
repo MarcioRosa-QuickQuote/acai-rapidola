@@ -1219,7 +1219,7 @@ export default function MotoboyDashboard() {
               <img src={user.photo_url} alt="Foto" style={{ width: 56, height: 56, borderRadius: '50%', objectFit: 'cover' }}
                 onError={e => { e.target.style.display = 'none'; }} />
             ) : (
-              <div style={{ width: 56, height: 56, borderRadius: '50%', background: 'linear-gradient(135deg, #42A5F5, #1565C0)',
+              <div style={{ width: 56, height: 56, borderRadius: '50%', background: 'linear-gradient(135deg, #CE93D8, #6A1B9A)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 700, fontSize: 24 }}>
                 {user?.name?.charAt(0)?.toUpperCase()}
               </div>
@@ -1350,9 +1350,9 @@ export default function MotoboyDashboard() {
     cardBorder:  darkMode ? 'rgba(255,255,255,0.07)' : '#e4e8f0',
     text:        darkMode ? '#eef0f4' : '#1a1f2e',
     sub:         darkMode ? 'rgba(255,255,255,0.45)' : '#667',
-    accent:      '#1565C0',
-    accentDark:  '#0D47A1',
-    accentLight: darkMode ? 'rgba(21,101,192,0.18)' : '#e3f0fd',
+    accent:      '#6A1B9A',
+    accentDark:  '#4A148C',
+    accentLight: darkMode ? 'rgba(106,27,154,0.18)' : '#f3e5f5',
     green:       '#1B8A3A',
     greenBg:     darkMode ? 'rgba(27,138,58,0.18)'  : '#e8f5e9',
     greenBorder: darkMode ? 'rgba(27,138,58,0.35)'  : '#a8d5b5',
@@ -1360,7 +1360,7 @@ export default function MotoboyDashboard() {
     hdrBorder:   darkMode ? 'rgba(255,255,255,0.06)' : '#e0e4ee',
     nav:         darkMode ? '#0a0d1a' : '#ffffff',
     navBorder:   darkMode ? 'rgba(255,255,255,0.06)' : '#e0e4ee',
-    tabActive:   '#1565C0',
+    tabActive:   '#6A1B9A',
   };
 
   // botão hero: mostra quando há entrega ativa com ação disponível e está na tab início
@@ -1374,7 +1374,7 @@ export default function MotoboyDashboard() {
       // Sobrescreve as CSS vars do tema para o escopo do motoboy
       '--primary':      mb.accent,
       '--primary-dark': mb.accentDark,
-      '--primary-light':'#42A5F5',
+      '--primary-light':'#9C27B0',
       '--bg':           mb.bg,
       '--bg-card':      mb.card,
       '--text':         mb.text,
@@ -1413,7 +1413,7 @@ export default function MotoboyDashboard() {
                 style={{ width: 36, height: 36, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }}
                 onError={e => { e.target.style.display = 'none'; }} />
             ) : (
-              <div style={{ width: 36, height: 36, borderRadius: '50%', background: 'linear-gradient(135deg, #42A5F5, #1565C0)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 700, fontSize: 16, flexShrink: 0 }}>
+              <div style={{ width: 36, height: 36, borderRadius: '50%', background: 'linear-gradient(135deg, #CE93D8, #6A1B9A)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 700, fontSize: 16, flexShrink: 0 }}>
                 {user?.name?.charAt(0)?.toUpperCase()}
               </div>
             )}
