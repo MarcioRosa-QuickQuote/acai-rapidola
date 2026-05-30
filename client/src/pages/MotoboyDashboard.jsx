@@ -711,6 +711,12 @@ export default function MotoboyDashboard() {
   }
   const [loading, setLoading] = useState(true);
   const [online, setOnline] = useState(true);
+  const [darkMode, setDarkMode] = useState(() => {
+    const saved = localStorage.getItem('mb_dark');
+    if (saved !== null) return saved === '1';
+    const h = new Date().getHours();
+    return h >= 18 || h < 7; // automático: escuro após 18h e antes das 7h
+  });
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [modalCpf, setModalCpf] = useState('');
   const [modalVehicle, setModalVehicle] = useState('moto');
@@ -891,24 +897,31 @@ export default function MotoboyDashboard() {
   const filteredAvailable = availableOrders.filter(o => !activeIds.has(o.id));
 
   function renderInicio() {
+    const primary = activeDeliveries[0];
+    const others  = activeDeliveries.slice(1);
+
     return (
-      <>
-        <div className="card" style={{
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+
+        {/* ── Status online/offline ── */}
+        <div style={{
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          background: online ? 'linear-gradient(135deg, #E8F5E9, #C8E6C9)' : 'linear-gradient(135deg, #F5F5F5, #EEEEEE)',
-          marginBottom: 12,
-          border: online ? '1px solid #A6D7A7' : '1px solid #E0E0E0'
+          background: online ? mb.greenBg : mb.card,
+          borderRadius: 14, padding: '14px 18px',
+          border: `1px solid ${online ? mb.greenBorder : mb.cardBorder}`
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-            <div style={{ width: 12, height: 12, borderRadius: '50%',
-              background: online ? '#2E7D32' : '#BDBDBD',
-              boxShadow: online ? '0 0 0 3px rgba(46,125,50,0.2), 0 0 8px rgba(46,125,50,0.3)' : 'none' }} />
+            <div style={{
+              width: 11, height: 11, borderRadius: '50%',
+              background: online ? mb.green : mb.sub,
+              boxShadow: online ? `0 0 0 3px ${mb.greenBorder}` : 'none'
+            }} />
             <div>
-              <div style={{ fontSize: 15, fontWeight: 700, color: online ? '#1B5E20' : '#757575' }}>
-                {online ? 'Online - Aceitando entregas' : 'Offline'}
+              <div style={{ fontSize: 15, fontWeight: 700, color: online ? mb.green : mb.sub }}>
+                {online ? 'Online · aceitando corridas' : 'Offline'}
               </div>
-              <div style={{ fontSize: 11, color: online ? '#2E7D32' : '#999', marginTop: 1 }}>
-                {online ? 'Disponível para corridas' : 'Ative para receber pedidos'}
+              <div style={{ fontSize: 11, color: mb.sub, marginTop: 1 }}>
+                {online ? 'Toque para pausar' : 'Toque para ativar'}
               </div>
             </div>
           </div>
@@ -922,87 +935,129 @@ export default function MotoboyDashboard() {
           </div>
         </div>
 
-        {activeDeliveries.length > 0 && activeDeliveries.map(order => (
-          <div key={order.id} className="card" style={{ marginBottom: 12, border: '2px solid var(--primary)', cursor: 'pointer' }}
-            onClick={() => openNav(order)}>
-            <div className="flex-between" style={{ marginBottom: 4 }}>
-              <span style={{ fontSize: 11, color: '#bbb', fontFamily: 'monospace', letterSpacing: 0.3, userSelect: 'all' }}>#{order.id.slice(0, 8)}</span>
-              <span className="badge badge-success">R$ {order.total.toFixed(2)}</span>
+        {/* ── Entrega ativa — card HERO ── */}
+        {primary && (
+          <div style={{
+            background: `linear-gradient(145deg, ${mb.accentDark}, ${mb.accent})`,
+            borderRadius: 18, padding: '20px 20px 18px',
+            position: 'relative', overflow: 'hidden', cursor: 'pointer'
+          }} onClick={() => openNav(primary)}>
+            {/* Círculo decorativo */}
+            <div style={{ position: 'absolute', top: -28, right: -28, width: 130, height: 130, borderRadius: '50%', background: 'rgba(255,255,255,0.06)', pointerEvents: 'none' }} />
+            <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.65)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 10 }}>
+              🏍️ Entrega em andamento
             </div>
-            {order.store_address && (
-              <div className="text-sm text-muted" style={{ marginBottom: 2 }}>
-                🏪 {order.store_name} — {order.store_address}
+            {/* Linha 1 — nome do cliente (grande) */}
+            <div style={{ fontSize: 22, fontWeight: 800, color: 'white', lineHeight: 1.2, marginBottom: 4 }}>
+              {primary.customer_name}
+            </div>
+            {/* Linha 2 — endereço (médio) */}
+            <div style={{ fontSize: 14, color: 'rgba(255,255,255,0.8)', marginBottom: 16, lineHeight: 1.4 }}>
+              📍 {fmtAddr(primary.customer_address)}
+            </div>
+            {/* Linha 3 — valor + status + ação (pequeno) */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div>
+                <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.55)', marginBottom: 2 }}>Valor</div>
+                <div style={{ fontSize: 20, fontWeight: 800, color: 'white' }}>R$ {primary.total.toFixed(2)}</div>
               </div>
-            )}
-            <div className="text-sm text-muted">Cliente: <strong>{order.customer_name}</strong></div>
-            <div className="text-sm text-muted" style={{ marginBottom: 6 }}>📍 {fmtAddr(order.customer_address)}</div>
-            <div className="flex-between">
-              <span className={`badge ${statusColors[order.status] || 'badge-primary'}`}>{statusLabels[order.status] || order.status}</span>
-              {nextStatus[order.status] && (
-                <button className="btn btn-sm btn-primary"
-                  onClick={(e) => { e.stopPropagation(); updateStatus(order.id); }}>
-                  {nextStatusLabel[order.status]}
-                </button>
-              )}
+              <div style={{ textAlign: 'right' }}>
+                <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.55)', marginBottom: 4 }}>
+                  🏪 {primary.store_name}
+                </div>
+                <div style={{ fontSize: 12, fontWeight: 700, color: 'white', background: 'rgba(255,255,255,0.16)', padding: '4px 12px', borderRadius: 20, display: 'inline-block' }}>
+                  {statusLabels[primary.status] || primary.status}
+                </div>
+              </div>
+            </div>
+            {/* Navegar chip */}
+            <div style={{ marginTop: 14, display: 'flex', alignItems: 'center', gap: 6, color: 'rgba(255,255,255,0.75)', fontSize: 12, fontWeight: 600 }}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="rgba(255,255,255,0.75)">
+                <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+              </svg>
+              Toque para navegar
+            </div>
+          </div>
+        )}
+
+        {/* ── Outras entregas ativas (se houver mais de 1) ── */}
+        {others.map(order => (
+          <div key={order.id} style={{
+            background: mb.card, borderRadius: 14, padding: '14px 16px',
+            border: `1px solid ${mb.accent}44`, cursor: 'pointer',
+            display: 'flex', justifyContent: 'space-between', alignItems: 'center'
+          }} onClick={() => openNav(order)}>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              {/* Linha 1 */}
+              <div style={{ fontSize: 15, fontWeight: 700, color: mb.text, marginBottom: 3 }}>{order.customer_name}</div>
+              {/* Linha 2 */}
+              <div style={{ fontSize: 12, color: mb.sub, marginBottom: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                📍 {fmtAddr(order.customer_address)}
+              </div>
+              {/* Linha 3 */}
+              <div style={{ fontSize: 11, color: mb.sub }}>
+                #{order.id.slice(-4)} · {order.store_name}
+              </div>
+            </div>
+            <div style={{ textAlign: 'right', flexShrink: 0, marginLeft: 12 }}>
+              <div style={{ fontSize: 16, fontWeight: 800, color: mb.accent }}>R$ {order.total.toFixed(2)}</div>
+              <div style={{ fontSize: 11, color: mb.sub, marginTop: 3 }}>{statusLabels[order.status]}</div>
             </div>
           </div>
         ))}
 
-        {/* Motoboy vinculado: pedidos chegam automáticos, sem aceite manual */}
+        {/* ── Aguardando (vinculado, sem pedido ativo) ── */}
         {isLinked && activeDeliveries.length === 0 && (
-          <div style={{ background: '#f0f7ff', borderRadius: 14, padding: '16px 18px', border: '1px solid #bbdefb', display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
-            <span style={{ fontSize: 24 }}>🔔</span>
+          <div style={{ background: mb.accentLight, borderRadius: 14, padding: '18px 18px', border: `1px solid ${mb.accent}44`, display: 'flex', alignItems: 'center', gap: 14 }}>
+            <span style={{ fontSize: 28 }}>🔔</span>
             <div>
-              <div style={{ fontWeight: 700, fontSize: 14, color: '#1565C0' }}>Aguardando pedidos</div>
-              <div style={{ fontSize: 12, color: '#555', marginTop: 2 }}>Os pedidos chegam automaticamente quando a loja estiver pronta</div>
+              <div style={{ fontWeight: 700, fontSize: 15, color: mb.accent }}>Aguardando pedidos</div>
+              <div style={{ fontSize: 12, color: mb.sub, marginTop: 3 }}>Os pedidos chegam automaticamente quando a loja estiver pronta</div>
             </div>
           </div>
         )}
 
-        {/* Motoboy avulso: divisória + pedidos disponíveis para aceitar */}
-        {!isLinked && (
+        {/* ── Pedidos disponíveis para aceitar (avulso) ── */}
+        {!isLinked && filteredAvailable.length > 0 && (
           <>
-            {filteredAvailable.length > 0 ? (
-              <>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10, margin: '16px 0 12px' }}>
-                  <div style={{ flex: 1, height: 1, background: '#E0E0E0' }} />
-                  <span style={{ fontSize: 11, fontWeight: 700, color: '#9E9E9E', textTransform: 'uppercase', letterSpacing: 0.6, whiteSpace: 'nowrap' }}>
-                    Disponíveis para aceitar
-                  </span>
-                  <div style={{ flex: 1, height: 1, background: '#E0E0E0' }} />
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, margin: '4px 0' }}>
+              <div style={{ flex: 1, height: 1, background: mb.cardBorder }} />
+              <span style={{ fontSize: 10, fontWeight: 700, color: mb.sub, textTransform: 'uppercase', letterSpacing: 0.8, whiteSpace: 'nowrap' }}>
+                Disponíveis para aceitar
+              </span>
+              <div style={{ flex: 1, height: 1, background: mb.cardBorder }} />
+            </div>
+            {filteredAvailable.map(order => (
+              <div key={order.id} style={{ background: mb.card, borderRadius: 14, padding: '14px 16px', border: `1px solid ${mb.cardBorder}` }}>
+                {/* Linha 1 — cliente + valor */}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 6 }}>
+                  <div style={{ fontSize: 16, fontWeight: 700, color: mb.text }}>{order.customer_name}</div>
+                  <div style={{ fontSize: 18, fontWeight: 800, color: mb.green, flexShrink: 0, marginLeft: 10 }}>R$ {order.total.toFixed(2)}</div>
                 </div>
-                {filteredAvailable.map(order => (
-                  <div key={order.id} className="card">
-                    <div className="flex-between" style={{ marginBottom: 6 }}>
-                      <div>
-                        <span style={{ fontSize: 11, color: '#bbb', fontFamily: 'monospace', letterSpacing: 0.3, userSelect: 'all' }}>#{order.id.slice(0, 8)}</span>
-                        <span className="text-sm text-muted" style={{ marginLeft: 8 }}>{order.customer_name}</span>
-                      </div>
-                      <span className="badge badge-success">R$ {order.total.toFixed(2)}</span>
-                    </div>
-                    <div className="text-sm text-muted" style={{ marginBottom: 6 }}>Loja: {order.store_name}</div>
-                    <div className="text-sm text-muted" style={{ marginBottom: 8 }}>{fmtAddr(order.customer_address)}</div>
-                    <div className="flex-between">
-                      <span className={`badge ${statusColors[order.status] || 'badge-primary'}`}>{statusLabels[order.status] || order.status}</span>
-                      <button className="btn btn-sm btn-primary" onClick={() => acceptOrder(order.id)}>Aceitar Entrega</button>
-                    </div>
-                  </div>
-                ))}
-              </>
-            ) : activeDeliveries.length === 0 ? (
-              <div className="card empty-state" style={{ paddingTop: 40, paddingBottom: 40 }}>
-                <div className="empty-state-icon">
-                  <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
-                    <circle cx="32" cy="28" r="16" stroke="var(--border)" strokeWidth="2"/>
-                    <path d="M32 20v8l5 5" stroke="var(--border)" strokeWidth="2" strokeLinecap="round"/>
-                  </svg>
-                </div>
-                <p>Nenhum pedido disponível no momento</p>
+                {/* Linha 2 — endereço */}
+                <div style={{ fontSize: 13, color: mb.sub, marginBottom: 4 }}>📍 {fmtAddr(order.customer_address)}</div>
+                {/* Linha 3 — loja + ID */}
+                <div style={{ fontSize: 11, color: mb.sub, marginBottom: 12 }}>🏪 {order.store_name} · #{order.id.slice(-4)}</div>
+                <button style={{
+                  width: '100%', height: 44, background: mb.accent, color: 'white',
+                  border: 'none', borderRadius: 12, fontSize: 14, fontWeight: 700, cursor: 'pointer'
+                }} onClick={() => acceptOrder(order.id)}>
+                  Aceitar Entrega →
+                </button>
               </div>
-            ) : null}
+            ))}
           </>
         )}
-      </>
+
+        {/* ── Empty state ── */}
+        {!isLinked && filteredAvailable.length === 0 && activeDeliveries.length === 0 && (
+          <div style={{ textAlign: 'center', padding: '48px 24px', color: mb.sub }}>
+            <div style={{ fontSize: 48, marginBottom: 12 }}>🛵</div>
+            <div style={{ fontSize: 16, fontWeight: 600, color: mb.sub }}>Nenhum pedido disponível</div>
+            <div style={{ fontSize: 12, marginTop: 6, opacity: 0.7 }}>Fique online para receber corridas</div>
+          </div>
+        )}
+      </div>
     );
   }
 
@@ -1113,7 +1168,7 @@ export default function MotoboyDashboard() {
         </div>
 
         <div className="card" style={{
-          background: 'linear-gradient(135deg, #6A1B9A, #4A148C)',
+          background: `linear-gradient(135deg, ${mb.accentDark}, ${mb.accent})`,
           color: 'white', marginBottom: 16
         }}>
           <div style={{ fontSize: 13, opacity: 0.8, marginBottom: 4 }}>
@@ -1284,28 +1339,68 @@ export default function MotoboyDashboard() {
     );
   }
 
+  // ── Tema azul cobalto + dark/light ──────────────────────────────────────
+  const toggleDark = () => setDarkMode(d => {
+    localStorage.setItem('mb_dark', d ? '0' : '1');
+    return !d;
+  });
+  const mb = {
+    bg:          darkMode ? '#0c0f1a' : '#f0f4f8',
+    card:        darkMode ? '#161b2e' : '#ffffff',
+    cardBorder:  darkMode ? 'rgba(255,255,255,0.07)' : '#e4e8f0',
+    text:        darkMode ? '#eef0f4' : '#1a1f2e',
+    sub:         darkMode ? 'rgba(255,255,255,0.45)' : '#667',
+    accent:      '#1565C0',
+    accentDark:  '#0D47A1',
+    accentLight: darkMode ? 'rgba(21,101,192,0.18)' : '#e3f0fd',
+    green:       '#1B8A3A',
+    greenBg:     darkMode ? 'rgba(27,138,58,0.18)'  : '#e8f5e9',
+    greenBorder: darkMode ? 'rgba(27,138,58,0.35)'  : '#a8d5b5',
+    hdr:         darkMode ? '#0a0d1a' : '#ffffff',
+    hdrBorder:   darkMode ? 'rgba(255,255,255,0.06)' : '#e0e4ee',
+    nav:         darkMode ? '#0a0d1a' : '#ffffff',
+    navBorder:   darkMode ? 'rgba(255,255,255,0.06)' : '#e0e4ee',
+    tabActive:   '#1565C0',
+  };
+
+  // botão hero: mostra quando há entrega ativa com ação disponível e está na tab início
+  const heroOrder = activeDeliveries[0];
+  const heroAction = heroOrder ? nextStatus[heroOrder.status] : null;
+
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
-      <div className="header" style={{ padding: '8px 16px' }}>
+    <div style={{
+      display: 'flex', flexDirection: 'column', minHeight: '100vh',
+      background: mb.bg, color: mb.text,
+      // Sobrescreve as CSS vars do tema para o escopo do motoboy
+      '--primary':      mb.accent,
+      '--primary-dark': mb.accentDark,
+      '--primary-light':'#42A5F5',
+      '--bg':           mb.bg,
+      '--bg-card':      mb.card,
+      '--text':         mb.text,
+      '--text-light':   mb.sub,
+      '--border':       mb.cardBorder,
+    }}>
+      {/* ── TOPBAR ──────────────────────────────────────────────── */}
+      <div className="header" style={{ padding: '8px 16px', background: mb.hdr, borderBottom: `1px solid ${mb.hdrBorder}` }}>
         <div className="header-left" style={{ gap: 10 }}>
-          <img src="/logo_placa.png" alt="Pé de Açaí" style={{ width: 90, height: 90, objectFit: 'contain', flexShrink: 0 }} />
+          <img src="/logo_placa.png" alt="Pé de Açaí" style={{ width: 80, height: 80, objectFit: 'contain', flexShrink: 0 }} />
         </div>
         <div className="header-right" style={{ gap: 14 }}>
-          {/* Sino de notificações */}
+          {/* Dark/light toggle */}
+          <button onClick={toggleDark}
+            style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 20, lineHeight: 1, padding: 2, opacity: 0.8 }}>
+            {darkMode ? '☀️' : '🌙'}
+          </button>
+          {/* Sino */}
           <div style={{ position: 'relative', cursor: 'pointer' }}>
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
-              stroke="var(--text-light)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none"
+              stroke={mb.sub} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
               <path d="M13.73 21a2 2 0 0 1-3.46 0" />
             </svg>
             {notifications.length > 0 && (
-              <div style={{
-                position: 'absolute', top: -4, right: -4,
-                width: 16, height: 16, borderRadius: '50%',
-                background: '#C62828', color: 'white',
-                fontSize: 9, fontWeight: 700,
-                display: 'flex', alignItems: 'center', justifyContent: 'center'
-              }}>
+              <div style={{ position: 'absolute', top: -4, right: -4, width: 16, height: 16, borderRadius: '50%', background: '#C62828', color: 'white', fontSize: 9, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 {notifications.length > 9 ? '9+' : notifications.length}
               </div>
             )}
@@ -1315,57 +1410,61 @@ export default function MotoboyDashboard() {
             onClick={() => setPageTab('perfil')}>
             {user?.photo_url ? (
               <img src={user.photo_url} alt="Foto"
-                style={{ width: 38, height: 38, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }}
+                style={{ width: 36, height: 36, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }}
                 onError={e => { e.target.style.display = 'none'; }} />
             ) : (
-              <div style={{
-                width: 38, height: 38, borderRadius: '50%',
-                background: 'linear-gradient(135deg, #42A5F5, #1565C0)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                color: 'white', fontWeight: 700, fontSize: 17, flexShrink: 0
-              }}>
+              <div style={{ width: 36, height: 36, borderRadius: '50%', background: 'linear-gradient(135deg, #42A5F5, #1565C0)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 700, fontSize: 16, flexShrink: 0 }}>
                 {user?.name?.charAt(0)?.toUpperCase()}
               </div>
             )}
-            <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text)' }}>
-              {user?.name?.split(' ')[0]}
-            </div>
+            <div style={{ fontSize: 13, fontWeight: 700, color: mb.text }}>{user?.name?.split(' ')[0]}</div>
           </div>
         </div>
       </div>
 
-      <div className="container" style={{ flex: 1, paddingBottom: 80 }}>
+      {/* ── CONTEÚDO ────────────────────────────────────────────── */}
+      <div className="container" style={{ flex: 1, paddingBottom: pageTab === 'inicio' && heroAction ? 148 : 88 }}>
         {pageTab === 'inicio' && renderInicio()}
         {pageTab === 'pedidos' && renderPedidos()}
         {pageTab === 'saldo' && renderSaldo()}
         {pageTab === 'perfil' && renderPerfil()}
       </div>
 
+      {/* ── BOTÃO HERO FIXO (Entregue ✓) ────────────────────────── */}
+      {pageTab === 'inicio' && heroAction && (
+        <div style={{ position: 'fixed', bottom: 78, left: 0, right: 0, padding: '0 16px', zIndex: 250 }}>
+          <button onClick={() => updateStatus(heroOrder.id)}
+            style={{
+              width: '100%', height: 56,
+              background: 'linear-gradient(135deg, #1B8A3A, #2E7D32)',
+              color: 'white', border: 'none', borderRadius: 16,
+              fontSize: 17, fontWeight: 800, cursor: 'pointer',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
+              boxShadow: '0 4px 20px rgba(27,138,58,0.45)'
+            }}>
+            ✅ {nextStatusLabel[heroOrder.status]}
+          </button>
+        </div>
+      )}
+
+      {/* ── NAV BAR ─────────────────────────────────────────────── */}
       <div style={{
         position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 300,
-        background: 'white', borderTop: '1px solid var(--border)',
+        background: mb.nav, borderTop: `1px solid ${mb.navBorder}`,
         flexDirection: 'column', paddingBottom: 'env(safe-area-inset-bottom, 4px)'
       }}>
         <div style={{ display: 'flex', padding: '6px 0' }}>
-        {tabs.map(tab => (
-          <button key={tab.key}
-            onClick={() => setPageTab(tab.key)}
-            style={{
-              flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2,
-              padding: '6px 0', border: 'none', background: 'none', cursor: 'pointer',
-              opacity: pageTab === tab.key ? 1 : 0.4, transition: 'opacity 0.2s'
-            }}>
-            <span style={{ fontSize: 22 }}>{tab.icon}</span>
-            <span style={{
-              fontSize: 11, fontWeight: pageTab === tab.key ? 700 : 500,
-              color: pageTab === tab.key ? 'var(--primary)' : '#999'
-            }}>
-              {tab.label}
-            </span>
-          </button>
-        ))}
+          {tabs.map(tab => (
+            <button key={tab.key} onClick={() => setPageTab(tab.key)}
+              style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, padding: '6px 0', border: 'none', background: 'none', cursor: 'pointer', opacity: pageTab === tab.key ? 1 : 0.38, transition: 'opacity 0.2s' }}>
+              <span style={{ fontSize: 22 }}>{tab.icon}</span>
+              <span style={{ fontSize: 11, fontWeight: pageTab === tab.key ? 700 : 500, color: pageTab === tab.key ? mb.tabActive : mb.sub }}>
+                {tab.label}
+              </span>
+            </button>
+          ))}
         </div>
-        <div style={{ textAlign: 'center', fontSize: 9, color: '#ccc', fontFamily: 'monospace', letterSpacing: 0.5, paddingBottom: 2 }}>
+        <div style={{ textAlign: 'center', fontSize: 9, color: mb.sub, fontFamily: 'monospace', letterSpacing: 0.5, paddingBottom: 2 }}>
           build #{APP_BUILD}
         </div>
       </div>
