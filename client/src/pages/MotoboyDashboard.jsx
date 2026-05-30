@@ -958,8 +958,8 @@ export default function MotoboyDashboard() {
                       🏍️ {destLabel}
                     </div>
                     <div style={{ textAlign: 'right', flexShrink: 0, marginLeft: 12 }}>
-                      <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.55)', marginBottom: 1 }}>Valor</div>
-                      <div style={{ fontSize: 20, fontWeight: 800, color: 'white', lineHeight: 1 }}>R$ {primary.total.toFixed(2)}</div>
+                      <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.55)', marginBottom: 1 }}>Seu frete</div>
+                      <div style={{ fontSize: 20, fontWeight: 800, color: 'white', lineHeight: 1 }}>R$ {(primary.delivery_fee ?? 0).toFixed(2)}</div>
                     </div>
                   </div>
                   {/* Linha 1 — destino principal (grande) */}
@@ -1010,7 +1010,7 @@ export default function MotoboyDashboard() {
               </div>
             </div>
             <div style={{ textAlign: 'right', flexShrink: 0, marginLeft: 12 }}>
-              <div style={{ fontSize: 16, fontWeight: 800, color: mb.accent }}>R$ {order.total.toFixed(2)}</div>
+              <div style={{ fontSize: 16, fontWeight: 800, color: mb.accent }}>R$ {(order.delivery_fee ?? 0).toFixed(2)}</div>
               <div style={{ fontSize: 11, color: mb.sub, marginTop: 3 }}>{statusLabels[order.status]}</div>
             </div>
           </div>
@@ -1042,7 +1042,7 @@ export default function MotoboyDashboard() {
                 {/* Linha 1 — cliente + valor */}
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 6 }}>
                   <div style={{ fontSize: 16, fontWeight: 700, color: mb.text }}>{order.customer_name}</div>
-                  <div style={{ fontSize: 18, fontWeight: 800, color: mb.green, flexShrink: 0, marginLeft: 10 }}>R$ {order.total.toFixed(2)}</div>
+                  <div style={{ fontSize: 18, fontWeight: 800, color: mb.green, flexShrink: 0, marginLeft: 10 }}>R$ {(order.delivery_fee ?? 0).toFixed(2)}</div>
                 </div>
                 {/* Linha 2 — endereço */}
                 <div style={{ fontSize: 13, color: mb.sub, marginBottom: 4 }}>📍 {fmtAddr(order.customer_address)}</div>
