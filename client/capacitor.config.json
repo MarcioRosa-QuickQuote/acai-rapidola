@@ -12,6 +12,11 @@
     "captureInput": true,
     "webContentsDebuggingEnabled": false
   },
+  "ios": {
+    "backgroundColor": "#6A1B9A",
+    "contentInset": "always",
+    "scrollEnabled": false
+  },
   "plugins": {
     "SplashScreen": {
       "launchShowDuration": 2000,
