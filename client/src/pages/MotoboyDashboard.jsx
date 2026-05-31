@@ -375,7 +375,7 @@ function NavScreen({ order, onClose, onStatusUpdate, statusLabel }) {
               opacity: (routeLoading || !routeOrigin) ? 0.8 : 1,
               transition: 'background 0.3s'
             }} onClick={() => { if (!routeLoading && routeOrigin) setNavStarted(true); }}>
-              {!routeOrigin ? 'Aguardando GPS…' : routeLoading ? 'Calculando rota…' : 'Iniciar corrida'}
+              {!routeOrigin ? 'Calculando rota…' : routeLoading ? 'Calculando rota…' : 'Iniciar corrida'}
             </button>
           </div>
         </div>
@@ -739,6 +739,7 @@ export default function MotoboyDashboard() {
   const closeNav = () => {
     localStorage.removeItem('mb_nav_order');
     setFullscreenOrder(null);
+    setPageTab('inicio');
   };
   const [finPeriod, setFinPeriod] = useState('dia');
 
@@ -1352,18 +1353,18 @@ export default function MotoboyDashboard() {
     card:        darkMode ? '#161b2e' : '#ffffff',
     cardBorder:  darkMode ? 'rgba(255,255,255,0.07)' : '#e4e8f0',
     text:        darkMode ? '#eef0f4' : '#1a1f2e',
-    sub:         darkMode ? 'rgba(255,255,255,0.45)' : '#667',
+    sub:         darkMode ? 'rgba(255,255,255,0.65)' : '#667',
     accent:      '#6A1B9A',
     accentDark:  '#4A148C',
     accentLight: darkMode ? 'rgba(106,27,154,0.18)' : '#f3e5f5',
     green:       '#1B8A3A',
     greenBg:     darkMode ? 'rgba(27,138,58,0.18)'  : '#e8f5e9',
     greenBorder: darkMode ? 'rgba(27,138,58,0.35)'  : '#a8d5b5',
-    hdr:         darkMode ? '#0a0d1a' : '#ffffff',
-    hdrBorder:   darkMode ? 'rgba(255,255,255,0.06)' : '#e0e4ee',
-    nav:         darkMode ? '#0a0d1a' : '#ffffff',
-    navBorder:   darkMode ? 'rgba(255,255,255,0.06)' : '#e0e4ee',
-    tabActive:   '#6A1B9A',
+    hdr:         darkMode ? '#1a0a2e' : '#f3e5f5',
+    hdrBorder:   darkMode ? 'rgba(156,39,176,0.18)' : '#d1a8e0',
+    nav:         darkMode ? '#1a0a2e' : '#f3e5f5',
+    navBorder:   darkMode ? 'rgba(156,39,176,0.18)' : '#d1a8e0',
+    tabActive:   '#9C27B0',
   };
 
   // botão hero: mostra quando há entrega ativa com ação disponível e está na tab início
@@ -1444,7 +1445,7 @@ export default function MotoboyDashboard() {
         <div style={{ display: 'flex', padding: '6px 0' }}>
           {tabs.map(tab => (
             <button key={tab.key} onClick={() => setPageTab(tab.key)}
-              style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, padding: '6px 0', border: 'none', background: 'none', cursor: 'pointer', opacity: pageTab === tab.key ? 1 : 0.38, transition: 'opacity 0.2s' }}>
+              style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, padding: '6px 0', border: 'none', background: 'none', cursor: 'pointer', opacity: pageTab === tab.key ? 1 : (darkMode ? 0.65 : 0.45), transition: 'opacity 0.2s' }}>
               <span style={{ fontSize: 22 }}>{tab.icon}</span>
               <span style={{ fontSize: 11, fontWeight: pageTab === tab.key ? 700 : 500, color: pageTab === tab.key ? mb.tabActive : mb.sub }}>
                 {tab.label}
