@@ -40,6 +40,20 @@ app.use('/api/auth', authRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/stores', storeRoutes);
 
+// Proxy OSRM — evita bloqueio de CORS no browser
+app.get('/api/route', async (req, res) => {
+  const { fLng, fLat, tLng, tLat } = req.query;
+  if (!fLng || !fLat || !tLng || !tLat) return res.status(400).json({ error: 'coords missing' });
+  try {
+    const url = `https://router.project-osrm.org/route/v1/driving/${fLng},${fLat};${tLng},${tLat}?geometries=geojson&overview=full&steps=true`;
+    const r = await fetch(url);
+    const data = await r.json();
+    res.json(data);
+  } catch (err) {
+    res.status(502).json({ error: 'routing unavailable' });
+  }
+});
+
 app.get('/api/setup', async (req, res) => {
   const bcrypt = require('bcryptjs');
   const { v4: uuid } = require('uuid');

@@ -126,7 +126,7 @@ export function useRoute(from, to) {
     let cancelled = false;
     // NÃO limpa routeData aqui — mantém rota anterior visível enquanto carrega
 
-    fetch(`https://router.project-osrm.org/route/v1/driving/${fLng},${fLat};${tLng},${tLat}?geometries=geojson&overview=full&steps=true`)
+    fetch(`/api/route?fLng=${fLng}&fLat=${fLat}&tLng=${tLng}&tLat=${tLat}`)
       .then(r => r.json())
       .then(data => {
         if (cancelled) return;
