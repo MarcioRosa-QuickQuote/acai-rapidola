@@ -141,6 +141,7 @@ function NavScreen({ order, onClose, onStatusUpdate, statusLabel }) {
   const prevPosRef = useRef(null);
   const headingRef = useRef(0);
   const coordsRef = useRef(null);
+  const mapRef = useRef(null);
   const lastRouteOriginRef = useRef(null);
   const [routeOrigin, setRouteOrigin] = useState(null);
   const [showOverview, setShowOverview] = useState(false);
@@ -164,6 +165,40 @@ function NavScreen({ order, onClose, onStatusUpdate, statusLabel }) {
     headingRef.current = initBearing;
     setHeading(initBearing);
   }, [coords]);
+
+  // Quando nav inicia: posiciona câmera no ponto inicial da rota com bearing correto
+  useEffect(() => {
+    if (!navStarted) return;
+    const timer = setTimeout(() => {
+      const map = mapRef.current?.getMap?.() ?? mapRef.current;
+      const c = coordsRef.current;
+      if (!map || !c || c.length < 2) return;
+      const center = pos
+        ? (() => { const { snappedPos } = snapToRoute(pos, c); return [snappedPos.lng, snappedPos.lat]; })()
+        : [c[0][1], c[0][0]];
+      try {
+        map.easeTo({ center, bearing: headingRef.current, pitch: 60, zoom: 17.5, duration: 700, padding: { top: 320, bottom: 0 } });
+      } catch (_) {}
+    }, 400);
+    return () => clearTimeout(timer);
+  }, [navStarted]);
+
+  // Segue o motoboy com câmera MapLibre (pitch 60°, bearing = direção de viagem)
+  useEffect(() => {
+    if (!pos || !follow || !navStarted) return;
+    const map = mapRef.current?.getMap?.() ?? mapRef.current;
+    if (!map) return;
+    try {
+      map.easeTo({
+        center: [pos.lng, pos.lat],
+        bearing: heading,
+        pitch: 60,
+        zoom: 17.5,
+        duration: 900,
+        padding: { top: 320, bottom: 0, left: 0, right: 0 }
+      });
+    } catch (_) {}
+  }, [pos?.lat, pos?.lng, heading, follow, navStarted]);
 
   // Solicita permissão de localização ao montar (Android/iOS nativo)
   useEffect(() => {
@@ -360,27 +395,86 @@ function NavScreen({ order, onClose, onStatusUpdate, statusLabel }) {
 
   return (
     <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 1000, background: isDaytime ? '#e8e8e0' : '#0f0f19' }}>
-      {/* Mapa Leaflet — compatível com WebView Android/iOS */}
+      {/* Mapa MapLibre GL — perspectiva 3D em primeira pessoa */}
       {hasRoute && (
         <div style={{ position: 'absolute', inset: 0, zIndex: 2 }}>
-          <MapContainer
-            center={[initLat, initLng]}
-            zoom={17}
+          <MLMap
+            ref={mapRef}
+            initialViewState={{
+              longitude: initLng,
+              latitude: initLat,
+              zoom: 17.5,
+              pitch: 60,
+              bearing: heading
+            }}
             style={{ width: '100%', height: '100%' }}
-            zoomControl={false}
+            mapStyle={mapTileStyle}
             attributionControl={false}
-            key={`nav-${order.id}`}
           >
-            <TileLayer url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png" />
-            <PanDetector onPan={() => setFollow(false)} />
-            {follow && <LeafletRecenter pos={pos} />}
-            {coords && coords.length >= 2 && (
-              <Polyline positions={coords} color="#7B1FA2" weight={10} opacity={1} />
+            {routeGeoJSON && (
+              <Source id="route-src" type="geojson" data={routeGeoJSON}>
+                <Layer id="route-shadow" type="line"
+                  paint={{ 'line-color': '#000', 'line-width': 16, 'line-opacity': 0.25, 'line-blur': 6 }}
+                  layout={{ 'line-cap': 'round', 'line-join': 'round' }} />
+                <Layer id="route-line" type="line"
+                  paint={{ 'line-color': '#7B1FA2', 'line-width': 10, 'line-opacity': 1 }}
+                  layout={{ 'line-cap': 'round', 'line-join': 'round' }} />
+                <Layer id="route-edge" type="line"
+                  paint={{ 'line-color': '#CE93D8', 'line-width': 3, 'line-opacity': 0.7 }}
+                  layout={{ 'line-cap': 'round', 'line-join': 'round' }} />
+              </Source>
             )}
-            {order.store_lat && <Marker position={[order.store_lat, order.store_lng]} icon={storeIcon} />}
-            {!isToStore && <Marker position={[order.customer_lat, order.customer_lng]} icon={destIcon} />}
-            {pos && <Marker position={[pos.lat, pos.lng]} icon={motoboyIcon} />}
-          </MapContainer>
+            {order.store_lat ? (
+              <MLMarker longitude={order.store_lng} latitude={order.store_lat} anchor="bottom">
+                <img src="/logo_placa.png" style={{ width: 52, height: 52, objectFit: 'contain', filter: 'drop-shadow(0 3px 8px rgba(0,0,0,0.6))' }} />
+              </MLMarker>
+            ) : null}
+            {!isToStore && (
+              <MLMarker longitude={order.customer_lng} latitude={order.customer_lat} anchor="bottom">
+                <svg width="32" height="42" viewBox="0 0 32 42" xmlns="http://www.w3.org/2000/svg">
+                  <circle cx="16" cy="16" r="16" fill="#4A148C"/>
+                  <line x1="16" y1="30" x2="16" y2="42" stroke="#4A148C" strokeWidth="4"/>
+                  <circle cx="16" cy="16" r="7" fill="white"/>
+                </svg>
+              </MLMarker>
+            )}
+            {pos && (
+              <MLMarker longitude={pos.lng} latitude={pos.lat} anchor="center" offset={[0, 16]}>
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                  <div style={{ filter: 'drop-shadow(0 4px 10px rgba(0,180,255,0.6))' }}>
+                    <svg width="48" height="64" viewBox="0 0 48 64" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M24 2 L44 60 L24 48 L4 60 Z"
+                        fill="#00BFFF" stroke="white" strokeWidth="2.5" strokeLinejoin="round"/>
+                      <ellipse cx="24" cy="18" rx="4" ry="6" fill="white" opacity="0.5"/>
+                      <ellipse cx="24" cy="44" rx="5" ry="7" fill="rgba(0,0,0,0.25)"/>
+                    </svg>
+                  </div>
+                  {step?.street && (
+                    <div style={{ position: 'relative', marginTop: 0, pointerEvents: 'none' }}>
+                      <div style={{
+                        position: 'absolute', top: -5, left: '50%',
+                        transform: 'translateX(-50%)',
+                        width: 0, height: 0,
+                        borderLeft: '6px solid transparent',
+                        borderRight: '6px solid transparent',
+                        borderBottom: isDaytime ? '6px solid white' : '6px solid rgba(28,28,44,0.97)'
+                      }} />
+                      <div style={{
+                        background: isDaytime ? 'white' : 'rgba(28,28,44,0.97)',
+                        color: isDaytime ? '#1a1a2e' : 'white',
+                        fontWeight: 700, fontSize: 12, padding: '5px 14px',
+                        borderRadius: 20, whiteSpace: 'nowrap', maxWidth: 240,
+                        overflow: 'hidden', textOverflow: 'ellipsis',
+                        boxShadow: '0 2px 10px rgba(0,0,0,0.35)', letterSpacing: 0.1
+                      }}>
+                        {abbrevStreet(step.street)}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </MLMarker>
+            )}
+          </MLMap>
         </div>
       )}
 
@@ -514,7 +608,17 @@ function NavScreen({ order, onClose, onStatusUpdate, statusLabel }) {
         boxShadow: '0 -2px 30px rgba(0,0,0,0.5)', backdropFilter: 'blur(16px)'
       }}>
         {/* Re-center */}
-        <div onClick={() => setFollow(f => !f)} style={{
+        <div onClick={() => {
+          setFollow(f => {
+            if (!f) {
+              const map = mapRef.current?.getMap?.() ?? mapRef.current;
+              if (map && pos) {
+                map.easeTo({ center: [pos.lng, pos.lat], bearing: heading, pitch: 60, zoom: 17.5, duration: 800, padding: { top: 320, bottom: 0 } });
+              }
+            }
+            return !f;
+          });
+        }} style={{
           width: 46, height: 46, borderRadius: 23,
           background: follow ? 'rgba(0,191,255,0.15)' : 'rgba(255,255,255,0.08)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
