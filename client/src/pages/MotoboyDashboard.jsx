@@ -668,13 +668,6 @@ function NavScreen({ order, onClose, onStatusUpdate, statusLabel }) {
             color: 'rgba(255,255,255,0.8)', fontWeight: 700, fontSize: 14,
             cursor: 'pointer'
           }} onClick={() => setNavStarted(false)}>Fechar</div>
-          {statusLabel && (
-            <button style={{
-              padding: '13px 20px', borderRadius: 26, border: 'none',
-              background: instrBg, color: 'white', fontWeight: 800, fontSize: 14,
-              cursor: 'pointer', lineHeight: 1.3
-            }} onClick={onStatusUpdate}>{statusLabel}</button>
-          )}
         </div>
       </div>
     </div>
