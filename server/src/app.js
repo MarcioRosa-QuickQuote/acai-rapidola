@@ -41,19 +41,20 @@ app.use('/api/products', productRoutes);
 app.use('/api/stores', storeRoutes);
 
 // Proxy Mapbox Directions — evita CORS e centraliza o token no servidor
-app.get('/api/route', async (req, res) => {
+app.get('/api/route', (req, res) => {
   const { fLng, fLat, tLng, tLat } = req.query;
   if (!fLng || !fLat || !tLng || !tLat) return res.status(400).json({ error: 'coords missing' });
   const token = process.env.MAPBOX_TOKEN;
   if (!token) return res.status(503).json({ error: 'routing not configured' });
-  try {
-    const url = `https://api.mapbox.com/directions/v5/mapbox/driving/${fLng},${fLat};${tLng},${tLat}?geometries=geojson&overview=full&steps=true&access_token=${token}`;
-    const r = await fetch(url);
-    const data = await r.json();
-    res.json(data);
-  } catch (err) {
-    res.status(502).json({ error: 'routing unavailable' });
-  }
+  const https = require('https');
+  const url = `https://api.mapbox.com/directions/v5/mapbox/driving/${fLng},${fLat};${tLng},${tLat}?geometries=geojson&overview=full&steps=true&access_token=${token}`;
+  https.get(url, resp => {
+    let raw = '';
+    resp.on('data', c => { raw += c; });
+    resp.on('end', () => {
+      try { res.json(JSON.parse(raw)); } catch { res.status(502).json({ error: 'routing unavailable' }); }
+    });
+  }).on('error', () => res.status(502).json({ error: 'routing unavailable' }));
 });
 
 app.get('/api/setup', async (req, res) => {
