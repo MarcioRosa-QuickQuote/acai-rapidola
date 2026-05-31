@@ -378,7 +378,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--bg);
+  background: #4A148C;
   z-index: 9999;
 }
 
