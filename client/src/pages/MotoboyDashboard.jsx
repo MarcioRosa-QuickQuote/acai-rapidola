@@ -662,19 +662,18 @@ function NavScreen({ order, onClose, onStatusUpdate, statusLabel }) {
               <path d="M20.5 3l-.16.03L15 5.1 9 3 3.36 4.9c-.21.07-.36.25-.36.48V20.5c0 .28.22.5.5.5l.16-.03L9 18.9l6 2.1 5.64-1.9c.21-.07.36-.25.36-.48V3.5c0-.28-.22-.5-.5-.5zM15 19l-6-2.11V5l6 2.11V19z"/>
             </svg>
           </div>
-          {statusLabel ? (
+          <div style={{
+            padding: '13px 18px', borderRadius: 26,
+            background: 'rgba(255,255,255,0.08)', border: '1.5px solid rgba(255,255,255,0.15)',
+            color: 'rgba(255,255,255,0.8)', fontWeight: 700, fontSize: 14,
+            cursor: 'pointer'
+          }} onClick={() => setNavStarted(false)}>Fechar</div>
+          {statusLabel && (
             <button style={{
               padding: '13px 20px', borderRadius: 26, border: 'none',
               background: instrBg, color: 'white', fontWeight: 800, fontSize: 14,
               cursor: 'pointer', lineHeight: 1.3
             }} onClick={onStatusUpdate}>{statusLabel}</button>
-          ) : (
-            <div style={{
-              padding: '13px 18px', borderRadius: 26,
-              background: 'rgba(255,255,255,0.08)', border: '1.5px solid rgba(255,255,255,0.15)',
-              color: 'rgba(255,255,255,0.8)', fontWeight: 700, fontSize: 14,
-              cursor: 'pointer'
-            }} onClick={() => setNavStarted(false)}>Fechar</div>
           )}
         </div>
       </div>
