@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useSocket } from '../contexts/SocketContext';
+import { App as CapApp } from '@capacitor/app';
 import { APP_BUILD } from '../version';
 import { requestLocationPermission, watchPosition, getCurrentPosition } from '../utils/geolocation';
 import { MapContainer, TileLayer, Marker, Polyline, useMap, useMapEvents } from 'react-leaflet';
@@ -136,6 +137,13 @@ function NavScreen({ order, onClose, onStatusUpdate, statusLabel }) {
   const [pos, setPos] = useState(null);
   const [heading, setHeading] = useState(0);
   const [follow, setFollow] = useState(true);
+
+  // Intercepta botão voltar do Android nesta tela
+  useEffect(() => {
+    let handler;
+    CapApp.addListener('backButton', () => onClose()).then(h => { handler = h; });
+    return () => { handler?.remove(); };
+  }, [onClose]);
   const [currentStepIdx, setCurrentStepIdx] = useState(0);
   const [navStarted, setNavStarted] = useState(false);
   const prevPosRef = useRef(null);
@@ -1360,11 +1368,11 @@ export default function MotoboyDashboard() {
     green:       '#1B8A3A',
     greenBg:     darkMode ? 'rgba(27,138,58,0.18)'  : '#e8f5e9',
     greenBorder: darkMode ? 'rgba(27,138,58,0.35)'  : '#a8d5b5',
-    hdr:         darkMode ? '#1a0a2e' : '#f3e5f5',
-    hdrBorder:   darkMode ? 'rgba(156,39,176,0.18)' : '#d1a8e0',
-    nav:         darkMode ? '#1a0a2e' : '#f3e5f5',
-    navBorder:   darkMode ? 'rgba(156,39,176,0.18)' : '#d1a8e0',
-    tabActive:   '#9C27B0',
+    hdr:         darkMode ? '#0c0f1a' : '#ffffff',
+    hdrBorder:   darkMode ? 'rgba(255,255,255,0.06)' : '#e0e4ee',
+    nav:         darkMode ? '#0c0f1a' : '#ffffff',
+    navBorder:   darkMode ? 'rgba(255,255,255,0.06)' : '#e0e4ee',
+    tabActive:   '#6A1B9A',
   };
 
   // botão hero: mostra quando há entrega ativa com ação disponível e está na tab início
