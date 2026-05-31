@@ -40,12 +40,14 @@ app.use('/api/auth', authRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/stores', storeRoutes);
 
-// Proxy OSRM — evita bloqueio de CORS no browser
+// Proxy Mapbox Directions — evita CORS e centraliza o token no servidor
 app.get('/api/route', async (req, res) => {
   const { fLng, fLat, tLng, tLat } = req.query;
   if (!fLng || !fLat || !tLng || !tLat) return res.status(400).json({ error: 'coords missing' });
+  const token = process.env.MAPBOX_TOKEN;
+  if (!token) return res.status(503).json({ error: 'routing not configured' });
   try {
-    const url = `https://router.project-osrm.org/route/v1/driving/${fLng},${fLat};${tLng},${tLat}?geometries=geojson&overview=full&steps=true`;
+    const url = `https://api.mapbox.com/directions/v5/mapbox/driving/${fLng},${fLat};${tLng},${tLat}?geometries=geojson&overview=full&steps=true&access_token=${token}`;
     const r = await fetch(url);
     const data = await r.json();
     res.json(data);
