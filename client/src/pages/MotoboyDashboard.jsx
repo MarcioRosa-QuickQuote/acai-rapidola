@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo, useRef } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useSocket } from '../contexts/SocketContext';
 import { APP_BUILD } from '../version';
+import { requestLocationPermission, watchPosition, getCurrentPosition } from '../utils/geolocation';
 import { MapContainer, TileLayer, Marker, useMap, useMapEvents } from 'react-leaflet';
 import RoutePolyline, { useRoute, abbrevStreet, DirectionArrow } from '../components/RouteMap';
 import L from 'leaflet';
@@ -183,10 +184,14 @@ function NavScreen({ order, onClose, onStatusUpdate, statusLabel }) {
     return () => clearTimeout(timer);
   }, [navStarted]);
 
+  // Solicita permissão de localização ao montar (Android/iOS nativo)
+  useEffect(() => {
+    requestLocationPermission().catch(() => {});
+  }, []);
+
   // GPS: snap à rota + heading pelo segmento atual (não pelo magnetômetro)
   useEffect(() => {
-    if (!navigator.geolocation) return;
-    const watch = navigator.geolocation.watchPosition(
+    const watch = watchPosition(
       p => {
         const rawPos = { lat: p.coords.latitude, lng: p.coords.longitude };
         prevPosRef.current = rawPos;
@@ -213,7 +218,7 @@ function NavScreen({ order, onClose, onStatusUpdate, statusLabel }) {
       () => {},
       { enableHighAccuracy: true, timeout: 10000, maximumAge: 3000 }
     );
-    return () => navigator.geolocation.clearWatch(watch);
+    return () => watch.remove();
   }, []);
 
   // Segue o motoboy com câmera MapLibre (pitch 60°, bearing = direção de viagem)
@@ -848,12 +853,7 @@ export default function MotoboyDashboard() {
   }
 
   async function sendLocation() {
-    if (!navigator.geolocation) {
-      console.warn('[GPS] Geolocalização não disponível');
-      return;
-    }
-
-    navigator.geolocation.getCurrentPosition(async (pos) => {
+    getCurrentPosition(async (pos) => {
       await apiFetch('/motoboy/location', {
         method: 'POST',
         body: JSON.stringify({
