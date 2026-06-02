@@ -33,7 +33,8 @@ export default function CustomerBottomNav() {
     <div style={{
       position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 100,
       background: 'white', borderTop: '1px solid var(--border)',
-      display: 'flex', height: 64,
+      display: 'flex', minHeight: 64,
+      paddingBottom: 'env(safe-area-inset-bottom, 0px)',
       boxShadow: '0 -2px 12px rgba(0,0,0,0.08)'
     }}>
       {TABS.map(tab => {
