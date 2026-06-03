@@ -21,7 +21,17 @@ export default function CustomerStoreList() {
 
   function loadData() {
     apiFetch('/stores').then(d => {
-      if (d.data) setStores(d.data);
+      if (d.data) {
+        setStores(d.data);
+        d.data.forEach(store => {
+          if (!window.__productsCache) window.__productsCache = {};
+          if (!window.__productsCache[store.id]) {
+            apiFetch(`/products?store_id=${store.id}`).then(p => {
+              if (p.data) window.__productsCache[store.id] = p.data;
+            });
+          }
+        });
+      }
       setLoading(false);
     });
   }

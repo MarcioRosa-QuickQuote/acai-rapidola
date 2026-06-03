@@ -203,15 +203,24 @@ export default function CustomerHome() {
     function tryDone() {
       if (storeDone && productsDone) setLoading(false);
     }
-    apiFetch(`/products?store_id=${storeId}`).then(d => {
-      if (d.data) setProducts(d.data);
-      if (!sessionStorage.getItem('cart')) {
-        setCart({});
-        setSplitItems({});
-      }
+    const cachedProducts = window.__productsCache?.[storeId];
+    if (cachedProducts) {
+      setProducts(cachedProducts);
+      if (!sessionStorage.getItem('cart')) { setCart({}); setSplitItems({}); }
       productsDone = true;
       tryDone();
-    });
+    } else {
+      apiFetch(`/products?store_id=${storeId}`).then(d => {
+        if (d.data) {
+          setProducts(d.data);
+          if (!window.__productsCache) window.__productsCache = {};
+          window.__productsCache[storeId] = d.data;
+        }
+        if (!sessionStorage.getItem('cart')) { setCart({}); setSplitItems({}); }
+        productsDone = true;
+        tryDone();
+      });
+    }
     apiFetch(`/stores/${storeId}`).then(d => {
       if (d.ok) setStore(d);
       storeDone = true;

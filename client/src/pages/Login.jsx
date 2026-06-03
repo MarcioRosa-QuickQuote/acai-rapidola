@@ -126,6 +126,19 @@ export default function Login() {
         transition: 'transform 0.8s ease-out'
       }} />
 
+      {/* Logo flutuando acima do card */}
+      <div style={{ textAlign: 'center', marginBottom: 8, zIndex: 1, position: 'relative' }}>
+        <img src="/logo_placa.png" alt="Pé de Açaí" style={{
+          width: 150, height: 150, objectFit: 'contain',
+          filter: 'drop-shadow(0 6px 28px rgba(0,0,0,0.55))',
+          transform: `translate(${mousePos.x * -8}px, ${mousePos.y * -8}px)`,
+          transition: 'transform 0.5s ease-out'
+        }} />
+        <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: 12, marginTop: 6, fontWeight: 400 }}>
+          O jeito mais rápido de pedir seu açaí
+        </p>
+      </div>
+
       {/* Card */}
       <div style={{
         width: '100%', maxWidth: 440,
@@ -133,47 +146,12 @@ export default function Login() {
         backdropFilter: 'blur(20px)',
         borderRadius: 24,
         boxShadow: '0 20px 60px rgba(0,0,0,0.35), 0 0 0 1px rgba(255,255,255,0.05)',
-        overflow: 'hidden',
         position: 'relative', zIndex: 1,
         transform: `translate(${mousePos.x * -3}px, ${mousePos.y * -3}px)`,
         transition: 'transform 0.5s ease-out'
       }}>
-        {/* Banner */}
-        <div style={{
-          background: 'linear-gradient(135deg, #4A148C 0%, #6A1B9A 50%, #9C27B0 100%)',
-          padding: '10px 30px 8px',
-          textAlign: 'center', color: 'white',
-          position: 'relative', overflow: 'hidden'
-        }}>
-          <div style={{
-            position: 'absolute', width: 150, height: 150, borderRadius: '50%',
-            background: 'radial-gradient(circle, rgba(255,255,255,0.1), transparent)',
-            top: -40, left: '50%',
-            transform: `translate(-50%, ${mousePos.y * 10}px)`,
-            transition: 'transform 0.8s ease-out'
-          }} />
-
-          <img
-            src="/logo_placa.png"
-            alt="Pé de Açaí"
-            style={{
-              width: 160, height: 160,
-              objectFit: 'contain',
-              position: 'relative', zIndex: 1,
-              marginBottom: 2,
-              filter: 'drop-shadow(0 4px 16px rgba(0,0,0,0.3))'
-            }}
-          />
-          <p style={{
-            opacity: 0.75, fontSize: 11, fontWeight: 400,
-            position: 'relative', zIndex: 1, margin: 0
-          }}>
-            O jeito mais rápido de pedir seu açaí
-          </p>
-        </div>
-
         {/* Form */}
-        <div style={{ padding: '16px 30px 20px' }}>
+        <div style={{ padding: '24px 30px 20px' }}>
           <form onSubmit={handleSubmit}>
             {error && (
               <div style={{

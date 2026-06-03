@@ -111,34 +111,37 @@ export default function Register() {
         }} />
       ))}
 
+      {/* Logo flutuando acima do card */}
+      <div style={{ textAlign: 'center', marginBottom: 8, zIndex: 1, position: 'relative' }}>
+        <img src="/logo_placa.png" alt="Pé de Açaí" style={{
+          width: 130, height: 130, objectFit: 'contain',
+          filter: 'drop-shadow(0 6px 28px rgba(0,0,0,0.55))',
+          transform: `translate(${mousePos.x * -8}px, ${mousePos.y * -8}px)`,
+          transition: 'transform 0.5s ease-out'
+        }} />
+        <h1 style={{ color: 'white', fontSize: 22, fontWeight: 800, margin: '8px 0 2px' }}>Pé de Açaí</h1>
+        <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: 12, fontWeight: 400 }}>Crie sua conta</p>
+        {inviteToken && (
+          <div style={{
+            background: 'rgba(255,255,255,0.15)', padding: '6px 14px',
+            borderRadius: 20, marginTop: 8, fontSize: 12, color: 'white',
+            display: 'inline-block'
+          }}>
+            Convite de loja parceira — vinculação automática
+          </div>
+        )}
+      </div>
+
       <div style={{
         width: '100%', maxWidth: 440,
         background: 'rgba(255,255,255,0.97)',
         borderRadius: 24,
         boxShadow: '0 20px 60px rgba(0,0,0,0.35)',
-        overflow: 'hidden', position: 'relative', zIndex: 1,
+        position: 'relative', zIndex: 1,
         transform: `translate(${mousePos.x * -2}px, ${mousePos.y * -2}px)`,
         transition: 'transform 0.5s ease-out'
       }}>
-        <div style={{
-          background: 'linear-gradient(135deg, #4A148C 0%, #6A1B9A 50%, #9C27B0 100%)',
-          padding: '20px 30px 18px', textAlign: 'center', color: 'white'
-        }}>
-          <img src="/logo_placa.png" alt="Pé de Açaí" style={{ width: 120, height: 120, objectFit: 'contain', marginBottom: 8, filter: 'drop-shadow(0 4px 12px rgba(0,0,0,0.3))' }} />
-          <h1 style={{ fontSize: 24, fontWeight: 800, marginBottom: 2 }}>Pé de Açaí</h1>
-          <p style={{ opacity: 0.8, fontSize: 13 }}>Crie sua conta</p>
-          {inviteToken && (
-            <div style={{
-              background: 'rgba(255,255,255,0.15)', padding: '6px 14px',
-              borderRadius: 20, marginTop: 10, fontSize: 12,
-              display: 'inline-block'
-            }}>
-              Convite de loja parceira — vinculação automática
-            </div>
-          )}
-        </div>
-
-        <div style={{ padding: '18px 30px 20px' }}>
+        <div style={{ padding: '24px 30px 20px' }}>
           <form onSubmit={handleSubmit}>
             {error && (
               <div style={{
