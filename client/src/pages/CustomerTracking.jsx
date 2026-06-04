@@ -488,7 +488,7 @@ export default function CustomerTracking() {
   );
 
   const stepMap = { pending:0, confirmed:0, preparing:1, ready:1, assigned:1, picked_up:2, in_transit:2, arriving:2, delivered:3 };
-  const arrivingText = order.status === 'arriving' ? 'O motoboy está chegando! Fique atento!' : '';
+  const arrivingText = order.status === 'arriving' ? 'O entregador está chegando! Fique atento!' : '';
   const currentStep = stepMap[order.status] ?? 0;
 
   return (
@@ -570,7 +570,7 @@ export default function CustomerTracking() {
           <div className="card">
             <div className="flex-between" style={{ marginBottom: 8 }}>
               <h3 style={{ color: 'var(--primary)', fontSize: 16 }}>
-                {motoboyPos?.name || 'Motoboy'}
+                {motoboyPos?.name || 'Entregador'}
               </h3>
               {eta !== null && (
                 <span style={{ background: '#E3F2FD', padding: '4px 10px', borderRadius: 8, fontWeight: 700, color: '#1565C0', fontSize: 13 }}>
@@ -608,8 +608,8 @@ export default function CustomerTracking() {
             </div>
 
             <div style={{ marginTop: 8, fontSize: 13, color: '#888' }}>
-              {order.status === 'picked_up' && 'Motoboy saiu da loja com seu açaí!'}
-              {order.status === 'arriving' && 'O motoboy está chegando! Fique atento!'}
+              {order.status === 'picked_up' && 'Entregador saiu da loja com seu açaí!'}
+              {order.status === 'arriving' && 'O entregador está chegando! Fique atento!'}
               {order.status === 'picked_up' || order.status === 'arriving' ? '' : 'Aguardando...'}
             </div>
           </div>

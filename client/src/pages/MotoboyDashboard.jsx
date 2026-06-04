@@ -868,6 +868,59 @@ export default function MotoboyDashboard() {
     </div>
   );
 
+  // Tela de aprovação pendente
+  if (user?.approval_status === 'pending') return (
+    <div style={{
+      display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+      minHeight: '100vh', padding: 32, textAlign: 'center',
+      background: 'linear-gradient(160deg, #1a0533 0%, #4A148C 100%)'
+    }}>
+      <img src="/logo_placa.png" alt="logo" style={{ width: 100, height: 100, objectFit: 'contain', marginBottom: 24, filter: 'drop-shadow(0 4px 16px rgba(0,0,0,0.5))' }} />
+      <div style={{ fontSize: 40, marginBottom: 12 }}>⏳</div>
+      <div style={{ fontWeight: 800, fontSize: 22, color: 'white', marginBottom: 8 }}>Cadastro em análise</div>
+      <div style={{ fontSize: 14, color: 'rgba(255,255,255,0.7)', lineHeight: 1.6, maxWidth: 320, marginBottom: 32 }}>
+        Recebemos seu cadastro! Nossa equipe irá revisar seus dados e você receberá uma confirmação em breve.
+      </div>
+      <div style={{ background: 'rgba(255,255,255,0.1)', borderRadius: 16, padding: '16px 24px', maxWidth: 320, marginBottom: 24 }}>
+        <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.6)', marginBottom: 4 }}>Em caso de dúvidas, entre em contato:</div>
+        <div style={{ fontSize: 13, color: 'white', fontWeight: 600 }}>{user.phone}</div>
+      </div>
+      <button onClick={logout} style={{
+        background: 'rgba(255,255,255,0.15)', color: 'white', border: 'none',
+        padding: '10px 24px', borderRadius: 10, cursor: 'pointer', fontSize: 13, fontWeight: 600
+      }}>Sair</button>
+    </div>
+  );
+
+  // Tela de cadastro recusado
+  if (user?.approval_status === 'rejected') return (
+    <div style={{
+      display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+      minHeight: '100vh', padding: 32, textAlign: 'center',
+      background: 'linear-gradient(160deg, #1a0533 0%, #4A148C 100%)'
+    }}>
+      <img src="/logo_placa.png" alt="logo" style={{ width: 100, height: 100, objectFit: 'contain', marginBottom: 24, filter: 'drop-shadow(0 4px 16px rgba(0,0,0,0.5))' }} />
+      <div style={{ fontSize: 40, marginBottom: 12 }}>❌</div>
+      <div style={{ fontWeight: 800, fontSize: 22, color: 'white', marginBottom: 8 }}>Cadastro não aprovado</div>
+      <div style={{ fontSize: 14, color: 'rgba(255,255,255,0.7)', lineHeight: 1.6, maxWidth: 320, marginBottom: 16 }}>
+        Seu cadastro não foi aprovado pela nossa equipe.
+      </div>
+      {user.rejection_reason && (
+        <div style={{ background: 'rgba(229,57,53,0.2)', borderRadius: 12, padding: '12px 20px', maxWidth: 320, marginBottom: 24, border: '1px solid rgba(229,57,53,0.3)' }}>
+          <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.6)', marginBottom: 4 }}>Motivo:</div>
+          <div style={{ fontSize: 13, color: 'white' }}>{user.rejection_reason}</div>
+        </div>
+      )}
+      <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.6)', marginBottom: 24 }}>
+        Entre em contato para mais informações.
+      </div>
+      <button onClick={logout} style={{
+        background: 'rgba(255,255,255,0.15)', color: 'white', border: 'none',
+        padding: '10px 24px', borderRadius: 10, cursor: 'pointer', fontSize: 13, fontWeight: 600
+      }}>Sair</button>
+    </div>
+  );
+
   const tabs = [
     { key: 'inicio', label: 'Início', icon: '🏠' },
     { key: 'pedidos', label: 'Pedidos', icon: '📋' },

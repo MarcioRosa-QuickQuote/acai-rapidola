@@ -338,21 +338,67 @@ function StoreDrawer({ storeId, api, onClose, onRefresh }) {
   );
 }
 
+/* ── RejectModal ─────────────────────────────────────────────── */
+function RejectModal({ entregador, onClose, onDone, api }) {
+  const [reason, setReason] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  async function submit() {
+    setLoading(true);
+    await api(`/entregadores/${entregador.id}/reject`, { method: 'PATCH', body: { reason } });
+    onDone(); onClose();
+    setLoading(false);
+  }
+
+  return (
+    <div style={{
+      position: 'fixed', inset: 0, background: 'rgba(0,0,0,.5)', zIndex: 1000,
+      display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16
+    }} onClick={onClose}>
+      <div style={{
+        background: 'white', borderRadius: 18, padding: 28, width: '100%', maxWidth: 400,
+        boxShadow: '0 8px 40px rgba(0,0,0,.18)'
+      }} onClick={e => e.stopPropagation()}>
+        <div style={{ fontWeight: 800, fontSize: 17, marginBottom: 4 }}>Recusar cadastro</div>
+        <div style={{ color: '#888', fontSize: 13, marginBottom: 16 }}>{entregador.name}</div>
+        <div style={{ fontSize: 12, fontWeight: 600, color: '#555', marginBottom: 6 }}>Motivo (opcional)</div>
+        <input value={reason} onChange={e => setReason(e.target.value)}
+          placeholder="Ex: Documento ilegível, selfie inválida..."
+          style={{ width: '100%', padding: '10px 12px', borderRadius: 8, border: '1.5px solid #ddd', fontSize: 14, boxSizing: 'border-box', marginBottom: 16 }} />
+        <div style={{ display: 'flex', gap: 10 }}>
+          <button onClick={onClose} style={{ flex: 1, padding: 10, borderRadius: 10, border: '1.5px solid #ddd', background: 'white', cursor: 'pointer', fontWeight: 600 }}>Cancelar</button>
+          <button onClick={submit} disabled={loading} style={{ flex: 2, padding: 10, borderRadius: 10, border: 'none', background: '#e53935', color: 'white', cursor: loading ? 'not-allowed' : 'pointer', fontWeight: 700, opacity: loading ? .7 : 1 }}>
+            {loading ? 'Recusando…' : 'Recusar cadastro'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 /* ── Main AdminPanel ─────────────────────────────────────────── */
 export default function AdminPanel() {
   const { user, token, logout } = useAuth();
   const navigate = useNavigate();
   const api = useAdminApi(token);
 
-  const [view, setView] = useState('stores'); // 'stores' | 'logs' | 'stats'
+  const [view, setView] = useState('stores'); // 'stores' | 'entregadores' | 'logs'
   const [stats, setStats] = useState(null);
   const [stores, setStores] = useState([]);
   const [logs, setLogs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
-  const [filterPlan, setFilterPlan] = useState('all'); // 'all'|'premium'|'basico'|'inactive'
+  const [filterPlan, setFilterPlan] = useState('all');
   const [selectedStoreId, setSelectedStoreId] = useState(null);
-  const [showGrant, setShowGrant] = useState(null); // store obj or null
+  const [showGrant, setShowGrant] = useState(null);
+
+  // Entregadores
+  const [entregadores, setEntregadores] = useState([]);
+  const [entregadoresLoading, setEntregadoresLoading] = useState(false);
+  const [filterApproval, setFilterApproval] = useState('pending'); // 'all'|'pending'|'approved'|'rejected'
+  const [autoApprove, setAutoApprove] = useState(false);
+  const [autoApproveLoading, setAutoApproveLoading] = useState(false);
+  const [rejectTarget, setRejectTarget] = useState(null);
 
   const loadAll = useCallback(async () => {
     setLoading(true);
@@ -366,6 +412,27 @@ export default function AdminPanel() {
     setLogs(Array.isArray(l) ? l : []);
   }, [api]);
 
+  const loadEntregadores = useCallback(async () => {
+    setEntregadoresLoading(true);
+    const [list, settings] = await Promise.all([api('/entregadores'), api('/settings')]);
+    setEntregadores(Array.isArray(list) ? list : []);
+    setAutoApprove(settings?.auto_approve_motoboy === 'true');
+    setEntregadoresLoading(false);
+  }, [api]);
+
+  async function toggleAutoApprove() {
+    setAutoApproveLoading(true);
+    const newVal = !autoApprove;
+    await api('/settings', { method: 'PATCH', body: { key: 'auto_approve_motoboy', value: String(newVal) } });
+    setAutoApprove(newVal);
+    setAutoApproveLoading(false);
+  }
+
+  async function approveEntregador(id) {
+    await api(`/entregadores/${id}/approve`, { method: 'PATCH', body: {} });
+    loadEntregadores();
+  }
+
   useEffect(() => {
     if (user?.role !== 'admin') { navigate('/login'); return; }
     loadAll();
@@ -373,6 +440,7 @@ export default function AdminPanel() {
 
   useEffect(() => {
     if (view === 'logs') loadLogs();
+    if (view === 'entregadores') loadEntregadores();
   }, [view]);
 
   const filtered = stores.filter(s => {
@@ -413,6 +481,7 @@ export default function AdminPanel() {
       }}>
         {[
           ['stores', '🏪', 'Lojas'],
+          ['entregadores', '🛵', stats?.pendingMotoboys > 0 ? `Entregadores (${stats.pendingMotoboys})` : 'Entregadores'],
           ['logs', '📋', 'Histórico'],
         ].map(([k, icon, lbl]) => (
           <button key={k} onClick={() => setView(k)} style={{
@@ -434,7 +503,7 @@ export default function AdminPanel() {
             <StatCard icon="📦" label="Pedidos hoje" value={stats.ordersToday} sub={`${stats.totalOrders30d} em 30 dias`} color="#1565C0" />
             <StatCard icon="💰" label="Receita hoje" value={fmtMoney(stats.revenueToday)} color="#2E7D32" />
             <StatCard icon="👥" label="Clientes" value={stats.totalCustomers} color="#0097A7" />
-            <StatCard icon="🛵" label="Motoboys" value={stats.totalMotoboys} color="#795548" />
+            <StatCard icon="🛵" label="Entregadores" value={stats.totalMotoboys} sub={stats.pendingMotoboys > 0 ? `${stats.pendingMotoboys} aguardando` : undefined} color="#795548" />
           </div>
         )}
 
@@ -517,6 +586,135 @@ export default function AdminPanel() {
                   </div>
                 ))}
               </div>
+            )}
+          </>
+        )}
+
+        {/* ── ENTREGADORES VIEW ── */}
+        {view === 'entregadores' && (
+          <>
+            {/* Auto-approval toggle */}
+            <div style={{ background: 'white', borderRadius: 14, padding: '14px 18px', marginBottom: 16, boxShadow: '0 1px 4px rgba(0,0,0,.07)', display: 'flex', alignItems: 'center', gap: 14 }}>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontWeight: 700, fontSize: 14 }}>Aprovação automática</div>
+                <div style={{ fontSize: 12, color: '#888', marginTop: 2 }}>
+                  {autoApprove ? 'Entregadores são aprovados imediatamente ao se cadastrar' : 'Novos entregadores aguardam revisão manual antes de usar o app'}
+                </div>
+              </div>
+              <button onClick={toggleAutoApprove} disabled={autoApproveLoading} style={{
+                width: 52, height: 28, borderRadius: 14, border: 'none', cursor: autoApproveLoading ? 'not-allowed' : 'pointer',
+                background: autoApprove ? '#4CAF50' : '#ddd',
+                transition: 'background 0.2s', position: 'relative', flexShrink: 0
+              }}>
+                <div style={{
+                  width: 22, height: 22, borderRadius: '50%', background: 'white',
+                  position: 'absolute', top: 3, transition: 'left 0.2s',
+                  left: autoApprove ? 27 : 3,
+                  boxShadow: '0 1px 4px rgba(0,0,0,.2)'
+                }} />
+              </button>
+            </div>
+
+            {/* Filtros */}
+            <div style={{ display: 'flex', gap: 8, marginBottom: 14, flexWrap: 'wrap' }}>
+              {[['pending','Pendentes'],['approved','Aprovados'],['rejected','Recusados'],['all','Todos']].map(([v,l]) => (
+                <button key={v} onClick={() => setFilterApproval(v)} style={{
+                  padding: '7px 14px', borderRadius: 10, border: '1.5px solid',
+                  borderColor: filterApproval === v ? '#6A1B9A' : '#ddd',
+                  background: filterApproval === v ? '#F3E5F5' : 'white',
+                  color: filterApproval === v ? '#6A1B9A' : '#555',
+                  fontWeight: filterApproval === v ? 700 : 400, cursor: 'pointer', fontSize: 13
+                }}>{l}</button>
+              ))}
+            </div>
+
+            {entregadoresLoading ? (
+              <div style={{ textAlign: 'center', padding: 60, color: '#888' }}>Carregando…</div>
+            ) : (() => {
+              const filtered = entregadores.filter(e =>
+                filterApproval === 'all' || e.approval_status === filterApproval
+              );
+              return filtered.length === 0 ? (
+                <div style={{ textAlign: 'center', padding: 60, color: '#aaa' }}>Nenhum entregador encontrado</div>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                  {filtered.map(e => (
+                    <div key={e.id} style={{ background: 'white', borderRadius: 14, padding: '16px', boxShadow: '0 1px 4px rgba(0,0,0,.07)' }}>
+                      <div style={{ display: 'flex', gap: 14, alignItems: 'flex-start' }}>
+                        {/* Selfie */}
+                        <div style={{ flexShrink: 0 }}>
+                          {e.selfie_url ? (
+                            <img src={e.selfie_url} alt="selfie" style={{ width: 72, height: 72, borderRadius: 12, objectFit: 'cover' }} />
+                          ) : (
+                            <div style={{ width: 72, height: 72, borderRadius: 12, background: '#F3E5F5', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 28 }}>🧑</div>
+                          )}
+                        </div>
+
+                        {/* Info */}
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 4 }}>
+                            <div style={{ fontWeight: 700, fontSize: 15 }}>{e.name}</div>
+                            <Badge
+                              color={e.approval_status === 'approved' ? '#2E7D32' : e.approval_status === 'rejected' ? '#e53935' : '#FF6D00'}
+                              bg={e.approval_status === 'approved' ? '#e8f5e9' : e.approval_status === 'rejected' ? '#ffeaea' : '#fff3e0'}
+                            >
+                              {e.approval_status === 'approved' ? 'Aprovado' : e.approval_status === 'rejected' ? 'Recusado' : 'Pendente'}
+                            </Badge>
+                          </div>
+                          <div style={{ fontSize: 12, color: '#666', marginBottom: 2 }}>📱 {e.phone} {e.email && `· ✉️ ${e.email}`}</div>
+                          {e.cpf && <div style={{ fontSize: 12, color: '#666', marginBottom: 2 }}>CPF: {e.cpf}</div>}
+                          <div style={{ fontSize: 12, color: '#666', marginBottom: 2 }}>
+                            {e.vehicle_type && `${e.vehicle_type === 'moto' ? '🛵 Moto' : e.vehicle_type === 'bicycle' ? '🚲 Bicicleta' : e.vehicle_type === 'car' ? '🚗 Carro' : '🚶 A pé'}`}
+                            {e.plate && ` · Placa: ${e.plate}`}
+                          </div>
+                          {e.pix_key && <div style={{ fontSize: 12, color: '#666', marginBottom: 2 }}>Pix: {e.pix_key}</div>}
+                          {e.rejection_reason && <div style={{ fontSize: 12, color: '#e53935', marginTop: 4 }}>Motivo: {e.rejection_reason}</div>}
+                          <div style={{ fontSize: 11, color: '#aaa', marginTop: 4 }}>Cadastro em {fmtDate(e.created_at)}</div>
+                        </div>
+                      </div>
+
+                      {/* Botões de ação */}
+                      {e.approval_status === 'pending' && (
+                        <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
+                          <button onClick={() => approveEntregador(e.id)} style={{
+                            flex: 1, padding: '9px', borderRadius: 10, border: 'none',
+                            background: '#4CAF50', color: 'white', fontWeight: 700, fontSize: 13, cursor: 'pointer'
+                          }}>✅ Aprovar</button>
+                          <button onClick={() => setRejectTarget(e)} style={{
+                            flex: 1, padding: '9px', borderRadius: 10, border: 'none',
+                            background: '#e53935', color: 'white', fontWeight: 700, fontSize: 13, cursor: 'pointer'
+                          }}>✕ Recusar</button>
+                        </div>
+                      )}
+                      {e.approval_status !== 'pending' && (
+                        <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
+                          {e.approval_status === 'rejected' && (
+                            <button onClick={() => approveEntregador(e.id)} style={{
+                              padding: '7px 16px', borderRadius: 10, border: 'none',
+                              background: '#4CAF50', color: 'white', fontWeight: 700, fontSize: 12, cursor: 'pointer'
+                            }}>✅ Aprovar mesmo assim</button>
+                          )}
+                          {e.approval_status === 'approved' && (
+                            <button onClick={() => setRejectTarget(e)} style={{
+                              padding: '7px 16px', borderRadius: 10, border: 'none',
+                              background: '#ff9800', color: 'white', fontWeight: 700, fontSize: 12, cursor: 'pointer'
+                            }}>Suspender</button>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              );
+            })()}
+
+            {rejectTarget && (
+              <RejectModal
+                entregador={rejectTarget}
+                api={api}
+                onClose={() => setRejectTarget(null)}
+                onDone={loadEntregadores}
+              />
             )}
           </>
         )}

@@ -40,7 +40,7 @@ router.get('/stats', adminOnly, async (req, res) => {
   const [storesR, ordersR, usersR] = await Promise.all([
     supabase.from('stores').select('id, plan, subscription_active, premium_until'),
     supabase.from('orders').select('id, created_at, total, status').gte('created_at', new Date(Date.now() - 30 * 86400000).toISOString()),
-    supabase.from('users').select('id, role, created_at').neq('role', 'admin'),
+    supabase.from('users').select('id, role, approval_status, created_at').neq('role', 'admin'),
   ]);
 
   const stores = storesR.data || [];
@@ -69,6 +69,7 @@ router.get('/stats', adminOnly, async (req, res) => {
     revenueToday,
     totalCustomers: users.filter(u => u.role === 'customer').length,
     totalMotoboys: users.filter(u => u.role === 'motoboy').length,
+    pendingMotoboys: users.filter(u => u.role === 'motoboy' && u.approval_status === 'pending').length,
     totalStoreUsers: users.filter(u => u.role === 'store').length,
   });
 });
@@ -241,6 +242,48 @@ router.get('/logs', adminOnly, async (req, res) => {
     store_name: l.stores?.name,
     admin_name: l.users?.name,
   })));
+});
+
+// ── Entregadores ──────────────────────────────────────────────────────────────
+router.get('/entregadores', adminOnly, async (req, res) => {
+  const { data } = await supabase
+    .from('users')
+    .select('id, name, phone, email, cpf, vehicle_type, plate, pix_key, selfie_url, approval_status, rejection_reason, created_at')
+    .eq('role', 'motoboy')
+    .order('created_at', { ascending: false });
+  res.json(data || []);
+});
+
+router.patch('/entregadores/:id/approve', adminOnly, async (req, res) => {
+  const { error } = await supabase.from('users')
+    .update({ approval_status: 'approved', rejection_reason: '' })
+    .eq('id', req.params.id);
+  if (error) return res.status(500).json({ error: error.message });
+  res.json({ ok: true });
+});
+
+router.patch('/entregadores/:id/reject', adminOnly, async (req, res) => {
+  const { reason = '' } = req.body;
+  const { error } = await supabase.from('users')
+    .update({ approval_status: 'rejected', rejection_reason: reason })
+    .eq('id', req.params.id);
+  if (error) return res.status(500).json({ error: error.message });
+  res.json({ ok: true });
+});
+
+// ── App Settings ──────────────────────────────────────────────────────────────
+router.get('/settings', adminOnly, async (req, res) => {
+  const { data } = await supabase.from('app_settings').select('key, value');
+  const settings = {};
+  (data || []).forEach(({ key, value }) => { settings[key] = value; });
+  res.json(settings);
+});
+
+router.patch('/settings', adminOnly, async (req, res) => {
+  const { key, value } = req.body;
+  if (!key) return res.status(400).json({ error: 'key obrigatório' });
+  await supabase.from('app_settings').upsert({ key, value: String(value) }, { onConflict: 'key' });
+  res.json({ ok: true });
 });
 
 // ── Buscar usuários ───────────────────────────────────────────────────────────

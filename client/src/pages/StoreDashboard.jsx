@@ -52,7 +52,7 @@ L.Icon.Default.mergeOptions({
 
 const statusLabels = {
   pending: 'Aguardando pgto', confirmed: 'Aguardando preparo', preparing: 'Preparando',
-  ready: 'Pronto — aguarda motoboy', assigned: 'Motoboy a caminho',
+  ready: 'Pronto — aguarda entregador', assigned: 'Entregador a caminho',
   picked_up: 'Saiu pra entrega', in_transit: 'Saiu pra entrega', arriving: 'Chegando!',
   delivered: 'Entregue', cancelled: 'Cancelado'
 };
@@ -207,13 +207,13 @@ export default function StoreDashboard() {
       loadOrders();
       if (data?.status === 'assigned') {
         playMotoboyAlarm();
-        setMotoboyAlert({ orderId: data.orderId, name: data.motoboyName || 'Motoboy', type: 'accepted' });
+        setMotoboyAlert({ orderId: data.orderId, name: data.motoboyName || 'Entregador', type: 'accepted' });
         setTimeout(() => setMotoboyAlert(null), 8000);
       }
     });
     socket.on('motoboy_approaching_store', (data) => {
       playMotoboyAlarm();
-      setMotoboyAlert({ orderId: data.orderId, name: data.motoboyName || 'Motoboy', type: 'approaching', distanceMeters: data.distanceMeters });
+      setMotoboyAlert({ orderId: data.orderId, name: data.motoboyName || 'Entregador', type: 'approaching', distanceMeters: data.distanceMeters });
       setTimeout(() => setMotoboyAlert(null), 12000);
     });
     socket.on('notification', (notif) => {
@@ -402,12 +402,12 @@ export default function StoreDashboard() {
       setTimeout(() => setMotoboyMsg(''), 4000);
     } else if (data.direct) {
       setMotoboyPhone('');
-      setMotoboyMsg(`Motoboy ${data.name} vinculado diretamente como parceiro!`);
+      setMotoboyMsg(`Entregador ${data.name} vinculado diretamente como parceiro!`);
       setTimeout(() => setMotoboyMsg(''), 3000);
       loadMotoboys();
     } else if (data.inviteLink) {
       setInviteLink(data.inviteLink);
-      setMotoboyMsg('Convite gerado! Compartilhe o link com o motoboy.');
+      setMotoboyMsg('Convite gerado! Compartilhe o link com o entregador.');
       setTimeout(() => setMotoboyMsg(''), 6000);
       loadMotoboys();
     }
@@ -441,7 +441,7 @@ export default function StoreDashboard() {
   }
 
   async function removeMotoboy(motoboyId) {
-    if (!storeData || !confirm('Remover este motoboy da loja?')) return;
+    if (!storeData || !confirm('Remover este entregador da loja?')) return;
     await apiFetch(`/stores/${storeData.id}/motoboy/${motoboyId}`, { method: 'DELETE' });
     loadMotoboys();
   }
@@ -787,7 +787,7 @@ export default function StoreDashboard() {
                   )}
                   {order.motoboy_name && (
                     <div className="text-sm text-muted" style={{ marginBottom: 4 }}>
-                      👤 Motoboy: {order.motoboy_name}
+                      👤 Entregador: {order.motoboy_name}
                     </div>
                   )}
                   <div style={{ fontSize: 13, fontWeight: 600, marginTop: 8, color: 'var(--primary)' }}>
@@ -874,7 +874,7 @@ export default function StoreDashboard() {
 
                 {order.motoboy_name && (
                   <div className="flex-between" style={{ fontSize: 13, marginBottom: 2 }}>
-                    <span>Motoboy: {order.motoboy_name}</span>
+                    <span>Entregador: {order.motoboy_name}</span>
                     {order.delivery_fee > 0 && <span>R$ {order.delivery_fee.toFixed(2)}</span>}
                   </div>
                 )}
@@ -904,7 +904,7 @@ export default function StoreDashboard() {
                 {(order.status === 'arriving' || order.status === 'picked_up') && (
                   <div style={{ marginTop: 8 }}>
                     <span className="badge" style={{ background: '#FFF3E0', color: '#E65100', fontSize: 11 }}>
-                      🏍️ Motoboy próximo!
+                      🏍️ Entregador próximo!
                     </span>
                   </div>
                 )}
@@ -1184,7 +1184,7 @@ export default function StoreDashboard() {
       return (
         <>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
-            <div className="page-title" style={{ marginBottom: 0 }}>Motoboys</div>
+            <div className="page-title" style={{ marginBottom: 0 }}>Entregadores</div>
             <button
               onClick={() => setShowMotoboyInfo(v => !v)}
               style={{
@@ -1202,21 +1202,21 @@ export default function StoreDashboard() {
             <div className="card" style={{ background: '#E3F2FD', border: '1px solid #BBDEFB', marginBottom: 16 }}>
               <p className="text-xs text-muted" style={{ marginBottom: 4, fontWeight: 600 }}>Como funciona:</p>
               <p className="text-xs text-muted" style={{ marginBottom: 4 }}>
-                <strong>Parceiro:</strong> você gera um link de convite, o motoboy se cadastra e recebe pedidos automaticamente.
+                <strong>Parceiro:</strong> você gera um link de convite, o entregador se cadastra e recebe pedidos automaticamente.
               </p>
               <p className="text-xs text-muted">
-                <strong>Independente:</strong> motoboys se cadastram sozinhos e escolhem quais pedidos aceitar.
+                <strong>Independente:</strong> entregadores se cadastram sozinhos e escolhem quais pedidos aceitar.
               </p>
             </div>
           )}
 
           <div className="card">
             <div className="form-group">
-              <label className="label">Convidar Motoboy Parceiro</label>
+              <label className="label">Convidar Entregador Parceiro</label>
               <div className="flex-row" style={{ gap: 8 }}>
                 <input className="input" type="text" value={motoboyPhone}
                   onChange={e => setMotoboyPhone(e.target.value)}
-                  placeholder="WhatsApp do motoboy"
+                  placeholder="WhatsApp do entregador"
                   style={{ flex: 1 }} />
                 <button className="btn btn-primary btn-sm"
                   onClick={generateInvite}
@@ -1224,7 +1224,7 @@ export default function StoreDashboard() {
                   Gerar Convite
                 </button>
               </div>
-              <span className="text-xs text-muted">Se o motoboy ja tiver cadastro, sera vinculado direto.</span>
+              <span className="text-xs text-muted">Se o entregador já tiver cadastro, será vinculado direto.</span>
             </div>
 
             {inviteLink && (
@@ -1270,14 +1270,14 @@ export default function StoreDashboard() {
               </div>
             )}
 
-            <label className="label">Motoboys Vinculados</label>
+            <label className="label">Entregadores Vinculados</label>
             {motoboys.length === 0 && invites.filter(i => !i.used).length === 0 ? (
               <div className="text-center text-muted" style={{ padding: 20 }}>
-                Nenhum motoboy vinculado. Convide um motoboy parceiro pelo telefone acima.
+                Nenhum entregador vinculado. Convide um entregador parceiro pelo telefone acima.
               </div>
             ) : motoboys.length === 0 ? (
               <div className="text-center text-muted" style={{ padding: 20 }}>
-                Nenhum motoboy vinculado ainda. Aguardando cadastro dos convidados.
+                Nenhum entregador vinculado ainda. Aguardando cadastro dos convidados.
               </div>
             ) : (
               motoboys.map(m => (
@@ -1348,12 +1348,12 @@ export default function StoreDashboard() {
               <div style={{ fontSize: 12, color: '#888', marginBottom: 16, marginTop: 2 }}>Para começar a vender</div>
               <Feature ok text="Painel de pedidos" />
               <Feature ok text="Cardápio digital (até 15 produtos)" />
-              <Feature ok text="1 motoboy parceiro" />
+              <Feature ok text="1 entregador parceiro" />
               <Feature ok text="Pagamento via Pix e cartão (Mercado Pago)" />
               <Feature ok text="Notificações em tempo real" />
               <Feature ok={false} text="Relatório financeiro" />
               <Feature ok={false} text="Tela de TV (modo operação)" />
-              <Feature ok={false} text="Motoboys ilimitados" />
+              <Feature ok={false} text="Entregadores ilimitados" />
               <Feature ok={false} text="Histórico de 90 dias" />
               <Feature ok={false} text="Exportação de dados (CSV)" />
               <Feature ok={false} text="Suporte prioritário via WhatsApp" />
@@ -1375,11 +1375,11 @@ export default function StoreDashboard() {
               <Feature ok text="Tudo do Básico" />
               <Feature ok text="Relatório financeiro completo" />
               <Feature ok text="Tela de TV (modo operação)" />
-              <Feature ok text="Motoboys ilimitados" />
+              <Feature ok text="Entregadores ilimitados" />
               <Feature ok text="Histórico de 90 dias" />
               <Feature ok text="Exportação de dados (CSV)" />
               <Feature ok text="Suporte prioritário via WhatsApp" />
-              <Feature ok text="Alarme de motoboy chegando" />
+              <Feature ok text="Alarme de entregador chegando" />
               <Feature ok text="Dashboard de desempenho semanal" />
               {!isPremium && (
                 <button style={{
@@ -1414,7 +1414,7 @@ export default function StoreDashboard() {
           { key: 'trocar-senha', icon: '🔒', label: 'Trocar Senha' },
           { key: 'mensagens', icon: '💬', label: 'Mensagens' },
           { key: 'vendas', icon: '💰', label: 'Vendas' },
-          { key: 'motoboy', icon: '🏍️', label: 'Motoboy' },
+          { key: 'motoboy', icon: '🏍️', label: 'Entregador' },
           { key: 'assinatura', icon: '⭐', label: 'Assinatura' },
         ].map(item => (
           <div key={item.key} className="card" style={{ padding: '14px 16px', cursor: 'pointer', marginBottom: 8 }}
@@ -1658,7 +1658,7 @@ export default function StoreDashboard() {
             /* ── Fila (2 colunas: preparo | entrega) ── */
             const filaPrep    = pendingOrders.filter(o => ['confirmed', 'preparing', 'ready', 'assigned'].includes(o.status));
             const filaCaminho = pendingOrders.filter(o => ['picked_up', 'in_transit', 'arriving'].includes(o.status));
-            const filaStatusLabel = { confirmed: 'Confirmado', preparing: 'Preparando...', ready: 'Pronto ✅', assigned: 'Motoboy chegou 🛵' };
+            const filaStatusLabel = { confirmed: 'Confirmado', preparing: 'Preparando...', ready: 'Pronto ✅', assigned: 'Entregador chegou 🛵' };
             const filaStatusColor = { confirmed: '#E65100', preparing: '#1565C0', ready: '#2E7D32', assigned: '#6A1B9A' };
 
             const filaCard = (o, color, border) => {
@@ -1731,7 +1731,7 @@ export default function StoreDashboard() {
               confirmed:  { label: 'Novo',        color: '#E65100', bg: 'rgba(230,81,0,0.1)' },
               preparing:  { label: 'Preparando',  color: '#1565C0', bg: 'rgba(21,101,192,0.1)' },
               ready:      { label: 'Pronto ✅',   color: '#2E7D32', bg: 'rgba(46,125,50,0.1)' },
-              assigned:   { label: 'Motoboy 🛵',  color: '#6A1B9A', bg: 'rgba(106,27,154,0.1)' },
+              assigned:   { label: 'Entregador 🛵',  color: '#6A1B9A', bg: 'rgba(106,27,154,0.1)' },
               picked_up:  { label: 'Saiu 🚀',     color: '#00695C', bg: 'rgba(0,105,92,0.1)' },
               in_transit: { label: 'A caminho',   color: '#00695C', bg: 'rgba(0,105,92,0.1)' },
               arriving:   { label: '⚡ Chegando', color: '#C62828', bg: 'rgba(198,40,40,0.1)' },
@@ -1749,7 +1749,7 @@ export default function StoreDashboard() {
                       <th style={thS}>Cliente</th>
                       <th style={thS}>Itens</th>
                       <th style={{ ...thS, textAlign: 'center' }}>Status</th>
-                      <th style={thS}>Motoboy</th>
+                      <th style={thS}>Entregador</th>
                       <th style={{ ...thS, textAlign: 'right' }}>Valor</th>
                       <th style={{ ...thS, textAlign: 'center', width: 120 }}>Ação</th>
                     </tr>
@@ -1872,7 +1872,7 @@ export default function StoreDashboard() {
             {[
               { key: 'dados', icon: '🏪', label: 'Dados da Loja' },
               { key: 'endereco', icon: '📍', label: 'Endereço' },
-              { key: 'motoboy', icon: '🏍️', label: 'Motoboys' },
+              { key: 'motoboy', icon: '🏍️', label: 'Entregadores' },
               { key: 'mensagens', icon: '💬', label: 'Mensagens', badge: unreadMessages || null },
               { key: 'assinatura', icon: '⭐', label: 'Assinatura' },
               { key: 'trocar-senha', icon: '🔑', label: 'Senha' },
@@ -1922,14 +1922,14 @@ export default function StoreDashboard() {
           <div style={{ flex: 1 }}>
             {motoboyAlert.type === 'approaching' ? (
               <>
-                <div style={{ fontWeight: 800, fontSize: 15 }}>Motoboy chegando na loja!</div>
+                <div style={{ fontWeight: 800, fontSize: 15 }}>Entregador chegando na loja!</div>
                 <div style={{ fontSize: 13, opacity: 0.85, marginTop: 2 }}>
                   {motoboyAlert.name} · <strong style={{ color: '#81c784' }}>{motoboyAlert.distanceMeters}m</strong> da loja
                 </div>
               </>
             ) : (
               <>
-                <div style={{ fontWeight: 800, fontSize: 15 }}>Motoboy aceitou o pedido!</div>
+                <div style={{ fontWeight: 800, fontSize: 15 }}>Entregador aceitou o pedido!</div>
                 <div style={{ fontSize: 13, opacity: 0.8, marginTop: 2 }}>{motoboyAlert.name} está a caminho da loja</div>
               </>
             )}
@@ -2010,7 +2010,7 @@ export default function StoreDashboard() {
               {!isDesktop && (
                 <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
                   <div onClick={() => setPerfilTab(null)} style={{ width: 36, height: 36, borderRadius: '50%', background: '#F3E5F5', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontSize: 18, fontWeight: 700, color: '#6A1B9A', flexShrink: 0 }}>‹</div>
-                  <span style={{ fontWeight: 700, fontSize: 16 }}>{perfilTab === 'dados' ? 'Dados' : perfilTab === 'endereco' ? 'Endereço' : perfilTab === 'trocar-senha' ? 'Trocar Senha' : perfilTab === 'mensagens' ? 'Mensagens' : perfilTab === 'vendas' ? 'Vendas' : perfilTab === 'motoboy' ? 'Motoboys' : perfilTab === 'assinatura' ? 'Assinatura' : ''}</span>
+                  <span style={{ fontWeight: 700, fontSize: 16 }}>{perfilTab === 'dados' ? 'Dados' : perfilTab === 'endereco' ? 'Endereço' : perfilTab === 'trocar-senha' ? 'Trocar Senha' : perfilTab === 'mensagens' ? 'Mensagens' : perfilTab === 'vendas' ? 'Vendas' : perfilTab === 'motoboy' ? 'Entregadores' : perfilTab === 'assinatura' ? 'Assinatura' : ''}</span>
                 </div>
               )}
               {perfilTab === 'dados' && PerfilView()}
@@ -2083,7 +2083,7 @@ export default function StoreDashboard() {
               {[
                 '💰 Relatório financeiro completo',
                 '📺 Tela de TV (modo operação)',
-                '🏍️ Motoboys ilimitados',
+                '🏍️ Entregadores ilimitados',
                 '📊 Dashboard de desempenho',
                 '📁 Exportação de dados CSV',
                 '💬 Suporte prioritário WhatsApp',
@@ -2206,7 +2206,7 @@ export default function StoreDashboard() {
         // ── View 2: FILA (virado para o cliente) ─────────────────────────────
         const filaPrep = tvActive.filter(o => ['confirmed', 'preparing', 'ready', 'assigned'].includes(o.status));
         const filaCaminho = tvActive.filter(o => ['picked_up', 'in_transit', 'arriving'].includes(o.status));
-        const filaStatusLabel = { confirmed: 'Confirmado', preparing: 'Preparando...', ready: 'Pronto! ✅', assigned: 'Motoboy chegou 🛵' };
+        const filaStatusLabel = { confirmed: 'Confirmado', preparing: 'Preparando...', ready: 'Pronto! ✅', assigned: 'Entregador chegou 🛵' };
         const filaStatusColor = { confirmed: '#E65100', preparing: '#1e88e5', ready: '#00a844', assigned: '#8e24aa' };
 
         const renderFila = () => (
@@ -2295,7 +2295,7 @@ export default function StoreDashboard() {
           confirmed:  { label: 'Novo',        color: '#E65100', bg: 'rgba(230,81,0,0.12)' },
           preparing:  { label: 'Preparando',  color: '#1e88e5', bg: 'rgba(30,136,229,0.12)' },
           ready:      { label: 'Pronto ✅',   color: '#00a844', bg: 'rgba(0,168,68,0.12)' },
-          assigned:   { label: 'Motoboy 🛵',  color: '#8e24aa', bg: 'rgba(142,36,170,0.12)' },
+          assigned:   { label: 'Entregador 🛵',  color: '#8e24aa', bg: 'rgba(142,36,170,0.12)' },
           picked_up:  { label: 'Saiu 🚀',     color: '#00695C', bg: 'rgba(0,105,92,0.12)' },
           in_transit: { label: 'A caminho',   color: '#00695C', bg: 'rgba(0,105,92,0.12)' },
           arriving:   { label: '⚡ Chegando!', color: '#f44336', bg: 'rgba(244,67,54,0.14)' },
@@ -2318,7 +2318,7 @@ export default function StoreDashboard() {
                     <th style={thS}>Cliente</th>
                     <th style={thS}>Itens</th>
                     <th style={{ ...thS, textAlign: 'center' }}>Status</th>
-                    <th style={thS}>Motoboy</th>
+                    <th style={thS}>Entregador</th>
                     {tvShowPrices && <th style={{ ...thS, textAlign: 'right' }}>Valor</th>}
                     <th style={{ ...thS, textAlign: 'center', width: 160 }}>Ação</th>
                   </tr>

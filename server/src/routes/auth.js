@@ -15,6 +15,11 @@ router.post('/register', async (req, res) => {
   const extra = req.body.extra || {};
   const inviteToken = sanitize(req.body.inviteToken || extra.inviteToken || '', 200);
   const email = sanitize(extra.email, 200);
+  const cpf = sanitize((req.body.cpf || extra.cpf || '').replace(/\D/g, ''), 11);
+  const plate = sanitize(req.body.plate || extra.plate || '', 10);
+  const selfie_url = req.body.selfie_url || extra.selfie_url || '';
+  const vehicle_type = sanitize(req.body.vehicle_type || extra.vehicle_type || '', 20);
+  const pix_key = sanitize(req.body.pix_key || extra.pix_key || '', 100);
   if (!name || !phone || !password || !role) {
     return res.status(400).json({ error: 'Nome, telefone, senha e perfil são obrigatórios' });
   }
@@ -34,15 +39,31 @@ router.post('/register', async (req, res) => {
   const id = uuid();
   const hash = bcrypt.hashSync(password, 10);
 
-  const { error: regInsertErr } = await supabase.from('users').insert({
-    id, name, phone, password_hash: hash, role, email: email
-  });
+  // Verifica configuração de aprovação automática
+  let approval_status = 'approved';
+  if (role === 'motoboy') {
+    const { data: setting } = await supabase.from('app_settings')
+      .select('value').eq('key', 'auto_approve_motoboy').single();
+    approval_status = (setting?.value === 'true') ? 'approved' : 'pending';
+  }
+
+  const insertData = {
+    id, name, phone, password_hash: hash, role, email,
+    approval_status,
+  };
+  if (cpf) insertData.cpf = cpf;
+  if (plate) insertData.plate = plate;
+  if (selfie_url) insertData.selfie_url = selfie_url;
+  if (vehicle_type) insertData.vehicle_type = vehicle_type;
+  if (pix_key) insertData.pix_key = pix_key;
+
+  const { error: regInsertErr } = await supabase.from('users').insert(insertData);
   if (regInsertErr) {
     console.error('[Auth] Register insert error:', regInsertErr);
     return res.status(500).json({ error: 'Erro ao criar conta: ' + regInsertErr.message });
   }
 
-  const user = { id, name, role, phone, email };
+  const user = { id, name, role, phone, email, approval_status };
   const token = signToken(user);
 
   if (role === 'motoboy') {
@@ -148,7 +169,7 @@ router.post('/login', async (req, res) => {
 
   // Se o telefone consta na lista de admins, força role='admin' no JWT
   const role = isAdminPhone(user.phone) ? 'admin' : user.role;
-  const payload = { id: user.id, name: user.name, role, phone: user.phone, email: user.email || '', address: user.address || '', lat: user.lat, lng: user.lng, photo_url: user.photo_url || '' };
+  const payload = { id: user.id, name: user.name, role, phone: user.phone, email: user.email || '', address: user.address || '', lat: user.lat, lng: user.lng, photo_url: user.photo_url || '', approval_status: user.approval_status || 'approved' };
   const token = signToken(payload);
 
   let store = null;
@@ -162,7 +183,7 @@ router.post('/login', async (req, res) => {
 
 router.get('/me', authMiddleware, async (req, res) => {
   const { data: user } = await supabase.from('users')
-    .select('id, name, phone, email, role, address, lat, lng, photo_url, cpf, created_at')
+    .select('id, name, phone, email, role, address, lat, lng, photo_url, cpf, approval_status, rejection_reason, created_at')
     .eq('id', req.user.id).single();
 
   if (!user) return res.status(404).json({ error: 'Usuário não encontrado' });
