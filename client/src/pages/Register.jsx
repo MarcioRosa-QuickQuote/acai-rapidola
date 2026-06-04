@@ -90,10 +90,10 @@ export default function Register() {
 
   return (
     <div style={{
-      display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center',
+      display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'center',
       minHeight: '100vh',
       background: 'linear-gradient(160deg, #1a0533 0%, #2d0a4e 30%, #4A148C 60%, #7B1FA2 100%)',
-      padding: 20, position: 'relative', overflow: 'hidden'
+      padding: '8vh 20px 20px', position: 'relative', overflow: 'hidden'
     }}>
       {berries.map(b => (
         <div key={b.id} style={{
