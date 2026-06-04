@@ -91,7 +91,7 @@ export default function Login() {
       display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'center',
       minHeight: '100vh',
       background: 'linear-gradient(160deg, #1a0533 0%, #2d0a4e 30%, #4A148C 60%, #7B1FA2 100%)',
-      padding: '8vh 20px 20px', position: 'relative', overflow: 'hidden'
+      padding: '24px 20px 20px', position: 'relative', overflow: 'hidden'
     }}>
       {/* Floating acai berries */}
       {berries.map(b => (
