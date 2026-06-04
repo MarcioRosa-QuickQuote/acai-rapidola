@@ -119,7 +119,6 @@ export default function Register() {
           transform: `translate(${mousePos.x * -8}px, ${mousePos.y * -8}px)`,
           transition: 'transform 0.5s ease-out'
         }} />
-        <h1 style={{ color: 'white', fontSize: 22, fontWeight: 800, margin: '8px 0 2px' }}>Pé de Açaí</h1>
         <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: 12, fontWeight: 400 }}>Crie sua conta</p>
         {inviteToken && (
           <div style={{

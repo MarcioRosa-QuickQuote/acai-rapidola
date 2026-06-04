@@ -15,8 +15,8 @@ const berries = Array.from({ length: 18 }, (_, i) => ({
 
 export default function Login() {
   const { login, loginWithToken, apiFetch } = useAuth();
-  const [phone, setPhone] = useState('admin');
-  const [password, setPassword] = useState('123456');
+  const [phone, setPhone] = useState('');
+  const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
@@ -42,7 +42,6 @@ export default function Login() {
     },
     onError: () => setError('Login com Google cancelado')
   });
-  const [showTest, setShowTest] = useState(false);
   const [recovery, setRecovery] = useState(false);
   const [recoveryStep, setRecoveryStep] = useState(1);
   const [recoveryEmail, setRecoveryEmail] = useState('');
@@ -77,13 +76,6 @@ export default function Login() {
     } finally {
       setLoading(false);
     }
-  }
-
-  function fillTest(role) {
-    const accounts = { store: 'admin', motoboy: 'motoboy', customer: 'cliente' };
-    setPhone(accounts[role] || '');
-    setPassword('123456');
-    setShowTest(false);
   }
 
   return (
@@ -218,12 +210,6 @@ export default function Login() {
               {loading ? 'Entrando...' : 'Entrar'}
             </button>
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10, margin: '14px 0 2px' }}>
-              <div style={{ flex: 1, height: 1, background: '#E8E0F0' }} />
-              <span style={{ fontSize: 11, color: '#BBB', whiteSpace: 'nowrap' }}>ou continue com</span>
-              <div style={{ flex: 1, height: 1, background: '#E8E0F0' }} />
-            </div>
-
             <button type="button" onClick={() => googleLogin()} disabled={googleLoading} style={{
               width: '100%', padding: '11px', marginTop: 10,
               background: 'white', color: '#333', border: '2px solid #E8E0F0', borderRadius: 10,
@@ -351,27 +337,6 @@ export default function Login() {
             </div>
           )}
 
-          <div style={{ marginTop: 18, borderTop: '1px solid #F3E5F5', paddingTop: 12, textAlign: 'center' }}>
-            <button onClick={() => setShowTest(!showTest)} style={{
-              background: 'none', border: 'none', color: '#CCC', fontSize: 11, cursor: 'pointer'
-            }}>
-              {showTest ? 'Ocultar' : 'Contas de teste'}
-            </button>
-            {showTest && (
-              <div style={{ marginTop: 6, display: 'flex', gap: 6, justifyContent: 'center', flexWrap: 'wrap' }}>
-                {[
-                  { role: 'store', label: 'Loja', bg: '#F3E5F5', color: '#6A1B9A' },
-                  { role: 'motoboy', label: 'Motoboy', bg: '#E8F5E9', color: '#2E7D32' },
-                  { role: 'customer', label: 'Cliente', bg: '#E3F2FD', color: '#1565C0' }
-                ].map(({ role, label, bg, color }) => (
-                  <button key={role} onClick={() => fillTest(role)} style={{
-                    background: bg, color, border: 'none',
-                    padding: '6px 12px', borderRadius: 20, fontSize: 11, fontWeight: 600, cursor: 'pointer'
-                  }}>{label}</button>
-                ))}
-              </div>
-            )}
-          </div>
         </div>
       </div>
 
