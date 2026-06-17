@@ -17,9 +17,9 @@ function fmtDays(n) {
 }
 function actionLabel(a) {
   const map = {
-    grant_premium: '✅ Acesso concedido',
+    grant_premium: '✅ Assinante ativado',
     revoke_premium: '🔴 Acesso suspenso',
-    set_permanent_premium: '♾️ Acesso permanente',
+    set_permanent_premium: '♾️ Assinante permanente',
     activate: '✅ Ativado',
     deactivate: '⛔ Desativado',
   };
@@ -72,14 +72,15 @@ function Badge({ children, color = '#6A1B9A', bg }) {
 /* ── Plan Badge ──────────────────────────────────────────────── */
 function PlanBadge({ store }) {
   const now = new Date();
-  if (store.subscription_active === 0) return <Badge color="#e53935" bg="#ffeaea">Inativa</Badge>;
+  if (store.subscription_active === 0) return <Badge color="#e53935" bg="#ffeaea">Inativo</Badge>;
+  const expired = store.premium_until && new Date(store.premium_until) <= now;
+  if (expired) return <Badge color="#e53935" bg="#ffeaea">Inativo</Badge>;
+  if (store.plan === 'trial') return <Badge color="#1565C0" bg="#E3F2FD">Grátis 🎁</Badge>;
   if (store.plan === 'premium') {
-    const expired = store.premium_until && new Date(store.premium_until) <= now;
-    if (expired) return <Badge color="#e53935" bg="#ffeaea">Expirado</Badge>;
-    if (!store.premium_until) return <Badge color="#FF6D00" bg="#fff3e0">Ativo ♾️</Badge>;
+    if (!store.premium_until) return <Badge color="#2E7D32" bg="#e8f5e9">Ativo ♾️</Badge>;
     return <Badge color="#2E7D32" bg="#e8f5e9">Ativo ✅</Badge>;
   }
-  return <Badge color="#e53935" bg="#ffeaea">Sem Plano</Badge>;
+  return <Badge color="#e53935" bg="#ffeaea">Inativo</Badge>;
 }
 
 /* ── Grant Modal ─────────────────────────────────────────────── */
@@ -116,9 +117,9 @@ function GrantModal({ store, onClose, onDone, api }) {
         <div style={{ marginBottom: 16 }}>
           <div style={{ fontSize: 12, fontWeight: 600, color: '#555', marginBottom: 6 }}>Ação</div>
           {[
-            ['grant_premium', '🎁 Conceder acesso por X dias'],
-            ['set_permanent_premium', '♾️ Acesso permanente (sem expiração)'],
-            ['revoke_premium', '🔴 Suspender acesso'],
+            ['grant_premium', '✅ Ativar como assinante por X dias'],
+            ['set_permanent_premium', '♾️ Ativar como assinante permanente'],
+            ['revoke_premium', '🔴 Desativar (suspender acesso)'],
           ].map(([val, lbl]) => (
             <label key={val} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8, cursor: 'pointer' }}>
               <input type="radio" value={val} checked={action === val} onChange={() => setAction(val)} />
@@ -518,7 +519,7 @@ export default function AdminPanel() {
                 style={{ flex: 1, minWidth: 200, padding: '9px 14px', borderRadius: 10, border: '1.5px solid #ddd', fontSize: 14 }}
               />
               <div style={{ display: 'flex', gap: 6 }}>
-                {[['all','Todas'],['premium','Ativas'],['basico','Sem Plano'],['inactive','Inativas']].map(([v,l]) => (
+                {[['all','Todas'],['premium','Ativo'],['basico','Grátis'],['inactive','Inativo']].map(([v,l]) => (
                   <button key={v} onClick={() => setFilterPlan(v)} style={{
                     padding: '8px 14px', borderRadius: 10, border: '1.5px solid',
                     borderColor: filterPlan === v ? '#6A1B9A' : '#ddd',

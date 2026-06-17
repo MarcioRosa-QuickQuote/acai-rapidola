@@ -24,7 +24,7 @@ router.post('/', authMiddleware, roleMiddleware('store'), async (req, res) => {
   await supabase.from('stores').insert({
     id, name, owner_id: req.user.id, address,
     lat: lat || -23.5505, lng: lng || -46.6333,
-    plan: 'premium', premium_until: trialUntil
+    plan: 'trial', premium_until: trialUntil
   });
 
   res.json({ id, name, owner_id: req.user.id, address, lat, lng });

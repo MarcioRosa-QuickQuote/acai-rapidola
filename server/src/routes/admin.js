@@ -188,7 +188,7 @@ router.patch('/stores/:id/plan', adminOnly, async (req, res) => {
     const newUntil = new Date(base.getTime() + d * 86400000);
     update = { plan: 'premium', subscription_active: 1, premium_until: newUntil.toISOString() };
   } else if (action === 'revoke_premium') {
-    update = { plan: 'basico', premium_until: null };
+    update = { plan: 'trial', subscription_active: 0, premium_until: null };
   } else if (action === 'set_permanent_premium') {
     update = { plan: 'premium', subscription_active: 1, premium_until: null };
   } else {
