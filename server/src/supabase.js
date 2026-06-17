@@ -1,8 +1,8 @@
 const { createClient } = require('@supabase/supabase-js');
 const WebSocket = require('ws');
 
-const supabaseUrl = process.env.SUPABASE_URL || 'https://kggetnukngyqmjespiaj.supabase.co';
-const supabaseKey = process.env.SUPABASE_SERVICE_ROLE || process.env.SUPABASE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtnZ2V0bnVrbmd5cW1qZXNwaWFqIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4MTY0OTA1OCwiZXhwIjoyMDk3MjI1MDU4fQ.MzGez4qQX1uFrXZ0BcFIhGwWCpd7tc0U9R_ptlIbWdk';
+const supabaseUrl = process.env.SUPABASE_URL || 'https://bfjpvexbcjtyidhqokuo.supabase.co';
+const supabaseKey = process.env.SUPABASE_SERVICE_ROLE || process.env.SUPABASE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJmanB2ZXhiY2p0eWlkaHFva3VvIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3ODQ2NDgzOSwiZXhwIjoyMDk0MDQwODM5fQ.zWXBz6-vVj7ODAvGTkk8bFPczB03iVT-05ArjgEiFio';
 
 const supabase = createClient(supabaseUrl, supabaseKey, {
   realtime: { transport: WebSocket }

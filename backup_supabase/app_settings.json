@@ -1,0 +1,1 @@
+{"code":"PGRST205","details":null,"hint":"Perhaps you meant the table 'public.store_earnings'","message":"Could not find the table 'public.app_settings' in the schema cache"}

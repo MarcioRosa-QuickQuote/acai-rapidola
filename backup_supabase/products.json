@@ -1,0 +1,4 @@
+[{"id":"f446935b-17a8-4b5f-ae7b-1f054640f553","store_id":"76045e2e-d6f0-4a30-af22-0d6c80ab8911","name":"Açai 1 Litro","description":"Açai feito da polpa","price":45,"size_ml":1000,"image":"/a%C3%A7ai%201%20litro.png","active":1}, 
+ {"id":"cb8766c1-0725-4e61-b07a-4609acb99753","store_id":"76045e2e-d6f0-4a30-af22-0d6c80ab8911","name":"Farinha D'água","description":"Farinha d'água típica do Pará","price":6,"size_ml":100,"image":"/Farinha%20dagua.png","active":1}, 
+ {"id":"96eb9ba6-b124-4912-85ba-b57ebb0dbf91","store_id":"76045e2e-d6f0-4a30-af22-0d6c80ab8911","name":"Farinha de Tapioca","description":"Acompanhamento tradicional — farinha de tapioca","price":5,"size_ml":100,"image":"/farinha%20de%20tapioca.png","active":1}, 
+ {"id":"78908285-443e-45ea-845d-3889ec9aaade","store_id":"76045e2e-d6f0-4a30-af22-0d6c80ab8911","name":"Açai 500ml (Meio Litro)","description":"Açai feito da polpa","price":1,"size_ml":500,"image":"/a%C3%A7a%C3%AD%20500ml.png","active":1}]
