@@ -139,6 +139,9 @@ if (!isVercel) {
     res.setHeader('Content-Type', 'application/json');
     res.sendFile(path.join(clientDist, '.well-known', 'assetlinks.json'));
   });
+  app.get('/landing', (req, res) => {
+    res.sendFile(path.join(clientDist, 'landing.html'));
+  });
   app.get('*', (req, res) => {
     res.sendFile(path.join(clientDist, 'index.html'));
   });
