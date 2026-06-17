@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+  <title>Pé de Açaí — Peça açaí sem taxa de entrega</title>
+  <meta name="description" content="Pé de Açaí: peça seu açaí favorito em Belém com entrega rápida e sem taxa extra. Para lojas: R$129/mês, zero comissão por pedido." />
+  <link rel="icon" href="/logo_placa.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --purple: #6A1B9A;
+      --purple-dark: #4A148C;
+      --purple-light: #9C27B0;
+      --purple-bg: #F3E5F5;
+      --green: #2E7D32;
+      --text: #1A1225;
+      --muted: #6B5E7A;
+      --radius: 16px;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Nunito', system-ui, sans-serif;
+      color: var(--text);
+      background: #fff;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* NAV */
+    nav {
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(255,255,255,0.92);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid #EDE7F6;
+      padding: 12px 20px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .nav-logo { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+    .nav-logo img { width: 36px; height: 36px; object-fit: contain; }
+    .nav-logo span { font-size: 18px; font-weight: 900; color: var(--purple-dark); }
+    .nav-cta {
+      background: var(--purple);
+      color: white; font-weight: 800; font-size: 14px;
+      padding: 10px 20px; border-radius: 50px;
+      text-decoration: none; transition: background 0.2s;
+    }
+    .nav-cta:hover { background: var(--purple-dark); }
+
+    /* HERO */
+    .hero {
+      background: linear-gradient(145deg, var(--purple-dark) 0%, var(--purple) 60%, #8E24AA 100%);
+      color: white;
+      padding: 64px 20px 80px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Ccircle cx='30' cy='30' r='4'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+      pointer-events: none;
+    }
+    .hero-tag {
+      display: inline-block;
+      background: rgba(255,255,255,0.15);
+      border: 1px solid rgba(255,255,255,0.3);
+      color: #EDE7F6; font-size: 13px; font-weight: 700;
+      padding: 6px 16px; border-radius: 50px; margin-bottom: 20px;
+      letter-spacing: 0.04em;
+    }
+    .hero h1 {
+      font-size: clamp(28px, 7vw, 52px);
+      font-weight: 900; line-height: 1.1;
+      letter-spacing: -0.02em; margin-bottom: 16px;
+    }
+    .hero h1 em { color: #CE93D8; font-style: normal; }
+    .hero p {
+      font-size: clamp(16px, 4vw, 20px);
+      opacity: 0.88; max-width: 520px; margin: 0 auto 36px;
+      line-height: 1.5;
+    }
+    .hero-btns { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+    .btn-hero-primary {
+      background: white; color: var(--purple-dark);
+      font-weight: 900; font-size: 16px;
+      padding: 16px 32px; border-radius: 50px;
+      text-decoration: none; transition: transform 0.2s, box-shadow 0.2s;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.2);
+    }
+    .btn-hero-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(0,0,0,0.25); }
+    .btn-hero-secondary {
+      background: rgba(255,255,255,0.15);
+      border: 2px solid rgba(255,255,255,0.5);
+      color: white; font-weight: 800; font-size: 16px;
+      padding: 16px 32px; border-radius: 50px;
+      text-decoration: none; transition: background 0.2s;
+    }
+    .btn-hero-secondary:hover { background: rgba(255,255,255,0.25); }
+    .hero-city {
+      margin-top: 32px; font-size: 13px; opacity: 0.65;
+      display: flex; align-items: center; justify-content: center; gap: 6px;
+    }
+
+    /* WAVE */
+    .wave { display: block; width: 100%; margin-bottom: -2px; }
+
+    /* HOW IT WORKS */
+    .section { padding: 64px 20px; max-width: 900px; margin: 0 auto; }
+    .section-tag {
+      font-size: 12px; font-weight: 800; letter-spacing: 0.08em;
+      text-transform: uppercase; color: var(--purple);
+      margin-bottom: 8px;
+    }
+    .section h2 {
+      font-size: clamp(24px, 5vw, 36px); font-weight: 900;
+      letter-spacing: -0.02em; line-height: 1.2; margin-bottom: 12px;
+    }
+    .section-sub { font-size: 17px; color: var(--muted); margin-bottom: 48px; line-height: 1.5; }
+
+    .steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 24px; }
+    .step {
+      background: var(--purple-bg);
+      border-radius: var(--radius); padding: 28px 24px;
+      position: relative;
+    }
+    .step-num {
+      width: 40px; height: 40px; border-radius: 50%;
+      background: var(--purple); color: white;
+      font-weight: 900; font-size: 18px;
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 16px;
+    }
+    .step h3 { font-size: 17px; font-weight: 800; margin-bottom: 8px; }
+    .step p { font-size: 14px; color: var(--muted); line-height: 1.5; }
+
+    /* DIVIDER */
+    .divider { width: 100%; height: 1px; background: #EDE7F6; }
+
+    /* AUDIENCE SECTIONS */
+    .audience {
+      padding: 64px 20px;
+      max-width: 900px; margin: 0 auto;
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 48px; align-items: center;
+    }
+    .audience.reverse { direction: rtl; }
+    .audience.reverse > * { direction: ltr; }
+    .audience-visual {
+      background: linear-gradient(135deg, var(--purple-dark), var(--purple-light));
+      border-radius: 24px; padding: 40px;
+      display: flex; align-items: center; justify-content: center;
+      min-height: 260px;
+    }
+    .audience-visual .big-emoji { font-size: 80px; }
+    .audience-label {
+      font-size: 12px; font-weight: 800; letter-spacing: 0.08em;
+      text-transform: uppercase; color: var(--purple);
+      margin-bottom: 8px;
+    }
+    .audience h2 {
+      font-size: clamp(22px, 4vw, 30px); font-weight: 900;
+      letter-spacing: -0.02em; line-height: 1.2; margin-bottom: 16px;
+    }
+    .audience p { font-size: 16px; color: var(--muted); line-height: 1.6; margin-bottom: 24px; }
+    .check-list { list-style: none; margin-bottom: 28px; }
+    .check-list li {
+      font-size: 15px; font-weight: 700; padding: 6px 0;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .check-list li::before {
+      content: '✓';
+      width: 24px; height: 24px; border-radius: 50%;
+      background: #E8F5E9; color: var(--green);
+      font-size: 13px; font-weight: 900;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .btn-audience {
+      display: inline-block;
+      background: var(--purple); color: white;
+      font-weight: 800; font-size: 15px;
+      padding: 14px 28px; border-radius: 50px;
+      text-decoration: none; transition: background 0.2s, transform 0.2s;
+    }
+    .btn-audience:hover { background: var(--purple-dark); transform: translateY(-1px); }
+    .btn-audience.green { background: var(--green); }
+    .btn-audience.green:hover { background: #1B5E20; }
+
+    /* PRICE CARD */
+    .price-section {
+      background: linear-gradient(145deg, var(--purple-dark), var(--purple));
+      padding: 64px 20px; text-align: center; color: white;
+    }
+    .price-card {
+      background: white; color: var(--text);
+      border-radius: 24px; padding: 40px 32px;
+      max-width: 420px; margin: 0 auto;
+      box-shadow: 0 8px 48px rgba(0,0,0,0.2);
+    }
+    .price-tag {
+      display: inline-block; background: #E8F5E9; color: var(--green);
+      font-size: 12px; font-weight: 800; letter-spacing: 0.06em;
+      text-transform: uppercase; padding: 6px 16px; border-radius: 50px;
+      margin-bottom: 16px;
+    }
+    .price-card h3 { font-size: 22px; font-weight: 900; margin-bottom: 8px; }
+    .price-amount {
+      font-size: 56px; font-weight: 900; color: var(--purple-dark);
+      letter-spacing: -0.03em; line-height: 1; margin: 16px 0 4px;
+    }
+    .price-amount span { font-size: 24px; vertical-align: super; }
+    .price-period { font-size: 14px; color: var(--muted); margin-bottom: 28px; }
+    .price-features { list-style: none; text-align: left; margin-bottom: 28px; }
+    .price-features li {
+      padding: 10px 0; border-bottom: 1px solid #EDE7F6;
+      font-size: 15px; font-weight: 600;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .price-features li:last-child { border-bottom: none; }
+    .price-features li::before {
+      content: '✓';
+      width: 22px; height: 22px; border-radius: 50%;
+      background: #E8F5E9; color: var(--green);
+      font-size: 12px; font-weight: 900;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .btn-price {
+      display: block; width: 100%;
+      background: var(--purple); color: white;
+      font-weight: 900; font-size: 16px;
+      padding: 16px; border-radius: 50px;
+      text-decoration: none; text-align: center;
+      transition: background 0.2s;
+    }
+    .btn-price:hover { background: var(--purple-dark); }
+    .price-free { font-size: 13px; color: var(--muted); margin-top: 12px; }
+    .price-section-title { font-size: clamp(22px, 5vw, 32px); font-weight: 900; margin-bottom: 8px; }
+    .price-section-sub { font-size: 16px; opacity: 0.8; margin-bottom: 36px; }
+
+    /* FOOTER */
+    footer {
+      background: var(--purple-dark); color: white;
+      padding: 32px 20px; text-align: center;
+    }
+    footer img { width: 48px; margin-bottom: 12px; }
+    footer p { font-size: 14px; opacity: 0.6; margin-top: 8px; }
+    footer a { color: #CE93D8; text-decoration: none; }
+
+    /* RESPONSIVE */
+    @media (max-width: 640px) {
+      .audience { grid-template-columns: 1fr; direction: ltr !important; gap: 32px; }
+      .audience.reverse { direction: ltr; }
+      .audience-visual { min-height: 160px; padding: 24px; }
+      .audience-visual .big-emoji { font-size: 56px; }
+      .hero-btns { flex-direction: column; align-items: center; }
+      .btn-hero-primary, .btn-hero-secondary { width: 100%; max-width: 320px; text-align: center; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav>
+    <a href="#" class="nav-logo">
+      <img src="/logo_placa.png" alt="Pé de Açaí" />
+      <span>Pé de Açaí</span>
+    </a>
+    <a href="/" class="nav-cta">Abrir App</a>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-tag">🍇 Disponível em Belém — PA</div>
+    <h1>Peça açaí sem<br/><em>taxa de entrega extra</em></h1>
+    <p>O app que conecta você às melhores açaiterias da cidade. Sem surpresas no preço, sem comissões escondidas.</p>
+    <div class="hero-btns">
+      <a href="/" class="btn-hero-primary">📱 Baixar o App</a>
+      <a href="#lojas" class="btn-hero-secondary">Tenho uma loja →</a>
+    </div>
+    <div class="hero-city">📍 Belém, PA &nbsp;·&nbsp; Em breve: Manaus, AM</div>
+  </section>
+
+  <svg class="wave" viewBox="0 0 1440 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M0 48L60 42.7C120 37.3 240 26.7 360 21.3C480 16 600 16 720 21.3C840 26.7 960 37.3 1080 42.7C1200 48 1320 48 1380 48L1440 48V0H1380C1320 0 1200 0 1080 0C960 0 840 0 720 0C600 0 480 0 360 0C240 0 120 0 60 0H0V48Z" fill="#4A148C"/>
+  </svg>
+
+  <!-- HOW IT WORKS -->
+  <section class="section" style="text-align:center">
+    <div class="section-tag">Como funciona</div>
+    <h2>Simples assim</h2>
+    <p class="section-sub">Do pedido à entrega em poucos toques</p>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <h3>Escolha sua açaiteria</h3>
+        <p>Veja lojas perto de você, cardápio completo e preços sem taxa extra.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <h3>Faça seu pedido</h3>
+        <p>Monte seu açaí, escolha o tamanho e pague direto no app.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <h3>Acompanhe em tempo real</h3>
+        <p>Veja o motoboy saindo da loja até chegar na sua porta.</p>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- CLIENTES -->
+  <div class="audience">
+    <div class="audience-visual">
+      <span class="big-emoji">🍇</span>
+    </div>
+    <div>
+      <div class="audience-label">Para clientes</div>
+      <h2>Seu açaí favorito na porta de casa</h2>
+      <p>Peça das melhores açaiterias de Belém e pague o mesmo preço da loja — sem taxa surpresa no final.</p>
+      <ul class="check-list">
+        <li>Rastreamento do motoboy em tempo real</li>
+        <li>Histórico de pedidos</li>
+        <li>Aviso quando sair para entrega</li>
+        <li>Chat direto com a loja</li>
+      </ul>
+      <a href="/" class="btn-audience">Baixar grátis</a>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- LOJAS -->
+  <div class="audience reverse" id="lojas">
+    <div class="audience-visual" style="background: linear-gradient(135deg, #1B5E20, #2E7D32);">
+      <span class="big-emoji">🏪</span>
+    </div>
+    <div>
+      <div class="audience-label">Para lojistas</div>
+      <h2>Chega de pagar 20% de comissão por pedido</h2>
+      <p>Com o Pé de Açaí você paga uma mensalidade fixa e fica com <strong>100% do valor de cada pedido</strong>. Seus clientes do WhatsApp migram pro app — você ganha organização sem perder margem.</p>
+      <ul class="check-list">
+        <li>Zero comissão por pedido</li>
+        <li>Painel completo de pedidos e estoque</li>
+        <li>Motoboys integrados ao app</li>
+        <li>Histórico e relatórios de vendas</li>
+        <li>Cardápio digital com fotos</li>
+      </ul>
+      <a href="https://wa.me/5591983828928?text=Quero+conhecer+o+P%C3%A9+de+A%C3%A7a%C3%AD+para+minha+loja" class="btn-audience green" target="_blank">
+        Falar com a equipe →
+      </a>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- MOTOBOYS -->
+  <div class="audience">
+    <div class="audience-visual" style="background: linear-gradient(135deg, #E65100, #BF360C);">
+      <span class="big-emoji">🏍️</span>
+    </div>
+    <div>
+      <div class="audience-label">Para motoboys</div>
+      <h2>Trabalhe na sua área, no seu horário</h2>
+      <p>Cadastre-se grátis, receba pedidos das lojas parceiras e ganhe por entrega. Sem mensalidade, sem taxa de adesão.</p>
+      <ul class="check-list">
+        <li>Cadastro 100% grátis</li>
+        <li>Escolha quando trabalhar</li>
+        <li>Rotas otimizadas no app</li>
+        <li>Pagamento direto pela loja</li>
+      </ul>
+      <a href="/" class="btn-audience" style="background:#E65100">Quero ser motoboy</a>
+    </div>
+  </div>
+
+  <!-- PRICE -->
+  <section class="price-section" id="planos">
+    <div class="price-section-title">Um plano. Simples assim.</div>
+    <div class="price-section-sub">Sem contrato de fidelidade. Cancele quando quiser.</div>
+    <div class="price-card">
+      <div class="price-tag">✦ 1 mês grátis</div>
+      <h3>Plano Loja</h3>
+      <div class="price-amount"><span>R$</span>129</div>
+      <div class="price-period">por mês · sem comissão por pedido</div>
+      <ul class="price-features">
+        <li>App completo para clientes</li>
+        <li>Painel da loja com pedidos ao vivo</li>
+        <li>Motoboys integrados</li>
+        <li>Cardápio digital com fotos</li>
+        <li>Rastreamento em tempo real</li>
+        <li>Suporte via WhatsApp</li>
+        <li>Sem comissão por pedido</li>
+      </ul>
+      <a href="https://wa.me/5591983828928?text=Quero+experimentar+gr%C3%A1tis+o+P%C3%A9+de+A%C3%A7a%C3%AD" class="btn-price" target="_blank">
+        Começar 1 mês grátis
+      </a>
+      <p class="price-free">Sem cartão de crédito para começar</p>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <img src="/logo_placa.png" alt="Pé de Açaí" />
+    <div style="font-size:18px; font-weight:900; margin-bottom:4px;">Pé de Açaí</div>
+    <p>Belém, PA · Em breve em Manaus, AM</p>
+    <p style="margin-top:16px;">
+      <a href="/">Abrir App</a> &nbsp;·&nbsp;
+      <a href="https://wa.me/5591983828928">WhatsApp</a>
+    </p>
+    <p style="margin-top:16px;">© 2026 Pé de Açaí. Todos os direitos reservados.</p>
+  </footer>
+
+</body>
+</html>
