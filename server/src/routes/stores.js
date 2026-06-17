@@ -20,8 +20,11 @@ router.post('/', authMiddleware, roleMiddleware('store'), async (req, res) => {
   if (existing) return res.status(409).json({ error: 'Você já possui uma loja' });
 
   const id = uuid();
+  const trialUntil = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
   await supabase.from('stores').insert({
-    id, name, owner_id: req.user.id, address, lat: lat || -23.5505, lng: lng || -46.6333
+    id, name, owner_id: req.user.id, address,
+    lat: lat || -23.5505, lng: lng || -46.6333,
+    plan: 'premium', premium_until: trialUntil
   });
 
   res.json({ id, name, owner_id: req.user.id, address, lat, lng });

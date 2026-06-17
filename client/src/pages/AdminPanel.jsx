@@ -17,9 +17,9 @@ function fmtDays(n) {
 }
 function actionLabel(a) {
   const map = {
-    grant_premium: '✅ Premium concedido',
-    revoke_premium: '🔴 Premium removido',
-    set_permanent_premium: '♾️ Premium permanente',
+    grant_premium: '✅ Acesso concedido',
+    revoke_premium: '🔴 Acesso suspenso',
+    set_permanent_premium: '♾️ Acesso permanente',
     activate: '✅ Ativado',
     deactivate: '⛔ Desativado',
   };
@@ -75,11 +75,11 @@ function PlanBadge({ store }) {
   if (store.subscription_active === 0) return <Badge color="#e53935" bg="#ffeaea">Inativa</Badge>;
   if (store.plan === 'premium') {
     const expired = store.premium_until && new Date(store.premium_until) <= now;
-    if (expired) return <Badge color="#e53935" bg="#ffeaea">Premium Expirado</Badge>;
-    if (!store.premium_until) return <Badge color="#FF6D00" bg="#fff3e0">Premium ♾️</Badge>;
-    return <Badge color="#2E7D32" bg="#e8f5e9">Premium ✅</Badge>;
+    if (expired) return <Badge color="#e53935" bg="#ffeaea">Expirado</Badge>;
+    if (!store.premium_until) return <Badge color="#FF6D00" bg="#fff3e0">Ativo ♾️</Badge>;
+    return <Badge color="#2E7D32" bg="#e8f5e9">Ativo ✅</Badge>;
   }
-  return <Badge color="#888" bg="#f5f5f5">Básico</Badge>;
+  return <Badge color="#e53935" bg="#ffeaea">Sem Plano</Badge>;
 }
 
 /* ── Grant Modal ─────────────────────────────────────────────── */
@@ -116,9 +116,9 @@ function GrantModal({ store, onClose, onDone, api }) {
         <div style={{ marginBottom: 16 }}>
           <div style={{ fontSize: 12, fontWeight: 600, color: '#555', marginBottom: 6 }}>Ação</div>
           {[
-            ['grant_premium', '🎁 Conceder Premium por X dias'],
-            ['set_permanent_premium', '♾️ Premium permanente (sem expiração)'],
-            ['revoke_premium', '🔴 Remover Premium → Básico'],
+            ['grant_premium', '🎁 Conceder acesso por X dias'],
+            ['set_permanent_premium', '♾️ Acesso permanente (sem expiração)'],
+            ['revoke_premium', '🔴 Suspender acesso'],
           ].map(([val, lbl]) => (
             <label key={val} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8, cursor: 'pointer' }}>
               <input type="radio" value={val} checked={action === val} onChange={() => setAction(val)} />
@@ -129,7 +129,7 @@ function GrantModal({ store, onClose, onDone, api }) {
 
         {action === 'grant_premium' && (
           <div style={{ marginBottom: 16 }}>
-            <div style={{ fontSize: 12, fontWeight: 600, color: '#555', marginBottom: 6 }}>Dias de Premium</div>
+            <div style={{ fontSize: 12, fontWeight: 600, color: '#555', marginBottom: 6 }}>Dias de acesso</div>
             <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 8 }}>
               {['7','14','30','60','90','365'].map(d => (
                 <button key={d} onClick={() => setDays(d)} style={{
@@ -278,9 +278,9 @@ function StoreDrawer({ storeId, api, onClose, onRefresh }) {
               <div style={{ fontSize: 11, fontWeight: 700, color: '#888', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8 }}>Assinatura</div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
                 {[
-                  ['Plano', data.plan === 'premium' ? 'Premium' : 'Básico'],
+                  ['Plano', data.plan === 'premium' ? 'R$129/mês' : 'Sem plano'],
                   ['Status', data.subscription_active === 1 ? 'Ativa' : 'Inativa'],
-                  ['Premium até', data.premium_until ? fmtDate(data.premium_until) : (data.plan === 'premium' ? 'Permanente' : '—')],
+                  ['Ativo até', data.premium_until ? fmtDate(data.premium_until) : (data.plan === 'premium' ? 'Permanente' : '—')],
                   ['Loja criada em', fmtDate(data.created_at)],
                 ].map(([k, v]) => (
                   <div key={k} style={{ background: '#fafafa', borderRadius: 8, padding: '8px 10px' }}>
@@ -499,7 +499,7 @@ export default function AdminPanel() {
         {stats && (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 12, marginBottom: 20 }}>
             <StatCard icon="🏪" label="Total de Lojas" value={stats.totalStores} color="#6A1B9A" />
-            <StatCard icon="⭐" label="Premium Ativo" value={stats.premiumActive} sub={`${stats.basico} básico`} color="#FF6D00" />
+            <StatCard icon="⭐" label="Plano Ativo" value={stats.premiumActive} sub={`${stats.basico} sem plano`} color="#FF6D00" />
             <StatCard icon="📦" label="Pedidos hoje" value={stats.ordersToday} sub={`${stats.totalOrders30d} em 30 dias`} color="#1565C0" />
             <StatCard icon="💰" label="Receita hoje" value={fmtMoney(stats.revenueToday)} color="#2E7D32" />
             <StatCard icon="👥" label="Clientes" value={stats.totalCustomers} color="#0097A7" />
@@ -518,7 +518,7 @@ export default function AdminPanel() {
                 style={{ flex: 1, minWidth: 200, padding: '9px 14px', borderRadius: 10, border: '1.5px solid #ddd', fontSize: 14 }}
               />
               <div style={{ display: 'flex', gap: 6 }}>
-                {[['all','Todas'],['premium','Premium'],['basico','Básico'],['inactive','Inativas']].map(([v,l]) => (
+                {[['all','Todas'],['premium','Ativas'],['basico','Sem Plano'],['inactive','Inativas']].map(([v,l]) => (
                   <button key={v} onClick={() => setFilterPlan(v)} style={{
                     padding: '8px 14px', borderRadius: 10, border: '1.5px solid',
                     borderColor: filterPlan === v ? '#6A1B9A' : '#ddd',
