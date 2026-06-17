@@ -144,6 +144,16 @@ if (!isVercel) {
   });
 }
 
+// Ping endpoint — chamado diariamente por cron externo para manter Supabase ativo
+app.get('/api/ping', async (req, res) => {
+  try {
+    await supabase.from('app_settings').select('key').limit(1);
+    res.json({ ok: true, ts: new Date().toISOString() });
+  } catch (e) {
+    res.status(500).json({ ok: false, error: e.message });
+  }
+});
+
 function createServer(app) {
   const server = http.createServer(app);
   initSocket(server);
