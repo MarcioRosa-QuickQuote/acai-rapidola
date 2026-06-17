@@ -25,7 +25,8 @@ export default function Register() {
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
-  const [role, setRole] = useState(['customer','store','motoboy'].includes(roleParam) ? roleParam : 'customer');
+  const normalizedRole = roleParam === 'entregador' ? 'motoboy' : roleParam;
+  const [role, setRole] = useState(['customer','store','motoboy'].includes(normalizedRole) ? normalizedRole : 'customer');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
