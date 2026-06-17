@@ -18,13 +18,14 @@ export default function Register() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const inviteToken = searchParams.get('token');
+  const roleParam = searchParams.get('role');
 
   // Campos base
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
-  const [role, setRole] = useState('customer');
+  const [role, setRole] = useState(['customer','store','motoboy'].includes(roleParam) ? roleParam : 'customer');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
