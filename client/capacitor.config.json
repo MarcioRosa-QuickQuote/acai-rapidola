@@ -13,7 +13,7 @@
     "webContentsDebuggingEnabled": false
   },
   "ios": {
-    "backgroundColor": "#F8F4FC",
+    "backgroundColor": "#EDE7F6",
     "contentInset": "always",
     "scrollEnabled": false
   },

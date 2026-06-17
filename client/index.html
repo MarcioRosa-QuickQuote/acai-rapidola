@@ -24,27 +24,28 @@
     <link rel="preload" href="/saco_acai.png" as="image" />
     <title>Pé de Açaí</title>
   </head>
-  <body style="background:#F8F4FC">
+  <body style="background:#EDE7F6">
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
     <script>
       history.scrollRestoration = 'manual';
-      window.scrollTo(0, 0);
 
       function updateHeaders() {
+        var rootEl = document.getElementById('root');
+        var scrolled = rootEl ? rootEl.scrollTop > 0 : false;
         document.querySelectorAll('.header').forEach(function(h) {
-          h.classList.toggle('scrolled', window.scrollY > 0);
+          h.classList.toggle('scrolled', scrolled);
         });
       }
 
-      window.addEventListener('scroll', updateHeaders, { passive: true });
-      updateHeaders();
-
-      var rootEl = document.getElementById('root');
-      if (rootEl) {
-        var observer = new MutationObserver(updateHeaders);
-        observer.observe(rootEl, { childList: true, subtree: true });
-      }
+      document.addEventListener('DOMContentLoaded', function() {
+        var rootEl = document.getElementById('root');
+        if (rootEl) {
+          rootEl.addEventListener('scroll', updateHeaders, { passive: true });
+          var observer = new MutationObserver(updateHeaders);
+          observer.observe(rootEl, { childList: true, subtree: true });
+        }
+      });
     </script>
   </body>
 </html>

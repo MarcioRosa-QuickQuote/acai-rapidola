@@ -30,7 +30,7 @@ function ProtectedRoute({ role, children }) {
 
 function ScrollToTop() {
   const { pathname } = useLocation();
-  useEffect(() => { window.scrollTo(0, 0); }, [pathname]);
+  useEffect(() => { document.getElementById('root')?.scrollTo(0, 0); }, [pathname]);
   return null;
 }
 

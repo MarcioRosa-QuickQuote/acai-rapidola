@@ -5,7 +5,7 @@
   --secondary: #2E7D32;
   --secondary-light: #4CAF50;
   --accent: #E65100;
-  --bg: #F8F4FC;
+  --bg: #EDE7F6;
   --bg-card: #FFFFFF;
   --text: #1A1225;
   --text-light: #6B5E7A;
@@ -23,18 +23,25 @@
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
+html {
+  height: 100%;
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
 body {
   font-family: 'Nunito', system-ui, -apple-system, sans-serif;
   background: var(--bg);
   color: var(--text);
-  min-height: 100vh;
+  height: 100%;
+  overflow: hidden;
+  overscroll-behavior: none;
   padding-top: env(safe-area-inset-top);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   line-height: 1.5;
   letter-spacing: -0.01em;
   touch-action: manipulation;
-  overflow-x: hidden;
   position: relative;
   background-image:
     radial-gradient(circle at 15% 25%, rgba(106,27,154,0.06) 3px, transparent 3px),
@@ -54,7 +61,7 @@ body {
     radial-gradient(circle at 95% 15%, rgba(106,27,154,0.04) 4px, transparent 4px);
 }
 
-#root { min-height: 100vh; overflow-x: hidden; }
+#root { height: 100%; overflow-y: auto; overflow-x: hidden; -webkit-overflow-scrolling: touch; }
 
 .container {
   max-width: 100%;
