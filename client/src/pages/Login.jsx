@@ -59,6 +59,12 @@ export default function Login() {
       background: 'linear-gradient(160deg, #1a0533 0%, #2d0a4e 30%, #4A148C 60%, #7B1FA2 100%)',
       padding: '24px 20px 20px', position: 'relative', overflow: 'hidden'
     }}>
+      <a href="/landing" style={{
+        position: 'absolute', top: 16, left: 16,
+        color: 'rgba(255,255,255,0.7)', fontSize: 13, fontWeight: 600,
+        textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 4,
+        zIndex: 2
+      }}>← Página de vendas</a>
 
       {/* Logo flutuando acima do card */}
       <div style={{ textAlign: 'center', marginBottom: 8, zIndex: 1, position: 'relative' }}>
