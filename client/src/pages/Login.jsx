@@ -59,22 +59,12 @@ export default function Login() {
       background: 'linear-gradient(160deg, #1a0533 0%, #2d0a4e 30%, #4A148C 60%, #7B1FA2 100%)',
       padding: '24px 20px 20px', position: 'relative', overflow: 'hidden'
     }}>
-      <a href="/landing" style={{
-        position: 'absolute', top: 16, left: 16,
-        color: 'rgba(255,255,255,0.7)', fontSize: 13, fontWeight: 600,
-        textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 4,
-        zIndex: 2, touchAction: 'manipulation'
-      }}>🏠 Página de Vendas</a>
-
-      {/* Logo flutuando acima do card */}
+      {/* Logo acima do card */}
       <div style={{ textAlign: 'center', marginBottom: 8, zIndex: 1, position: 'relative' }}>
         <img src="/logo_placa.png" alt="Pé de Açaí" style={{
           width: 150, height: 150, objectFit: 'contain',
           filter: 'drop-shadow(0 6px 28px rgba(0,0,0,0.55))'
         }} />
-        <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: 12, marginTop: 6, fontWeight: 400 }}>
-          O jeito mais rápido de pedir seu açaí
-        </p>
       </div>
 
       {/* Card */}
@@ -283,11 +273,17 @@ export default function Login() {
         </div>
       </div>
 
-      <p style={{ marginTop: 16, fontSize: 11, color: 'rgba(255,255,255,0.35)', zIndex: 1, textAlign: 'center' }}>
-        Pé de Açaí © 2026 —{' '}
-        <Link to="/privacidade" style={{ color: 'rgba(255,255,255,0.45)', textDecoration: 'underline' }}>Privacidade</Link>
-        {' · '}
-        <Link to="/termos" style={{ color: 'rgba(255,255,255,0.45)', textDecoration: 'underline' }}>Termos</Link>
+      <p style={{ marginTop: 16, fontSize: 11, color: 'rgba(255,255,255,0.35)', zIndex: 1, textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, flexWrap: 'wrap' }}>
+        <a href="/landing" style={{ color: 'rgba(255,255,255,0.55)', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 3 }}>
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+          Página de Vendas
+        </a>
+        <span>·</span>
+        <span>Pé de Açaí © 2026 —{' '}
+          <Link to="/privacidade" style={{ color: 'rgba(255,255,255,0.45)', textDecoration: 'underline' }}>Privacidade</Link>
+          {' · '}
+          <Link to="/termos" style={{ color: 'rgba(255,255,255,0.45)', textDecoration: 'underline' }}>Termos</Link>
+        </span>
       </p>
     </div>
   );
