@@ -1,17 +1,7 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useGoogleLogin } from '@react-oauth/google';
-
-const berries = Array.from({ length: 18 }, (_, i) => ({
-  id: i,
-  left: `${5 + Math.random() * 90}%`,
-  top: `${5 + Math.random() * 90}%`,
-  size: 12 + Math.random() * 22,
-  duration: 6 + Math.random() * 10,
-  delay: Math.random() * 5,
-  parallax: 0.02 + Math.random() * 0.04
-}));
 
 export default function Login() {
   const { login, loginWithToken, apiFetch } = useAuth();
@@ -49,22 +39,6 @@ export default function Login() {
   const [recoveryPassword, setRecoveryPassword] = useState('');
   const [recoveryMsg, setRecoveryMsg] = useState('');
   const [recoveryLoading, setRecoveryLoading] = useState(false);
-  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
-  const bgRef = useRef(null);
-
-  useEffect(() => {
-    const handleMove = (e) => {
-      const w = window.innerWidth;
-      const h = window.innerHeight;
-      setMousePos({
-        x: (e.clientX - w / 2) / (w / 2),
-        y: (e.clientY - h / 2) / (h / 2)
-      });
-    };
-    window.addEventListener('mousemove', handleMove);
-    return () => window.removeEventListener('mousemove', handleMove);
-  }, []);
-
   async function handleSubmit(e) {
     e.preventDefault();
     setError('');
@@ -79,52 +53,18 @@ export default function Login() {
   }
 
   return (
-    <div ref={bgRef} style={{
+    <div style={{
       display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'center',
       minHeight: '100vh',
       background: 'linear-gradient(160deg, #1a0533 0%, #2d0a4e 30%, #4A148C 60%, #7B1FA2 100%)',
       padding: '24px 20px 20px', position: 'relative', overflow: 'hidden'
     }}>
-      {/* Floating acai berries */}
-      {berries.map(b => (
-        <div key={b.id} style={{
-          position: 'absolute',
-          left: b.left, top: b.top,
-          width: b.size, height: b.size,
-          borderRadius: '50%',
-          background: `radial-gradient(circle at 35% 35%, #7B1FA2, #1a0533)`,
-          opacity: 0.25 + b.parallax * 2,
-          filter: 'blur(0.5px)',
-          transform: `translate(${mousePos.x * b.size * b.parallax * -1}px, ${mousePos.y * b.size * b.parallax * -1}px)`,
-          transition: 'transform 0.6s ease-out',
-          animation: `floatBerry ${b.duration}s ease-in-out ${b.delay}s infinite`,
-          boxShadow: '0 0 8px rgba(155, 81, 224, 0.2)'
-        }} />
-      ))}
-
-      {/* Glow orbs */}
-      <div style={{
-        position: 'absolute', width: 350, height: 350, borderRadius: '50%',
-        background: 'radial-gradient(circle, rgba(156,39,176,0.15), transparent)',
-        top: '10%', left: '-10%',
-        transform: `translate(${mousePos.x * 20}px, ${mousePos.y * 20}px)`,
-        transition: 'transform 0.8s ease-out'
-      }} />
-      <div style={{
-        position: 'absolute', width: 280, height: 280, borderRadius: '50%',
-        background: 'radial-gradient(circle, rgba(106,27,154,0.12), transparent)',
-        bottom: '5%', right: '-8%',
-        transform: `translate(${mousePos.x * -15}px, ${mousePos.y * -15}px)`,
-        transition: 'transform 0.8s ease-out'
-      }} />
 
       {/* Logo flutuando acima do card */}
       <div style={{ textAlign: 'center', marginBottom: 8, zIndex: 1, position: 'relative' }}>
         <img src="/logo_placa.png" alt="Pé de Açaí" style={{
           width: 150, height: 150, objectFit: 'contain',
-          filter: 'drop-shadow(0 6px 28px rgba(0,0,0,0.55))',
-          transform: `translate(${mousePos.x * -8}px, ${mousePos.y * -8}px)`,
-          transition: 'transform 0.5s ease-out'
+          filter: 'drop-shadow(0 6px 28px rgba(0,0,0,0.55))'
         }} />
         <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: 12, marginTop: 6, fontWeight: 400 }}>
           O jeito mais rápido de pedir seu açaí
@@ -134,13 +74,10 @@ export default function Login() {
       {/* Card */}
       <div style={{
         width: '100%', maxWidth: 440,
-        background: 'rgba(255,255,255,0.97)',
-        backdropFilter: 'blur(20px)',
+        background: '#fff',
         borderRadius: 24,
-        boxShadow: '0 20px 60px rgba(0,0,0,0.35), 0 0 0 1px rgba(255,255,255,0.05)',
-        position: 'relative', zIndex: 1,
-        transform: `translate(${mousePos.x * -3}px, ${mousePos.y * -3}px)`,
-        transition: 'transform 0.5s ease-out'
+        boxShadow: '0 20px 60px rgba(0,0,0,0.35)',
+        position: 'relative', zIndex: 1
       }}>
         {/* Form */}
         <div style={{ padding: '24px 30px 20px' }}>
@@ -339,13 +276,6 @@ export default function Login() {
 
         </div>
       </div>
-
-      <style>{`
-        @keyframes floatBerry {
-          0%, 100% { transform: translateY(0px) scale(1); opacity: 0.25; }
-          50% { transform: translateY(-12px) scale(1.08); opacity: 0.35; }
-        }
-      `}</style>
 
       <p style={{ marginTop: 16, fontSize: 11, color: 'rgba(255,255,255,0.35)', zIndex: 1, textAlign: 'center' }}>
         Pé de Açaí © 2026 —{' '}
