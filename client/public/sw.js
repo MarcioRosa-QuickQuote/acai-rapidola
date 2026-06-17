@@ -3,7 +3,7 @@
 // shell + imagens, network-only para API / socket / Supabase.
 // Vite coloca hash no nome dos assets → pode cachear para sempre.
 
-const STATIC_V  = 'rapidola-static-v17';
+const STATIC_V  = 'rapidola-static-v18';
 const IMAGE_V   = 'rapidola-images-v1';
 const MAX_IMGS  = 120; // máx de imagens em cache
 
@@ -20,6 +20,7 @@ const PRECACHE = [
 
 // Padrões que NUNCA devem ser interceptados pelo SW
 const BYPASS = [
+  /^\/landing(\/)?$/,   // landing page estática — não é SPA
   /\/api\//,
   /\/socket\.io\//,
   /supabase\.co/,
