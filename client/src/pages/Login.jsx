@@ -63,8 +63,8 @@ export default function Login() {
         position: 'absolute', top: 16, left: 16,
         color: 'rgba(255,255,255,0.7)', fontSize: 13, fontWeight: 600,
         textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 4,
-        zIndex: 2
-      }}>← Página de vendas</a>
+        zIndex: 2, touchAction: 'manipulation'
+      }}>🏠 Página de Vendas</a>
 
       {/* Logo flutuando acima do card */}
       <div style={{ textAlign: 'center', marginBottom: 8, zIndex: 1, position: 'relative' }}>

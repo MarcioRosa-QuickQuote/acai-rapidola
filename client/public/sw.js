@@ -3,7 +3,7 @@
 // shell + imagens, network-only para API / socket / Supabase.
 // Vite coloca hash no nome dos assets → pode cachear para sempre.
 
-const STATIC_V  = 'rapidola-static-v18';
+const STATIC_V  = 'rapidola-static-v19';
 const IMAGE_V   = 'rapidola-images-v1';
 const MAX_IMGS  = 120; // máx de imagens em cache
 
@@ -157,22 +157,18 @@ self.addEventListener('fetch', e => {
     return;
   }
 
-  // 4. App shell (navegação SPA) → STALE-WHILE-REVALIDATE
-  //    Serve do cache para abrir na hora; rede atualiza em background
+  // 4. App shell (navegação SPA) → NETWORK-FIRST com fallback para cache
   if (e.request.mode === 'navigate') {
     e.respondWith(
-      caches.open(STATIC_V).then(cache =>
-        cache.match('/').then(cached => {
-          const netFetch = fetch(e.request)
-            .then(resp => {
-              if (resp.ok) cache.put('/', resp.clone());
-              return resp;
-            })
-            .catch(() => cached);
-
-          return cached || netFetch;
+      fetch(e.request)
+        .then(resp => {
+          if (resp.ok) {
+            const clone = resp.clone();
+            caches.open(STATIC_V).then(c => c.put('/', clone));
+          }
+          return resp;
         })
-      )
+        .catch(() => caches.open(STATIC_V).then(c => c.match('/')))
     );
     return;
   }
