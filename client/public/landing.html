@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
-  <title>Pé de Açaí — Peça açaí sem taxa de entrega</title>
-  <meta name="description" content="Pé de Açaí: peça seu açaí favorito em Belém com entrega rápida e sem taxa extra. Para lojas: R$129/mês, zero comissão por pedido." />
+  <title>Pé de Açaí — Zero comissão por pedido para lojas de açaí</title>
+  <meta name="description" content="Coloque sua loja de açaí no app. Mensalidade fixa, zero comissão por pedido. Primeiro mês grátis. Disponível em Belém, PA." />
   <link rel="icon" href="/logo_placa.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet" />
@@ -62,7 +62,7 @@
     .hero h1 em { color: #CE93D8; font-style: normal; }
     .hero p {
       font-size: clamp(16px, 4vw, 20px);
-      opacity: 0.88; max-width: 520px; margin: 0 auto 36px;
+      opacity: 0.88; max-width: 560px; margin: 0 auto 36px;
       line-height: 1.5;
     }
     .hero-btns { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
@@ -70,8 +70,9 @@
       background: white; color: var(--purple-dark);
       font-weight: 900; font-size: 16px;
       padding: 16px 32px; border-radius: 50px;
-      text-decoration: none; transition: transform 0.2s, box-shadow 0.2s;
+      text-decoration: none;
       box-shadow: 0 4px 24px rgba(0,0,0,0.2);
+      touch-action: manipulation;
     }
     .btn-hero-primary:hover { box-shadow: 0 8px 32px rgba(0,0,0,0.25); }
     .btn-hero-secondary {
@@ -79,7 +80,8 @@
       border: 2px solid rgba(255,255,255,0.5);
       color: white; font-weight: 800; font-size: 16px;
       padding: 16px 32px; border-radius: 50px;
-      text-decoration: none; transition: background 0.2s;
+      text-decoration: none;
+      touch-action: manipulation;
     }
     .btn-hero-secondary:hover { background: rgba(255,255,255,0.25); }
     .hero-city {
@@ -107,7 +109,6 @@
     .step {
       background: var(--purple-bg);
       border-radius: var(--radius); padding: 28px 24px;
-      position: relative;
     }
     .step-num {
       width: 40px; height: 40px; border-radius: 50%;
@@ -137,7 +138,6 @@
       display: flex; align-items: center; justify-content: center;
       min-height: 260px;
     }
-    .audience-visual .big-emoji { font-size: 80px; }
     .audience-label {
       font-size: 12px; font-weight: 800; letter-spacing: 0.08em;
       text-transform: uppercase; color: var(--purple);
@@ -166,7 +166,7 @@
       background: var(--purple); color: white;
       font-weight: 800; font-size: 15px;
       padding: 14px 28px; border-radius: 50px;
-      text-decoration: none; transition: background 0.2s;
+      text-decoration: none;
       touch-action: manipulation;
     }
     .btn-audience:hover { background: var(--purple-dark); }
@@ -218,14 +218,32 @@
       font-weight: 900; font-size: 16px;
       padding: 16px; border-radius: 50px;
       text-decoration: none; text-align: center;
-      transition: background 0.2s;
       touch-action: manipulation;
     }
     .btn-price:hover { background: var(--purple-dark); }
-    .btn-hero-primary, .btn-hero-secondary { touch-action: manipulation; }
     .price-free { font-size: 13px; color: var(--muted); margin-top: 12px; }
     .price-section-title { font-size: clamp(22px, 5vw, 32px); font-weight: 900; margin-bottom: 8px; }
     .price-section-sub { font-size: 16px; opacity: 0.8; margin-bottom: 36px; }
+
+    /* SECONDARY AUDIENCE (smaller cards) */
+    .secondary-section { padding: 48px 20px; max-width: 900px; margin: 0 auto; }
+    .secondary-section h2 {
+      font-size: clamp(20px, 4vw, 28px); font-weight: 900;
+      letter-spacing: -0.02em; margin-bottom: 24px; text-align: center;
+      color: var(--muted);
+    }
+    .secondary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+    .secondary-card {
+      background: var(--purple-bg); border-radius: var(--radius); padding: 28px 24px;
+    }
+    .secondary-card .audience-label { margin-bottom: 6px; }
+    .secondary-card h3 { font-size: 18px; font-weight: 900; margin-bottom: 10px; line-height: 1.2; }
+    .secondary-card p { font-size: 14px; color: var(--muted); line-height: 1.5; margin-bottom: 18px; }
+    .btn-secondary-card {
+      display: inline-block; font-weight: 800; font-size: 14px;
+      padding: 10px 22px; border-radius: 50px; text-decoration: none;
+      touch-action: manipulation; color: white;
+    }
 
     /* FOOTER */
     footer {
@@ -259,11 +277,11 @@
       .audience { grid-template-columns: 1fr; direction: ltr !important; gap: 32px; }
       .audience.reverse { direction: ltr; }
       .audience-visual { min-height: 160px; padding: 24px; }
-      .audience-visual .big-emoji { font-size: 56px; }
       .hero-btns { flex-direction: column; align-items: center; }
       .btn-hero-primary, .btn-hero-secondary { width: 100%; max-width: 320px; text-align: center; }
       .hero-logo-left { width: 64px; height: 64px; }
       .btn-nav-login { display: none; }
+      .secondary-grid { grid-template-columns: 1fr; }
     }
   </style>
 </head>
@@ -275,15 +293,15 @@
       <img src="/logo_placa.png" alt="Pé de Açaí" class="hero-logo-left" />
       <div class="hero-top-btns">
         <a href="/login" class="btn-nav-login">Fazer login</a>
-        <a href="/register" class="btn-nav-signup">Criar conta</a>
+        <a href="/register?role=store" class="btn-nav-signup">Cadastrar loja</a>
       </div>
     </div>
-    <div class="hero-tag">🍇 Disponível em Belém — PA</div>
-    <h1>Peça açaí sem<br/><em>taxa extra</em></h1>
-    <p><span style="display:block">O app que conecta você às melhores Lojas de Açaí da cidade.</span><span style="display:block">Sem surpresas no preço, sem comissões escondidas.</span></p>
+    <div class="hero-tag">🏪 Para lojas de açaí em Belém — PA</div>
+    <h1>Sua loja no app.<br/><em>Zero comissão</em> por pedido.</h1>
+    <p><span style="display:block">Pare de perder 20–30% de margem para apps de delivery.</span><span style="display:block">Mensalidade fixa, 100% do valor de cada venda é seu.</span></p>
     <div class="hero-btns">
-      <a href="/register" class="btn-hero-primary">📱 Criar conta grátis</a>
-      <a href="#lojas" class="btn-hero-secondary">Tenho uma loja →</a>
+      <a href="/register?role=store" class="btn-hero-primary">🚀 Começar 1 mês grátis</a>
+      <a href="#como-funciona" class="btn-hero-secondary">Como funciona →</a>
     </div>
     <div class="hero-city">📍 Belém, PA &nbsp;·&nbsp; Em breve: Manaus, AM</div>
   </section>
@@ -293,91 +311,50 @@
   </svg>
 
   <!-- HOW IT WORKS -->
-  <section class="section" style="text-align:center">
+  <section class="section" style="text-align:center" id="como-funciona">
     <div class="section-tag">Como funciona</div>
-    <h2>Simples assim</h2>
-    <p class="section-sub">Do pedido à entrega em poucos toques</p>
+    <h2>Sua loja online em minutos</h2>
+    <p class="section-sub">Sem burocracia. Sem contrato de fidelidade.</p>
     <div class="steps">
       <div class="step">
         <div class="step-num">1</div>
-        <h3>Escolha sua loja</h3>
-        <p>Veja lojas perto de você, cardápio completo e preços sem taxa extra.</p>
+        <h3>Cadastre sua loja</h3>
+        <p>Crie sua conta, monte o cardápio com fotos e defina a área de entrega. Leva menos de 10 minutos.</p>
       </div>
       <div class="step">
         <div class="step-num">2</div>
-        <h3>Faça seu pedido</h3>
-        <p>Escolha qual açaí você deseja e pague direto no app.</p>
+        <h3>Receba pedidos ao vivo</h3>
+        <p>Notificação em tempo real no painel da loja. Aceite com um toque e acione o entregador direto pelo app.</p>
       </div>
       <div class="step">
         <div class="step-num">3</div>
-        <h3>Acompanhe em tempo real</h3>
-        <p>Veja o entregador saindo da loja até chegar na sua porta.</p>
+        <h3>Cliente rastreia e paga</h3>
+        <p>O app cuida do rastreamento e da comunicação com o cliente. Você foca no açaí, a gente cuida do resto.</p>
       </div>
     </div>
   </section>
 
   <div class="divider"></div>
 
-  <!-- CLIENTES -->
-  <div class="audience">
-    <div class="audience-visual" style="padding: 0; overflow: hidden; border-radius: 24px;">
-      <img src="/lp_acai.png" alt="Açaí Pé de Açaí" style="width: 100%; height: 100%; object-fit: cover;" />
-    </div>
-    <div>
-      <div class="audience-label">Para clientes</div>
-      <h2>Seu açaí favorito na porta de casa</h2>
-      <p>Peça das melhores Lojas de Açaí de Belém e pague o mesmo preço da loja — sem taxa surpresa no final.</p>
-      <ul class="check-list">
-        <li>Rastreamento do entregador em tempo real</li>
-        <li>Histórico de pedidos</li>
-        <li>Aviso quando sair para entrega</li>
-        <li>Chat direto com a loja</li>
-      </ul>
-      <a href="/register" class="btn-audience">Criar conta grátis</a>
-    </div>
-  </div>
-
-  <div class="divider"></div>
-
-  <!-- LOJAS -->
-  <div class="audience reverse" id="lojas">
+  <!-- LOJAS (principal) -->
+  <div class="audience" id="lojas">
     <div class="audience-visual" style="padding: 0; overflow: hidden; border-radius: 24px;">
       <img src="/lp_loja.png" alt="Loja de Açaí" style="width: 100%; height: 100%; object-fit: cover;" />
     </div>
     <div>
       <div class="audience-label">Para lojistas</div>
       <h2>Chega de pagar 20% de comissão por pedido</h2>
-      <p>Com o Pé de Açaí você paga uma mensalidade fixa e fica com <strong>100% do valor de cada pedido</strong>. Seus clientes do WhatsApp migram pro app — você ganha organização sem perder margem.</p>
+      <p>Seus clientes do WhatsApp migram pro app — você ganha organização e rastreamento sem abrir mão da margem. Uma mensalidade fixa e o lucro é todo seu.</p>
       <ul class="check-list">
         <li>Zero comissão por pedido</li>
-        <li>Painel completo de pedidos e estoque</li>
+        <li>Painel completo de pedidos em tempo real</li>
+        <li>Cardápio digital com fotos</li>
         <li>Entregadores integrados ao app</li>
         <li>Histórico e relatórios de vendas</li>
-        <li>Cardápio digital com fotos</li>
+        <li>Chat direto com o cliente</li>
         <li>Primeiro mês grátis</li>
       </ul>
-      <a href="/register?role=store" class="btn-audience green">Começar agora</a>
-    </div>
-  </div>
-
-  <div class="divider"></div>
-
-  <!-- MOTOBOYS -->
-  <div class="audience">
-    <div class="audience-visual" style="padding: 0; overflow: hidden; border-radius: 24px;">
-      <img src="/lp_motoboy.png" alt="Entregador Pé de Açaí" style="width: 100%; height: 100%; object-fit: cover;" />
-    </div>
-    <div>
-      <div class="audience-label">Para entregadores</div>
-      <h2>Faça entregas na sua área, no seu horário</h2>
-      <p>Cadastre-se grátis, receba pedidos das lojas parceiras e ganhe por entrega. Sem mensalidade, sem taxa de adesão.</p>
-      <ul class="check-list">
-        <li>Cadastro 100% grátis</li>
-        <li>Escolha quando trabalhar</li>
-        <li>Rotas otimizadas no app</li>
-        <li>Pagamento direto pela loja</li>
-      </ul>
-      <a href="/register?role=entregador" class="btn-audience" style="background:#E65100">Quero ser entregador</a>
+      <a href="/register?role=store" class="btn-audience green">Cadastrar minha loja</a>
     </div>
   </div>
 
@@ -404,6 +381,25 @@
         <span style="display:block">Ao se cadastrar você concorda com nossa <a href="/privacidade" style="color:var(--purple)">Política de Privacidade</a></span>
         <span style="display:block">e os <a href="/termos" style="color:var(--purple)">Termos de Uso</a>.</span>
       </p>
+    </div>
+  </section>
+
+  <!-- SECUNDÁRIOS: entregador + cliente -->
+  <section class="secondary-section">
+    <h2>Também no Pé de Açaí</h2>
+    <div class="secondary-grid">
+      <div class="secondary-card">
+        <div class="audience-label">Para entregadores</div>
+        <h3>Faça entregas no seu horário</h3>
+        <p>Cadastro 100% grátis. Receba pedidos das lojas parceiras, rotas otimizadas no app e pagamento direto pela loja.</p>
+        <a href="/register?role=entregador" class="btn-secondary-card" style="background:#E65100">Quero ser entregador</a>
+      </div>
+      <div class="secondary-card">
+        <div class="audience-label">Para clientes</div>
+        <h3>Peça açaí sem taxa extra</h3>
+        <p>Pague o mesmo preço da loja, rastreie o entregador em tempo real e acompanhe cada pedido pelo app.</p>
+        <a href="/register" class="btn-secondary-card" style="background:var(--purple)">Criar conta grátis</a>
+      </div>
     </div>
   </section>
 
