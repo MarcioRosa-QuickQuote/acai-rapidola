@@ -22,7 +22,7 @@
       --radius: 16px;
     }
 
-    html { scroll-behavior: smooth; }
+    html { scroll-behavior: smooth; overflow-x: hidden; }
 
     body {
       font-family: 'Nunito', system-ui, sans-serif;
@@ -254,7 +254,7 @@
       pointer-events: auto;
       flex-shrink: 0;
     }
-    .hero-top-btns { display: flex; gap: 10px; align-items: center; pointer-events: auto; padding-top: 32px; }
+    .hero-top-btns { display: flex; gap: 10px; align-items: center; pointer-events: auto; padding-top: 10px; }
     .btn-nav-login {
       color: rgba(255,255,255,0.85); font-size: 14px; font-weight: 700;
       text-decoration: none; padding: 8px 18px; border-radius: 50px;
@@ -302,7 +302,7 @@
     <div class="hero-top">
       <img src="/logo_placa.webp" alt="Pé de Açaí" class="hero-logo-left" />
       <div class="hero-top-btns">
-        <a href="/login" class="btn-nav-login">Fazer login</a>
+        <a href="/login" class="btn-nav-login">Login</a>
         <a href="/register?role=store" class="btn-nav-signup">Cadastrar loja</a>
       </div>
     </div>
