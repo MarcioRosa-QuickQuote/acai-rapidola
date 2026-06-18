@@ -422,7 +422,7 @@ export default function Register() {
       ))}
 
       {/* Logo — z-index abaixo do card para a estaca ficar "fincada" no modal */}
-      <div style={{ textAlign: 'center', marginBottom: -42, zIndex: 0, position: 'relative' }}>
+      <div style={{ textAlign: 'center', marginBottom: -24, zIndex: 0, position: 'relative' }}>
         <img src="/logo_placa.png" alt="Pé de Açaí" style={{
           width: 150, height: 150, objectFit: 'contain',
           filter: 'drop-shadow(0 6px 28px rgba(0,0,0,0.55))'
