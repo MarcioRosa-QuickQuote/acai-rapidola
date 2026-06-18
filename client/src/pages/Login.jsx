@@ -53,12 +53,27 @@ export default function Login() {
   }
 
   return (
-    <div style={{
-      display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'center',
-      minHeight: '100vh',
-      background: 'linear-gradient(160deg, #6A1B9A 0%, #9C27B0 45%, #CE93D8 100%)',
-      padding: '24px 20px 20px', position: 'relative', overflow: 'hidden'
-    }}>
+    <div style={{ display: 'flex', minHeight: '100vh' }}>
+      <style>{`
+        .login-video-panel { flex: 1; overflow: hidden; position: relative; }
+        .login-video-panel video { width: 100%; height: 100%; object-fit: cover; display: block; }
+        @media (max-width: 768px) { .login-video-panel { display: none; } }
+      `}</style>
+
+      {/* Vídeo — lado esquerdo */}
+      <div className="login-video-panel">
+        <video autoPlay loop muted playsInline>
+          <source src="/acai_video.mp4" type="video/mp4" />
+        </video>
+      </div>
+
+      {/* Formulário — lado direito */}
+      <div style={{
+        display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'center',
+        minHeight: '100vh', width: '100%', maxWidth: 480,
+        background: 'linear-gradient(160deg, #6A1B9A 0%, #9C27B0 45%, #CE93D8 100%)',
+        padding: '24px 20px 20px', position: 'relative', overflow: 'hidden'
+      }}>
       {/* Logo — z-index abaixo do card para a estaca ficar "fincada" no modal */}
       <div style={{ textAlign: 'center', marginBottom: -24, zIndex: 0, position: 'relative' }}>
         <img src="/logo_placa.png" alt="Pé de Açaí" style={{
@@ -285,6 +300,7 @@ export default function Login() {
           <Link to="/termos" style={{ color: '#fff', textDecoration: 'underline' }}>Termos</Link>
         </span>
       </p>
+      </div>{/* fim formulário */}
     </div>
   );
 }
