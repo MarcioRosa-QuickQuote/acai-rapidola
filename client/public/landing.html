@@ -266,6 +266,8 @@
       touch-action: manipulation;
     }
 
+    .hero-txt-mobile { display: none; }
+
     /* ANIMATIONS */
     .anim { opacity: 0; transition: opacity 0.65s ease, transform 0.65s ease; }
     .anim.from-bottom { transform: translateY(36px); }
@@ -281,6 +283,8 @@
 
     /* RESPONSIVE */
     @media (max-width: 640px) {
+      .hero-txt-desktop { display: none; }
+      .hero-txt-mobile { display: block; }
       .audience { grid-template-columns: 1fr; direction: ltr !important; gap: 32px; }
       .audience.reverse { direction: ltr; }
       .audience-visual { min-height: 160px; padding: 24px; }
@@ -308,7 +312,14 @@
     </div>
     <div class="hero-tag" style="visibility:hidden">🏪 Para lojas de açaí em Belém — PA</div>
     <h1 class="anim from-bottom d2">Sua loja no app.<br/><em>Zero comissão</em> por pedido.</h1>
-    <p class="anim from-bottom d3">Pare de perder até 30% por venda. Mensalidade fixa e 100% do faturamento é seu.</p>
+    <p class="anim from-bottom d3 hero-txt-desktop">
+      <span style="display:block">Pare de perder 20–30% de margem para apps de delivery.</span>
+      <span style="display:block">Mensalidade fixa, 100% do valor de cada venda é seu.</span>
+    </p>
+    <p class="anim from-bottom d3 hero-txt-mobile">
+      <span style="display:block">Pare de perder até 30% por venda.</span>
+      <span style="display:block">Mensalidade fixa e 100% do faturamento é seu.</span>
+    </p>
     <div class="hero-btns anim from-bottom d4">
       <a href="/register?role=store" class="btn-hero-primary">🚀 Começar 1 mês grátis</a>
       <a href="#como-funciona" class="btn-hero-secondary">Como funciona →</a>
