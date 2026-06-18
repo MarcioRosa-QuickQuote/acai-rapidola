@@ -35,7 +35,7 @@
     .hero {
       background: linear-gradient(145deg, var(--purple-dark) 0%, var(--purple) 60%, #8E24AA 100%);
       color: white;
-      padding: 32px 20px 80px;
+      padding: 100px 20px 80px;
       text-align: center;
       position: relative;
       overflow: hidden;
@@ -236,11 +236,12 @@
 
     /* HERO TOP ROW */
     .hero-top {
-      display: flex; align-items: center; justify-content: space-between;
-      margin-bottom: 36px; position: relative; z-index: 1;
+      position: absolute; top: 32px; left: 20px; right: 20px;
+      display: flex; align-items: flex-start; justify-content: space-between;
+      z-index: 1; pointer-events: none;
     }
-    .hero-logo-left { width: 280px; height: 280px; object-fit: contain; filter: drop-shadow(0 3px 12px rgba(0,0,0,0.4)); transform: rotate(15deg); }
-    .hero-top-btns { display: flex; gap: 10px; align-items: center; position: absolute; top: 0; right: 0; z-index: 2; }
+    .hero-logo-left { width: 280px; height: 280px; object-fit: contain; filter: drop-shadow(0 3px 12px rgba(0,0,0,0.4)); transform: rotate(15deg); pointer-events: auto; }
+    .hero-top-btns { display: flex; gap: 10px; align-items: center; pointer-events: auto; }
     .btn-nav-login {
       color: rgba(255,255,255,0.85); font-size: 14px; font-weight: 700;
       text-decoration: none; padding: 8px 18px; border-radius: 50px;
@@ -259,7 +260,7 @@
       .audience-visual { min-height: 160px; padding: 24px; }
       .hero-btns { flex-direction: column; align-items: center; }
       .btn-hero-primary, .btn-hero-secondary { width: 100%; max-width: 320px; text-align: center; }
-      .hero-logo-left { width: 190px; height: 190px; }
+      .hero-logo-left { width: 130px; height: 130px; }
       .btn-nav-login { display: none; }
       .secondary-grid { grid-template-columns: 1fr; }
     }
