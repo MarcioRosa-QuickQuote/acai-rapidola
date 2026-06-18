@@ -429,9 +429,11 @@ export default function Register() {
           transform: `translate(${mousePos.x * -8}px, ${mousePos.y * -8}px)`,
           transition: 'transform 0.5s ease-out'
         }} />
-        <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: 12, fontWeight: 400 }}>
-          {wizardStep ? 'Cadastro de Entregador' : 'Crie sua conta'}
-        </p>
+        {wizardStep && (
+          <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: 12, fontWeight: 400 }}>
+            Cadastro de Entregador
+          </p>
+        )}
         {inviteToken && !wizardStep && (
           <div style={{
             background: 'rgba(255,255,255,0.15)', padding: '6px 14px',
@@ -444,7 +446,7 @@ export default function Register() {
 
       {/* Card */}
       <div style={{
-        width: '100%', maxWidth: 440,
+        width: '100%', maxWidth: 560,
         background: 'rgba(255,255,255,0.97)',
         borderRadius: 24,
         boxShadow: '0 20px 60px rgba(0,0,0,0.35)',
@@ -455,7 +457,7 @@ export default function Register() {
         <div style={{ padding: '24px 30px 20px' }}>
           {!wizardStep && (
             <div style={{ textAlign: 'right', marginBottom: 16 }}>
-              <span style={{ fontSize: 20, fontWeight: 900, color: '#4A148C' }}>Crie sua conta</span>
+              <span style={{ fontSize: 13, fontWeight: 300, color: '#9C27B0', letterSpacing: '0.03em' }}>Crie sua conta</span>
             </div>
           )}
 
@@ -529,7 +531,7 @@ export default function Register() {
                 <>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 10, margin: '4px 0 10px' }}>
                     <div style={{ flex: 1, height: 1, background: '#E8E0F0' }} />
-                    <span style={{ fontSize: 11, color: '#BBB', whiteSpace: 'nowrap' }}>ou cadastre com</span>
+                    <span style={{ fontSize: 11, color: '#555', whiteSpace: 'nowrap' }}>ou cadastre com</span>
                     <div style={{ flex: 1, height: 1, background: '#E8E0F0' }} />
                   </div>
                   <button type="button" onClick={() => googleLogin()} disabled={googleLoading} style={{
@@ -568,7 +570,7 @@ export default function Register() {
                 Já tem conta?{' '}
                 <Link to="/login" style={{ color: '#6A1B9A', fontWeight: 700, textDecoration: 'none' }}>Entrar</Link>
               </p>
-              <p style={{ textAlign: 'center', marginTop: 8, fontSize: 11, color: '#BBB', lineHeight: 1.6 }}>
+              <p style={{ textAlign: 'center', marginTop: 8, fontSize: 11, color: '#555', lineHeight: 1.6 }}>
                 Ao se cadastrar você concorda com nossa{' '}
                 <Link to="/privacidade" style={{ color: '#9C27B0', textDecoration: 'underline' }}>Política de Privacidade</Link>
                 {' '}e os{' '}
