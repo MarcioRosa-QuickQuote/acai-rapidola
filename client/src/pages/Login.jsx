@@ -1,4 +1,4 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useGoogleLogin } from '@react-oauth/google';
@@ -59,15 +59,15 @@ export default function Login() {
       background: 'linear-gradient(160deg, #6A1B9A 0%, #9C27B0 45%, #CE93D8 100%)',
       padding: '24px 20px 20px', position: 'relative', overflow: 'hidden'
     }}>
-      {/* Logo — z-index abaixo do card para a estaca ficar "fincada" no modal */}
+      {/* Logo â€” z-index abaixo do card para a estaca ficar "fincada" no modal */}
       <div style={{ textAlign: 'center', marginBottom: -24, zIndex: 0, position: 'relative' }}>
-        <img src="/logo_placa.png" alt="Pé de Açaí" style={{
+        <img src="/logo_placa.png" alt="PÃ© de AÃ§aÃ­" style={{
           width: 190, height: 190, objectFit: 'contain',
           filter: 'drop-shadow(0 6px 28px rgba(0,0,0,0.55))'
         }} />
       </div>
 
-      {/* Card — z-index acima da logo para cobrir a estaca */}
+      {/* Card â€” z-index acima da logo para cobrir a estaca */}
       <div style={{
         width: '100%', maxWidth: 440,
         background: '#fff',
@@ -81,7 +81,7 @@ export default function Login() {
             {error && (
               <div style={{
                 background: '#FFF0F0', color: '#C62828', padding: '10px 14px',
-                borderRadius: 10, marginBottom: 16, fontSize: 12,
+                borderRadius: 10, marginBottom: 16, fontSize: 13,
                 border: '1px solid #FFCDD2', display: 'flex', alignItems: 'center', gap: 6
               }}>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="#C62828"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
@@ -90,7 +90,7 @@ export default function Login() {
             )}
 
             <div style={{ marginBottom: 14 }}>
-              <label style={{ fontSize: 12, fontWeight: 600, color: '#555', marginBottom: 4, display: 'block' }}>
+              <label style={{ fontSize: 13, fontWeight: 600, color: '#555', marginBottom: 4, display: 'block' }}>
                 Telefone
               </label>
               <input
@@ -98,7 +98,7 @@ export default function Login() {
                 onChange={e => setPhone(e.target.value)}
                 placeholder="(11) 99999-9999" required
                 style={{
-                  width: '100%', padding: '12px 14px', fontSize: 15,
+                  width: '100%', padding: '12px 14px', fontSize: 16,
                   border: '2px solid #E8E0F0', borderRadius: 10, outline: 'none',
                   transition: 'border-color 0.2s, box-shadow 0.2s',
                   boxSizing: 'border-box'
@@ -109,7 +109,7 @@ export default function Login() {
             </div>
 
             <div style={{ marginBottom: 18 }}>
-              <label style={{ fontSize: 12, fontWeight: 600, color: '#555', marginBottom: 4, display: 'block' }}>
+              <label style={{ fontSize: 13, fontWeight: 600, color: '#555', marginBottom: 4, display: 'block' }}>
                 Senha
               </label>
               <input
@@ -117,7 +117,7 @@ export default function Login() {
                 onChange={e => setPassword(e.target.value)}
                 placeholder="Sua senha" required
                 style={{
-                  width: '100%', padding: '12px 14px', fontSize: 15,
+                  width: '100%', padding: '12px 14px', fontSize: 16,
                   border: '2px solid #E8E0F0', borderRadius: 10, outline: 'none',
                   transition: 'border-color 0.2s, box-shadow 0.2s',
                   boxSizing: 'border-box'
@@ -131,7 +131,7 @@ export default function Login() {
               width: '100%', padding: '13px',
               background: 'linear-gradient(135deg, #6A1B9A, #9C27B0)',
               color: 'white', border: 'none', borderRadius: 10,
-              fontSize: 15, fontWeight: 700,
+              fontSize: 16, fontWeight: 700,
               cursor: loading ? 'default' : 'pointer',
               opacity: loading ? 0.7 : 1,
               transition: 'box-shadow 0.2s, transform 0.15s',
@@ -146,7 +146,7 @@ export default function Login() {
             <button type="button" onClick={() => googleLogin()} disabled={googleLoading} style={{
               width: '100%', padding: '11px', marginTop: 10,
               background: 'white', color: '#333', border: '2px solid #E8E0F0', borderRadius: 10,
-              fontSize: 14, fontWeight: 600, cursor: googleLoading ? 'default' : 'pointer',
+              fontSize: 15, fontWeight: 600, cursor: googleLoading ? 'default' : 'pointer',
               display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
               opacity: googleLoading ? 0.7 : 1,
               transition: 'border-color 0.2s, box-shadow 0.2s',
@@ -167,15 +167,15 @@ export default function Login() {
               {googleLoading ? 'Entrando...' : 'Entrar com Google'}
             </button>
 
-            <p style={{ textAlign: 'center', marginTop: 12, fontSize: 13, color: '#888' }}>
-              Não tem conta?{' '}
+            <p style={{ textAlign: 'center', marginTop: 12, fontSize: 14, color: '#888' }}>
+              NÃ£o tem conta?{' '}
               <Link to="/register" style={{ color: '#6A1B9A', fontWeight: 700, textDecoration: 'none' }}>
                 Cadastre-se
               </Link>
             </p>
-            <p style={{ textAlign: 'center', marginTop: 4, fontSize: 12 }}>
+            <p style={{ textAlign: 'center', marginTop: 4, fontSize: 13 }}>
               <button type="button" onClick={() => { setRecovery(true); setRecoveryStep(1); setRecoveryMsg(''); }}
-                style={{ background: 'none', border: 'none', color: '#999', cursor: 'pointer', fontSize: 12, textDecoration: 'underline' }}>
+                style={{ background: 'none', border: 'none', color: '#999', cursor: 'pointer', fontSize: 13, textDecoration: 'underline' }}>
                 Esqueci minha senha
               </button>
             </p>
@@ -183,7 +183,7 @@ export default function Login() {
 
           {recovery && (
             <div style={{ borderTop: '1px solid #F3E5F5', paddingTop: 14, marginTop: 14 }}>
-              <div style={{ fontSize: 15, fontWeight: 700, color: '#6A1B9A', marginBottom: 12 }}>Recuperar Senha</div>
+              <div style={{ fontSize: 16, fontWeight: 700, color: '#6A1B9A', marginBottom: 12 }}>Recuperar Senha</div>
 
               {recoveryStep === 1 && (
                 <div>
@@ -193,7 +193,7 @@ export default function Login() {
                       onChange={e => setRecoveryEmail(e.target.value)}
                       placeholder="seu@email.com" />
                   </div>
-                  {recoveryMsg && <div style={{ fontSize: 13, padding: '8px 12px', borderRadius: 8, marginBottom: 10,
+                  {recoveryMsg && <div style={{ fontSize: 14, padding: '8px 12px', borderRadius: 8, marginBottom: 10,
                     background: recoveryMsg.includes('sucesso') || recoveryMsg.includes('enviado') ? '#E8F5E9' : '#FFF3E0',
                     color: recoveryMsg.includes('sucesso') || recoveryMsg.includes('enviado') ? '#2E7D32' : '#E65100' }}>{recoveryMsg}</div>}
                   <button className="btn btn-primary" onClick={async () => {
@@ -201,11 +201,11 @@ export default function Login() {
                     const res = await apiFetch('/auth/forgot-password', {
                       method: 'POST', body: JSON.stringify({ email: recoveryEmail })
                     });
-                    setRecoveryMsg(res.message || (res._test ? `Código: ${res.code}` : 'Código enviado!'));
+                    setRecoveryMsg(res.message || (res._test ? `CÃ³digo: ${res.code}` : 'CÃ³digo enviado!'));
                     if (res.ok !== false) setRecoveryStep(2);
                     setRecoveryLoading(false);
                   }} disabled={recoveryLoading || !recoveryEmail}>
-                    {recoveryLoading ? 'Enviando...' : 'Enviar código'}
+                    {recoveryLoading ? 'Enviando...' : 'Enviar cÃ³digo'}
                   </button>
                 </div>
               )}
@@ -213,14 +213,14 @@ export default function Login() {
               {recoveryStep === 2 && (
                 <div>
                   <div className="form-group">
-                    <label className="label">Código recebido por SMS</label>
+                    <label className="label">CÃ³digo recebido por SMS</label>
                     <input className="input" type="text" value={recoveryCode}
                       onChange={e => setRecoveryCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
                       placeholder="000000" maxLength={6} />
                   </div>
                   <button className="btn btn-primary" onClick={() => setRecoveryStep(3)}
                     disabled={recoveryCode.length < 6}>
-                    Confirmar código
+                    Confirmar cÃ³digo
                   </button>
                   <button className="btn btn-sm" style={{ marginTop: 8, background: 'none', color: '#999' }}
                     onClick={() => { setRecoveryStep(1); setRecoveryMsg(''); }}>
@@ -237,7 +237,7 @@ export default function Login() {
                       onChange={e => setRecoveryPassword(e.target.value)}
                       placeholder="Nova senha (min 4 caracteres)" />
                   </div>
-                  {recoveryMsg && <div style={{ fontSize: 13, fontWeight: 600, padding: '8px 12px', borderRadius: 8, marginBottom: 10,
+                  {recoveryMsg && <div style={{ fontSize: 14, fontWeight: 600, padding: '8px 12px', borderRadius: 8, marginBottom: 10,
                     background: recoveryMsg.includes('sucesso') ? '#E8F5E9' : '#FFEBEE',
                     color: recoveryMsg.includes('sucesso') ? '#2E7D32' : '#C62828' }}>{recoveryMsg}</div>}
                   <button className="btn btn-primary" onClick={async () => {
@@ -249,7 +249,7 @@ export default function Login() {
                     setRecoveryMsg(res.message || (res.error || 'Erro ao redefinir'));
                     if (res.ok) {
                       setTimeout(() => {
-                        setRecovery(false); setRecoveryMsg('Senha redefinida! Faça login.');
+                        setRecovery(false); setRecoveryMsg('Senha redefinida! FaÃ§a login.');
                       }, 2000);
                     }
                     setRecoveryLoading(false);
@@ -264,7 +264,7 @@ export default function Login() {
               )}
 
               <button onClick={() => { setRecovery(false); setRecoveryMsg(''); }}
-                style={{ marginTop: 10, background: 'none', border: 'none', color: '#CCC', fontSize: 11, cursor: 'pointer', display: 'block', width: '100%', textAlign: 'center' }}>
+                style={{ marginTop: 10, background: 'none', border: 'none', color: '#CCC', fontSize: 12, cursor: 'pointer', display: 'block', width: '100%', textAlign: 'center' }}>
                 Voltar ao login
               </button>
             </div>
@@ -273,18 +273,19 @@ export default function Login() {
         </div>
       </div>
 
-      <p style={{ marginTop: 16, fontSize: 11, color: 'rgba(255,255,255,0.35)', zIndex: 1, textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, flexWrap: 'wrap' }}>
+      <p style={{ marginTop: 16, fontSize: 12, color: 'rgba(255,255,255,0.35)', zIndex: 1, textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, flexWrap: 'wrap' }}>
         <a href="/landing" style={{ color: 'rgba(255,255,255,0.55)', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 3 }}>
           <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
-          Página de Vendas
+          PÃ¡gina de Vendas
         </a>
-        <span>·</span>
-        <span>Pé de Açaí © 2026 —{' '}
+        <span>Â·</span>
+        <span>PÃ© de AÃ§aÃ­ Â© 2026 â€”{' '}
           <Link to="/privacidade" style={{ color: 'rgba(255,255,255,0.45)', textDecoration: 'underline' }}>Privacidade</Link>
-          {' · '}
+          {' Â· '}
           <Link to="/termos" style={{ color: 'rgba(255,255,255,0.45)', textDecoration: 'underline' }}>Termos</Link>
         </span>
       </p>
     </div>
   );
 }
+

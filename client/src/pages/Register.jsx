@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+﻿import { useState, useEffect, useRef } from 'react';
 import { Link, useSearchParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useGoogleLogin } from '@react-oauth/google';
@@ -78,7 +78,7 @@ export default function Register() {
             setPhone(d.phone);
             setWizardStep(1);
           } else {
-            setError('Convite inválido ou já utilizado.');
+            setError('Convite invÃ¡lido ou jÃ¡ utilizado.');
           }
         });
     }
@@ -93,12 +93,12 @@ export default function Register() {
     return () => window.removeEventListener('mousemove', handleMove);
   }, []);
 
-  // Limpa câmera ao desmontar
+  // Limpa cÃ¢mera ao desmontar
   useEffect(() => {
     return () => { cameraStream?.getTracks().forEach(t => t.stop()); };
   }, [cameraStream]);
 
-  // ── Câmera ────────────────────────────────────────────────────────────────
+  // â”€â”€ CÃ¢mera â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   async function startCamera() {
     setCameraError('');
@@ -108,12 +108,12 @@ export default function Register() {
       });
       setCameraStream(stream);
       setCameraActive(true);
-      // Aguarda o ref estar disponível
+      // Aguarda o ref estar disponÃ­vel
       setTimeout(() => {
         if (videoRef.current) videoRef.current.srcObject = stream;
       }, 50);
     } catch {
-      setCameraError('Câmera não disponível. Você pode pular esta etapa.');
+      setCameraError('CÃ¢mera nÃ£o disponÃ­vel. VocÃª pode pular esta etapa.');
     }
   }
 
@@ -136,7 +136,7 @@ export default function Register() {
     stopCamera();
   }
 
-  // ── Wizard handlers ───────────────────────────────────────────────────────
+  // â”€â”€ Wizard handlers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   function handleSelectEntregador() {
     setRole('motoboy');
@@ -148,8 +148,8 @@ export default function Register() {
     if (!name.trim() || name.trim().split(' ').length < 2) return setError('Informe nome e sobrenome');
     if (!cpf.replace(/\D/g, '') || cpf.replace(/\D/g, '').length < 11) return setError('Informe seu CPF completo');
     if (!phone.trim()) return setError('Informe seu celular');
-    if (!email.trim() || !email.includes('@')) return setError('Informe um e-mail válido');
-    if (password.length < 4) return setError('Senha deve ter no mínimo 4 caracteres');
+    if (!email.trim() || !email.includes('@')) return setError('Informe um e-mail vÃ¡lido');
+    if (password.length < 4) return setError('Senha deve ter no mÃ­nimo 4 caracteres');
     setError('');
     setWizardStep(2);
     startCamera();
@@ -172,7 +172,7 @@ export default function Register() {
         pix_key: pixKey,
         selfie_url: selfieDataUrl || ''
       });
-      // O AuthContext já faz login e o App redireciona para /motoboy/*
+      // O AuthContext jÃ¡ faz login e o App redireciona para /motoboy/*
     } catch (err) {
       setError(err.message);
     } finally {
@@ -180,7 +180,7 @@ export default function Register() {
     }
   }
 
-  // ── Submit cliente/loja ───────────────────────────────────────────────────
+  // â”€â”€ Submit cliente/loja â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -195,7 +195,7 @@ export default function Register() {
     }
   }
 
-  // ── Render helpers ────────────────────────────────────────────────────────
+  // â”€â”€ Render helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   function renderProgress() {
     return (
@@ -209,7 +209,7 @@ export default function Register() {
             }} />
           ))}
         </div>
-        <div style={{ fontSize: 11, fontWeight: 700, color: '#9C27B0', textTransform: 'uppercase', letterSpacing: 0.5 }}>
+        <div style={{ fontSize: 12, fontWeight: 700, color: '#9C27B0', textTransform: 'uppercase', letterSpacing: 0.5 }}>
           Passo {wizardStep} de 3
         </div>
       </div>
@@ -220,7 +220,7 @@ export default function Register() {
     return (
       <>
         {renderProgress()}
-        <div style={{ fontWeight: 700, fontSize: 17, marginBottom: 16 }}>Dados pessoais</div>
+        <div style={{ fontWeight: 700, fontSize: 18, marginBottom: 16 }}>Dados pessoais</div>
         {error && <div style={errorStyle}>{error}</div>}
 
         <div style={{ marginBottom: 12 }}>
@@ -259,10 +259,10 @@ export default function Register() {
         <div style={{ marginBottom: 20 }}>
           <label style={labelStyle}>Senha</label>
           <input type="password" value={password} onChange={e => setPassword(e.target.value)}
-            placeholder="Mínimo 4 caracteres" style={inputStyle} onFocus={onFocus} onBlur={onBlur} />
+            placeholder="MÃ­nimo 4 caracteres" style={inputStyle} onFocus={onFocus} onBlur={onBlur} />
         </div>
 
-        <button type="button" onClick={handleWizardStep1} style={btnPrimary}>Continuar →</button>
+        <button type="button" onClick={handleWizardStep1} style={btnPrimary}>Continuar â†’</button>
         <button type="button" onClick={() => { setWizardStep(null); setRole('customer'); setError(''); }} style={btnSecondary}>
           Voltar
         </button>
@@ -274,9 +274,9 @@ export default function Register() {
     return (
       <>
         {renderProgress()}
-        <div style={{ fontWeight: 700, fontSize: 17, marginBottom: 4 }}>Sua selfie</div>
-        <div style={{ fontSize: 13, color: '#888', marginBottom: 16 }}>
-          Foto para verificação de identidade pela equipe
+        <div style={{ fontWeight: 700, fontSize: 18, marginBottom: 4 }}>Sua selfie</div>
+        <div style={{ fontSize: 14, color: '#888', marginBottom: 16 }}>
+          Foto para verificaÃ§Ã£o de identidade pela equipe
         </div>
 
         {!selfieDataUrl ? (
@@ -293,22 +293,22 @@ export default function Register() {
                   <svg width="48" height="48" viewBox="0 0 24 24" fill="#555" style={{ marginBottom: 8 }}>
                     <path d="M12 15.2A3.2 3.2 0 0 1 8.8 12 3.2 3.2 0 0 1 12 8.8 3.2 3.2 0 0 1 15.2 12 3.2 3.2 0 0 1 12 15.2M12 7a5 5 0 0 0-5 5 5 5 0 0 0 5 5 5 5 0 0 0 5-5 5 5 0 0 0-5-5m0-7.5L8 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2h-4l-4-4.5z"/>
                   </svg>
-                  <div style={{ fontSize: 13 }}>Câmera desligada</div>
+                  <div style={{ fontSize: 14 }}>CÃ¢mera desligada</div>
                 </div>
               )}
               {cameraError && (
-                <div style={{ padding: 16, textAlign: 'center', color: '#999', fontSize: 12 }}>{cameraError}</div>
+                <div style={{ padding: 16, textAlign: 'center', color: '#999', fontSize: 13 }}>{cameraError}</div>
               )}
             </div>
             <canvas ref={canvasRef} style={{ display: 'none' }} />
 
             {!cameraError && (
               <button type="button" onClick={cameraActive ? capturePhoto : startCamera} style={btnPrimary}>
-                {cameraActive ? '📸 Tirar foto' : '📷 Abrir câmera'}
+                {cameraActive ? 'ðŸ“¸ Tirar foto' : 'ðŸ“· Abrir cÃ¢mera'}
               </button>
             )}
             <button type="button" onClick={goToStep3} style={btnSecondary}>
-              {cameraError ? 'Continuar sem selfie →' : 'Pular esta etapa'}
+              {cameraError ? 'Continuar sem selfie â†’' : 'Pular esta etapa'}
             </button>
           </>
         ) : (
@@ -316,10 +316,10 @@ export default function Register() {
             <div style={{ borderRadius: 12, overflow: 'hidden', marginBottom: 8 }}>
               <img src={selfieDataUrl} alt="Selfie" style={{ width: '100%', display: 'block' }} />
             </div>
-            <div style={{ fontSize: 12, color: '#2E7D32', fontWeight: 600, textAlign: 'center', marginBottom: 14 }}>
+            <div style={{ fontSize: 13, color: '#2E7D32', fontWeight: 600, textAlign: 'center', marginBottom: 14 }}>
               Foto capturada!
             </div>
-            <button type="button" onClick={goToStep3} style={btnPrimary}>Usar esta foto →</button>
+            <button type="button" onClick={goToStep3} style={btnPrimary}>Usar esta foto â†’</button>
             <button type="button" onClick={() => { setSelfieDataUrl(null); startCamera(); }} style={btnSecondary}>
               Tirar outra
             </button>
@@ -327,7 +327,7 @@ export default function Register() {
         )}
 
         <button type="button" onClick={() => { stopCamera(); setSelfieDataUrl(null); setWizardStep(1); }} style={btnBack}>
-          ← Voltar
+          â† Voltar
         </button>
       </>
     );
@@ -338,24 +338,24 @@ export default function Register() {
     return (
       <>
         {renderProgress()}
-        <div style={{ fontWeight: 700, fontSize: 17, marginBottom: 16 }}>Dados do veículo</div>
+        <div style={{ fontWeight: 700, fontSize: 18, marginBottom: 16 }}>Dados do veÃ­culo</div>
         {error && <div style={errorStyle}>{error}</div>}
 
         <div style={{ marginBottom: 16 }}>
-          <label style={labelStyle}>Tipo de veículo</label>
+          <label style={labelStyle}>Tipo de veÃ­culo</label>
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
             {[
-              { value: 'moto', label: '🛵 Moto' },
-              { value: 'bicycle', label: '🚲 Bicicleta' },
-              { value: 'car', label: '🚗 Carro' },
-              { value: 'foot', label: '🚶 A pé' }
+              { value: 'moto', label: 'ðŸ›µ Moto' },
+              { value: 'bicycle', label: 'ðŸš² Bicicleta' },
+              { value: 'car', label: 'ðŸš— Carro' },
+              { value: 'foot', label: 'ðŸš¶ A pÃ©' }
             ].map(({ value, label }) => (
               <button key={value} type="button" onClick={() => setVehicleType(value)} style={{
                 flex: 1, minWidth: 70, padding: '10px 4px', borderRadius: 10, textAlign: 'center',
                 border: `2px solid ${vehicleType === value ? '#9C27B0' : '#E8E0F0'}`,
                 background: vehicleType === value ? '#F3E5F5' : 'white',
                 color: vehicleType === value ? '#6A1B9A' : '#555',
-                fontWeight: vehicleType === value ? 700 : 400, fontSize: 12, cursor: 'pointer'
+                fontWeight: vehicleType === value ? 700 : 400, fontSize: 13, cursor: 'pointer'
               }}>{label}</button>
             ))}
           </div>
@@ -363,7 +363,7 @@ export default function Register() {
 
         {hasPlate && (
           <div style={{ marginBottom: 12 }}>
-            <label style={labelStyle}>Placa do veículo</label>
+            <label style={labelStyle}>Placa do veÃ­culo</label>
             <input value={plate}
               onChange={e => setPlate(e.target.value.toUpperCase().replace(/[^A-Z0-9-]/g, '').slice(0, 8))}
               placeholder="ABC-1234 ou ABC1D23"
@@ -374,13 +374,13 @@ export default function Register() {
         <div style={{ marginBottom: 20 }}>
           <label style={labelStyle}>Chave Pix para pagamentos</label>
           <input value={pixKey} onChange={e => setPixKey(e.target.value)}
-            placeholder="CPF, e-mail, celular ou chave aleatória"
+            placeholder="CPF, e-mail, celular ou chave aleatÃ³ria"
             style={inputStyle} onFocus={onFocus} onBlur={onBlur} />
         </div>
 
-        <p style={{ fontSize: 11, color: '#BBB', marginBottom: 14, lineHeight: 1.6, textAlign: 'center' }}>
-          Ao se cadastrar você concorda com nossa{' '}
-          <Link to="/privacidade" style={{ color: '#9C27B0', textDecoration: 'underline' }}>Política de Privacidade</Link>
+        <p style={{ fontSize: 12, color: '#BBB', marginBottom: 14, lineHeight: 1.6, textAlign: 'center' }}>
+          Ao se cadastrar vocÃª concorda com nossa{' '}
+          <Link to="/privacidade" style={{ color: '#9C27B0', textDecoration: 'underline' }}>PolÃ­tica de Privacidade</Link>
           {' '}e os{' '}
           <Link to="/termos" style={{ color: '#9C27B0', textDecoration: 'underline' }}>Termos de Uso</Link>
         </p>
@@ -390,13 +390,13 @@ export default function Register() {
           {loading ? 'Enviando...' : 'Enviar cadastro'}
         </button>
         <button type="button" onClick={() => setWizardStep(2)} style={btnBack}>
-          ← Voltar
+          â† Voltar
         </button>
       </>
     );
   }
 
-  // ── Render principal ──────────────────────────────────────────────────────
+  // â”€â”€ Render principal â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   return (
     <div style={{
@@ -421,23 +421,23 @@ export default function Register() {
         }} />
       ))}
 
-      {/* Logo — z-index abaixo do card para a estaca ficar "fincada" no modal */}
+      {/* Logo â€” z-index abaixo do card para a estaca ficar "fincada" no modal */}
       <div style={{ textAlign: 'center', marginBottom: -24, zIndex: 0, position: 'relative' }}>
-        <img src="/logo_placa.png" alt="Pé de Açaí" style={{
+        <img src="/logo_placa.png" alt="PÃ© de AÃ§aÃ­" style={{
           width: 180, height: 180, objectFit: 'contain',
           filter: 'drop-shadow(0 6px 28px rgba(0,0,0,0.55))'
         }} />
         {wizardStep && (
-          <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: 12, fontWeight: 400 }}>
+          <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: 13, fontWeight: 400 }}>
             Cadastro de Entregador
           </p>
         )}
         {inviteToken && !wizardStep && (
           <div style={{
             background: 'rgba(255,255,255,0.15)', padding: '6px 14px',
-            borderRadius: 20, marginTop: 8, fontSize: 12, color: 'white', display: 'inline-block'
+            borderRadius: 20, marginTop: 8, fontSize: 13, color: 'white', display: 'inline-block'
           }}>
-            Convite de loja parceira — vinculação automática
+            Convite de loja parceira â€” vinculaÃ§Ã£o automÃ¡tica
           </div>
         )}
       </div>
@@ -455,16 +455,16 @@ export default function Register() {
         <div style={{ padding: '24px 30px 20px' }}>
           {!wizardStep && (
             <div style={{ textAlign: 'right', marginBottom: 16 }}>
-              <span style={{ fontSize: 13, fontWeight: 300, color: '#9C27B0', letterSpacing: '0.03em' }}>Crie sua conta</span>
+              <span style={{ fontSize: 14, fontWeight: 300, color: '#9C27B0', letterSpacing: '0.03em' }}>Crie sua conta</span>
             </div>
           )}
 
-          {/* ── Wizard entregador ── */}
+          {/* â”€â”€ Wizard entregador â”€â”€ */}
           {wizardStep === 1 && renderStep1()}
           {wizardStep === 2 && renderStep2()}
           {wizardStep === 3 && renderStep3()}
 
-          {/* ── Formulário cliente/loja ── */}
+          {/* â”€â”€ FormulÃ¡rio cliente/loja â”€â”€ */}
           {!wizardStep && (
             <form onSubmit={handleSubmit}>
               {error && <div style={errorStyle}>{error}</div>}
@@ -491,7 +491,7 @@ export default function Register() {
               <div style={{ marginBottom: 14 }}>
                 <label style={labelStyle}>Senha</label>
                 <input type="password" value={password} onChange={e => setPassword(e.target.value)}
-                  placeholder="Mínimo 6 caracteres" required minLength={6}
+                  placeholder="MÃ­nimo 6 caracteres" required minLength={6}
                   style={inputStyle} onFocus={onFocus} onBlur={onBlur} />
               </div>
 
@@ -500,7 +500,7 @@ export default function Register() {
                 <div style={{ display: 'flex', gap: 8 }}>
                   {[
                     { value: 'customer', label: 'Cliente', desc: 'Fazer pedidos' },
-                    { value: 'store', label: 'Loja', desc: 'Vender açaí' },
+                    { value: 'store', label: 'Loja', desc: 'Vender aÃ§aÃ­' },
                   ].map(({ value, label, desc }) => (
                     <div key={value} onClick={() => setRole(value)} style={{
                       flex: 1, padding: '10px 6px', borderRadius: 10, textAlign: 'center',
@@ -508,8 +508,8 @@ export default function Register() {
                       background: role === value ? '#F3E5F5' : 'white',
                       transition: 'all 0.2s', cursor: 'pointer'
                     }}>
-                      <div style={{ fontWeight: 700, fontSize: 12, color: role === value ? '#6A1B9A' : '#444' }}>{label}</div>
-                      <div style={{ fontSize: 10, color: '#999' }}>{desc}</div>
+                      <div style={{ fontWeight: 700, fontSize: 13, color: role === value ? '#6A1B9A' : '#444' }}>{label}</div>
+                      <div style={{ fontSize: 11, color: '#999' }}>{desc}</div>
                     </div>
                   ))}
                   {/* Entregador abre o wizard */}
@@ -519,8 +519,8 @@ export default function Register() {
                     background: 'white',
                     transition: 'all 0.2s', cursor: 'pointer'
                   }}>
-                    <div style={{ fontWeight: 700, fontSize: 12, color: '#444' }}>Entregador</div>
-                    <div style={{ fontSize: 10, color: '#999' }}>Entregar</div>
+                    <div style={{ fontWeight: 700, fontSize: 13, color: '#444' }}>Entregador</div>
+                    <div style={{ fontSize: 11, color: '#999' }}>Entregar</div>
                   </div>
                 </div>
               </div>
@@ -529,13 +529,13 @@ export default function Register() {
                 <>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 10, margin: '4px 0 10px' }}>
                     <div style={{ flex: 1, height: 1, background: '#E8E0F0' }} />
-                    <span style={{ fontSize: 11, color: '#555', whiteSpace: 'nowrap' }}>ou cadastre com</span>
+                    <span style={{ fontSize: 12, color: '#555', whiteSpace: 'nowrap' }}>ou cadastre com</span>
                     <div style={{ flex: 1, height: 1, background: '#E8E0F0' }} />
                   </div>
                   <button type="button" onClick={() => googleLogin()} disabled={googleLoading} style={{
                     width: '100%', padding: '11px', marginBottom: 10,
                     background: 'white', color: '#333', border: '2px solid #E8E0F0', borderRadius: 10,
-                    fontSize: 14, fontWeight: 600, cursor: googleLoading ? 'default' : 'pointer',
+                    fontSize: 15, fontWeight: 600, cursor: googleLoading ? 'default' : 'pointer',
                     display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
                     opacity: googleLoading ? 0.7 : 1, boxSizing: 'border-box'
                   }}>
@@ -557,20 +557,20 @@ export default function Register() {
                 width: '100%', padding: '13px',
                 background: 'linear-gradient(135deg, #6A1B9A, #9C27B0)',
                 color: 'white', border: 'none', borderRadius: 10,
-                fontSize: 15, fontWeight: 700, cursor: loading ? 'default' : 'pointer',
+                fontSize: 16, fontWeight: 700, cursor: loading ? 'default' : 'pointer',
                 opacity: loading ? 0.7 : 1,
                 boxShadow: '0 4px 14px rgba(106,27,154,0.4)'
               }}>
                 {loading ? 'Criando conta...' : 'Cadastrar'}
               </button>
 
-              <p style={{ textAlign: 'center', marginTop: 14, fontSize: 13, color: '#888' }}>
-                Já tem conta?{' '}
+              <p style={{ textAlign: 'center', marginTop: 14, fontSize: 14, color: '#888' }}>
+                JÃ¡ tem conta?{' '}
                 <Link to="/login" style={{ color: '#6A1B9A', fontWeight: 700, textDecoration: 'none' }}>Entrar</Link>
               </p>
-              <p style={{ textAlign: 'center', marginTop: 8, fontSize: 11, color: '#555', lineHeight: 1.6 }}>
-                Ao se cadastrar você concorda com nossa{' '}
-                <Link to="/privacidade" style={{ color: '#9C27B0', textDecoration: 'underline' }}>Política de Privacidade</Link>
+              <p style={{ textAlign: 'center', marginTop: 8, fontSize: 12, color: '#555', lineHeight: 1.6 }}>
+                Ao se cadastrar vocÃª concorda com nossa{' '}
+                <Link to="/privacidade" style={{ color: '#9C27B0', textDecoration: 'underline' }}>PolÃ­tica de Privacidade</Link>
                 {' '}e os{' '}
                 <Link to="/termos" style={{ color: '#9C27B0', textDecoration: 'underline' }}>Termos de Uso</Link>
               </p>
@@ -586,10 +586,10 @@ export default function Register() {
         }
       `}</style>
 
-      <p style={{ marginTop: 16, fontSize: 11, color: 'rgba(255,255,255,0.35)', zIndex: 1, textAlign: 'center' }}>
-        Pé de Açaí © 2026 —{' '}
+      <p style={{ marginTop: 16, fontSize: 12, color: 'rgba(255,255,255,0.35)', zIndex: 1, textAlign: 'center' }}>
+        PÃ© de AÃ§aÃ­ Â© 2026 â€”{' '}
         <Link to="/privacidade" style={{ color: 'rgba(255,255,255,0.45)', textDecoration: 'underline' }}>Privacidade</Link>
-        {' · '}
+        {' Â· '}
         <Link to="/termos" style={{ color: 'rgba(255,255,255,0.45)', textDecoration: 'underline' }}>Termos</Link>
       </p>
     </div>
@@ -597,33 +597,33 @@ export default function Register() {
 }
 
 const inputStyle = {
-  width: '100%', padding: '12px 14px', fontSize: 14,
+  width: '100%', padding: '12px 14px', fontSize: 15,
   border: '2px solid #E8E0F0', borderRadius: 10, outline: 'none',
   transition: 'border-color 0.2s, box-shadow 0.2s',
   boxSizing: 'border-box'
 };
-const labelStyle = { fontSize: 12, fontWeight: 600, color: '#555', marginBottom: 4, display: 'block' };
+const labelStyle = { fontSize: 13, fontWeight: 600, color: '#555', marginBottom: 4, display: 'block' };
 const errorStyle = {
   background: '#FFF0F0', color: '#C62828', padding: '10px 14px',
-  borderRadius: 10, marginBottom: 14, fontSize: 12,
+  borderRadius: 10, marginBottom: 14, fontSize: 13,
   border: '1px solid #FFCDD2', display: 'flex', alignItems: 'center', gap: 6
 };
 const btnPrimary = {
   width: '100%', padding: '13px', marginBottom: 8,
   background: 'linear-gradient(135deg, #6A1B9A, #9C27B0)',
   color: 'white', border: 'none', borderRadius: 10,
-  fontSize: 15, fontWeight: 700, cursor: 'pointer',
+  fontSize: 16, fontWeight: 700, cursor: 'pointer',
   boxShadow: '0 4px 14px rgba(106,27,154,0.4)'
 };
 const btnSecondary = {
   width: '100%', padding: '11px', marginBottom: 8,
   background: 'white', color: '#888', border: '2px solid #E8E0F0', borderRadius: 10,
-  fontSize: 13, fontWeight: 600, cursor: 'pointer'
+  fontSize: 14, fontWeight: 600, cursor: 'pointer'
 };
 const btnBack = {
   width: '100%', padding: '9px', marginTop: 4,
   background: 'none', color: '#BBB', border: 'none',
-  fontSize: 12, cursor: 'pointer'
+  fontSize: 13, cursor: 'pointer'
 };
 
 function onFocus(e) {
@@ -634,3 +634,4 @@ function onBlur(e) {
   e.target.style.borderColor = '#E8E0F0';
   e.target.style.boxShadow = 'none';
 }
+
