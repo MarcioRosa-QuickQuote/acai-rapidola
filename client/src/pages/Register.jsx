@@ -586,11 +586,11 @@ export default function Register() {
         }
       `}</style>
 
-      <p style={{ marginTop: 16, fontSize: 12, color: 'rgba(255,255,255,0.35)', zIndex: 1, textAlign: 'center' }}>
+      <p style={{ marginTop: 16, fontSize: 12, color: '#fff', zIndex: 1, textAlign: 'center', textShadow: '0 1px 3px rgba(0,0,0,0.6), 0 0 6px rgba(0,0,0,0.4)' }}>
         Pé de Açaí © 2026 —{' '}
-        <Link to="/privacidade" style={{ color: 'rgba(255,255,255,0.45)', textDecoration: 'underline' }}>Privacidade</Link>
+        <Link to="/privacidade" style={{ color: '#fff', textDecoration: 'underline' }}>Privacidade</Link>
         {' · '}
-        <Link to="/termos" style={{ color: 'rgba(255,255,255,0.45)', textDecoration: 'underline' }}>Termos</Link>
+        <Link to="/termos" style={{ color: '#fff', textDecoration: 'underline' }}>Termos</Link>
       </p>
     </div>
   );
