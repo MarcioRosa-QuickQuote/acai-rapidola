@@ -241,9 +241,9 @@
       z-index: 1; pointer-events: none;
     }
     .hero-logo-left {
-      width: 420px; height: 420px; object-fit: contain;
+      width: 480px; height: 480px; object-fit: contain;
       filter: drop-shadow(0 6px 24px rgba(0,0,0,0.5));
-      transform: translateX(-120px) translateY(-20px) rotate(25deg);
+      transform: translateX(-160px) translateY(-20px) rotate(25deg);
       pointer-events: auto;
       flex-shrink: 0;
     }
@@ -266,7 +266,7 @@
       .audience-visual { min-height: 160px; padding: 24px; }
       .hero-btns { flex-direction: column; align-items: center; }
       .btn-hero-primary, .btn-hero-secondary { width: 100%; max-width: 320px; text-align: center; }
-      .hero-logo-left { width: 220px; height: 220px; transform: translateX(-70px) translateY(-10px) rotate(25deg); }
+      .hero-logo-left { width: 240px; height: 240px; transform: translateX(-90px) translateY(-10px) rotate(25deg); }
       .btn-nav-login { display: none; }
       .secondary-grid { grid-template-columns: 1fr; }
     }
@@ -277,7 +277,10 @@
   <!-- HERO -->
   <section class="hero">
     <div class="hero-top">
-      <img src="/logo_placa.png" alt="Pé de Açaí" class="hero-logo-left" />
+      <picture>
+        <source srcset="/logo_placa.webp" type="image/webp" />
+        <img src="/logo_placa.png" alt="Pé de Açaí" class="hero-logo-left" />
+      </picture>
       <div class="hero-top-btns">
         <a href="/login" class="btn-nav-login">Fazer login</a>
         <a href="/register?role=store" class="btn-nav-signup">Cadastrar loja</a>
