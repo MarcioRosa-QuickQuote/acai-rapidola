@@ -68,7 +68,7 @@ export default memo(function StoreAddressForm({ settings, setSettings, saveSetti
         const numInQuery = q.match(/(\d[\d\s\-]*)$/);
         if (results.length === 0 && q.length >= 5) {
           const latLng = (mapLat && mapLng);
-          const viewbox = latLng ? `&viewbox=${mapLng - 0.05},${mapLat + 0.05},${mapLng + 0.05},${mapLat - 0.05}&bounded=1` : '';
+          const viewbox = latLng ? `&viewbox=${mapLng - 0.2},${mapLat + 0.2},${mapLng + 0.2},${mapLat - 0.2}` : '';
           if (numInQuery) {
             const streetQ = searchQ.replace(numInQuery[0], '').trim();
             const nomRes = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(streetQ)}&countrycodes=br&limit=5&addressdetails=1${viewbox}`, { headers: { 'User-Agent': 'AcaiRapidola/1.0' } });

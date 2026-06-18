@@ -14,14 +14,12 @@ export function AuthProvider({ children }) {
       fetch(`${API}/auth/me`, {
         headers: { Authorization: `Bearer ${token}` }
       })
-        .then(r => r.ok ? r.json() : null)
+        .then(r => {
+          if (r.status === 401 || r.status === 403) { logout(); return null; }
+          return r.ok ? r.json() : null;
+        })
         .then(data => {
-          if (data) {
-            setUser(data.user);
-            setStore(data.store);
-          } else {
-            logout();
-          }
+          if (data) { setUser(data.user); setStore(data.store); }
         })
         .finally(() => setLoading(false));
     } else {
