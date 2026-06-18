@@ -115,9 +115,10 @@
       background: var(--purple); color: white;
       font-weight: 900; font-size: 18px;
       display: flex; align-items: center; justify-content: center;
-      margin-bottom: 16px;
+      flex-shrink: 0;
     }
-    .step h3 { font-size: 17px; font-weight: 800; margin-bottom: 8px; }
+    .step-header { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+    .step h3 { font-size: 17px; font-weight: 800; margin: 0; }
     .step p { font-size: 14px; color: var(--muted); line-height: 1.5; }
 
     /* DIVIDER */
@@ -162,11 +163,11 @@
       flex-shrink: 0;
     }
     .btn-audience {
-      display: inline-block;
+      display: block; width: fit-content; margin: 0 auto;
       background: var(--purple); color: white;
       font-weight: 800; font-size: 15px;
       padding: 14px 28px; border-radius: 50px;
-      text-decoration: none;
+      text-decoration: none; text-align: center;
       touch-action: manipulation;
     }
     .btn-audience:hover { background: var(--purple-dark); }
@@ -285,12 +286,11 @@
       .audience-visual { min-height: 160px; padding: 24px; }
       .hero-btns { flex-direction: column; align-items: center; }
       .btn-hero-primary, .btn-hero-secondary { width: 100%; max-width: 320px; text-align: center; }
-      .hero-logo-left { width: 170px; height: 170px; transform: translateX(5px) translateY(30px) rotate(25deg); animation: logoSlideInMobile 0.9s cubic-bezier(0.22, 0.61, 0.36, 1) both; }
+      .hero-logo-left { width: 140px; height: 140px; transform: translateX(5px) translateY(30px) rotate(25deg); animation: logoSlideInMobile 0.9s cubic-bezier(0.22, 0.61, 0.36, 1) both; }
       @keyframes logoSlideInMobile {
         from { transform: translateX(-200px) translateY(30px) rotate(25deg); opacity: 0; }
         to   { transform: translateX(5px) translateY(30px) rotate(25deg); opacity: 1; }
       }
-      .btn-nav-login { display: none; }
       .secondary-grid { grid-template-columns: 1fr; }
     }
   </style>
@@ -306,9 +306,9 @@
         <a href="/register?role=store" class="btn-nav-signup">Cadastrar loja</a>
       </div>
     </div>
-    <div class="hero-tag anim from-bottom d1">🏪 Para lojas de açaí em Belém — PA</div>
+    <div class="hero-tag" style="visibility:hidden">🏪 Para lojas de açaí em Belém — PA</div>
     <h1 class="anim from-bottom d2">Sua loja no app.<br/><em>Zero comissão</em> por pedido.</h1>
-    <p class="anim from-bottom d3"><span style="display:block">Pare de perder 20–30% de margem para apps de delivery.</span><span style="display:block">Mensalidade fixa, 100% do valor de cada venda é seu.</span></p>
+    <p class="anim from-bottom d3">Pare de perder até 30% por venda. Mensalidade fixa e 100% do faturamento é seu.</p>
     <div class="hero-btns anim from-bottom d4">
       <a href="/register?role=store" class="btn-hero-primary">🚀 Começar 1 mês grátis</a>
       <a href="#como-funciona" class="btn-hero-secondary">Como funciona →</a>
@@ -327,18 +327,15 @@
     <p class="section-sub anim from-bottom d2">Sem burocracia. Sem contrato de fidelidade.</p>
     <div class="steps">
       <div class="step anim from-bottom d1">
-        <div class="step-num">1</div>
-        <h3>Cadastre sua loja</h3>
+        <div class="step-header"><div class="step-num">1</div><h3>Cadastre sua loja</h3></div>
         <p>Crie sua conta, monte o cardápio com fotos e defina a área de entrega. Leva menos de 10 minutos.</p>
       </div>
       <div class="step anim from-bottom d2">
-        <div class="step-num">2</div>
-        <h3>Receba pedidos ao vivo</h3>
+        <div class="step-header"><div class="step-num">2</div><h3>Receba pedidos ao vivo</h3></div>
         <p>Notificação em tempo real no painel da loja. Aceite com um toque e acione o entregador direto pelo app.</p>
       </div>
       <div class="step anim from-bottom d3">
-        <div class="step-num">3</div>
-        <h3>Cliente rastreia e paga</h3>
+        <div class="step-header"><div class="step-num">3</div><h3>Cliente rastreia e paga</h3></div>
         <p>O app cuida do rastreamento e da comunicação com o cliente. Você foca no açaí, a gente cuida do resto.</p>
       </div>
     </div>
@@ -432,7 +429,8 @@
       </ul>
       <a href="/register?role=store" class="btn-price">Começar 1 mês grátis</a>
       <p class="price-free" style="line-height:1.8">
-        <span style="display:block">Ao se cadastrar você concorda com nossa <a href="/privacidade" style="color:var(--purple)">Política de Privacidade</a></span>
+        <span style="display:block">Ao se cadastrar você concorda com nossa</span>
+        <span style="display:block"><a href="/privacidade" style="color:var(--purple)">Política de Privacidade</a></span>
         <span style="display:block">e os <a href="/termos" style="color:var(--purple)">Termos de Uso</a>.</span>
       </p>
     </div>
@@ -441,7 +439,6 @@
   <!-- FOOTER -->
   <footer>
     <img src="/logo_placa.png" alt="Pé de Açaí" />
-    <div style="font-size:18px; font-weight:900; margin-bottom:4px;">Pé de Açaí</div>
     <p>Belém, PA · Em breve em Manaus, AM</p>
     <p style="margin-top:16px;">
       <a href="/">Abrir App</a> &nbsp;·&nbsp;
