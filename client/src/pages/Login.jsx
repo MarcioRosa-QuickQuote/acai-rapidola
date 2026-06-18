@@ -62,7 +62,7 @@ export default function Login() {
       {/* Vídeo overlay sobre o fundo gradiente */}
       <video autoPlay loop muted playsInline style={{
         position: 'absolute', top: 0, left: 0,
-        width: '50%', height: '100%',
+        width: '30%', height: '70%',
         objectFit: 'cover',
         zIndex: 0,
         pointerEvents: 'none',
