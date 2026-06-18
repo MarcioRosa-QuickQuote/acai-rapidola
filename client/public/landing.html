@@ -225,26 +225,6 @@
     .price-section-title { font-size: clamp(22px, 5vw, 32px); font-weight: 900; margin-bottom: 8px; }
     .price-section-sub { font-size: 16px; opacity: 0.8; margin-bottom: 36px; }
 
-    /* SECONDARY AUDIENCE (smaller cards) */
-    .secondary-section { padding: 48px 20px; max-width: 900px; margin: 0 auto; }
-    .secondary-section h2 {
-      font-size: clamp(20px, 4vw, 28px); font-weight: 900;
-      letter-spacing: -0.02em; margin-bottom: 24px; text-align: center;
-      color: var(--muted);
-    }
-    .secondary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
-    .secondary-card {
-      background: var(--purple-bg); border-radius: var(--radius); padding: 28px 24px;
-    }
-    .secondary-card .audience-label { margin-bottom: 6px; }
-    .secondary-card h3 { font-size: 18px; font-weight: 900; margin-bottom: 10px; line-height: 1.2; }
-    .secondary-card p { font-size: 14px; color: var(--muted); line-height: 1.5; margin-bottom: 18px; }
-    .btn-secondary-card {
-      display: inline-block; font-weight: 800; font-size: 14px;
-      padding: 10px 22px; border-radius: 50px; text-decoration: none;
-      touch-action: manipulation; color: white;
-    }
-
     /* FOOTER */
     footer {
       background: var(--purple-dark); color: white;
@@ -259,7 +239,7 @@
       display: flex; align-items: center; justify-content: space-between;
       margin-bottom: 36px; position: relative; z-index: 1;
     }
-    .hero-logo-left { width: 90px; height: 90px; object-fit: contain; filter: drop-shadow(0 3px 12px rgba(0,0,0,0.4)); }
+    .hero-logo-left { width: 120px; height: 120px; object-fit: contain; filter: drop-shadow(0 3px 12px rgba(0,0,0,0.4)); }
     .hero-top-btns { display: flex; gap: 10px; align-items: center; }
     .btn-nav-login {
       color: rgba(255,255,255,0.85); font-size: 14px; font-weight: 700;
@@ -279,7 +259,7 @@
       .audience-visual { min-height: 160px; padding: 24px; }
       .hero-btns { flex-direction: column; align-items: center; }
       .btn-hero-primary, .btn-hero-secondary { width: 100%; max-width: 320px; text-align: center; }
-      .hero-logo-left { width: 64px; height: 64px; }
+      .hero-logo-left { width: 80px; height: 80px; }
       .btn-nav-login { display: none; }
       .secondary-grid { grid-template-columns: 1fr; }
     }
@@ -384,24 +364,47 @@
     </div>
   </section>
 
-  <!-- SECUNDÁRIOS: entregador + cliente -->
-  <section class="secondary-section">
-    <h2>Também no Pé de Açaí</h2>
-    <div class="secondary-grid">
-      <div class="secondary-card">
-        <div class="audience-label">Para entregadores</div>
-        <h3>Faça entregas no seu horário</h3>
-        <p>Cadastro 100% grátis. Receba pedidos das lojas parceiras, rotas otimizadas no app e pagamento direto pela loja.</p>
-        <a href="/register?role=entregador" class="btn-secondary-card" style="background:#E65100">Quero ser entregador</a>
-      </div>
-      <div class="secondary-card">
-        <div class="audience-label">Para clientes</div>
-        <h3>Peça açaí sem taxa extra</h3>
-        <p>Pague o mesmo preço da loja, rastreie o entregador em tempo real e acompanhe cada pedido pelo app.</p>
-        <a href="/register" class="btn-secondary-card" style="background:var(--purple)">Criar conta grátis</a>
-      </div>
+  <div class="divider"></div>
+
+  <!-- ENTREGADORES -->
+  <div class="audience">
+    <div class="audience-visual" style="padding: 0; overflow: hidden; border-radius: 24px;">
+      <img src="/lp_motoboy.png" alt="Entregador Pé de Açaí" style="width: 100%; height: 100%; object-fit: cover;" />
     </div>
-  </section>
+    <div>
+      <div class="audience-label">Para entregadores</div>
+      <h2>Faça entregas na sua área, no seu horário</h2>
+      <p>Cadastre-se grátis, receba pedidos das lojas parceiras e ganhe por entrega. Sem mensalidade, sem taxa de adesão.</p>
+      <ul class="check-list">
+        <li>Cadastro 100% grátis</li>
+        <li>Escolha quando trabalhar</li>
+        <li>Rotas otimizadas no app</li>
+        <li>Pagamento direto pela loja</li>
+      </ul>
+      <a href="/register?role=entregador" class="btn-audience" style="background:#E65100">Quero ser entregador</a>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- CLIENTES -->
+  <div class="audience reverse">
+    <div class="audience-visual" style="padding: 0; overflow: hidden; border-radius: 24px;">
+      <img src="/lp_acai.png" alt="Açaí Pé de Açaí" style="width: 100%; height: 100%; object-fit: cover;" />
+    </div>
+    <div>
+      <div class="audience-label">Para clientes</div>
+      <h2>Seu açaí favorito na porta de casa</h2>
+      <p>Peça das melhores lojas de açaí de Belém e pague o mesmo preço da loja — sem taxa surpresa no final.</p>
+      <ul class="check-list">
+        <li>Rastreamento do entregador em tempo real</li>
+        <li>Histórico de pedidos</li>
+        <li>Aviso quando sair para entrega</li>
+        <li>Chat direto com a loja</li>
+      </ul>
+      <a href="/register" class="btn-audience">Criar conta grátis</a>
+    </div>
+  </div>
 
   <!-- FOOTER -->
   <footer>
