@@ -283,6 +283,18 @@
     .d5 { transition-delay: 0.60s; }
 
     /* RESPONSIVE */
+    @media (min-width: 641px) and (max-width: 900px) {
+      .hero-logo-left {
+        width: 200px; height: 200px;
+        transform: translateX(0px) translateY(30px) rotate(25deg);
+        animation: logoSlideInMed 0.9s cubic-bezier(0.22, 0.61, 0.36, 1) both;
+      }
+      @keyframes logoSlideInMed {
+        from { transform: translateX(-220px) translateY(30px) rotate(25deg); opacity: 0; }
+        to   { transform: translateX(0px) translateY(30px) rotate(25deg); opacity: 1; }
+      }
+    }
+
     @media (max-width: 640px) {
       .hero-txt-desktop { display: none; }
       .hero-txt-mobile { display: block; }
