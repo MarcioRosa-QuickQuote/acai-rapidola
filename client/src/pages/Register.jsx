@@ -402,7 +402,7 @@ export default function Register() {
     <div style={{
       display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'center',
       minHeight: '100vh',
-      background: 'linear-gradient(160deg, #1a0533 0%, #2d0a4e 30%, #4A148C 60%, #7B1FA2 100%)',
+      background: 'linear-gradient(160deg, #6A1B9A 0%, #9C27B0 45%, #CE93D8 100%)',
       padding: '24px 20px 20px', position: 'relative', overflow: 'hidden'
     }}>
       {berries.map(b => (
@@ -424,7 +424,7 @@ export default function Register() {
       {/* Logo — z-index abaixo do card para a estaca ficar "fincada" no modal */}
       <div style={{ textAlign: 'center', marginBottom: -24, zIndex: 0, position: 'relative' }}>
         <img src="/logo_placa.png" alt="Pé de Açaí" style={{
-          width: 150, height: 150, objectFit: 'contain',
+          width: 180, height: 180, objectFit: 'contain',
           filter: 'drop-shadow(0 6px 28px rgba(0,0,0,0.55))'
         }} />
         {wizardStep && (

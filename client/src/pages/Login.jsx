@@ -56,13 +56,13 @@ export default function Login() {
     <div style={{
       display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'center',
       minHeight: '100vh',
-      background: 'linear-gradient(160deg, #1a0533 0%, #2d0a4e 30%, #4A148C 60%, #7B1FA2 100%)',
+      background: 'linear-gradient(160deg, #6A1B9A 0%, #9C27B0 45%, #CE93D8 100%)',
       padding: '24px 20px 20px', position: 'relative', overflow: 'hidden'
     }}>
       {/* Logo — z-index abaixo do card para a estaca ficar "fincada" no modal */}
       <div style={{ textAlign: 'center', marginBottom: -24, zIndex: 0, position: 'relative' }}>
         <img src="/logo_placa.png" alt="Pé de Açaí" style={{
-          width: 160, height: 160, objectFit: 'contain',
+          width: 190, height: 190, objectFit: 'contain',
           filter: 'drop-shadow(0 6px 28px rgba(0,0,0,0.55))'
         }} />
       </div>
