@@ -265,6 +265,19 @@
       touch-action: manipulation;
     }
 
+    /* ANIMATIONS */
+    .anim { opacity: 0; transition: opacity 0.65s ease, transform 0.65s ease; }
+    .anim.from-bottom { transform: translateY(36px); }
+    .anim.from-left   { transform: translateX(-56px); }
+    .anim.from-right  { transform: translateX(56px); }
+    .anim.scale-up    { transform: scale(0.93); }
+    .anim.visible     { opacity: 1 !important; transform: none !important; }
+    .d1 { transition-delay: 0.12s; }
+    .d2 { transition-delay: 0.24s; }
+    .d3 { transition-delay: 0.36s; }
+    .d4 { transition-delay: 0.48s; }
+    .d5 { transition-delay: 0.60s; }
+
     /* RESPONSIVE */
     @media (max-width: 640px) {
       .audience { grid-template-columns: 1fr; direction: ltr !important; gap: 32px; }
@@ -293,14 +306,14 @@
         <a href="/register?role=store" class="btn-nav-signup">Cadastrar loja</a>
       </div>
     </div>
-    <div class="hero-tag">🏪 Para lojas de açaí em Belém — PA</div>
-    <h1>Sua loja no app.<br/><em>Zero comissão</em> por pedido.</h1>
-    <p><span style="display:block">Pare de perder 20–30% de margem para apps de delivery.</span><span style="display:block">Mensalidade fixa, 100% do valor de cada venda é seu.</span></p>
-    <div class="hero-btns">
+    <div class="hero-tag anim from-bottom d1">🏪 Para lojas de açaí em Belém — PA</div>
+    <h1 class="anim from-bottom d2">Sua loja no app.<br/><em>Zero comissão</em> por pedido.</h1>
+    <p class="anim from-bottom d3"><span style="display:block">Pare de perder 20–30% de margem para apps de delivery.</span><span style="display:block">Mensalidade fixa, 100% do valor de cada venda é seu.</span></p>
+    <div class="hero-btns anim from-bottom d4">
       <a href="/register?role=store" class="btn-hero-primary">🚀 Começar 1 mês grátis</a>
       <a href="#como-funciona" class="btn-hero-secondary">Como funciona →</a>
     </div>
-    <div class="hero-city">📍 Belém, PA &nbsp;·&nbsp; Em breve: Manaus, AM</div>
+    <div class="hero-city anim from-bottom d5">📍 Belém, PA &nbsp;·&nbsp; Em breve: Manaus, AM</div>
   </section>
 
   <svg class="wave" viewBox="0 0 1440 48" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -309,21 +322,21 @@
 
   <!-- HOW IT WORKS -->
   <section class="section" style="text-align:center" id="como-funciona">
-    <div class="section-tag">Como funciona</div>
-    <h2>Sua loja online em minutos</h2>
-    <p class="section-sub">Sem burocracia. Sem contrato de fidelidade.</p>
+    <div class="section-tag anim from-bottom">Como funciona</div>
+    <h2 class="anim from-bottom d1">Sua loja online em minutos</h2>
+    <p class="section-sub anim from-bottom d2">Sem burocracia. Sem contrato de fidelidade.</p>
     <div class="steps">
-      <div class="step">
+      <div class="step anim from-bottom d1">
         <div class="step-num">1</div>
         <h3>Cadastre sua loja</h3>
         <p>Crie sua conta, monte o cardápio com fotos e defina a área de entrega. Leva menos de 10 minutos.</p>
       </div>
-      <div class="step">
+      <div class="step anim from-bottom d2">
         <div class="step-num">2</div>
         <h3>Receba pedidos ao vivo</h3>
         <p>Notificação em tempo real no painel da loja. Aceite com um toque e acione o entregador direto pelo app.</p>
       </div>
-      <div class="step">
+      <div class="step anim from-bottom d3">
         <div class="step-num">3</div>
         <h3>Cliente rastreia e paga</h3>
         <p>O app cuida do rastreamento e da comunicação com o cliente. Você foca no açaí, a gente cuida do resto.</p>
@@ -335,10 +348,10 @@
 
   <!-- LOJAS (principal) -->
   <div class="audience" id="lojas">
-    <div class="audience-visual" style="padding: 0; overflow: hidden; border-radius: 24px;">
+    <div class="audience-visual anim from-left" style="padding: 0; overflow: hidden; border-radius: 24px;">
       <img src="/lp_loja.png" alt="Loja de Açaí" style="width: 100%; height: 100%; object-fit: cover;" />
     </div>
-    <div>
+    <div class="anim from-right d1">
       <div class="audience-label">Para lojistas</div>
       <h2>Chega de pagar 20% de comissão por pedido</h2>
       <p>Seus clientes do WhatsApp migram pro app — você ganha organização e rastreamento sem abrir mão da margem. Uma mensalidade fixa e o lucro é todo seu.</p>
@@ -359,10 +372,10 @@
 
   <!-- ENTREGADORES -->
   <div class="audience reverse">
-    <div class="audience-visual" style="padding: 0; overflow: hidden; border-radius: 24px;">
+    <div class="audience-visual anim from-right" style="padding: 0; overflow: hidden; border-radius: 24px;">
       <img src="/lp_motoboy.png" alt="Entregador Pé de Açaí" style="width: 100%; height: 100%; object-fit: cover;" />
     </div>
-    <div>
+    <div class="anim from-left d1">
       <div class="audience-label">Para entregadores</div>
       <h2>Faça entregas na sua área, no seu horário</h2>
       <p>Cadastre-se grátis, receba pedidos das lojas parceiras e ganhe por entrega. Sem mensalidade, sem taxa de adesão.</p>
@@ -380,10 +393,10 @@
 
   <!-- CLIENTES -->
   <div class="audience">
-    <div class="audience-visual" style="padding: 0; overflow: hidden; border-radius: 24px;">
+    <div class="audience-visual anim from-left" style="padding: 0; overflow: hidden; border-radius: 24px;">
       <img src="/lp_acai.png" alt="Açaí Pé de Açaí" style="width: 100%; height: 100%; object-fit: cover;" />
     </div>
-    <div>
+    <div class="anim from-right d1">
       <div class="audience-label">Para clientes</div>
       <h2>Seu açaí favorito na porta de casa</h2>
       <p>Peça das melhores lojas de açaí de Belém e pague o mesmo preço da loja — sem taxa surpresa no final.</p>
@@ -401,9 +414,9 @@
 
   <!-- PRICE -->
   <section class="price-section" id="planos">
-    <div class="price-section-title">Um plano. Simples assim.</div>
-    <div class="price-section-sub">Sem contrato de fidelidade. Cancele quando quiser.</div>
-    <div class="price-card">
+    <div class="price-section-title anim from-bottom">Um plano. Simples assim.</div>
+    <div class="price-section-sub anim from-bottom d1">Sem contrato de fidelidade. Cancele quando quiser.</div>
+    <div class="price-card anim scale-up d2">
       <div class="price-tag">✦ 1 mês grátis</div>
       <h3>Plano Loja</h3>
       <div class="price-amount"><span>R$</span>129</div>
@@ -437,5 +450,16 @@
     <p style="margin-top:16px;">© 2026 Pé de Açaí. Todos os direitos reservados.</p>
   </footer>
 
+  <script>
+    const obs = new IntersectionObserver((entries) => {
+      entries.forEach(e => {
+        if (e.isIntersecting) {
+          e.target.classList.add('visible');
+          obs.unobserve(e.target);
+        }
+      });
+    }, { threshold: 0.12 });
+    document.querySelectorAll('.anim').forEach(el => obs.observe(el));
+  </script>
 </body>
 </html>
