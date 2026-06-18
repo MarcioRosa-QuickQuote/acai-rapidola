@@ -62,12 +62,11 @@ export default function Login() {
       {/* Vídeo overlay sobre o fundo gradiente */}
       <video autoPlay loop muted playsInline style={{
         position: 'absolute', top: 0, left: 0,
-        height: '100%', width: 'auto',
-        maxWidth: '55%',
+        width: '50%', height: '100%',
         objectFit: 'cover',
         zIndex: 0,
         pointerEvents: 'none',
-        mixBlendMode: 'screen'
+        opacity: 0.55
       }}>
         <source src="/acai_video.mp4" type="video/mp4" />
       </video>
