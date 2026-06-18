@@ -140,6 +140,7 @@ if (!isVercel) {
     res.sendFile(path.join(clientDist, '.well-known', 'assetlinks.json'));
   });
   app.get(['/landing', '/landing/'], (req, res) => {
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
     res.sendFile(path.join(clientDist, 'landing.html'));
   });
   app.get('*', (req, res) => {
