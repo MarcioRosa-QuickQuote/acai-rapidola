@@ -519,7 +519,7 @@ export default function CustomerHome() {
           if (results.length === 0 && q.length >= 5) {
             if (numInQuery) {
               const streetQ = searchQ.replace(numInQuery[0], '').trim();
-              const nomUrl = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(streetQ)}&countrycodes=br&limit=5&addressdetails=1${lat && lng ? `&viewbox=${parseFloat(lng)-0.05},${parseFloat(lat)+0.05},${parseFloat(lng)+0.05},${parseFloat(lat)-0.05}&bounded=1` : ''}`;
+              const nomUrl = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(streetQ)}&countrycodes=br&limit=5&addressdetails=1${lat && lng ? `&viewbox=${parseFloat(lng)-0.2},${parseFloat(lat)+0.2},${parseFloat(lng)+0.2},${parseFloat(lat)-0.2}` : ''}`;
               const nomRes = await fetch(nomUrl, { headers: { 'User-Agent': 'PedeAcai/1.0' } });
               const nomData = await nomRes.json();
               results = (nomData || []).map(r => {
@@ -528,7 +528,7 @@ export default function CustomerHome() {
                 return { display_name: withNum, _city: extractCity(r.display_name), lat: r.lat, lon: r.lon };
               });
             } else {
-              const nomUrl = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(searchQ)}&countrycodes=br&limit=7&addressdetails=1${lat && lng ? `&viewbox=${parseFloat(lng)-0.05},${parseFloat(lat)+0.05},${parseFloat(lng)+0.05},${parseFloat(lat)-0.05}&bounded=1` : ''}`;
+              const nomUrl = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(searchQ)}&countrycodes=br&limit=7&addressdetails=1${lat && lng ? `&viewbox=${parseFloat(lng)-0.2},${parseFloat(lat)+0.2},${parseFloat(lng)+0.2},${parseFloat(lat)-0.2}` : ''}`;
               const nomRes = await fetch(nomUrl, { headers: { 'User-Agent': 'PedeAcai/1.0' } });
               const nomData = await nomRes.json();
               results = (nomData || []).map(r => {
