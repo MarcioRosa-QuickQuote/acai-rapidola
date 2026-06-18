@@ -267,6 +267,7 @@
     }
 
     .hero-txt-mobile { display: none; }
+    .terms-break { display: inline; }
 
     /* ANIMATIONS */
     .anim { opacity: 0; transition: opacity 0.65s ease, transform 0.65s ease; }
@@ -285,6 +286,7 @@
     @media (max-width: 640px) {
       .hero-txt-desktop { display: none; }
       .hero-txt-mobile { display: block; }
+      .terms-break { display: block; }
       .audience { grid-template-columns: 1fr; direction: ltr !important; gap: 32px; }
       .audience.reverse { direction: ltr; }
       .audience-visual { min-height: 160px; padding: 24px; }
@@ -339,15 +341,15 @@
     <div class="steps">
       <div class="step anim from-bottom d1">
         <div class="step-header"><div class="step-num">1</div><h3>Cadastre sua loja</h3></div>
-        <p>Crie sua conta, monte o cardápio com fotos e defina a área de entrega. Leva menos de 10 minutos.</p>
+        <p><span style="display:block">Crie sua conta, monte o cardápio com fotos do app ou use as suas e venda.</span><span style="display:block">Leva menos de 10 minutos.</span></p>
       </div>
       <div class="step anim from-bottom d2">
         <div class="step-header"><div class="step-num">2</div><h3>Receba pedidos ao vivo</h3></div>
-        <p>Notificação em tempo real no painel da loja. Aceite com um toque e acione o entregador direto pelo app.</p>
+        <p><span style="display:block">Notificação em tempo real no painel da loja.</span><span style="display:block">Aceite com um toque e acione o entregador direto pelo app.</span></p>
       </div>
       <div class="step anim from-bottom d3">
-        <div class="step-header"><div class="step-num">3</div><h3>Cliente rastreia e paga</h3></div>
-        <p>O app cuida do rastreamento e da comunicação com o cliente. Você foca no açaí, a gente cuida do resto.</p>
+        <div class="step-header"><div class="step-num">3</div><h3>Cliente paga e rastreia</h3></div>
+        <p><span style="display:block">O app cuida do rastreamento e da comunicação com o cliente.</span><span style="display:block">Você foca no açaí, a gente cuida do resto.</span></p>
       </div>
     </div>
   </section>
@@ -439,10 +441,8 @@
         <li>Sem comissão por pedido</li>
       </ul>
       <a href="/register?role=store" class="btn-price">Começar 1 mês grátis</a>
-      <p class="price-free" style="line-height:1.8">
-        <span style="display:block">Ao se cadastrar você concorda com nossa</span>
-        <span style="display:block"><a href="/privacidade" style="color:var(--purple)">Política de Privacidade</a></span>
-        <span style="display:block">e os <a href="/termos" style="color:var(--purple)">Termos de Uso</a>.</span>
+      <p class="price-free terms-p" style="line-height:1.8">
+        <span>Ao se cadastrar você concorda com nossa </span><span class="terms-break"><a href="/privacidade" style="color:var(--purple)">Política de Privacidade</a></span><span class="terms-break"> e os <a href="/termos" style="color:var(--purple)">Termos de Uso</a>.</span>
       </p>
     </div>
   </section>
