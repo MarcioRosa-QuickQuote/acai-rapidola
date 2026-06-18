@@ -31,33 +31,11 @@
       -webkit-font-smoothing: antialiased;
     }
 
-    /* TOP HEADER */
-    .lp-header {
-      position: sticky; top: 0; z-index: 100;
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 10px 24px;
-      background: rgba(74,20,140,0.93);
-      backdrop-filter: blur(10px);
-    }
-    .lp-logo { width: 72px; height: 72px; object-fit: contain; filter: drop-shadow(0 2px 8px rgba(0,0,0,0.4)); }
-    .lp-nav-btns { display: flex; gap: 10px; align-items: center; }
-    .btn-nav-login {
-      color: rgba(255,255,255,0.85); font-size: 14px; font-weight: 700;
-      text-decoration: none; padding: 8px 18px; border-radius: 50px;
-      border: 1.5px solid rgba(255,255,255,0.45);
-      touch-action: manipulation;
-    }
-    .btn-nav-signup {
-      background: white; color: #4A148C; font-size: 14px; font-weight: 800;
-      text-decoration: none; padding: 8px 20px; border-radius: 50px;
-      touch-action: manipulation;
-    }
-
     /* HERO */
     .hero {
       background: linear-gradient(145deg, var(--purple-dark) 0%, var(--purple) 60%, #8E24AA 100%);
       color: white;
-      padding: 64px 20px 80px;
+      padding: 32px 20px 80px;
       text-align: center;
       position: relative;
       overflow: hidden;
@@ -258,6 +236,24 @@
     footer p { font-size: 14px; opacity: 0.6; margin-top: 8px; }
     footer a { color: #CE93D8; text-decoration: none; }
 
+    /* HERO TOP ROW */
+    .hero-top {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 36px; position: relative; z-index: 1;
+    }
+    .hero-logo-left { width: 90px; height: 90px; object-fit: contain; filter: drop-shadow(0 3px 12px rgba(0,0,0,0.4)); }
+    .hero-top-btns { display: flex; gap: 10px; align-items: center; }
+    .btn-nav-login {
+      color: rgba(255,255,255,0.85); font-size: 14px; font-weight: 700;
+      text-decoration: none; padding: 8px 18px; border-radius: 50px;
+      border: 1.5px solid rgba(255,255,255,0.45); touch-action: manipulation;
+    }
+    .btn-nav-signup {
+      background: white; color: #4A148C; font-size: 14px; font-weight: 800;
+      text-decoration: none; padding: 8px 20px; border-radius: 50px;
+      touch-action: manipulation;
+    }
+
     /* RESPONSIVE */
     @media (max-width: 640px) {
       .audience { grid-template-columns: 1fr; direction: ltr !important; gap: 32px; }
@@ -266,22 +262,22 @@
       .audience-visual .big-emoji { font-size: 56px; }
       .hero-btns { flex-direction: column; align-items: center; }
       .btn-hero-primary, .btn-hero-secondary { width: 100%; max-width: 320px; text-align: center; }
+      .hero-logo-left { width: 64px; height: 64px; }
+      .btn-nav-login { display: none; }
     }
   </style>
 </head>
 <body>
 
-  <!-- TOP HEADER -->
-  <div class="lp-header">
-    <img src="/logo_placa.png" alt="Pé de Açaí" class="lp-logo" />
-    <div class="lp-nav-btns">
-      <a href="/login" class="btn-nav-login">Fazer login</a>
-      <a href="/register" class="btn-nav-signup">Criar conta</a>
-    </div>
-  </div>
-
   <!-- HERO -->
   <section class="hero">
+    <div class="hero-top">
+      <img src="/logo_placa.png" alt="Pé de Açaí" class="hero-logo-left" />
+      <div class="hero-top-btns">
+        <a href="/login" class="btn-nav-login">Fazer login</a>
+        <a href="/register" class="btn-nav-signup">Criar conta</a>
+      </div>
+    </div>
     <div class="hero-tag">🍇 Disponível em Belém — PA</div>
     <h1>Peça açaí sem<br/><em>taxa extra</em></h1>
     <p><span style="display:block">O app que conecta você às melhores Lojas de Açaí da cidade.</span><span style="display:block">Sem surpresas no preço, sem comissões escondidas.</span></p>
