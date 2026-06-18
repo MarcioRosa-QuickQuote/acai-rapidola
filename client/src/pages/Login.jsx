@@ -59,21 +59,21 @@ export default function Login() {
       background: 'linear-gradient(160deg, #1a0533 0%, #2d0a4e 30%, #4A148C 60%, #7B1FA2 100%)',
       padding: '24px 20px 20px', position: 'relative', overflow: 'hidden'
     }}>
-      {/* Logo acima do card */}
-      <div style={{ textAlign: 'center', marginBottom: 8, zIndex: 1, position: 'relative' }}>
+      {/* Logo — z-index abaixo do card para a estaca ficar "fincada" no modal */}
+      <div style={{ textAlign: 'center', marginBottom: -42, zIndex: 0, position: 'relative' }}>
         <img src="/logo_placa.png" alt="Pé de Açaí" style={{
-          width: 150, height: 150, objectFit: 'contain',
+          width: 160, height: 160, objectFit: 'contain',
           filter: 'drop-shadow(0 6px 28px rgba(0,0,0,0.55))'
         }} />
       </div>
 
-      {/* Card */}
+      {/* Card — z-index acima da logo para cobrir a estaca */}
       <div style={{
         width: '100%', maxWidth: 440,
         background: '#fff',
         borderRadius: 24,
         boxShadow: '0 20px 60px rgba(0,0,0,0.35)',
-        position: 'relative', zIndex: 1
+        position: 'relative', zIndex: 2
       }}>
         {/* Form */}
         <div style={{ padding: '24px 30px 20px' }}>

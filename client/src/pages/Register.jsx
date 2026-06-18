@@ -421,13 +421,11 @@ export default function Register() {
         }} />
       ))}
 
-      {/* Logo */}
-      <div style={{ textAlign: 'center', marginBottom: 8, zIndex: 1, position: 'relative' }}>
+      {/* Logo — z-index abaixo do card para a estaca ficar "fincada" no modal */}
+      <div style={{ textAlign: 'center', marginBottom: -42, zIndex: 0, position: 'relative' }}>
         <img src="/logo_placa.png" alt="Pé de Açaí" style={{
-          width: 130, height: 130, objectFit: 'contain',
-          filter: 'drop-shadow(0 6px 28px rgba(0,0,0,0.55))',
-          transform: `translate(${mousePos.x * -8}px, ${mousePos.y * -8}px)`,
-          transition: 'transform 0.5s ease-out'
+          width: 150, height: 150, objectFit: 'contain',
+          filter: 'drop-shadow(0 6px 28px rgba(0,0,0,0.55))'
         }} />
         {wizardStep && (
           <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: 12, fontWeight: 400 }}>
@@ -450,7 +448,7 @@ export default function Register() {
         background: 'rgba(255,255,255,0.97)',
         borderRadius: 24,
         boxShadow: '0 20px 60px rgba(0,0,0,0.35)',
-        position: 'relative', zIndex: 1,
+        position: 'relative', zIndex: 2,
         transform: `translate(${mousePos.x * -2}px, ${mousePos.y * -2}px)`,
         transition: 'transform 0.5s ease-out'
       }}>
