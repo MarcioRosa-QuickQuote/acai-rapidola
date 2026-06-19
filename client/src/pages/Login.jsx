@@ -59,14 +59,15 @@ export default function Login() {
       background: 'linear-gradient(160deg, #6A1B9A 0%, #9C27B0 45%, #CE93D8 100%)',
       padding: '24px 20px 20px', position: 'relative', overflow: 'hidden'
     }}>
-      {/* Vídeo overlay — mix-blend-mode:screen remove o fundo preto */}
+      {/* Vídeo lado esquerdo — máscara fade-out na borda direita */}
       <video autoPlay loop muted playsInline style={{
         position: 'absolute', top: 0, left: 0,
-        width: '100%', height: '100%',
+        width: '50%', height: '100%',
         objectFit: 'cover',
         zIndex: 0,
         pointerEvents: 'none',
-        mixBlendMode: 'screen'
+        WebkitMaskImage: 'linear-gradient(to right, black 55%, transparent 100%)',
+        maskImage: 'linear-gradient(to right, black 55%, transparent 100%)'
       }}>
         <source src="/acai_video.webm" type="video/webm" />
         <source src="/acai_video.mp4" type="video/mp4" />
