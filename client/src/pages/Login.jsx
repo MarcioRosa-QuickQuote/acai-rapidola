@@ -59,16 +59,15 @@ export default function Login() {
       background: 'linear-gradient(160deg, #6A1B9A 0%, #9C27B0 45%, #CE93D8 100%)',
       padding: '24px 20px 20px', position: 'relative', overflow: 'hidden'
     }}>
-      {/* Vídeo lado esquerdo — máscara fade-out na borda direita */}
+      {/* Vídeo lado esquerdo — lighten remove o fundo preto */}
       <video autoPlay loop muted playsInline style={{
         position: 'absolute', top: 0, left: 0,
         width: '50%', height: '100%',
         objectFit: 'cover',
-        zIndex: 0,
         pointerEvents: 'none',
-        opacity: 0.85
+        mixBlendMode: 'lighten'
       }}>
-        <source src="/vide_acai.webm" type="video/webm" />
+        <source src="/video_novo.webm" type="video/webm" />
       </video>
 
       {/* Logo — z-index abaixo do card para a estaca ficar "fincada" no modal */}
