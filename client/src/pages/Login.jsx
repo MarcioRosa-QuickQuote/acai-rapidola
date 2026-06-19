@@ -64,8 +64,7 @@ export default function Login() {
         position: 'absolute', top: 0, left: 0,
         width: '50%', height: '100%',
         objectFit: 'cover',
-        pointerEvents: 'none',
-        mixBlendMode: 'lighten'
+        pointerEvents: 'none'
       }}>
         <source src="/video_novo.webm" type="video/webm" />
       </video>
