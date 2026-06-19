@@ -68,7 +68,7 @@ export default function Login() {
         WebkitMaskImage: 'linear-gradient(to right, black 60%, transparent 100%)',
         maskImage: 'linear-gradient(to right, black 60%, transparent 100%)'
       }}>
-        <source src="/acai_video.mp4" type="video/mp4" />
+        <source src="/video1.mp4" type="video/mp4" />
       </video>
 
       {/* Logo — z-index abaixo do card para a estaca ficar "fincada" no modal */}
