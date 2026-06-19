@@ -66,7 +66,7 @@ export default function Login() {
         objectFit: 'cover',
         zIndex: 0,
         pointerEvents: 'none',
-        mixBlendMode: 'screen'
+        opacity: 0.85
       }}>
         <source src="/vide_acai.webm" type="video/webm" />
       </video>
