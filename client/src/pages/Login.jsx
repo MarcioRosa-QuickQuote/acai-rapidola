@@ -65,7 +65,8 @@ export default function Login() {
         width: '50%', height: '100%',
         objectFit: 'cover',
         zIndex: 0,
-        pointerEvents: 'none'
+        pointerEvents: 'none',
+        mixBlendMode: 'screen'
       }}>
         <source src="/vide_acai.webm" type="video/webm" />
       </video>
