@@ -65,9 +65,7 @@ export default function Login() {
         width: '50%', height: '100%',
         objectFit: 'cover',
         zIndex: 0,
-        pointerEvents: 'none',
-        WebkitMaskImage: 'linear-gradient(to right, black 55%, transparent 100%)',
-        maskImage: 'linear-gradient(to right, black 55%, transparent 100%)'
+        pointerEvents: 'none'
       }}>
         <source src="/vide_acai.webm" type="video/webm" />
       </video>
