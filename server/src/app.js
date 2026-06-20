@@ -21,6 +21,11 @@ const { supabase } = require('./database');
 
 const app = express();
 
+// Render (e outros reverse proxies) adicionam X-Forwarded-For.
+// Sem isso, express-rate-limit lança ERR_ERL_UNEXPECTED_X_FORWARDED_FOR
+// em cada request e o Render retorna 503 antes de chegar nas rotas.
+app.set('trust proxy', 1);
+
 app.use(cors());
 app.use((req, res, next) => {
   res.setHeader('Cross-Origin-Opener-Policy', 'same-origin-allow-popups');
