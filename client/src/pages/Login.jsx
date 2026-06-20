@@ -70,6 +70,13 @@ export default function Login() {
       }}>
         <source src="/video4.mp4" type="video/mp4" />
       </video>
+      {/* Overlay roxo para dissolver o preto do vídeo */}
+      <div style={{
+        position: 'absolute', top: 0, left: 0,
+        width: '50%', height: '100%',
+        background: 'linear-gradient(to right, rgba(106,27,154,0.45) 0%, transparent 100%)',
+        pointerEvents: 'none'
+      }} />
 
       {/* Logo — z-index abaixo do card para a estaca ficar "fincada" no modal */}
       <div style={{ textAlign: 'center', marginBottom: -24, zIndex: 1, position: 'relative' }}>
