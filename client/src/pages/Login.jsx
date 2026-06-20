@@ -74,7 +74,7 @@ export default function Login() {
       <div style={{
         position: 'absolute', top: 0, left: 0,
         width: '55%', height: '100%',
-        background: 'linear-gradient(to right, rgba(106,27,154,0.65) 0%, transparent 100%)',
+        background: 'linear-gradient(to right, rgba(106,27,154,0.55) 0%, transparent 100%)',
         pointerEvents: 'none'
       }} />
 
