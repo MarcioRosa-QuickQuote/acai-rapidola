@@ -1403,28 +1403,52 @@ export default function StoreDashboard() {
       );
     }
 
+    const perfilMenuItems = [
+      {
+        key: 'dados', label: 'Dados da Loja',
+        icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6A1B9A" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      },
+      {
+        key: 'endereco', label: 'Endereço',
+        icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6A1B9A" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+      },
+      {
+        key: 'trocar-senha', label: 'Trocar Senha',
+        icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6A1B9A" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+      },
+      {
+        key: 'mensagens', label: 'Mensagens',
+        icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6A1B9A" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      },
+      {
+        key: 'vendas', label: 'Vendas',
+        icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6A1B9A" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+      },
+      {
+        key: 'motoboy', label: 'Entregadores',
+        icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6A1B9A" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="5.5" cy="17.5" r="2.5"/><circle cx="18.5" cy="17.5" r="2.5"/><path d="M15 6h2l3 5v4h-5"/><path d="M3 17h2V9h6l2 4H3"/></svg>
+      },
+      {
+        key: 'assinatura', label: 'Assinatura',
+        icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6A1B9A" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+      },
+    ];
+
     return (
       <>
         <div className="page-title" style={{ marginBottom: 16 }}>Perfil</div>
 
-        {[
-          { key: 'painel', icon: '📊', label: 'Painel' },
-          { key: 'dados', icon: '📋', label: 'Dados' },
-          { key: 'endereco', icon: '📍', label: 'Endereço' },
-          { key: 'trocar-senha', icon: '🔒', label: 'Trocar Senha' },
-          { key: 'mensagens', icon: '💬', label: 'Mensagens' },
-          { key: 'vendas', icon: '💰', label: 'Vendas' },
-          { key: 'motoboy', icon: '🏍️', label: 'Entregador' },
-          { key: 'assinatura', icon: '⭐', label: 'Assinatura' },
-        ].map(item => (
+        {perfilMenuItems.map(item => (
           <div key={item.key} className="card" style={{ padding: '14px 16px', cursor: 'pointer', marginBottom: 8 }}
-            onClick={() => { if (item.key === 'painel') { setView('painel'); setPerfilTab(null); } else { setPerfilTab(item.key); } }}>
+            onClick={() => setPerfilTab(item.key)}>
             <div className="flex-between">
               <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                <span style={{ fontSize: 20 }}>{item.icon}</span>
+                <div style={{ width: 36, height: 36, borderRadius: 10, background: '#F3E5F5', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  {item.icon}
+                </div>
                 <span style={{ fontWeight: 600, fontSize: 15 }}>{item.label}</span>
               </div>
-              <span style={{ color: '#ccc', fontSize: 18 }}>›</span>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ccc" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
             </div>
           </div>
         ))}
@@ -1495,13 +1519,6 @@ export default function StoreDashboard() {
         ) : (
           /* Mobile: layout compacto */
           <>
-            <div style={{ marginBottom: 14 }}>
-              <div style={{ fontSize: 21, fontWeight: 800, color: '#1a1a1a' }}>Olá, {storeData?.name || 'Loja'}! 👋</div>
-              <div style={{ fontSize: 13, color: '#888', marginTop: 2 }}>
-                {new Date().toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' })}
-              </div>
-            </div>
-
             {/* Faturamento — card hero full-width */}
             <div style={{
               background: 'linear-gradient(135deg, #6A1B9A 0%, #9C27B0 55%, #CE93D8 100%)',
@@ -1964,14 +1981,14 @@ export default function StoreDashboard() {
           ) : (
             <>
               <div className="header-left">
-                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                  <div className="toggle-switch" onClick={toggleOpen} title={open ? 'Fechar loja' : 'Abrir loja'}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <span style={{ fontSize: 15, fontWeight: 800, color: '#1a1a1a', maxWidth: 160, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    {storeData?.name || 'Loja'}
+                  </span>
+                  <div className="toggle-switch" onClick={toggleOpen} title={open ? 'Fechar loja' : 'Abrir loja'} style={{ transform: 'scale(0.75)', transformOrigin: 'center' }}>
                     <input type="checkbox" checked={open} readOnly />
                     <span className="toggle-slider" />
                   </div>
-                  <span style={{ fontSize: 11, fontWeight: 700, color: open ? 'var(--success)' : 'var(--danger)' }}>
-                    {open ? 'ABERTA' : 'FECHADA'}
-                  </span>
                 </div>
               </div>
               <div className="header-right" style={{ gap: 8 }}>
