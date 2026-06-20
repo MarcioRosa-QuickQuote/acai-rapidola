@@ -182,10 +182,11 @@ router.post('/login', async (req, res) => {
 });
 
 router.get('/me', authMiddleware, async (req, res) => {
-  const { data: user } = await supabase.from('users')
+  const { data: user, error: userErr } = await supabase.from('users')
     .select('id, name, phone, email, role, address, lat, lng, photo_url, cpf, approval_status, rejection_reason, created_at')
     .eq('id', req.user.id).single();
 
+  if (userErr) return res.status(503).json({ error: 'Serviço temporariamente indisponível' });
   if (!user) return res.status(404).json({ error: 'Usuário não encontrado' });
 
   // Aplica override de admin se telefone estiver na lista ADMIN_PHONES

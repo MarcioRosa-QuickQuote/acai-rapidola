@@ -19,7 +19,7 @@ export function AuthProvider({ children }) {
 
     fetch(`${API}/auth/me`, { headers: { Authorization: `Bearer ${tok}` } })
       .then(r => {
-        if (r.status === 401 || r.status === 403) { logout(); setLoading(false); return; }
+        if (r.status === 401 || r.status === 403 || r.status === 404) { logout(); setLoading(false); return; }
         if (!r.ok) throw new Error(`HTTP ${r.status}`);
         return r.json().then(data => {
           if (data) { setUser(data.user); setStore(data.store); }
