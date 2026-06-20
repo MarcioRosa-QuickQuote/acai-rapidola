@@ -14,18 +14,27 @@ export function AuthProvider({ children }) {
     if (!tok) { setLoading(false); return; }
     setLoading(true);
     setNetworkError(false);
+
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 12000);
+
     fetch(`${API}/auth/me`, {
-      headers: { Authorization: `Bearer ${tok}` }
+      headers: { Authorization: `Bearer ${tok}` },
+      signal: controller.signal
     })
       .then(r => {
+        clearTimeout(timeout);
+        // Token inválido/expirado → desloga
         if (r.status === 401 || r.status === 403) { logout(); return null; }
-        return r.ok ? r.json() : null;
+        // Servidor acordando (502/503/504) → tela de reconexão, não desloga
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        return r.json();
       })
       .then(data => {
         if (data) { setUser(data.user); setStore(data.store); }
       })
       .catch(() => {
-        // Erro de rede (servidor frio, sem internet) — token ainda pode ser válido
+        // Cobre: erro de rede, timeout (AbortError) e erros HTTP não-401/403
         setNetworkError(true);
       })
       .finally(() => setLoading(false));
