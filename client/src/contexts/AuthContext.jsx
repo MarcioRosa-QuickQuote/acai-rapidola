@@ -10,34 +10,33 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true);
   const [networkError, setNetworkError] = useState(false);
 
-  const checkAuth = useCallback((tok) => {
+  // Render free tier demora 30-60s no cold start e retorna 502 enquanto acorda.
+  // Retentatvas automáticas evitam mostrar erro ao usuário nesse caso.
+  const checkAuth = useCallback((tok, attempt = 0) => {
     if (!tok) { setLoading(false); return; }
     setLoading(true);
-    setNetworkError(false);
+    if (attempt === 0) setNetworkError(false);
 
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 12000);
-
-    fetch(`${API}/auth/me`, {
-      headers: { Authorization: `Bearer ${tok}` },
-      signal: controller.signal
-    })
+    fetch(`${API}/auth/me`, { headers: { Authorization: `Bearer ${tok}` } })
       .then(r => {
-        clearTimeout(timeout);
-        // Token inválido/expirado → desloga
-        if (r.status === 401 || r.status === 403) { logout(); return null; }
-        // Servidor acordando (502/503/504) → tela de reconexão, não desloga
+        if (r.status === 401 || r.status === 403) { logout(); setLoading(false); return; }
         if (!r.ok) throw new Error(`HTTP ${r.status}`);
-        return r.json();
-      })
-      .then(data => {
-        if (data) { setUser(data.user); setStore(data.store); }
+        return r.json().then(data => {
+          if (data) { setUser(data.user); setStore(data.store); }
+          setLoading(false);
+        });
       })
       .catch(() => {
-        // Cobre: erro de rede, timeout (AbortError) e erros HTTP não-401/403
-        setNetworkError(true);
-      })
-      .finally(() => setLoading(false));
+        // delays: 8s → 15s → 20s antes de mostrar o erro
+        const delays = [8000, 15000, 20000];
+        if (attempt < delays.length) {
+          setTimeout(() => checkAuth(tok, attempt + 1), delays[attempt]);
+          // loading permanece true — usuário vê spinner enquanto servidor acorda
+        } else {
+          setNetworkError(true);
+          setLoading(false);
+        }
+      });
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {

@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from './contexts/AuthContext';
 import { App as CapApp } from '@capacitor/app';
@@ -73,9 +73,25 @@ function BackButtonHandler() {
 
 export default function App() {
   const { user, loading, networkError, retryAuth } = useAuth();
+  const [slowHint, setSlowHint] = useState(false);
+
+  useEffect(() => {
+    if (!loading) { setSlowHint(false); return; }
+    const t = setTimeout(() => setSlowHint(true), 5000);
+    return () => clearTimeout(t);
+  }, [loading]);
 
   if (loading) {
-    return <div className="loading"><img className="spin" src="/saco_acai.png" /></div>;
+    return (
+      <div className="loading" style={{ flexDirection: 'column', gap: 12 }}>
+        <img className="spin" src="/saco_acai.png" />
+        {slowHint && (
+          <span style={{ fontSize: 13, color: '#9C27B0', fontWeight: 600, opacity: 0.8 }}>
+            Aguardando servidor...
+          </span>
+        )}
+      </div>
+    );
   }
 
   if (networkError) {
