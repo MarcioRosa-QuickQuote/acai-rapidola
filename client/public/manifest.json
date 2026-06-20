@@ -1,6 +1,6 @@
 {
-  "name": "Açaí Rapidola",
-  "short_name": "Rapidola",
+  "name": "Pé de Açaí",
+  "short_name": "Pé de Açaí",
   "description": "Peça seu açaí favorito com entrega rápida",
   "start_url": "/",
   "scope": "/",
@@ -11,7 +11,7 @@
   "lang": "pt-BR",
   "categories": ["food", "shopping"],
   "icons": [
-    { "src": "/logo_placa.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
-    { "src": "/logo_placa.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
   ]
 }
