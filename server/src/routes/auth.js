@@ -186,7 +186,16 @@ router.get('/me', authMiddleware, async (req, res) => {
     .select('id, name, phone, email, role, address, lat, lng, photo_url, cpf, approval_status, rejection_reason, created_at')
     .eq('id', req.user.id).single();
 
-  if (userErr) return res.status(503).json({ error: 'Serviço temporariamente indisponível' });
+  if (userErr) {
+    // PGRST116 = nenhuma linha encontrada (.single() falhou por falta do registro)
+    // Trata como 404 para o cliente fazer logout e permitir re-login
+    if (userErr.code === 'PGRST116') {
+      console.warn('[auth/me] Usuário não encontrado no banco. ID:', req.user?.id, '| Token sub válido mas sem registro.');
+      return res.status(404).json({ error: 'Usuário não encontrado' });
+    }
+    console.error('[auth/me] Supabase error:', userErr.code, userErr.message);
+    return res.status(503).json({ error: 'Serviço temporariamente indisponível' });
+  }
   if (!user) return res.status(404).json({ error: 'Usuário não encontrado' });
 
   // Aplica override de admin se telefone estiver na lista ADMIN_PHONES
