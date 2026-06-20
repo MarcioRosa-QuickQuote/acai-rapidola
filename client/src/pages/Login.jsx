@@ -61,20 +61,20 @@ export default function Login() {
     }}>
       {/* Vídeo lado esquerdo com máscara fade na borda direita */}
       <video autoPlay loop muted playsInline style={{
-        position: 'absolute', top: 0, left: 0,
-        width: '50%', height: '100%',
+        position: 'absolute', top: 0, left: '-5%',
+        width: '55%', height: '100%',
         objectFit: 'cover',
         pointerEvents: 'none',
-        WebkitMaskImage: 'linear-gradient(to right, black 60%, transparent 100%)',
-        maskImage: 'linear-gradient(to right, black 60%, transparent 100%)'
+        WebkitMaskImage: 'linear-gradient(to right, black 55%, transparent 100%)',
+        maskImage: 'linear-gradient(to right, black 55%, transparent 100%)'
       }}>
         <source src="/video4.mp4" type="video/mp4" />
       </video>
       {/* Overlay roxo para dissolver o preto do vídeo */}
       <div style={{
         position: 'absolute', top: 0, left: 0,
-        width: '50%', height: '100%',
-        background: 'linear-gradient(to right, rgba(106,27,154,0.45) 0%, transparent 100%)',
+        width: '55%', height: '100%',
+        background: 'linear-gradient(to right, rgba(106,27,154,0.65) 0%, transparent 100%)',
         pointerEvents: 'none'
       }} />
 
