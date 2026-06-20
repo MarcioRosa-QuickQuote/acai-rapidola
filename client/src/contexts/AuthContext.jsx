@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback } from 'react';
 
 const AuthContext = createContext(null);
 const API = '/api';
@@ -8,24 +8,36 @@ export function AuthProvider({ children }) {
   const [store, setStore] = useState(null);
   const [token, setToken] = useState(localStorage.getItem('token'));
   const [loading, setLoading] = useState(true);
+  const [networkError, setNetworkError] = useState(false);
+
+  const checkAuth = useCallback((tok) => {
+    if (!tok) { setLoading(false); return; }
+    setLoading(true);
+    setNetworkError(false);
+    fetch(`${API}/auth/me`, {
+      headers: { Authorization: `Bearer ${tok}` }
+    })
+      .then(r => {
+        if (r.status === 401 || r.status === 403) { logout(); return null; }
+        return r.ok ? r.json() : null;
+      })
+      .then(data => {
+        if (data) { setUser(data.user); setStore(data.store); }
+      })
+      .catch(() => {
+        // Erro de rede (servidor frio, sem internet) — token ainda pode ser válido
+        setNetworkError(true);
+      })
+      .finally(() => setLoading(false));
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
-    if (token) {
-      fetch(`${API}/auth/me`, {
-        headers: { Authorization: `Bearer ${token}` }
-      })
-        .then(r => {
-          if (r.status === 401 || r.status === 403) { logout(); return null; }
-          return r.ok ? r.json() : null;
-        })
-        .then(data => {
-          if (data) { setUser(data.user); setStore(data.store); }
-        })
-        .finally(() => setLoading(false));
-    } else {
-      setLoading(false);
-    }
-  }, []);
+    checkAuth(token);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  function retryAuth() {
+    checkAuth(localStorage.getItem('token'));
+  }
 
   function login(phone, password) {
     return fetch(`${API}/auth/login`, {
@@ -40,6 +52,7 @@ export function AuthProvider({ children }) {
         setToken(data.token);
         setUser(data.user);
         setStore(data.store);
+        setNetworkError(false);
         return data;
       });
   }
@@ -56,6 +69,7 @@ export function AuthProvider({ children }) {
         localStorage.setItem('token', data.token);
         setToken(data.token);
         setUser(data.user);
+        setNetworkError(false);
         return data;
       });
   }
@@ -64,6 +78,7 @@ export function AuthProvider({ children }) {
     localStorage.setItem('token', newToken);
     setToken(newToken);
     setUser(userData);
+    setNetworkError(false);
   }
 
   function logout() {
@@ -71,6 +86,7 @@ export function AuthProvider({ children }) {
     setToken(null);
     setUser(null);
     setStore(null);
+    setNetworkError(false);
   }
 
   function apiFetch(path, options = {}) {
@@ -90,7 +106,7 @@ export function AuthProvider({ children }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, store, token, loading, login, loginWithToken, register, logout, apiFetch, setStore }}>
+    <AuthContext.Provider value={{ user, store, token, loading, networkError, retryAuth, login, loginWithToken, register, logout, apiFetch, setStore }}>
       {children}
     </AuthContext.Provider>
   );

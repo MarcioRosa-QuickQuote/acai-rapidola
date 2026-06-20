@@ -1501,42 +1501,42 @@ export default function StoreDashboard() {
                 {new Date().toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' })}
               </div>
             </div>
-            <div style={{ display: 'flex', gap: 12, marginBottom: 14 }}>
-              <div style={{ background: '#F8F4FC', borderRadius: 14, padding: '14px 16px', border: '1px solid #E1BEE7', display: 'flex', flexDirection: 'column', gap: 10, flexShrink: 0 }}>
+
+            {/* Faturamento — card hero full-width */}
+            <div style={{
+              background: 'linear-gradient(135deg, #6A1B9A 0%, #9C27B0 55%, #CE93D8 100%)',
+              borderRadius: 16, padding: '18px 20px', color: 'white', position: 'relative', overflow: 'hidden',
+              marginBottom: 12
+            }}>
+              <div style={{ position: 'absolute', top: -20, right: -20, width: 110, height: 110, borderRadius: '50%', background: 'rgba(255,255,255,0.07)' }} />
+              <div style={{ position: 'absolute', bottom: -30, right: 50, width: 70, height: 70, borderRadius: '50%', background: 'rgba(255,255,255,0.05)' }} />
+              <div style={{ fontSize: 11, opacity: 0.8, fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 }}>Faturamento Hoje</div>
+              <div style={{ fontSize: 34, fontWeight: 800, lineHeight: 1.1 }}>R$ {faturamentoHoje.toFixed(2)}</div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginTop: 10, paddingTop: 10, borderTop: '1px solid rgba(255,255,255,0.2)' }}>
                 <div>
-                  <div style={{ fontSize: 10, color: '#888', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5 }}>Pedidos hoje</div>
-                  <div style={{ fontSize: 22, fontWeight: 800, color: '#1a1a1a' }}>{totalPedidosHoje}</div>
+                  <span style={{ fontSize: 13, fontWeight: 700 }}>{totalPedidosHoje}</span>
+                  <span style={{ fontSize: 11, opacity: 0.75, marginLeft: 4 }}>pedido{totalPedidosHoje !== 1 ? 's' : ''} hoje</span>
                 </div>
-                <div>
-                  <div style={{ fontSize: 10, color: '#888', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5 }}>Loja</div>
-                  <div style={{ fontSize: 13, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 5 }}>
-                    <span style={{ width: 7, height: 7, borderRadius: '50%', background: open ? '#43a047' : '#e53935', display: 'inline-block' }} />
-                    {open ? 'Aberta' : 'Fechada'}
-                  </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                  <span style={{ width: 7, height: 7, borderRadius: '50%', background: open ? '#69F0AE' : '#FF5252', display: 'inline-block', flexShrink: 0 }} />
+                  <span style={{ fontSize: 11, opacity: 0.85, fontWeight: 600 }}>{open ? 'Aberta' : 'Fechada'}</span>
                 </div>
-                <div>
-                  <div style={{ fontSize: 10, color: '#888', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5 }}>Produtos</div>
-                  <div style={{ fontSize: 22, fontWeight: 800, color: '#1a1a1a' }}>{totalProdutos}</div>
-                </div>
-              </div>
-              <div style={{
-                flex: 1, background: 'linear-gradient(135deg, #6A1B9A 0%, #9C27B0 55%, #CE93D8 100%)',
-                borderRadius: 14, padding: '18px 20px', color: 'white', position: 'relative', overflow: 'hidden',
-                display: 'flex', flexDirection: 'column', justifyContent: 'center'
-              }}>
-                <div style={{ position: 'absolute', top: -15, right: -15, width: 80, height: 80, borderRadius: '50%', background: 'rgba(255,255,255,0.08)' }} />
-                <div style={{ fontSize: 12, opacity: 0.8, fontWeight: 500 }}>Faturamento Hoje</div>
-                <div style={{ fontSize: 28, fontWeight: 800, marginTop: 4 }}>R$ {faturamentoHoje.toFixed(2)}</div>
               </div>
             </div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 14 }}>
-              <div onClick={() => { setOrderFilter('pendentes'); setView('pedidos'); }} style={{ background: '#FFF3E0', borderRadius: 14, padding: 14, cursor: 'pointer', border: '1px solid #FFE0B2' }}>
-                <div style={{ fontSize: 26, fontWeight: 800, color: '#E65100' }}>{pedidosPendentes}</div>
-                <div style={{ fontSize: 12, color: '#E65100', fontWeight: 600, marginTop: 2 }}>Pendentes</div>
+
+            {/* Status cards: 3 colunas */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10, marginBottom: 14 }}>
+              <div onClick={() => { setOrderFilter('pendentes'); setView('pedidos'); }} style={{ background: '#FFF3E0', borderRadius: 14, padding: '14px 10px', cursor: 'pointer', border: '1px solid #FFE0B2', textAlign: 'center' }}>
+                <div style={{ fontSize: 26, fontWeight: 800, color: '#E65100', lineHeight: 1 }}>{pedidosPendentes}</div>
+                <div style={{ fontSize: 11, color: '#E65100', fontWeight: 600, marginTop: 4 }}>Pendentes</div>
               </div>
-              <div onClick={() => { setOrderFilter('ativos'); setView('pedidos'); }} style={{ background: '#F3E5F5', borderRadius: 14, padding: 14, cursor: 'pointer', border: '1px solid #E1BEE7' }}>
-                <div style={{ fontSize: 26, fontWeight: 800, color: '#6A1B9A' }}>{pendingOrders.length}</div>
-                <div style={{ fontSize: 12, color: '#6A1B9A', fontWeight: 600, marginTop: 2 }}>Ativos</div>
+              <div onClick={() => { setOrderFilter('ativos'); setView('pedidos'); }} style={{ background: '#F3E5F5', borderRadius: 14, padding: '14px 10px', cursor: 'pointer', border: '1px solid #E1BEE7', textAlign: 'center' }}>
+                <div style={{ fontSize: 26, fontWeight: 800, color: '#6A1B9A', lineHeight: 1 }}>{pendingOrders.length}</div>
+                <div style={{ fontSize: 11, color: '#6A1B9A', fontWeight: 600, marginTop: 4 }}>Ativos</div>
+              </div>
+              <div onClick={() => { setOrderFilter('concluidos'); setView('pedidos'); }} style={{ background: '#E8F5E9', borderRadius: 14, padding: '14px 10px', cursor: 'pointer', border: '1px solid #C8E6C9', textAlign: 'center' }}>
+                <div style={{ fontSize: 26, fontWeight: 800, color: '#2E7D32', lineHeight: 1 }}>{concludedOrders.length}</div>
+                <div style={{ fontSize: 11, color: '#2E7D32', fontWeight: 600, marginTop: 4 }}>Concluídos</div>
               </div>
             </div>
           </>

@@ -20,9 +20,29 @@ import StoreDashboard from './pages/StoreDashboard';
 import MotoboyDashboard from './pages/MotoboyDashboard';
 import AdminPanel from './pages/AdminPanel';
 
+function ReconnectScreen({ onRetry }) {
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100vh', gap: 16, padding: 24, background: '#F3E5F5' }}>
+      <div style={{ fontSize: 52 }}>📡</div>
+      <div style={{ fontSize: 17, fontWeight: 800, color: '#1a1a1a' }}>Sem conexão com o servidor</div>
+      <div style={{ fontSize: 13, color: '#888', textAlign: 'center', maxWidth: 280 }}>
+        O servidor pode estar acordando (isso leva ~30s). Verifique sua internet e tente novamente.
+      </div>
+      <button onClick={onRetry} style={{
+        background: 'linear-gradient(135deg, #6A1B9A, #9C27B0)', color: 'white',
+        border: 'none', borderRadius: 14, padding: '14px 32px',
+        fontSize: 15, fontWeight: 700, cursor: 'pointer', marginTop: 8
+      }}>
+        Tentar Novamente
+      </button>
+    </div>
+  );
+}
+
 function ProtectedRoute({ role, children }) {
-  const { user, loading } = useAuth();
+  const { user, loading, networkError, retryAuth } = useAuth();
   if (loading) return <div className="loading"><img className="spin" src="/saco_acai.png" /></div>;
+  if (networkError) return <ReconnectScreen onRetry={retryAuth} />;
   if (!user) return <Navigate to="/login" />;
   if (role && user.role !== role) return <Navigate to={`/${user.role}`} />;
   return children;
@@ -52,10 +72,14 @@ function BackButtonHandler() {
 }
 
 export default function App() {
-  const { user, loading } = useAuth();
+  const { user, loading, networkError, retryAuth } = useAuth();
 
   if (loading) {
     return <div className="loading"><img className="spin" src="/saco_acai.png" /></div>;
+  }
+
+  if (networkError) {
+    return <ReconnectScreen onRetry={retryAuth} />;
   }
 
   return (
