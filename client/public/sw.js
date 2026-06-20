@@ -3,7 +3,7 @@
 // shell + imagens, network-only para API / socket / Supabase.
 // Vite coloca hash no nome dos assets → pode cachear para sempre.
 
-const STATIC_V  = 'rapidola-static-v53';
+const STATIC_V  = 'rapidola-static-v54';
 const IMAGE_V   = 'rapidola-images-v1';
 const MAX_IMGS  = 120; // máx de imagens em cache
 
@@ -32,32 +32,30 @@ const BYPASS = [
   /basemaps\.cartocdn\.com/,   // MapLibre GL style.json + vector tiles
 ];
 
-// ── Install: precacheia shell ────────────────────────────────────────────────
-// NÃO chamamos skipWaiting() aqui — o novo SW fica em "waiting"
-// e só ativa quando o usuário confirmar o update via banner.
+// ── Install: precacheia shell e ativa imediatamente ─────────────────────────
 self.addEventListener('install', e => {
   e.waitUntil(
-    caches.open(STATIC_V).then(c => c.addAll(PRECACHE))
+    caches.open(STATIC_V)
+      .then(c => c.addAll(PRECACHE))
+      .then(() => self.skipWaiting()) // ativa sem esperar o usuário confirmar
   );
 });
 
-// ── Mensagens vindas da página ───────────────────────────────────────────────
+// ── Mensagens vindas da página (mantido para compatibilidade) ────────────────
 self.addEventListener('message', e => {
-  if (e.data?.type === 'SKIP_WAITING') {
-    self.skipWaiting(); // usuário confirmou → ativa o novo SW
-  }
+  if (e.data?.type === 'SKIP_WAITING') self.skipWaiting();
 });
 
-// ── Activate: remove caches antigos ─────────────────────────────────────────
+// ── Activate: remove caches antigos e recarrega todas as abas ───────────────
 self.addEventListener('activate', e => {
   e.waitUntil(
-    caches.keys().then(keys =>
-      Promise.all(
-        keys
-          .filter(k => k !== STATIC_V && k !== IMAGE_V)
-          .map(k => caches.delete(k))
-      )
-    ).then(() => self.clients.claim())
+    caches.keys()
+      .then(keys => Promise.all(
+        keys.filter(k => k !== STATIC_V && k !== IMAGE_V).map(k => caches.delete(k))
+      ))
+      .then(() => self.clients.claim())
+      .then(() => self.clients.matchAll({ type: 'window', includeUncontrolled: true }))
+      .then(clients => Promise.all(clients.map(c => c.navigate(c.url))))
   );
 });
 
