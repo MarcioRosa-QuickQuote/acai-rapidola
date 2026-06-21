@@ -635,7 +635,7 @@ export default function StoreDashboard() {
   }, [showTV]);
 
   if (loading) return (
-    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh' }}>
+    <div className="loading">
       <img className="spin" src="/saco_acai.png" />
     </div>
   );

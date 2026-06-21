@@ -85,11 +85,9 @@ export default function App() {
     return (
       <div className="loading" style={{ flexDirection: 'column', gap: 12 }}>
         <img className="spin" src="/saco_acai.png" />
-        {slowHint && (
-          <span style={{ fontSize: 13, color: '#9C27B0', fontWeight: 600, opacity: 0.8 }}>
-            Aguardando servidor...
-          </span>
-        )}
+        <span style={{ fontSize: 13, color: '#9C27B0', fontWeight: 600, opacity: slowHint ? 0.8 : 0, transition: 'opacity 0.4s' }}>
+          Aguardando servidor...
+        </span>
       </div>
     );
   }
