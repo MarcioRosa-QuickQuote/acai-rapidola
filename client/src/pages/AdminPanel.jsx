@@ -646,7 +646,9 @@ export default function AdminPanel() {
                         {/* Selfie */}
                         <div style={{ flexShrink: 0 }}>
                           {e.selfie_url ? (
-                            <img src={e.selfie_url} alt="selfie" style={{ width: 72, height: 72, borderRadius: 12, objectFit: 'cover' }} />
+                            <a href={e.selfie_url} target="_blank" rel="noreferrer">
+                              <img src={e.selfie_url} alt="selfie" style={{ width: 72, height: 72, borderRadius: 12, objectFit: 'cover', display: 'block', cursor: 'zoom-in' }} />
+                            </a>
                           ) : (
                             <div style={{ width: 72, height: 72, borderRadius: 12, background: '#F3E5F5', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 28 }}>🧑</div>
                           )}
