@@ -383,9 +383,22 @@ export default function Register() {
                 {cameraActive ? '📸 Tirar foto' : '📷 Abrir câmera'}
               </button>
             )}
-            <button type="button" onClick={goToStep3} style={btnSecondary}>
-              {cameraError ? 'Continuar sem selfie →' : 'Pular esta etapa'}
-            </button>
+            <label style={{
+              display: 'block', width: '100%', padding: '11px', marginBottom: 8,
+              background: 'white', color: '#6A1B9A', border: '2px solid #9C27B0', borderRadius: 10,
+              fontSize: 14, fontWeight: 600, cursor: 'pointer', textAlign: 'center', boxSizing: 'border-box'
+            }}>
+              Ou selecionar da galeria
+              <input type="file" accept="image/*" style={{ display: 'none' }}
+                onChange={e => {
+                  const file = e.target.files[0];
+                  if (!file) return;
+                  stopCamera();
+                  const reader = new FileReader();
+                  reader.onload = ev => setSelfieDataUrl(ev.target.result);
+                  reader.readAsDataURL(file);
+                }} />
+            </label>
           </>
         ) : (
           <>
@@ -464,9 +477,6 @@ export default function Register() {
                 }} />
             </label>
 
-            <button type="button" onClick={goToStep4} style={btnSecondary}>
-              Pular (pode atrasar aprovação)
-            </button>
           </>
         ) : (
           <>
@@ -505,7 +515,6 @@ export default function Register() {
               { value: 'moto', label: '🛵 Moto' },
               { value: 'bicycle', label: '🚲 Bicicleta' },
               { value: 'car', label: '🚗 Carro' },
-              { value: 'foot', label: '🚶 A pé' }
             ].map(({ value, label }) => (
               <button key={value} type="button" onClick={() => setVehicleType(value)} style={{
                 flex: 1, minWidth: 70, padding: '10px 4px', borderRadius: 10, textAlign: 'center',

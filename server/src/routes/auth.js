@@ -91,12 +91,15 @@ router.post('/register', async (req, res) => {
   if (vehicle_type) insertData.vehicle_type = vehicle_type;
   if (pix_key) insertData.pix_key = pix_key;
 
+  const optionalCols = ['cpf', 'plate', 'selfie_url', 'document_url', 'vehicle_type', 'pix_key'];
   let { error: regInsertErr } = await supabase.from('users').insert(insertData);
-  if (regInsertErr?.code === '42703' && insertData.document_url) {
-    // coluna document_url não existe ainda — tenta sem ela
-    delete insertData.document_url;
-    const retry = await supabase.from('users').insert(insertData);
-    regInsertErr = retry.error;
+  while (regInsertErr?.code === '42703') {
+    const col = regInsertErr.message.match(/the '(\w+)' column/)?.[1];
+    if (col && optionalCols.includes(col) && insertData[col] !== undefined) {
+      console.warn(`[Auth] Register: coluna '${col}' não existe, ignorando`);
+      delete insertData[col];
+      ({ error: regInsertErr } = await supabase.from('users').insert(insertData));
+    } else break;
   }
   if (regInsertErr) {
     console.error('[Auth] Register insert error:', regInsertErr);
