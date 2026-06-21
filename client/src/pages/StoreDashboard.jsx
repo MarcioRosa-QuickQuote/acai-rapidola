@@ -66,10 +66,10 @@ const statusColors = {
 
 const actionMap = {
   confirmed: { label: 'Preparar', next: 'preparing' },
-  preparing: { label: 'Pronto! ✅', next: 'ready' },
+  preparing: { label: 'Pronto!', next: 'ready' },
   // 'ready' só mostra o botão quando o motoboy já está atribuído (motoboy_id set)
-  ready:     { label: 'Saiu da Loja 🛵', next: 'picked_up' },
-  assigned:  { label: 'Saiu da Loja 🛵', next: 'picked_up' }
+  ready:     { label: 'Saiu da Loja', next: 'picked_up' },
+  assigned:  { label: 'Saiu da Loja', next: 'picked_up' }
 };
 
 // Retorna a ação disponível para o pedido, respeitando a regra de 'ready'
@@ -1565,16 +1565,18 @@ export default function StoreDashboard() {
         {/* ─── Alerta estoque baixo ─── */}
         {lowStockProducts.length > 0 && (
           <div style={{
-            background: '#FFF3E0', borderRadius: 14, padding: '12px 16px', marginBottom: 16,
-            border: '1px solid #FFE082', display: 'flex', alignItems: 'center', justifyContent: 'space-between'
+            background: 'white', borderRadius: 14, padding: '12px 16px', marginBottom: 16,
+            border: '1px solid #eee', borderLeft: '3px solid #E65100',
+            boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between'
           }}>
             <div>
-              <div style={{ fontSize: 13, fontWeight: 700, color: '#E65100' }}>⚠️ Estoque baixo</div>
-              <div style={{ fontSize: 12, color: '#BF360C', marginTop: 1 }}>
+              <div style={{ fontSize: 13, fontWeight: 700, color: '#1a1a1a' }}>Estoque baixo</div>
+              <div style={{ fontSize: 12, color: '#888', marginTop: 1 }}>
                 {lowStockProducts.length} produto(s) precisam de reposição
               </div>
             </div>
-            <button style={{ background: '#E65100', color: 'white', border: 'none', borderRadius: 8, padding: '7px 14px', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}
+            <button style={{ background: '#1a1a1a', color: 'white', border: 'none', borderRadius: 8, padding: '7px 14px', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}
               onClick={() => setView('produtos')}>
               Ver
             </button>
@@ -1606,32 +1608,33 @@ export default function StoreDashboard() {
           ) : dashLayout === 'kanban' ? (() => {
             /* ── Kanban ── */
             const groups = [
-              { label: 'PREPARAR',        emoji: '🔥', color: '#E65100', bg: 'rgba(230,81,0,0.08)',    border: '#FFCDD2', orders: pendingOrders.filter(o => o.status === 'confirmed') },
-              { label: 'PREPARANDO',      emoji: '⏳', color: '#1565C0', bg: 'rgba(21,101,192,0.08)', border: '#BBDEFB', orders: pendingOrders.filter(o => o.status === 'preparing') },
-              { label: 'PRONTO',          emoji: '✅', color: '#2E7D32', bg: 'rgba(46,125,50,0.08)',  border: '#C8E6C9', orders: pendingOrders.filter(o => o.status === 'ready') },
-              { label: 'MOTOBOY NA LOJA', emoji: '🛵', color: '#6A1B9A', bg: 'rgba(106,27,154,0.08)', border: '#E1BEE7', orders: pendingOrders.filter(o => o.status === 'assigned') },
-              { label: 'SAIU',            emoji: '🚀', color: '#00695C', bg: 'rgba(0,105,92,0.08)',   border: '#B2DFDB', orders: pendingOrders.filter(o => ['picked_up', 'in_transit', 'arriving'].includes(o.status)) },
+              { label: 'Preparar',          dot: '#E65100', orders: pendingOrders.filter(o => o.status === 'confirmed') },
+              { label: 'Preparando',        dot: '#6A1B9A', orders: pendingOrders.filter(o => o.status === 'preparing') },
+              { label: 'Pronto',            dot: '#2E7D32', orders: pendingOrders.filter(o => o.status === 'ready') },
+              { label: 'Motoboy na Loja',   dot: '#6A1B9A', orders: pendingOrders.filter(o => o.status === 'assigned') },
+              { label: 'Saiu para Entrega', dot: '#555',    orders: pendingOrders.filter(o => ['picked_up', 'in_transit', 'arriving'].includes(o.status)) },
             ].filter(g => g.orders.length > 0);
 
             return (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
                 {groups.map(group => (
                   <div key={group.label}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10, padding: '5px 12px', background: group.bg, borderRadius: 8, border: `1px solid ${group.border}`, width: 'fit-content' }}>
-                      <span style={{ fontSize: 14 }}>{group.emoji}</span>
-                      <span style={{ color: group.color, fontSize: 12, fontWeight: 800, letterSpacing: 0.8, textTransform: 'uppercase' }}>{group.label}</span>
-                      <span style={{ color: group.color, fontSize: 12, fontWeight: 700, opacity: 0.75 }}>· {group.orders.length}</span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 10 }}>
+                      <span style={{ width: 7, height: 7, borderRadius: '50%', background: group.dot, display: 'inline-block', flexShrink: 0 }} />
+                      <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: 0.8, textTransform: 'uppercase', color: '#444' }}>{group.label}</span>
+                      <span style={{ fontSize: 11, color: '#bbb' }}>· {group.orders.length}</span>
                     </div>
                     <div style={{ display: 'grid', gridTemplateColumns: isDesktop ? 'repeat(3, 1fr)' : '1fr', gap: 12 }}>
                       {group.orders.map(o => {
                         const action = getAction(o);
                         const allItems = o.items || o.order_items || [];
                         return (
-                          <div key={o.id} style={{ background: 'white', borderRadius: 12, padding: '14px 16px', border: `1px solid ${group.border}`, display: 'flex', flexDirection: 'column', gap: 8 }}>
+                          <div key={o.id} style={{ background: 'white', borderRadius: 12, padding: '14px 16px', border: '1px solid #eee', boxShadow: '0 1px 4px rgba(0,0,0,0.04)', display: 'flex', flexDirection: 'column', gap: 8 }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                               <div style={{ fontWeight: 700, fontSize: 14, color: '#1a1a1a', flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{o.customer_name}</div>
-                              <span style={{ color: group.color, fontSize: 10, fontWeight: 700, background: group.bg, padding: '2px 8px', borderRadius: 6, border: `1px solid ${group.border}`, whiteSpace: 'nowrap', marginLeft: 8, flexShrink: 0 }}>
-                                {group.emoji} {group.label}
+                              <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 10, color: '#888', whiteSpace: 'nowrap', marginLeft: 8, flexShrink: 0 }}>
+                                <span style={{ width: 6, height: 6, borderRadius: '50%', background: group.dot, display: 'inline-block' }} />
+                                {group.label}
                               </span>
                             </div>
                             <div style={{ borderTop: '1px solid #f0f0f0', paddingTop: 8 }}>
@@ -1642,16 +1645,16 @@ export default function StoreDashboard() {
                               ))}
                             </div>
                             {o.motoboy_name && (
-                              <div style={{ fontSize: 12, color: '#666' }}>🛵 <strong>{o.motoboy_name}</strong></div>
+                              <div style={{ fontSize: 12, color: '#888' }}>Entregador: <strong style={{ color: '#555' }}>{o.motoboy_name}</strong></div>
                             )}
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 2, paddingTop: 8, borderTop: '1px solid #f0f0f0' }}>
                               <div>
                                 <div style={{ fontSize: 11, color: '#aaa' }}>#{String(o.id).slice(-4)} · {new Date(o.created_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</div>
-                                <div style={{ fontSize: 14, fontWeight: 800, color: group.color, marginTop: 2 }}>R$ {o.total.toFixed(2)}</div>
+                                <div style={{ fontSize: 14, fontWeight: 800, color: '#1a1a1a', marginTop: 2 }}>R$ {o.total.toFixed(2)}</div>
                               </div>
                               {action && (
                                 <button onClick={() => updateStatus(o.id, action.next)}
-                                  style={{ background: group.color, color: 'white', border: 'none', borderRadius: 8, padding: '7px 14px', fontSize: 12, fontWeight: 700, cursor: 'pointer' }}>
+                                  style={{ background: '#6A1B9A', color: 'white', border: 'none', borderRadius: 8, padding: '7px 14px', fontSize: 12, fontWeight: 700, cursor: 'pointer' }}>
                                   {action.label}
                                 </button>
                               )}
@@ -1670,16 +1673,18 @@ export default function StoreDashboard() {
             /* ── Fila (2 colunas: preparo | entrega) ── */
             const filaPrep    = pendingOrders.filter(o => ['confirmed', 'preparing', 'ready', 'assigned'].includes(o.status));
             const filaCaminho = pendingOrders.filter(o => ['picked_up', 'in_transit', 'arriving'].includes(o.status));
-            const filaStatusLabel = { confirmed: 'Confirmado', preparing: 'Preparando...', ready: 'Pronto ✅', assigned: 'Entregador chegou 🛵' };
-            const filaStatusColor = { confirmed: '#E65100', preparing: '#1565C0', ready: '#2E7D32', assigned: '#6A1B9A' };
+            const filaStatusLabel = { confirmed: 'Confirmado', preparing: 'Preparando', ready: 'Pronto', assigned: 'Entregador chegou' };
+            const filaStatusDot   = { confirmed: '#E65100', preparing: '#6A1B9A', ready: '#2E7D32', assigned: '#6A1B9A' };
 
-            const filaCard = (o, color, border) => {
+            const filaCard = (o, dot) => {
               const action = getAction(o);
+              const dotColor = dot || filaStatusDot[o.status] || '#888';
               return (
-                <div key={o.id} style={{ background: 'white', borderRadius: 12, padding: '14px 16px', border: `1px solid ${border}`, borderLeft: `4px solid ${color}`, display: 'flex', flexDirection: 'column', gap: 6 }}>
+                <div key={o.id} style={{ background: 'white', borderRadius: 12, padding: '14px 16px', border: '1px solid #eee', boxShadow: '0 1px 4px rgba(0,0,0,0.04)', display: 'flex', flexDirection: 'column', gap: 6 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                     <div style={{ fontWeight: 800, fontSize: 15, color: '#1a1a1a' }}>{o.customer_name}</div>
-                    <span style={{ color, fontSize: 10, fontWeight: 800, background: `${color}18`, padding: '3px 8px', borderRadius: 12, whiteSpace: 'nowrap', marginLeft: 8, flexShrink: 0 }}>
+                    <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 10, color: '#888', whiteSpace: 'nowrap', marginLeft: 8, flexShrink: 0 }}>
+                      <span style={{ width: 6, height: 6, borderRadius: '50%', background: dotColor, display: 'inline-block' }} />
                       {filaStatusLabel[o.status] || statusLabels[o.status] || o.status}
                     </span>
                   </div>
@@ -1694,7 +1699,7 @@ export default function StoreDashboard() {
                     <span style={{ fontSize: 11, color: '#aaa' }}>#{String(o.id).slice(-4)}</span>
                     {action && (
                       <button onClick={() => updateStatus(o.id, action.next)}
-                        style={{ background: color, color: 'white', border: 'none', borderRadius: 8, padding: '6px 12px', fontSize: 11, fontWeight: 700, cursor: 'pointer' }}>
+                        style={{ background: '#6A1B9A', color: 'white', border: 'none', borderRadius: 8, padding: '6px 12px', fontSize: 11, fontWeight: 700, cursor: 'pointer' }}>
                         {action.label}
                       </button>
                     )}
@@ -1707,28 +1712,28 @@ export default function StoreDashboard() {
               <div style={{ display: 'grid', gridTemplateColumns: isDesktop ? '1fr 1fr' : '1fr', gap: 20, alignItems: 'start' }}>
                 {/* Coluna esquerda — Em Preparo */}
                 <div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12, padding: '8px 14px', background: 'rgba(21,101,192,0.06)', borderRadius: 10, border: '1px solid #BBDEFB' }}>
-                    <span style={{ fontSize: 18 }}>🍳</span>
-                    <span style={{ color: '#1565C0', fontSize: 13, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.8 }}>Em Preparo</span>
-                    <span style={{ background: '#1565C0', color: 'white', borderRadius: 8, padding: '1px 7px', fontSize: 12, fontWeight: 800, marginLeft: 'auto' }}>{filaPrep.length}</span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12, padding: '8px 14px', background: '#f9f9f9', borderRadius: 10, border: '1px solid #eee' }}>
+                    <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#6A1B9A', display: 'inline-block' }} />
+                    <span style={{ color: '#333', fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.8 }}>Em Preparo</span>
+                    <span style={{ background: '#1a1a1a', color: 'white', borderRadius: 8, padding: '1px 7px', fontSize: 11, fontWeight: 700, marginLeft: 'auto' }}>{filaPrep.length}</span>
                   </div>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                     {filaPrep.length === 0 ? (
-                      <div style={{ color: '#bbb', fontSize: 13, textAlign: 'center', padding: '24px 0', fontStyle: 'italic' }}>Nenhum pedido em preparo</div>
-                    ) : filaPrep.map(o => filaCard(o, filaStatusColor[o.status] || '#1565C0', '#BBDEFB'))}
+                      <div style={{ color: '#bbb', fontSize: 13, textAlign: 'center', padding: '24px 0' }}>Nenhum pedido em preparo</div>
+                    ) : filaPrep.map(o => filaCard(o))}
                   </div>
                 </div>
                 {/* Coluna direita — A caminho */}
                 <div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12, padding: '8px 14px', background: 'rgba(0,105,92,0.06)', borderRadius: 10, border: '1px solid #B2DFDB' }}>
-                    <span style={{ fontSize: 18 }}>🛵</span>
-                    <span style={{ color: '#00695C', fontSize: 13, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.8 }}>Saiu para Entrega</span>
-                    <span style={{ background: '#00695C', color: 'white', borderRadius: 8, padding: '1px 7px', fontSize: 12, fontWeight: 800, marginLeft: 'auto' }}>{filaCaminho.length}</span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12, padding: '8px 14px', background: '#f9f9f9', borderRadius: 10, border: '1px solid #eee' }}>
+                    <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#555', display: 'inline-block' }} />
+                    <span style={{ color: '#333', fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.8 }}>Saiu para Entrega</span>
+                    <span style={{ background: '#1a1a1a', color: 'white', borderRadius: 8, padding: '1px 7px', fontSize: 11, fontWeight: 700, marginLeft: 'auto' }}>{filaCaminho.length}</span>
                   </div>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                     {filaCaminho.length === 0 ? (
-                      <div style={{ color: '#bbb', fontSize: 13, textAlign: 'center', padding: '24px 0', fontStyle: 'italic' }}>Nenhum pedido a caminho</div>
-                    ) : filaCaminho.map(o => filaCard(o, '#00695C', '#B2DFDB'))}
+                      <div style={{ color: '#bbb', fontSize: 13, textAlign: 'center', padding: '24px 0' }}>Nenhum pedido a caminho</div>
+                    ) : filaCaminho.map(o => filaCard(o, '#555'))}
                   </div>
                 </div>
               </div>
@@ -1740,13 +1745,13 @@ export default function StoreDashboard() {
             const urgencyOrder = { arriving: 0, in_transit: 1, picked_up: 2, assigned: 3, ready: 4, preparing: 5, confirmed: 6 };
             const linhaOrders = [...pendingOrders].sort((a, b) => (urgencyOrder[a.status] ?? 99) - (urgencyOrder[b.status] ?? 99));
             const linhaStatusInfo = {
-              confirmed:  { label: 'Novo',        color: '#E65100', bg: 'rgba(230,81,0,0.1)' },
-              preparing:  { label: 'Preparando',  color: '#1565C0', bg: 'rgba(21,101,192,0.1)' },
-              ready:      { label: 'Pronto ✅',   color: '#2E7D32', bg: 'rgba(46,125,50,0.1)' },
-              assigned:   { label: 'Entregador 🛵',  color: '#6A1B9A', bg: 'rgba(106,27,154,0.1)' },
-              picked_up:  { label: 'Saiu 🚀',     color: '#00695C', bg: 'rgba(0,105,92,0.1)' },
-              in_transit: { label: 'A caminho',   color: '#00695C', bg: 'rgba(0,105,92,0.1)' },
-              arriving:   { label: '⚡ Chegando', color: '#C62828', bg: 'rgba(198,40,40,0.1)' },
+              confirmed:  { label: 'Novo',       dot: '#E65100' },
+              preparing:  { label: 'Preparando', dot: '#6A1B9A' },
+              ready:      { label: 'Pronto',     dot: '#2E7D32' },
+              assigned:   { label: 'Entregador', dot: '#6A1B9A' },
+              picked_up:  { label: 'Saiu',       dot: '#555' },
+              in_transit: { label: 'A caminho',  dot: '#555' },
+              arriving:   { label: 'Chegando',   dot: '#C62828' },
             };
             const thS = { color: '#999', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.6, padding: '10px 12px', borderBottom: '2px solid #f0f0f0', textAlign: 'left', whiteSpace: 'nowrap' };
             const tdS = { padding: '10px 12px', borderBottom: '1px solid #f5f5f5', verticalAlign: 'middle' };
@@ -1789,7 +1794,8 @@ export default function StoreDashboard() {
                             ))}
                           </td>
                           <td style={{ ...tdS, textAlign: 'center' }}>
-                            <span style={{ color: si.color, fontWeight: 700, fontSize: 11, background: si.bg, padding: '3px 10px', borderRadius: 12, whiteSpace: 'nowrap' }}>
+                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 11, color: '#555', fontWeight: 600, whiteSpace: 'nowrap' }}>
+                              <span style={{ width: 6, height: 6, borderRadius: '50%', background: si.dot || '#aaa', display: 'inline-block', flexShrink: 0 }} />
                               {si.label}
                             </span>
                           </td>
@@ -1866,34 +1872,34 @@ export default function StoreDashboard() {
           <nav style={{ flex: 1, overflowY: 'auto', padding: '10px 0' }}>
             <div style={{ padding: '4px 16px 6px', fontSize: 10, fontWeight: 700, color: '#bbb', letterSpacing: 1, textTransform: 'uppercase' }}>Operação</div>
             {[
-              { key: 'painel', icon: '📊', label: 'Painel', onClick: () => { setView('painel'); setPerfilTab(null); }, active: view === 'painel' && !perfilTab, badge: pendingOrders.length || null },
-              { key: 'pedidos', icon: '📋', label: 'Pedidos', onClick: () => { setView('pedidos'); setPerfilTab(null); }, active: view === 'pedidos' && !perfilTab, badge: pendingOrders.length || null },
-              { key: 'produtos', icon: '🧾', label: 'Produtos', onClick: () => { setView('produtos'); setPerfilTab(null); }, active: view === 'produtos' && !perfilTab },
-              { key: 'financeiro', icon: '💰', label: 'Financeiro', isPremium: true, onClick: () => { if (storeData?.plan === 'premium') { setView('financeiro'); setPerfilTab(null); } else { setShowUpgradeModal(true); } }, active: view === 'financeiro' && !perfilTab },
+              { key: 'painel',     svg: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>, label: 'Painel', onClick: () => { setView('painel'); setPerfilTab(null); }, active: view === 'painel' && !perfilTab, badge: pendingOrders.length || null },
+              { key: 'pedidos',   svg: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="9" y1="6" x2="20" y2="6"/><line x1="9" y1="12" x2="20" y2="12"/><line x1="9" y1="18" x2="20" y2="18"/><circle cx="4" cy="6" r="1.2" fill="currentColor" stroke="none"/><circle cx="4" cy="12" r="1.2" fill="currentColor" stroke="none"/><circle cx="4" cy="18" r="1.2" fill="currentColor" stroke="none"/></svg>, label: 'Pedidos', onClick: () => { setView('pedidos'); setPerfilTab(null); }, active: view === 'pedidos' && !perfilTab, badge: pendingOrders.length || null },
+              { key: 'produtos',  svg: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>, label: 'Produtos', onClick: () => { setView('produtos'); setPerfilTab(null); }, active: view === 'produtos' && !perfilTab },
+              { key: 'financeiro',svg: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>, label: 'Financeiro', isPremium: true, onClick: () => { if (storeData?.plan === 'premium') { setView('financeiro'); setPerfilTab(null); } else { setShowUpgradeModal(true); } }, active: view === 'financeiro' && !perfilTab },
             ].map(item => (
               <div key={item.key} onClick={item.onClick}
-                style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '9px 12px', margin: '1px 8px', cursor: 'pointer', borderRadius: 8, background: item.active ? '#F3E5F5' : 'transparent', color: item.active ? 'var(--primary)' : (item.isPremium && storeData?.plan !== 'premium' ? '#aaa' : '#555'), fontWeight: item.active ? 700 : 500, fontSize: 13 }}>
-                <span style={{ fontSize: 15, flexShrink: 0 }}>{item.icon}</span>
+                style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '9px 12px', margin: '1px 8px', cursor: 'pointer', borderRadius: 8, background: item.active ? '#F3E5F5' : 'transparent', color: item.active ? 'var(--primary)' : (item.isPremium && storeData?.plan !== 'premium' ? '#bbb' : '#555'), fontWeight: item.active ? 700 : 500, fontSize: 13 }}>
+                <span style={{ flexShrink: 0, display: 'flex' }}>{item.svg}</span>
                 <span style={{ flex: 1 }}>{item.label}</span>
-                {item.isPremium && storeData?.plan !== 'premium' && <span style={{ fontSize: 9, background: 'linear-gradient(90deg,#FF6D00,#FF9100)', color: 'white', borderRadius: 4, padding: '1px 5px', fontWeight: 700 }}>PRO</span>}
+                {item.isPremium && storeData?.plan !== 'premium' && <span style={{ fontSize: 9, background: '#1a1a1a', color: 'white', borderRadius: 4, padding: '1px 5px', fontWeight: 700 }}>PRO</span>}
                 {item.badge > 0 && <span style={{ background: 'var(--primary)', color: 'white', borderRadius: 10, fontSize: 10, fontWeight: 700, padding: '1px 5px', minWidth: 18, textAlign: 'center' }}>{item.badge}</span>}
               </div>
             ))}
 
             <div style={{ padding: '10px 16px 6px', fontSize: 10, fontWeight: 700, color: '#bbb', letterSpacing: 1, textTransform: 'uppercase', marginTop: 4 }}>Configurações</div>
             {[
-              { key: 'dados', icon: '🏪', label: 'Dados da Loja' },
-              { key: 'endereco', icon: '📍', label: 'Endereço' },
-              { key: 'motoboy', icon: '🏍️', label: 'Entregadores' },
-              { key: 'mensagens', icon: '💬', label: 'Mensagens', badge: unreadMessages || null },
-              { key: 'assinatura', icon: '⭐', label: 'Assinatura' },
-              { key: 'trocar-senha', icon: '🔑', label: 'Senha' },
+              { key: 'dados',       svg: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>, label: 'Dados da Loja' },
+              { key: 'endereco',    svg: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>, label: 'Endereço' },
+              { key: 'motoboy',     svg: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="5.5" cy="17.5" r="3.5"/><circle cx="18.5" cy="17.5" r="3.5"/><path d="M15 6h-5l-3 8h11l-2-6"/><path d="M9 6l1-4h6"/></svg>, label: 'Entregadores' },
+              { key: 'mensagens',   svg: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>, label: 'Mensagens', badge: unreadMessages || null },
+              { key: 'assinatura',  svg: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>, label: 'Assinatura' },
+              { key: 'trocar-senha',svg: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>, label: 'Senha' },
             ].map(item => {
               const isActive = view === 'perfil' && perfilTab === item.key;
               return (
                 <div key={item.key} onClick={() => { setView('perfil'); setPerfilTab(item.key); }}
                   style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '9px 12px', margin: '1px 8px', cursor: 'pointer', borderRadius: 8, background: isActive ? '#F3E5F5' : 'transparent', color: isActive ? 'var(--primary)' : '#555', fontWeight: isActive ? 700 : 500, fontSize: 13 }}>
-                  <span style={{ fontSize: 15, flexShrink: 0 }}>{item.icon}</span>
+                  <span style={{ flexShrink: 0, display: 'flex' }}>{item.svg}</span>
                   <span style={{ flex: 1 }}>{item.label}</span>
                   {item.badge > 0 && <span style={{ background: '#C62828', color: 'white', borderRadius: 10, fontSize: 10, fontWeight: 700, padding: '1px 5px', minWidth: 18, textAlign: 'center' }}>{item.badge}</span>}
                 </div>
@@ -1904,12 +1910,14 @@ export default function StoreDashboard() {
           {/* Rodapé sidebar */}
           <div style={{ padding: '12px 16px', borderTop: '1px solid var(--border)', display: 'flex', flexDirection: 'column', gap: 8 }}>
             <button onClick={() => { if (storeData?.plan === 'premium') { setShowTV(true); } else { setShowUpgradeModal(true); } }}
-              style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, padding: '8px 12px', background: '#1a1a2e', color: '#c8c8ff', border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
-              📺 Ver na TV {storeData?.plan !== 'premium' && <span style={{ fontSize: 10, opacity: 0.6 }}>⭐</span>}
+              style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, padding: '8px 12px', background: '#1a1a1a', color: 'white', border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="7" width="20" height="15" rx="2"/><polyline points="17 2 12 7 7 2"/></svg>
+              Ver na TV {storeData?.plan !== 'premium' && <span style={{ fontSize: 9, background: 'rgba(255,255,255,0.2)', borderRadius: 3, padding: '1px 4px', fontWeight: 700 }}>PRO</span>}
             </button>
             <button onClick={logout}
-              style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, padding: '7px 12px', background: 'none', color: '#C62828', border: '1px solid #ffcdd2', borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
-              🚪 Sair
+              style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, padding: '7px 12px', background: 'none', color: '#888', border: '1px solid #eee', borderRadius: 8, fontSize: 13, fontWeight: 500, cursor: 'pointer' }}>
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+              Sair
             </button>
             <div style={{ textAlign: 'center', fontSize: 10, color: '#ccc', marginTop: 8, fontFamily: 'monospace', letterSpacing: 0.5 }}>
               build #{APP_BUILD}
@@ -2054,32 +2062,35 @@ export default function StoreDashboard() {
         {!isDesktop && (
           <div style={{
             position: 'fixed', bottom: 0, left: 0, right: 0,
-            background: 'white', borderTop: '1px solid var(--border)',
+            background: 'white', borderTop: '1px solid #eee',
             display: 'flex', zIndex: 1000,
             paddingBottom: 'env(safe-area-inset-bottom, 0px)'
           }}>
             {[
-              { key: 'painel', icon: '📊', label: 'Painel' },
-              { key: 'pedidos', icon: '📋', label: 'Pedidos' },
-              { key: 'produtos', icon: '🧾', label: 'Produtos' },
-              { key: 'financeiro', icon: '💰', label: 'Financeiro', isPremium: true },
-              { key: 'perfil', icon: '👤', label: 'Perfil' },
-            ].map(item => (
-              <div key={item.key} style={{
-                flex: 1, textAlign: 'center', padding: '8px 4px',
-                cursor: 'pointer', opacity: view === item.key ? 1 : 0.5,
-                borderTop: view === item.key ? '2px solid var(--primary)' : '2px solid transparent',
-                background: view === item.key ? '#F3E5F5' : 'transparent'
-              }} onClick={() => {
-                if (item.isPremium && storeData?.plan !== 'premium') { setShowUpgradeModal(true); return; }
-                setView(item.key); if (item.key !== 'perfil') setPerfilTab(null);
-              }}>
-                <div style={{ fontSize: 18 }}>{item.icon}</div>
-                <div style={{ fontSize: 10, fontWeight: 600, color: view === item.key ? 'var(--primary)' : '#888', marginTop: 2 }}>
-                  {item.label}
+              { key: 'painel', label: 'Painel', svg: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg> },
+              { key: 'pedidos', label: 'Pedidos', svg: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><line x1="9" y1="6" x2="20" y2="6"/><line x1="9" y1="12" x2="20" y2="12"/><line x1="9" y1="18" x2="20" y2="18"/><circle cx="4" cy="6" r="1.2" fill="currentColor" stroke="none"/><circle cx="4" cy="12" r="1.2" fill="currentColor" stroke="none"/><circle cx="4" cy="18" r="1.2" fill="currentColor" stroke="none"/></svg> },
+              { key: 'produtos', label: 'Produtos', svg: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg> },
+              { key: 'financeiro', label: 'Financeiro', isPremium: true, svg: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg> },
+              { key: 'perfil', label: 'Perfil', svg: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> },
+            ].map(item => {
+              const isActive = view === item.key || (item.key === 'perfil' && !!perfilTab);
+              return (
+                <div key={item.key} style={{
+                  flex: 1, textAlign: 'center', padding: '8px 4px', cursor: 'pointer',
+                  borderTop: isActive ? '2px solid #6A1B9A' : '2px solid transparent',
+                }} onClick={() => {
+                  if (item.isPremium && storeData?.plan !== 'premium') { setShowUpgradeModal(true); return; }
+                  setView(item.key); if (item.key !== 'perfil') setPerfilTab(null);
+                }}>
+                  <div style={{ color: isActive ? '#6A1B9A' : '#bbb', display: 'flex', justifyContent: 'center' }}>
+                    {item.svg}
+                  </div>
+                  <div style={{ fontSize: 10, fontWeight: isActive ? 700 : 400, color: isActive ? '#6A1B9A' : '#bbb', marginTop: 2 }}>
+                    {item.label}
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>
