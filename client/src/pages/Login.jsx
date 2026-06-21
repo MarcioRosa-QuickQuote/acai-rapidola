@@ -66,7 +66,7 @@ export default function Login() {
       <div className="login-video-overlay" />
 
       {/* Logo — z-index abaixo do card para a estaca ficar "fincada" no modal */}
-      <div style={{ textAlign: 'center', marginBottom: -24, zIndex: 1, position: 'relative',
+      <div style={{ textAlign: 'center', marginBottom: -24, zIndex: 2, position: 'relative',
         filter: 'drop-shadow(0 6px 28px rgba(0,0,0,0.55))' }}>
         <img src="/logo_placa.png" alt="Pé de Açaí" style={{
           width: 190, height: 190, objectFit: 'contain', display: 'block', margin: '0 auto'
@@ -79,7 +79,7 @@ export default function Login() {
         background: '#fff',
         borderRadius: 24,
         boxShadow: '0 20px 60px rgba(0,0,0,0.35)',
-        position: 'relative', zIndex: 2,
+        position: 'relative', zIndex: 3,
       }}>
         {/* Form */}
         <div style={{ padding: '24px 30px 20px' }}>
@@ -279,7 +279,7 @@ export default function Login() {
         </div>
       </div>
 
-      <p style={{ marginTop: 16, fontSize: 12, color: '#fff', position: 'relative', zIndex: 1, textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, flexWrap: 'wrap', textShadow: '0 1px 3px rgba(0,0,0,0.6), 0 0 6px rgba(0,0,0,0.4)' }}>
+      <p style={{ marginTop: 16, fontSize: 12, color: '#fff', position: 'relative', zIndex: 2, textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, flexWrap: 'wrap', textShadow: '0 1px 3px rgba(0,0,0,0.6), 0 0 6px rgba(0,0,0,0.4)' }}>
         <a href="/landing" style={{ color: '#fff', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 3 }}>
           <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
           Página de Vendas
