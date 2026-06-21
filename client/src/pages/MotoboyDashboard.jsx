@@ -872,8 +872,8 @@ export default function MotoboyDashboard() {
   // Telas de status especial não precisam esperar o loadData — approval_status já vem no JWT
   if (user?.approval_status === 'pending') return (
     <div style={{
-      display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-      minHeight: '100vh', padding: 32, textAlign: 'center',
+      display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-start',
+      minHeight: '100vh', padding: 32, paddingTop: 'clamp(32px, 12vh, 100px)', textAlign: 'center',
       background: 'linear-gradient(160deg, #1a0533 0%, #4A148C 100%)'
     }}>
       <img src="/lp_motoboytrans.png" alt="entregador" style={{ width: 220, objectFit: 'contain', marginBottom: 24 }} />
@@ -945,19 +945,12 @@ export default function MotoboyDashboard() {
     }}>
       <img src="/logo_placa.png" alt="logo" style={{ width: 100, height: 100, objectFit: 'contain', marginBottom: 24, filter: 'drop-shadow(0 4px 16px rgba(0,0,0,0.5))' }} />
       <div style={{ fontSize: 40, marginBottom: 12 }}>❌</div>
-      <div style={{ fontWeight: 800, fontSize: 22, color: 'white', marginBottom: 8 }}>Cadastro não aprovado</div>
-      <div style={{ fontSize: 14, color: 'rgba(255,255,255,0.7)', lineHeight: 1.6, maxWidth: 320, marginBottom: 16 }}>
-        Seu cadastro não foi aprovado pela nossa equipe.
-      </div>
+      <div style={{ fontWeight: 800, fontSize: 22, color: 'white', marginBottom: user.rejection_reason ? 8 : 24 }}>Cadastro não aprovado</div>
       {user.rejection_reason && (
         <div style={{ background: 'rgba(229,57,53,0.2)', borderRadius: 12, padding: '12px 20px', maxWidth: 320, marginBottom: 24, border: '1px solid rgba(229,57,53,0.3)' }}>
-          <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.6)', marginBottom: 4 }}>Motivo:</div>
           <div style={{ fontSize: 13, color: 'white' }}>{user.rejection_reason}</div>
         </div>
       )}
-      <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.6)', marginBottom: 24 }}>
-        Entre em contato para mais informações.
-      </div>
       <button onClick={logout} style={{
         background: 'rgba(255,255,255,0.15)', color: 'white', border: 'none',
         padding: '10px 24px', borderRadius: 10, cursor: 'pointer', fontSize: 13, fontWeight: 600

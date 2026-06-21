@@ -728,23 +728,6 @@ export default function AdminPanel() {
                             )}
                           </div>
 
-                          {/* Botões de verificação rápida */}
-                          <div style={{ display: 'flex', gap: 6, marginTop: 8, flexWrap: 'wrap' }}>
-                            <a href={`https://www.google.com/search?q=${encodeURIComponent((e.name || '') + ' ' + (e.cpf || ''))}`} target="_blank" rel="noreferrer"
-                              style={{ fontSize: 11, padding: '3px 8px', borderRadius: 7, border: '1px solid #ddd', color: '#555', textDecoration: 'none', background: '#fafafa' }}>
-                              🔍 Google
-                            </a>
-                            <a href="https://bnmp.cnj.jus.br/" target="_blank" rel="noreferrer"
-                              style={{ fontSize: 11, padding: '3px 8px', borderRadius: 7, border: '1px solid #ddd', color: '#555', textDecoration: 'none', background: '#fafafa' }}>
-                              ⚖️ BNMP
-                            </a>
-                            {e.cpf && (
-                              <a href={`https://servicos.receita.fazenda.gov.br/servicos/cpf/consultasituacao/consultapublica.asp`} target="_blank" rel="noreferrer"
-                                style={{ fontSize: 11, padding: '3px 8px', borderRadius: 7, border: '1px solid #ddd', color: '#555', textDecoration: 'none', background: '#fafafa' }}>
-                                🏛️ CPF Receita
-                              </a>
-                            )}
-                          </div>
                         </div>
                       </div>
 
