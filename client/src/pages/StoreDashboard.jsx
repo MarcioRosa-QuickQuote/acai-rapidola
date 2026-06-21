@@ -283,7 +283,7 @@ export default function StoreDashboard() {
     const data = await apiFetch(`/messages/${sid}`);
     if (data.data) {
       setStoreMessages(data.data);
-      setUnreadMessages(data.data.filter(m => !m.read).length);
+      setUnreadMessages(data.data.filter(m => !m.read && !m.from_store).length);
     }
   }
 
