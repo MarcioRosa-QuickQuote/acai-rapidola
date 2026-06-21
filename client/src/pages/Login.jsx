@@ -59,24 +59,12 @@ export default function Login() {
       background: 'linear-gradient(160deg, #6A1B9A 0%, #9C27B0 45%, #CE93D8 100%)',
       padding: '24px 20px 20px', position: 'relative', overflow: 'hidden'
     }}>
-      {/* Vídeo lado esquerdo com máscara fade na borda direita */}
-      <video autoPlay loop muted playsInline style={{
-        position: 'absolute', top: 0, left: '-5%',
-        width: '55%', height: '100%',
-        objectFit: 'cover',
-        pointerEvents: 'none',
-        WebkitMaskImage: 'linear-gradient(to right, black 55%, transparent 100%)',
-        maskImage: 'linear-gradient(to right, black 55%, transparent 100%)'
-      }}>
+      {/* Vídeo: tela inteira no mobile, lado esquerdo no desktop */}
+      <video autoPlay loop muted playsInline className="login-video">
         <source src="/video4.mp4" type="video/mp4" />
       </video>
-      {/* Overlay roxo para dissolver o preto do vídeo */}
-      <div style={{
-        position: 'absolute', top: 0, left: 0,
-        width: '55%', height: '100%',
-        background: 'linear-gradient(to right, rgba(106,27,154,0.55) 0%, transparent 100%)',
-        pointerEvents: 'none'
-      }} />
+      {/* Overlay roxo */}
+      <div className="login-video-overlay" />
 
       {/* Logo — z-index abaixo do card para a estaca ficar "fincada" no modal */}
       <div style={{ textAlign: 'center', marginBottom: -24, zIndex: 1, position: 'relative' }}>
