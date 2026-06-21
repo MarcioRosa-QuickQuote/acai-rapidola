@@ -695,17 +695,13 @@ export default function StoreDashboard() {
     return (
       <div>
         <div className="page-title" style={{ fontSize: 20 }}>Financeiro</div>
-        <div className="flex-row" style={{ marginBottom: 12, overflowX: 'auto', WebkitOverflowScrolling: 'touch', paddingBottom: 4 }}>
-          {[
-            { key: 'hoje', label: 'Hoje' },
-            { key: 'semana', label: 'Semana' },
-            { key: 'mes', label: 'Mês' },
-          ].map(p => (
-            <button key={p.key} className={`btn btn-sm ${finPeriod === p.key ? 'btn-primary' : 'btn-outline'}`}
-              onClick={() => setFinPeriod(p.key)} style={{ flexShrink: 0, fontSize: 13 }}>
-              {p.label}
-            </button>
-          ))}
+        <div className="flex-row" style={{ marginBottom: 12, gap: 8 }}>
+          <select className="input" value={finPeriod} onChange={e => setFinPeriod(e.target.value)}
+            style={{ width: 'auto', flexShrink: 0, fontSize: 13, padding: '8px 12px' }}>
+            <option value="hoje">Hoje</option>
+            <option value="semana">Semana</option>
+            <option value="mes">Mês</option>
+          </select>
           {finPeriod === 'mes' && (
             <>
               <select className="input" value={finMonth} onChange={e => setFinMonth(parseInt(e.target.value))}
