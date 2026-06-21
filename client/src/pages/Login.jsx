@@ -67,10 +67,10 @@ export default function Login() {
       <div className="login-video-overlay" />
 
       {/* Logo — z-index abaixo do card para a estaca ficar "fincada" no modal */}
-      <div style={{ textAlign: 'center', marginBottom: -24, zIndex: 1, position: 'relative' }}>
-        <img src="/logo_placa.webp" alt="Pé de Açaí" style={{
-          width: 190, height: 190, objectFit: 'contain',
-          filter: 'drop-shadow(0 6px 28px rgba(0,0,0,0.55))'
+      <div style={{ textAlign: 'center', marginBottom: -24, zIndex: 1, position: 'relative',
+        filter: 'drop-shadow(0 6px 28px rgba(0,0,0,0.55))' }}>
+        <img src="/logo_placa.png" alt="Pé de Açaí" style={{
+          width: 190, height: 190, objectFit: 'contain', display: 'block', margin: '0 auto'
         }} />
       </div>
 

@@ -422,10 +422,10 @@ export default function Register() {
       ))}
 
       {/* Logo — z-index abaixo do card para a estaca ficar "fincada" no modal */}
-      <div style={{ textAlign: 'center', marginBottom: -24, zIndex: 0, position: 'relative' }}>
+      <div style={{ textAlign: 'center', marginBottom: -24, zIndex: 0, position: 'relative',
+        filter: 'drop-shadow(0 6px 28px rgba(0,0,0,0.55))' }}>
         <img src="/logo_placa.png" alt="Pé de Açaí" style={{
-          width: 180, height: 180, objectFit: 'contain',
-          filter: 'drop-shadow(0 6px 28px rgba(0,0,0,0.55))'
+          width: 180, height: 180, objectFit: 'contain', display: 'block', margin: '0 auto'
         }} />
         {wizardStep && (
           <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: 13, fontWeight: 400 }}>
