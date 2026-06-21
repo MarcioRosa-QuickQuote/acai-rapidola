@@ -1822,20 +1822,6 @@ export default function StoreDashboard() {
                   color: 'white', fontWeight: 800, fontSize: 24
                 }}>{(storeData?.name || 'L').charAt(0)}</div>
               )}
-              <div style={{ minWidth: 0, flex: 1 }}>
-                <div style={{ fontWeight: 800, fontSize: 15, color: '#1a1a1a', lineHeight: 1.3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                  {storeData?.name || 'Loja'}
-                </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 6 }}>
-                  <div className="toggle-switch" onClick={toggleOpen} title={open ? 'Fechar loja' : 'Abrir loja'} style={{ transform: 'scale(0.85)', transformOrigin: 'left center' }}>
-                    <input type="checkbox" checked={open} readOnly />
-                    <span className="toggle-slider" />
-                  </div>
-                  <span style={{ fontSize: 11, fontWeight: 600, color: open ? 'var(--success)' : 'var(--danger)' }}>
-                    {open ? 'Aberta' : 'Fechada'}
-                  </span>
-                </div>
-              </div>
             </div>
           </div>
 
@@ -1936,7 +1922,16 @@ export default function StoreDashboard() {
         <div className="header" style={{ padding: '8px 16px' }}>
           {isDesktop ? (
             <>
-              <div className="header-left" />
+              <div className="header-left" style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <span style={{ fontWeight: 700, fontSize: 15, color: '#1a1a1a' }}>Olá, {storeData?.name || 'Loja'}</span>
+                <div className="toggle-switch" onClick={toggleOpen} title={open ? 'Fechar loja' : 'Abrir loja'} style={{ transform: 'scale(0.85)', transformOrigin: 'left center' }}>
+                  <input type="checkbox" checked={open} readOnly />
+                  <span className="toggle-slider" />
+                </div>
+                <span style={{ fontSize: 11, fontWeight: 600, color: open ? 'var(--success)' : 'var(--danger)' }}>
+                  {open ? 'Aberta' : 'Fechada'}
+                </span>
+              </div>
               <div className="header-right" style={{ gap: 8 }}>
                 <div style={{ position: 'relative', cursor: 'pointer' }}
                   onClick={() => { setView('perfil'); setPerfilTab('mensagens'); }}>
