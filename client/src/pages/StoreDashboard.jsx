@@ -1809,7 +1809,7 @@ export default function StoreDashboard() {
         }}>
           {/* Marca */}
           <div style={{ padding: '16px 16px 14px', borderBottom: '1px solid var(--border)' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               {storeData?.logo ? (
                 <img src={storeData.logo} alt="Logo"
                   style={{ width: 56, height: 56, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }}
