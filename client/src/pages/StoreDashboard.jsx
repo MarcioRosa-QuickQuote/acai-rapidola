@@ -130,6 +130,9 @@ export default function StoreDashboard() {
   const [showMotoboyInfo, setShowMotoboyInfo] = useState(false);
   const [unreadMessages, setUnreadMessages] = useState(0);
   const [showDesktopMenu, setShowDesktopMenu] = useState(false);
+  const [notifOpen, setNotifOpen] = useState(false);
+  const [notifList, setNotifList] = useState([]);
+  const [notifLastSeen, setNotifLastSeen] = useState(() => localStorage.getItem('notif_last_seen') || null);
   const [showTV, setShowTV] = useState(false);
   const [tvLocked, setTvLocked] = useState(false);
   const [tvTime, setTvTime] = useState('');
@@ -217,8 +220,10 @@ export default function StoreDashboard() {
       setTimeout(() => setMotoboyAlert(null), 12000);
     });
     socket.on('notification', (notif) => {
-      if (notif.type === 'delivery') setToast(notif.body);
-      if (notif.type === 'message') { loadMessages(); setToast(`📩 ${notif.body}`); }
+      if (notif.type === 'message') loadMessages();
+      loadNotifs();
+      const icons = { order: '🛒', delivery: '📦', payment: '💰', message: '💬' };
+      setToast(`${icons[notif.type] || '🔔'} ${notif.body}`);
       setTimeout(() => setToast(null), 4000);
     });
     if (storeData) joinStore(storeData.id);
@@ -242,6 +247,7 @@ export default function StoreDashboard() {
     if (storeData) {
       storeIdRef.current = storeData.id;
       loadMessages();
+      loadNotifs();
     }
   }, [storeData]);
 
@@ -273,6 +279,11 @@ export default function StoreDashboard() {
     const data = await apiFetch('/orders');
     if (data.data) setOrders(data.data);
     setLoading(false);
+  }
+
+  async function loadNotifs() {
+    const data = await apiFetch('/notifications');
+    if (data?.data) setNotifList(data.data);
   }
 
   async function loadMessages() {
@@ -1933,17 +1944,63 @@ export default function StoreDashboard() {
                 </span>
               </div>
               <div className="header-right" style={{ gap: 8 }}>
-                <div style={{ position: 'relative', cursor: 'pointer' }}
-                  onClick={() => { setView('perfil'); setPerfilTab('mensagens'); }}>
-                  {unreadMessages > 0 && (
-                    <div style={{ position: 'absolute', top: -4, right: -4, width: 18, height: 18, borderRadius: '50%', background: '#C62828', color: 'white', fontSize: 10, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      {unreadMessages > 9 ? '9+' : unreadMessages}
-                    </div>
+                {/* Sino de notificações */}
+                <div style={{ position: 'relative' }}>
+                  <div style={{ cursor: 'pointer', position: 'relative' }} onClick={() => {
+                    const opening = !notifOpen;
+                    setNotifOpen(opening);
+                    if (opening) {
+                      const now = new Date().toISOString();
+                      localStorage.setItem('notif_last_seen', now);
+                      setNotifLastSeen(now);
+                    }
+                  }}>
+                    {(() => {
+                      const count = notifLastSeen
+                        ? notifList.filter(n => new Date(n.created_at) > new Date(notifLastSeen)).length
+                        : notifList.length;
+                      return count > 0 ? (
+                        <div style={{ position: 'absolute', top: -4, right: -4, width: 18, height: 18, borderRadius: '50%', background: '#C62828', color: 'white', fontSize: 10, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          {count > 9 ? '9+' : count}
+                        </div>
+                      ) : null;
+                    })()}
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--text-light)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+                      <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+                    </svg>
+                  </div>
+                  {notifOpen && (
+                    <>
+                      <div style={{ position: 'fixed', inset: 0, zIndex: 998 }} onClick={() => setNotifOpen(false)} />
+                      <div style={{ position: 'absolute', top: 34, right: 0, width: 320, maxHeight: 420, overflowY: 'auto', background: 'white', borderRadius: 14, boxShadow: '0 8px 32px rgba(0,0,0,0.15)', border: '1px solid #eee', zIndex: 999 }}>
+                        <div style={{ padding: '12px 16px', fontWeight: 700, fontSize: 14, borderBottom: '1px solid #f0f0f0', color: '#1a1a1a' }}>
+                          Notificações
+                        </div>
+                        {notifList.length === 0 ? (
+                          <div style={{ padding: 32, textAlign: 'center', color: '#aaa', fontSize: 13 }}>Nenhuma notificação</div>
+                        ) : notifList.map(n => {
+                          const isNew = notifLastSeen ? new Date(n.created_at) > new Date(notifLastSeen) : false;
+                          const icon = { order: '🛒', delivery: '📦', payment: '💰', message: '💬' }[n.type] || '🔔';
+                          return (
+                            <div key={n.id} onClick={() => {
+                              if (n.type === 'message') { setView('perfil'); setPerfilTab('mensagens'); setNotifOpen(false); }
+                            }} style={{ display: 'flex', gap: 10, padding: '11px 16px', borderBottom: '1px solid #f5f5f5', background: isNew ? '#fdf8ff' : 'white', cursor: n.type === 'message' ? 'pointer' : 'default' }}>
+                              <span style={{ fontSize: 18, flexShrink: 0, marginTop: 1 }}>{icon}</span>
+                              <div style={{ flex: 1, minWidth: 0 }}>
+                                <div style={{ fontWeight: isNew ? 700 : 500, fontSize: 13, color: '#1a1a1a' }}>{n.title}</div>
+                                <div style={{ fontSize: 12, color: '#888', marginTop: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{n.body}</div>
+                                <div style={{ fontSize: 11, color: '#bbb', marginTop: 2 }}>
+                                  {new Date(n.created_at).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}
+                                </div>
+                              </div>
+                              {isNew && <div style={{ width: 7, height: 7, borderRadius: '50%', background: '#6A1B9A', flexShrink: 0, marginTop: 5 }} />}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </>
                   )}
-                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--text-light)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
-                    <path d="M13.73 21a2 2 0 0 1-3.46 0" />
-                  </svg>
                 </div>
               </div>
             </>
