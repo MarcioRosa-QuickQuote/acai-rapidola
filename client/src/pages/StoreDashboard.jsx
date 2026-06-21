@@ -1335,7 +1335,7 @@ export default function StoreDashboard() {
               <span style={{ fontSize: 42, fontWeight: 800, color: '#1a1a1a', lineHeight: 1 }}>129</span>
               <span style={{ fontSize: 13, color: '#888' }}>/mês</span>
             </div>
-            <div style={{ fontSize: 12, color: '#aaa', marginBottom: 22 }}>sem comissão por pedido · cancele quando quiser</div>
+            <div style={{ fontSize: 12, color: '#9C27B0', fontWeight: 600, marginBottom: 22 }}>sem comissão por pedido · cancele quando quiser</div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 24 }}>
               {[
