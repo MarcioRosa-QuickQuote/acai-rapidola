@@ -869,9 +869,7 @@ export default function MotoboyDashboard() {
     }
   }, [online]);
 
-  if (loading) return <div className="loading"><img className="spin" src="/saco_acai.png" /></div>;
-
-  // Tela de aprovação pendente
+  // Telas de status especial não precisam esperar o loadData — approval_status já vem no JWT
   if (user?.approval_status === 'pending') return (
     <div style={{
       display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
@@ -964,6 +962,9 @@ export default function MotoboyDashboard() {
       }}>Sair</button>
     </div>
   );
+
+  // Spinner só aparece para entregadores aprovados enquanto carrega os dados
+  if (loading) return <div className="loading"><img className="spin" src="/saco_acai.png" /></div>;
 
   const tabs = [
     { key: 'inicio', label: 'Início', icon: '🏠' },
