@@ -879,8 +879,10 @@ export default function MotoboyDashboard() {
       <img src="/lp_motoboytrans.png" alt="entregador" style={{ width: 220, objectFit: 'contain', marginBottom: 24 }} />
       <div style={{ fontSize: 40, marginBottom: 12 }}>⏳</div>
       <div style={{ fontWeight: 800, fontSize: 22, color: 'white', marginBottom: 8 }}>Cadastro em análise</div>
-      <div style={{ fontSize: 14, color: 'rgba(255,255,255,0.7)', lineHeight: 1.6, maxWidth: 320, marginBottom: 32 }}>
-        Recebemos seu cadastro! Nossa equipe irá revisar seus dados e você receberá uma confirmação em breve.
+      <div style={{ fontSize: 14, color: 'rgba(255,255,255,0.7)', lineHeight: 1.8, maxWidth: 320, marginBottom: 32 }}>
+        Recebemos seu cadastro!<br />
+        Nossa equipe irá revisar seus dados e<br />
+        você receberá uma confirmação em breve.
       </div>
       <button onClick={logout} style={{
         background: 'rgba(255,255,255,0.15)', color: 'white', border: 'none',
