@@ -13,7 +13,9 @@ export default function CustomerOrder() {
   const orderItems = items || (product ? [{ product_id: product.id, name: product.name, price: product.price, quantity: quantity || 1 }] : []);
   const subtotal = orderItems.reduce((s, i) => s + (i.price || 0) * (i.quantity || 1), 0);
   const [deliveryFee, setDeliveryFee] = useState(6.50);
-  const total = subtotal + deliveryFee;
+  const [deliveryType, setDeliveryType] = useState('delivery'); // 'delivery' | 'pickup'
+  const effectiveFee = deliveryType === 'pickup' ? 0 : deliveryFee;
+  const total = subtotal + effectiveFee;
 
   const [address, setAddress] = useState('');
   const [notes, setNotes] = useState('');
@@ -201,7 +203,9 @@ export default function CustomerOrder() {
         body: JSON.stringify({
           store_id: store.id,
           items: orderItems.map(i => ({ product_id: i.product_id, quantity: i.quantity })),
-          address, lat, lng,
+          address: deliveryType === 'pickup' ? 'RETIRADA NA LOJA' : address,
+          lat: deliveryType === 'pickup' ? null : lat,
+          lng: deliveryType === 'pickup' ? null : lng,
           notes: splitLiter ? `Modo: ${(orderItems[0]?.quantity || 1)}L dividido. ` + (notes || '') : notes
         })
       });
@@ -346,15 +350,32 @@ export default function CustomerOrder() {
         <div style={{ padding: '20px 16px' }}>
           <div style={{ fontWeight: 700, fontSize: 17, marginBottom: 16 }}>Opções de entrega</div>
 
-          <div style={{ border: '2px solid #333', borderRadius: 12, padding: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          {/* Entrega padrão */}
+          <div onClick={() => setDeliveryType('delivery')}
+            style={{ border: deliveryType === 'delivery' ? '2px solid #333' : '1px solid #E0E0E0', borderRadius: 12, padding: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer', marginBottom: 10 }}>
             <div>
               <div style={{ fontWeight: 700, fontSize: 15 }}>Padrão</div>
               <div style={{ fontSize: 13, color: '#888', marginTop: 3 }}>Hoje, 30 – 45 min</div>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
               <span style={{ fontWeight: 700, fontSize: 15 }}>R$ {deliveryFee.toFixed(2)}</span>
-              <div style={{ width: 24, height: 24, borderRadius: '50%', border: '2px solid var(--primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                <div style={{ width: 14, height: 14, borderRadius: '50%', background: 'var(--primary)' }} />
+              <div style={{ width: 24, height: 24, borderRadius: '50%', border: `2px solid ${deliveryType === 'delivery' ? 'var(--primary)' : '#CCC'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                {deliveryType === 'delivery' && <div style={{ width: 14, height: 14, borderRadius: '50%', background: 'var(--primary)' }} />}
+              </div>
+            </div>
+          </div>
+
+          {/* Retirada na loja */}
+          <div onClick={() => setDeliveryType('pickup')}
+            style={{ border: deliveryType === 'pickup' ? '2px solid #333' : '1px solid #E0E0E0', borderRadius: 12, padding: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }}>
+            <div>
+              <div style={{ fontWeight: 700, fontSize: 15 }}>Retirar na loja</div>
+              <div style={{ fontSize: 13, color: '#888', marginTop: 3 }}>Hoje, 15 – 25 min</div>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              <span style={{ fontWeight: 700, fontSize: 15, color: '#2E7D32' }}>Grátis</span>
+              <div style={{ width: 24, height: 24, borderRadius: '50%', border: `2px solid ${deliveryType === 'pickup' ? 'var(--primary)' : '#CCC'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                {deliveryType === 'pickup' && <div style={{ width: 14, height: 14, borderRadius: '50%', background: 'var(--primary)' }} />}
               </div>
             </div>
           </div>
@@ -409,11 +430,11 @@ export default function CustomerOrder() {
       {/* Barra inferior fixa */}
       <div style={{ position: 'fixed', bottom: 0, left: 0, right: 0, background: 'white', borderTop: '1px solid #EFEFEF', padding: '12px 16px', paddingBottom: 'max(12px, env(safe-area-inset-bottom))' }}>
         <button className="btn btn-primary"
-          style={{ fontSize: 15, padding: '14px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', opacity: (!hasAddress || loading) ? 0.6 : 1 }}
-          disabled={!hasAddress || loading}
+          style={{ fontSize: 15, padding: '14px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', opacity: ((!hasAddress && deliveryType === 'delivery') || loading) ? 0.6 : 1 }}
+          disabled={(!hasAddress && deliveryType === 'delivery') || loading}
           onClick={handleSubmit}>
           <span>{loading ? 'Processando...' : 'Continuar'}</span>
-          <span>R$ {total.toFixed(2)} com entrega</span>
+          <span>R$ {total.toFixed(2)} · {deliveryType === 'pickup' ? 'retirada grátis' : 'com entrega'}</span>
         </button>
       </div>
     </div>
