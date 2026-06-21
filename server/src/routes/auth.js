@@ -183,7 +183,7 @@ router.post('/login', async (req, res) => {
 
 router.get('/me', authMiddleware, async (req, res) => {
   const { data: user, error: userErr } = await supabase.from('users')
-    .select('id, name, phone, email, role, address, lat, lng, photo_url, cpf, approval_status, rejection_reason, created_at')
+    .select('id, name, phone, email, role, address, lat, lng, photo_url, cpf, created_at')
     .eq('id', req.user.id).single();
 
   if (userErr) {
