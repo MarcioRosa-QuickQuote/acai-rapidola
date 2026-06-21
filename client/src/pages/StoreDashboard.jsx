@@ -1590,17 +1590,9 @@ export default function StoreDashboard() {
                 </span>
               )}
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-              <select value={dashLayout} onChange={e => setDashLayout(e.target.value)}
-                style={{ border: '1px solid #ddd', borderRadius: 8, padding: '5px 10px', fontSize: 12, color: '#6A1B9A', fontWeight: 600, background: 'white', cursor: 'pointer', outline: 'none' }}>
-                <option value="kanban">⊞ Kanban</option>
-                <option value="fila">⊟ Fila</option>
-                <option value="linha">▤ Compacto</option>
-              </select>
-              <span onClick={() => setView('pedidos')} style={{ fontSize: 12, color: '#6A1B9A', fontWeight: 600, cursor: 'pointer' }}>
-                Ver todos →
-              </span>
-            </div>
+            <span onClick={() => setView('pedidos')} style={{ fontSize: 12, color: '#6A1B9A', fontWeight: 600, cursor: 'pointer' }}>
+              Ver todos →
+            </span>
           </div>
 
           {pendingOrders.length === 0 ? (
@@ -1982,7 +1974,18 @@ export default function StoreDashboard() {
             <>
               <div className="header-left">
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <span style={{ fontSize: 15, fontWeight: 800, color: '#1a1a1a', maxWidth: 160, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  {storeData?.logo ? (
+                    <img src={storeData.logo} alt="Logo"
+                      style={{ width: 34, height: 34, borderRadius: '50%', objectFit: 'cover', flexShrink: 0, cursor: 'pointer' }}
+                      onClick={() => { setView('perfil'); setPerfilTab(null); }}
+                      onError={e => { e.target.style.display = 'none'; }} />
+                  ) : (
+                    <div style={{ width: 34, height: 34, borderRadius: '50%', background: 'linear-gradient(135deg, var(--primary), var(--primary-dark))', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 800, fontSize: 15, flexShrink: 0, cursor: 'pointer' }}
+                      onClick={() => { setView('perfil'); setPerfilTab(null); }}>
+                      {(storeData?.name || 'L').charAt(0)}
+                    </div>
+                  )}
+                  <span style={{ fontSize: 15, fontWeight: 800, color: '#1a1a1a', maxWidth: 130, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                     {storeData?.name || 'Loja'}
                   </span>
                   <div className="toggle-switch" onClick={toggleOpen} title={open ? 'Fechar loja' : 'Abrir loja'} style={{ transform: 'scale(0.75)', transformOrigin: 'center' }}>
@@ -1992,6 +1995,12 @@ export default function StoreDashboard() {
                 </div>
               </div>
               <div className="header-right" style={{ gap: 8 }}>
+                <select value={dashLayout} onChange={e => setDashLayout(e.target.value)}
+                  style={{ border: '1.5px solid #E1BEE7', borderRadius: 8, padding: '5px 8px', fontSize: 12, color: '#6A1B9A', fontWeight: 700, background: 'white', cursor: 'pointer', outline: 'none' }}>
+                  <option value="kanban">⊞ Kanban</option>
+                  <option value="fila">⊟ Fila</option>
+                  <option value="linha">▤ Compacto</option>
+                </select>
                 <div style={{ position: 'relative', cursor: 'pointer' }}
                   onClick={() => { setView('perfil'); setPerfilTab('mensagens'); }}>
                   {unreadMessages > 0 && (
@@ -2001,19 +2010,6 @@ export default function StoreDashboard() {
                     <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
                     <path d="M13.73 21a2 2 0 0 1-3.46 0" />
                   </svg>
-                </div>
-                <div>
-                  {storeData?.logo ? (
-                    <img src={storeData.logo} alt="Logo"
-                      style={{ width: 42, height: 42, borderRadius: '50%', objectFit: 'cover', flexShrink: 0, cursor: 'pointer' }}
-                      onClick={() => { setView('perfil'); setPerfilTab(null); }}
-                      onError={e => { e.target.style.display = 'none'; }} />
-                  ) : (
-                    <div style={{ width: 42, height: 42, borderRadius: '50%', background: 'linear-gradient(135deg, var(--primary), var(--primary-dark))', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 800, fontSize: 18, flexShrink: 0, cursor: 'pointer' }}
-                      onClick={() => { setView('perfil'); setPerfilTab(null); }}>
-                      {(storeData?.name || 'L').charAt(0)}
-                    </div>
-                  )}
                 </div>
               </div>
             </>
