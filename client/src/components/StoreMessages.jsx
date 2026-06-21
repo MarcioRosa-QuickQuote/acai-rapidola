@@ -57,6 +57,8 @@ function Conversation({ group, apiFetch, storeId, onBack, onReload }) {
   async function sendReply() {
     if (!replyText.trim()) return;
     setReplySending(true);
+    const unread = group.messages.filter(m => !m.read && !m.from_store);
+    await Promise.all(unread.map(m => apiFetch(`/messages/${m.id}/read`, { method: 'PATCH' })));
     const data = await apiFetch('/messages/reply', {
       method: 'POST',
       body: JSON.stringify({ customer_id: group.customer_id, store_id: storeId, message: replyText.trim() })
