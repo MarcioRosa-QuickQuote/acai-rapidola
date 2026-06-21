@@ -251,7 +251,7 @@ router.get('/entregadores', adminOnly, async (req, res) => {
     (async () => {
       const { data, error } = await supabase
         .from('users')
-        .select('id, name, phone, email, cpf, vehicle_type, plate, pix_key, selfie_url, document_url, approval_status, rejection_reason, created_at')
+        .select('id, name, phone, email, cpf, vehicle_type, plate, pix_key, selfie_url, document_url, approval_status, rejection_reason, suspended_until, created_at')
         .eq('role', 'motoboy')
         .order('created_at', { ascending: false });
       if (!error) return { data };
@@ -260,10 +260,10 @@ router.get('/entregadores', adminOnly, async (req, res) => {
 
       const { data: data2, error: err2 } = await supabase
         .from('users')
-        .select('id, name, phone, email, cpf, vehicle_type, plate, pix_key, selfie_url, approval_status, created_at')
+        .select('id, name, phone, email, cpf, vehicle_type, plate, pix_key, selfie_url, document_url, approval_status, rejection_reason, created_at')
         .eq('role', 'motoboy')
         .order('created_at', { ascending: false });
-      if (!err2) return { data: (data2 || []).map(u => ({ ...u, rejection_reason: null, document_url: null })) };
+      if (!err2) return { data: (data2 || []).map(u => ({ ...u, suspended_until: null })) };
 
       console.error('[admin/entregadores] fallback error:', err2.code, err2.message);
 
@@ -274,7 +274,7 @@ router.get('/entregadores', adminOnly, async (req, res) => {
         .order('created_at', { ascending: false });
       return { data: (data3 || []).map(u => ({
         ...u, cpf: null, vehicle_type: null, plate: null,
-        pix_key: null, selfie_url: null, document_url: null, rejection_reason: null
+        pix_key: null, selfie_url: null, document_url: null, rejection_reason: null, suspended_until: null
       })) };
     })(),
     // Stats de pedidos: total atribuídos, entregues e cancelados por motoboy

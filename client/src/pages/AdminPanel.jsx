@@ -690,7 +690,16 @@ export default function AdminPanel() {
                             {e.plate && ` · Placa: ${e.plate}`}
                           </div>
                           {e.pix_key && <div style={{ fontSize: 12, color: '#666', marginBottom: 2 }}>Pix: {e.pix_key}</div>}
-                          {e.rejection_reason && <div style={{ fontSize: 12, color: '#e53935', marginTop: 4 }}>Motivo: {e.rejection_reason}</div>}
+                          {e.rejection_reason && <div style={{ fontSize: 12, color: e.approval_status === 'suspended' ? '#6A1B9A' : '#e53935', marginTop: 4 }}>Motivo: {e.rejection_reason}</div>}
+                          {e.approval_status === 'suspended' && e.suspended_until && (() => {
+                            const until = new Date(e.suspended_until);
+                            const days = Math.max(0, Math.ceil((until - new Date()) / 86400000));
+                            return (
+                              <div style={{ fontSize: 11, color: '#6A1B9A', fontWeight: 600, marginTop: 2 }}>
+                                ⏱ {days === 0 ? 'Expira hoje' : `Expira em ${days} dia${days !== 1 ? 's' : ''}`} · {until.toLocaleDateString('pt-BR')}
+                              </div>
+                            );
+                          })()}
                           <div style={{ fontSize: 11, color: '#aaa', marginTop: 4 }}>Cadastro em {fmtDate(e.created_at)}</div>
 
                           {/* Stats de pedidos */}

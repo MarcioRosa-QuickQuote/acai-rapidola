@@ -875,15 +875,11 @@ export default function MotoboyDashboard() {
       minHeight: '100vh', padding: 32, textAlign: 'center',
       background: 'linear-gradient(160deg, #1a0533 0%, #4A148C 100%)'
     }}>
-      <img src="/logo_placa.png" alt="logo" style={{ width: 100, height: 100, objectFit: 'contain', marginBottom: 24, filter: 'drop-shadow(0 4px 16px rgba(0,0,0,0.5))' }} />
+      <img src="/lp_motoboy.png" alt="entregador" style={{ width: 180, objectFit: 'contain', marginBottom: 24 }} />
       <div style={{ fontSize: 40, marginBottom: 12 }}>⏳</div>
       <div style={{ fontWeight: 800, fontSize: 22, color: 'white', marginBottom: 8 }}>Cadastro em análise</div>
       <div style={{ fontSize: 14, color: 'rgba(255,255,255,0.7)', lineHeight: 1.6, maxWidth: 320, marginBottom: 32 }}>
         Recebemos seu cadastro! Nossa equipe irá revisar seus dados e você receberá uma confirmação em breve.
-      </div>
-      <div style={{ background: 'rgba(255,255,255,0.1)', borderRadius: 16, padding: '16px 24px', maxWidth: 320, marginBottom: 24 }}>
-        <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.6)', marginBottom: 4 }}>Em caso de dúvidas, entre em contato:</div>
-        <div style={{ fontSize: 13, color: 'white', fontWeight: 600 }}>{user.phone}</div>
       </div>
       <button onClick={logout} style={{
         background: 'rgba(255,255,255,0.15)', color: 'white', border: 'none',
@@ -893,30 +889,49 @@ export default function MotoboyDashboard() {
   );
 
   // Tela de conta suspensa
-  if (user?.approval_status === 'suspended') return (
-    <div style={{
-      display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-      minHeight: '100vh', padding: 32, textAlign: 'center',
-      background: 'linear-gradient(160deg, #1a0533 0%, #4A148C 100%)'
-    }}>
-      <img src="/logo_placa.png" alt="logo" style={{ width: 100, height: 100, objectFit: 'contain', marginBottom: 24, filter: 'drop-shadow(0 4px 16px rgba(0,0,0,0.5))' }} />
-      <div style={{ fontSize: 40, marginBottom: 12 }}>⏸</div>
-      <div style={{ fontWeight: 800, fontSize: 22, color: 'white', marginBottom: 8 }}>Conta suspensa</div>
-      <div style={{ fontSize: 14, color: 'rgba(255,255,255,0.7)', lineHeight: 1.6, maxWidth: 320, marginBottom: 16 }}>
-        Sua conta foi suspensa temporariamente. Entre em contato com o suporte para mais informações.
+  if (user?.approval_status === 'suspended') {
+    const suspendedUntil = user.suspended_until ? new Date(user.suspended_until) : null;
+    const now = new Date();
+    const daysLeft = suspendedUntil
+      ? Math.max(0, Math.ceil((suspendedUntil - now) / (1000 * 60 * 60 * 24)))
+      : null;
+    const dtFmt = suspendedUntil
+      ? suspendedUntil.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' })
+      : null;
+    return (
+      <div style={{
+        display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+        minHeight: '100vh', padding: 32, textAlign: 'center',
+        background: 'linear-gradient(160deg, #1a0533 0%, #4A148C 100%)'
+      }}>
+        <img src="/logo_placa.png" alt="logo" style={{ width: 100, height: 100, objectFit: 'contain', marginBottom: 24, filter: 'drop-shadow(0 4px 16px rgba(0,0,0,0.5))' }} />
+        <div style={{ fontSize: 40, marginBottom: 12 }}>⏸</div>
+        <div style={{ fontWeight: 800, fontSize: 22, color: 'white', marginBottom: 8 }}>Conta suspensa</div>
+        {dtFmt && (
+          <div style={{ fontSize: 14, color: 'rgba(255,255,255,0.7)', lineHeight: 1.6, maxWidth: 320, marginBottom: 16 }}>
+            {daysLeft === 0
+              ? 'Suspensão termina hoje. Tente novamente mais tarde.'
+              : `Suspensão por mais ${daysLeft} dia${daysLeft !== 1 ? 's' : ''} (até ${dtFmt}).`}
+          </div>
+        )}
+        {!dtFmt && (
+          <div style={{ fontSize: 14, color: 'rgba(255,255,255,0.7)', lineHeight: 1.6, maxWidth: 320, marginBottom: 16 }}>
+            Sua conta foi suspensa. Entre em contato com o suporte.
+          </div>
+        )}
+        {user.rejection_reason && (
+          <div style={{ background: 'rgba(106,27,154,0.3)', borderRadius: 12, padding: '12px 20px', maxWidth: 320, marginBottom: 24, border: '1px solid rgba(255,255,255,0.15)' }}>
+            <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.6)', marginBottom: 4 }}>Motivo:</div>
+            <div style={{ fontSize: 13, color: 'white' }}>{user.rejection_reason}</div>
+          </div>
+        )}
+        <button onClick={logout} style={{
+          background: 'rgba(255,255,255,0.15)', color: 'white', border: 'none',
+          padding: '10px 24px', borderRadius: 10, cursor: 'pointer', fontSize: 13, fontWeight: 600
+        }}>Sair</button>
       </div>
-      {user.rejection_reason && (
-        <div style={{ background: 'rgba(106,27,154,0.3)', borderRadius: 12, padding: '12px 20px', maxWidth: 320, marginBottom: 24, border: '1px solid rgba(255,255,255,0.15)' }}>
-          <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.6)', marginBottom: 4 }}>Motivo:</div>
-          <div style={{ fontSize: 13, color: 'white' }}>{user.rejection_reason}</div>
-        </div>
-      )}
-      <button onClick={logout} style={{
-        background: 'rgba(255,255,255,0.15)', color: 'white', border: 'none',
-        padding: '10px 24px', borderRadius: 10, cursor: 'pointer', fontSize: 13, fontWeight: 600
-      }}>Sair</button>
-    </div>
-  );
+    );
+  }
 
   // Tela de cadastro recusado
   if (user?.approval_status === 'rejected') return (

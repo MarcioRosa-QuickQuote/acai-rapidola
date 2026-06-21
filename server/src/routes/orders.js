@@ -439,7 +439,7 @@ router.patch('/:id/status', authMiddleware, async (req, res) => {
     }
   }
 
-  // Auto-suspensão: verifica taxa de cancelamento do motoboy após ele cancelar
+  // Verifica taxa de cancelamento do motoboy após ele cancelar
   if (status === 'cancelled' && req.user.role === 'motoboy') {
     try {
       const { data: recentOrders } = await supabase
@@ -453,12 +453,26 @@ router.patch('/:id/status', authMiddleware, async (req, res) => {
         const totalRecent = recentOrders.length;
         const cancelledRecent = recentOrders.filter(o => o.status === 'cancelled').length;
         const rate = cancelledRecent / totalRecent;
-        if (rate >= 0.3) {
-          await supabase.from('users')
-            .update({ approval_status: 'suspended', rejection_reason: `Suspenso automaticamente: ${cancelledRecent} de ${totalRecent} pedidos recentes cancelados (${Math.round(rate * 100)}%)` })
-            .eq('id', req.user.id);
-          await notifyUser(req.user.id, 'Conta suspensa', 'Sua conta foi suspensa por alta taxa de cancelamento. Entre em contato com o suporte.', 'system');
-          console.log(`[Orders] Motoboy ${req.user.id} suspenso: ${cancelledRecent}/${totalRecent} cancelamentos`);
+        const pct = Math.round(rate * 100);
+
+        if (rate >= 0.30) {
+          // Suspensão de 7 dias
+          const suspendedUntil = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+          const motivo = `Alta taxa de cancelamento: ${cancelledRecent} de ${totalRecent} pedidos recentes cancelados (${pct}%)`;
+          await supabase.from('users').update({
+            approval_status: 'suspended',
+            suspended_until: suspendedUntil.toISOString(),
+            rejection_reason: motivo
+          }).eq('id', req.user.id);
+          const dtStr = suspendedUntil.toLocaleDateString('pt-BR');
+          await notifyUser(req.user.id, 'Conta suspensa por 7 dias',
+            `Taxa de cancelamento: ${pct}%. Suspensão até ${dtStr}. Contate o suporte.`, 'system');
+          console.log(`[Orders] Motoboy ${req.user.id} suspenso 7 dias: ${cancelledRecent}/${totalRecent}`);
+        } else if (rate >= 0.15) {
+          // Aviso sem suspensão
+          await notifyUser(req.user.id, '⚠️ Aviso: taxa de cancelamento alta',
+            `Sua taxa está em ${pct}% (últimos ${totalRecent} pedidos). Acima de 30% sua conta será suspensa por 7 dias.`, 'system');
+          console.log(`[Orders] Motoboy ${req.user.id} aviso: ${cancelledRecent}/${totalRecent} cancelamentos (${pct}%)`);
         }
       }
     } catch (suspendErr) {

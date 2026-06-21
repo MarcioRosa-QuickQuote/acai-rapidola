@@ -252,7 +252,7 @@ router.post('/login', async (req, res) => {
 
 router.get('/me', authMiddleware, async (req, res) => {
   let { data: user, error: userErr } = await supabase.from('users')
-    .select('id, name, phone, email, role, address, lat, lng, photo_url, cpf, created_at, approval_status, rejection_reason')
+    .select('id, name, phone, email, role, address, lat, lng, photo_url, cpf, created_at, approval_status, rejection_reason, suspended_until')
     .eq('id', req.user.id).single();
 
   if (userErr) {
@@ -260,23 +260,47 @@ router.get('/me', authMiddleware, async (req, res) => {
       console.warn('[auth/me] Usuário não encontrado no banco. ID:', req.user?.id);
       return res.status(404).json({ error: 'Usuário não encontrado' });
     }
-    // Coluna rejection_reason pode não existir ainda — tenta sem ela
+    // Colunas opcionais podem não existir ainda — fallback progressivo
     if (userErr.code === '42703') {
-      const fallback = await supabase.from('users')
-        .select('id, name, phone, email, role, address, lat, lng, photo_url, cpf, created_at, approval_status')
+      const fb1 = await supabase.from('users')
+        .select('id, name, phone, email, role, address, lat, lng, photo_url, cpf, created_at, approval_status, rejection_reason')
         .eq('id', req.user.id).single();
-      if (fallback.error) {
-        console.error('[auth/me] Supabase error:', fallback.error.code, fallback.error.message);
+      if (!fb1.error) {
+        user = { ...fb1.data, suspended_until: null };
+        userErr = null;
+      } else if (fb1.error.code === '42703') {
+        const fb2 = await supabase.from('users')
+          .select('id, name, phone, email, role, address, lat, lng, photo_url, cpf, created_at, approval_status')
+          .eq('id', req.user.id).single();
+        if (fb2.error) {
+          console.error('[auth/me] Supabase error:', fb2.error.code, fb2.error.message);
+          return res.status(503).json({ error: 'Serviço temporariamente indisponível' });
+        }
+        user = { ...fb2.data, rejection_reason: null, suspended_until: null };
+        userErr = null;
+      } else {
+        console.error('[auth/me] Supabase error:', fb1.error.code, fb1.error.message);
         return res.status(503).json({ error: 'Serviço temporariamente indisponível' });
       }
-      user = { ...fallback.data, rejection_reason: null };
-      userErr = null;
     } else {
       console.error('[auth/me] Supabase error:', userErr.code, userErr.message);
       return res.status(503).json({ error: 'Serviço temporariamente indisponível' });
     }
   }
   if (!user) return res.status(404).json({ error: 'Usuário não encontrado' });
+
+  // Auto-reativa motoboy suspenso cujo prazo expirou
+  if (user.approval_status === 'suspended' && user.suspended_until) {
+    if (new Date(user.suspended_until) <= new Date()) {
+      await supabase.from('users')
+        .update({ approval_status: 'approved', suspended_until: null, rejection_reason: '' })
+        .eq('id', user.id);
+      user.approval_status = 'approved';
+      user.suspended_until = null;
+      user.rejection_reason = '';
+      console.log(`[auth/me] Motoboy ${user.id} reativado automaticamente (suspensão expirada)`);
+    }
+  }
 
   // Aplica override de admin se telefone estiver na lista ADMIN_PHONES
   const role = isAdminPhone(user.phone) ? 'admin' : user.role;
