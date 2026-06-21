@@ -246,6 +246,7 @@ router.get('/logs', adminOnly, async (req, res) => {
 
 // ── Entregadores ──────────────────────────────────────────────────────────────
 router.get('/entregadores', adminOnly, async (req, res) => {
+  // Tentativa completa
   const { data, error } = await supabase
     .from('users')
     .select('id, name, phone, email, cpf, vehicle_type, plate, pix_key, selfie_url, approval_status, rejection_reason, created_at')
@@ -255,20 +256,24 @@ router.get('/entregadores', adminOnly, async (req, res) => {
 
   console.error('[admin/entregadores] query error:', error.code, error.message);
 
-  // Fallback mínimo — só colunas que existem desde o início
+  // Fallback sem rejection_reason (coluna pode não existir)
   const { data: data2, error: err2 } = await supabase
+    .from('users')
+    .select('id, name, phone, email, cpf, vehicle_type, plate, pix_key, selfie_url, approval_status, created_at')
+    .eq('role', 'motoboy')
+    .order('created_at', { ascending: false });
+  if (!err2) return res.json((data2 || []).map(u => ({ ...u, rejection_reason: null })));
+
+  console.error('[admin/entregadores] fallback error:', err2.code, err2.message);
+
+  // Fallback mínimo garantido
+  const { data: data3 } = await supabase
     .from('users')
     .select('id, name, phone, email, created_at, approval_status')
     .eq('role', 'motoboy')
     .order('created_at', { ascending: false });
-
-  if (err2) {
-    console.error('[admin/entregadores] fallback error:', err2.code, err2.message);
-    return res.json([]);
-  }
-  return res.json((data2 || []).map(u => ({
-    ...u,
-    cpf: null, vehicle_type: null, plate: null,
+  return res.json((data3 || []).map(u => ({
+    ...u, cpf: null, vehicle_type: null, plate: null,
     pix_key: null, selfie_url: null, rejection_reason: null
   })));
 });
