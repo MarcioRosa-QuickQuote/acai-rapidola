@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useGoogleLogin } from '@react-oauth/google';
@@ -32,6 +32,9 @@ export default function Login() {
     },
     onError: () => setError('Login com Google cancelado')
   });
+  const videoRef = useRef(null);
+  useEffect(() => { videoRef.current?.play().catch(() => {}); }, []);
+
   const [recovery, setRecovery] = useState(false);
   const [recoveryStep, setRecoveryStep] = useState(1);
   const [recoveryEmail, setRecoveryEmail] = useState('');
@@ -60,7 +63,7 @@ export default function Login() {
       padding: '24px 20px 20px', position: 'relative', overflow: 'hidden'
     }}>
       {/* Vídeo: lado esquerdo no desktop, tela inteira no mobile */}
-      <video autoPlay loop muted playsInline preload="auto" className="login-video">
+      <video ref={videoRef} autoPlay loop muted playsInline preload="auto" className="login-video">
         <source src="/video4.mp4" type="video/mp4" />
       </video>
       <div className="login-video-overlay" />
