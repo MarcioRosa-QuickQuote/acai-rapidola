@@ -401,6 +401,7 @@ export default function AdminPanel() {
   const [autoApprove, setAutoApprove] = useState(false);
   const [autoApproveLoading, setAutoApproveLoading] = useState(false);
   const [rejectTarget, setRejectTarget] = useState(null);
+  const [deleteHoverId, setDeleteHoverId] = useState(null);
 
   const loadAll = useCallback(async () => {
     setLoading(true);
@@ -432,6 +433,12 @@ export default function AdminPanel() {
 
   async function approveEntregador(id) {
     await api(`/entregadores/${id}/approve`, { method: 'PATCH', body: {} });
+    loadEntregadores();
+  }
+
+  async function deleteEntregador(id, name) {
+    if (!window.confirm(`Excluir o cadastro de "${name}"? Esta ação não pode ser desfeita.`)) return;
+    await api(`/entregadores/${id}`, { method: 'DELETE' });
     loadEntregadores();
   }
 
@@ -646,7 +653,20 @@ export default function AdminPanel() {
               ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                   {filtered.map(e => (
-                    <div key={e.id} style={{ background: 'white', borderRadius: 14, padding: '16px', boxShadow: '0 1px 4px rgba(0,0,0,.07)' }}>
+                    <div key={e.id} style={{ background: 'white', borderRadius: 14, padding: '16px', boxShadow: '0 1px 4px rgba(0,0,0,.07)', position: 'relative' }}>
+                      <button
+                        onClick={() => deleteEntregador(e.id, e.name)}
+                        onMouseEnter={() => setDeleteHoverId(e.id)}
+                        onMouseLeave={() => setDeleteHoverId(null)}
+                        title="Excluir cadastro"
+                        style={{
+                          position: 'absolute', top: 10, right: 10,
+                          background: 'none', border: 'none', cursor: 'pointer',
+                          fontSize: 16, padding: 4, lineHeight: 1,
+                          color: deleteHoverId === e.id ? '#e53935' : '#bbb',
+                          transition: 'color 0.15s'
+                        }}
+                      >🗑</button>
                       <div style={{ display: 'flex', gap: 14, alignItems: 'flex-start' }}>
                         {/* Selfie */}
                         <div style={{ flexShrink: 0 }}>

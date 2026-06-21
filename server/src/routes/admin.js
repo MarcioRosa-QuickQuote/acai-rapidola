@@ -350,6 +350,12 @@ router.patch('/entregadores/:id/reject', adminOnly, async (req, res) => {
   res.json({ ok: true });
 });
 
+router.delete('/entregadores/:id', adminOnly, async (req, res) => {
+  const { error } = await supabase.from('users').delete().eq('id', req.params.id).eq('role', 'motoboy');
+  if (error) return res.status(500).json({ error: error.message });
+  res.json({ ok: true });
+});
+
 // ── App Settings ──────────────────────────────────────────────────────────────
 router.get('/settings', adminOnly, async (req, res) => {
   const { data } = await supabase.from('app_settings').select('key, value');
