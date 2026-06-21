@@ -66,6 +66,21 @@ router.post('/accept/:orderId', authMiddleware, roleMiddleware('motoboy'), async
     });
   }
 
+  // Registrar aceitação na tabela de offers
+  const { v4: uuid } = require('uuid');
+  const now = new Date().toISOString();
+  await supabase.from('motoboy_offers').upsert({
+    id: uuid(), order_id: req.params.orderId, motoboy_id: req.user.id,
+    response: 'accepted', responded_at: now
+  }, { onConflict: 'order_id,motoboy_id', ignoreDuplicates: false }).catch(() => {});
+  // Expirar offers dos outros motoboys que não aceitaram
+  await supabase.from('motoboy_offers')
+    .update({ response: 'expired', responded_at: now })
+    .eq('order_id', req.params.orderId)
+    .neq('motoboy_id', req.user.id)
+    .is('response', null)
+    .catch(() => {});
+
   res.json({ success: true });
 });
 

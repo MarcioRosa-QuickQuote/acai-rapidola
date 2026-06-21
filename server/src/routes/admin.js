@@ -246,8 +246,8 @@ router.get('/logs', adminOnly, async (req, res) => {
 
 // ── Entregadores ──────────────────────────────────────────────────────────────
 router.get('/entregadores', adminOnly, async (req, res) => {
-  // Busca usuários e stats de pedidos em paralelo
-  const [usersResult, ordersResult] = await Promise.all([
+  // Busca usuários, stats de pedidos, offers e ratings em paralelo
+  const [usersResult, ordersResult, offersResult, ratingsResult] = await Promise.all([
     (async () => {
       const { data, error } = await supabase
         .from('users')
@@ -277,10 +277,12 @@ router.get('/entregadores', adminOnly, async (req, res) => {
         pix_key: null, selfie_url: null, document_url: null, rejection_reason: null, suspended_until: null
       })) };
     })(),
-    // Stats de pedidos: total atribuídos, entregues e cancelados por motoboy
-    supabase.from('orders')
-      .select('motoboy_id, status')
-      .not('motoboy_id', 'is', null)
+    // Stats de pedidos
+    supabase.from('orders').select('motoboy_id, status').not('motoboy_id', 'is', null),
+    // Taxa de aceitação por motoboy
+    supabase.from('motoboy_offers').select('motoboy_id, response').not('response', 'is', null),
+    // Avaliações por motoboy
+    supabase.from('delivery_ratings').select('motoboy_id, rating'),
   ]);
 
   // Consolida stats por motoboy
@@ -292,10 +294,33 @@ router.get('/entregadores', adminOnly, async (req, res) => {
     if (o.status === 'cancelled') statsMap[o.motoboy_id].cancelled++;
   }
 
-  const result = (usersResult.data || []).map(u => ({
-    ...u,
-    stats: statsMap[u.id] || { total: 0, delivered: 0, cancelled: 0 }
-  }));
+  // Consolida acceptance rate por motoboy
+  const offersMap = {};
+  for (const o of (offersResult.data || [])) {
+    if (!offersMap[o.motoboy_id]) offersMap[o.motoboy_id] = { accepted: 0, total: 0 };
+    offersMap[o.motoboy_id].total++;
+    if (o.response === 'accepted') offersMap[o.motoboy_id].accepted++;
+  }
+
+  // Consolida ratings por motoboy
+  const ratingsMap = {};
+  for (const r of (ratingsResult.data || [])) {
+    if (!ratingsMap[r.motoboy_id]) ratingsMap[r.motoboy_id] = { sum: 0, count: 0 };
+    ratingsMap[r.motoboy_id].sum += r.rating;
+    ratingsMap[r.motoboy_id].count++;
+  }
+
+  const result = (usersResult.data || []).map(u => {
+    const of = offersMap[u.id];
+    const rt = ratingsMap[u.id];
+    return {
+      ...u,
+      stats: statsMap[u.id] || { total: 0, delivered: 0, cancelled: 0 },
+      acceptance_rate: of && of.total >= 3 ? parseFloat((of.accepted / of.total * 100).toFixed(0)) : null,
+      avg_rating: rt && rt.count >= 1 ? parseFloat((rt.sum / rt.count).toFixed(1)) : null,
+      rating_count: rt?.count || 0,
+    };
+  });
   return res.json(result);
 });
 

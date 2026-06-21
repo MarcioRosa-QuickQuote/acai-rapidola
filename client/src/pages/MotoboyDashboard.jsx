@@ -718,6 +718,7 @@ export default function MotoboyDashboard() {
   const [isEmployee, setIsEmployee] = useState(false);
   const [isLinked, setIsLinked] = useState(false); // vinculado a alguma loja → recebe pedidos automático
   const [earnings, setEarnings] = useState({ total: 0, pending: 0, list: [] });
+  const [myRating, setMyRating] = useState(null); // { avg, count }
   const [fullscreenOrder, setFullscreenOrder] = useState(null);
   const restoredNav = useRef(false);
 
@@ -753,6 +754,12 @@ export default function MotoboyDashboard() {
       if (d.employments && d.employments.length > 0) setIsLinked(true);
       if (d.total !== undefined) setEarnings({ total: d.total, pending: d.pending, list: d.earnings || [] });
     });
+    // Busca a média de avaliações do entregador logado
+    if (user?.id) {
+      apiFetch(`/ratings/motoboy/${user.id}`).then(d => {
+        if (d.count > 0) setMyRating({ avg: d.avg, count: d.count });
+      }).catch(() => {});
+    }
     const interval = setInterval(loadData, 30000); // fallback — socket cobre em real-time
     return () => clearInterval(interval);
   }, []);
@@ -1344,6 +1351,11 @@ export default function MotoboyDashboard() {
           <div>
             <div style={{ fontWeight: 800, fontSize: 16 }}>{user?.name}</div>
             <div style={{ fontSize: 12, color: '#888' }}>Entregador</div>
+            {myRating && (
+              <div style={{ fontSize: 13, color: '#F57F17', fontWeight: 700, marginTop: 2 }}>
+                ⭐ {myRating.avg} <span style={{ fontSize: 11, fontWeight: 400, color: '#888' }}>({myRating.count} avaliações)</span>
+              </div>
+            )}
           </div>
         </div>
         <div className="form-group">

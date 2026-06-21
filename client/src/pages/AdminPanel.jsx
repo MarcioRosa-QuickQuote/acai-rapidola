@@ -702,21 +702,31 @@ export default function AdminPanel() {
                           })()}
                           <div style={{ fontSize: 11, color: '#aaa', marginTop: 4 }}>Cadastro em {fmtDate(e.created_at)}</div>
 
-                          {/* Stats de pedidos */}
-                          {e.stats && e.stats.total > 0 && (
-                            <div style={{ display: 'flex', gap: 10, marginTop: 8, flexWrap: 'wrap' }}>
+                          {/* Stats de pedidos + métricas */}
+                          <div style={{ display: 'flex', gap: 8, marginTop: 8, flexWrap: 'wrap' }}>
+                            {e.stats && e.stats.total > 0 && (<>
                               <span style={{ fontSize: 11, background: '#e8f5e9', color: '#2E7D32', padding: '2px 8px', borderRadius: 8, fontWeight: 600 }}>
-                                ✅ {e.stats.delivered} entregues
+                                ✅ {e.stats.delivered} entregas
                               </span>
                               {e.stats.cancelled > 0 && (
                                 <span style={{ fontSize: 11, background: '#ffeaea', color: '#e53935', padding: '2px 8px', borderRadius: 8, fontWeight: 600 }}>
-                                  ✕ {e.stats.cancelled} cancelados
-                                  {e.stats.total >= 5 && ` (${Math.round(e.stats.cancelled / e.stats.total * 100)}%)`}
+                                  ✕ {Math.round(e.stats.cancelled / e.stats.total * 100)}% cancel.
                                 </span>
                               )}
-                              <span style={{ fontSize: 11, color: '#999' }}>{e.stats.total} total</span>
-                            </div>
-                          )}
+                            </>)}
+                            {e.acceptance_rate !== null && e.acceptance_rate !== undefined && (
+                              <span style={{ fontSize: 11, padding: '2px 8px', borderRadius: 8, fontWeight: 600,
+                                background: e.acceptance_rate >= 70 ? '#e8f5e9' : e.acceptance_rate >= 50 ? '#fff3e0' : '#ffeaea',
+                                color: e.acceptance_rate >= 70 ? '#2E7D32' : e.acceptance_rate >= 50 ? '#E65100' : '#e53935' }}>
+                                👍 {e.acceptance_rate}% aceitação
+                              </span>
+                            )}
+                            {e.avg_rating !== null && e.avg_rating !== undefined && (
+                              <span style={{ fontSize: 11, background: '#FFF8E1', color: '#F57F17', padding: '2px 8px', borderRadius: 8, fontWeight: 600 }}>
+                                ⭐ {e.avg_rating} ({e.rating_count})
+                              </span>
+                            )}
+                          </div>
 
                           {/* Botões de verificação rápida */}
                           <div style={{ display: 'flex', gap: 6, marginTop: 8, flexWrap: 'wrap' }}>

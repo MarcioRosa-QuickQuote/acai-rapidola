@@ -432,10 +432,24 @@ router.patch('/:id/status', authMiddleware, async (req, res) => {
       const io = getIO();
       if (io) io.to(`user:${motoboyId}`).emit('order_updated', { orderId: req.params.id, status: 'assigned' });
       await notifyUser(motoboyId, '🛵 Nova entrega!', 'Pedido atribuído para você — verifique o app', 'delivery');
+      // Offer registrada como aceita automático (linked = auto-aceite)
+      supabase.from('motoboy_offers').upsert({
+        id: uuid(), order_id: req.params.id, motoboy_id: motoboyId,
+        response: 'accepted', responded_at: new Date().toISOString()
+      }, { onConflict: 'order_id,motoboy_id', ignoreDuplicates: false }).catch(() => {});
     } else {
       // Nenhum motoboy vinculado online → notifica motoboys avulsos que há pedido disponível
       const io = getIO();
       if (io) io.to('role:motoboy').emit('new_available_order', { orderId: req.params.id, storeId: order.store_id });
+      // Cria offer para todos os motoboys online agora (para calcular taxa de aceitação)
+      supabase.from('motoboy_locations').select('motoboy_id').eq('online', 1).then(({ data: onlineMotoboys }) => {
+        if (!onlineMotoboys?.length) return;
+        const offers = onlineMotoboys.map(m => ({
+          id: uuid(), order_id: req.params.id, motoboy_id: m.motoboy_id,
+          offered_at: new Date().toISOString(), response: null
+        }));
+        supabase.from('motoboy_offers').upsert(offers, { onConflict: 'order_id,motoboy_id', ignoreDuplicates: true }).catch(() => {});
+      }).catch(() => {});
     }
   }
 
@@ -456,8 +470,8 @@ router.patch('/:id/status', authMiddleware, async (req, res) => {
         const pct = Math.round(rate * 100);
 
         if (rate >= 0.30) {
-          // Suspensão de 7 dias
-          const suspendedUntil = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+          // Suspensão de 3 dias
+          const suspendedUntil = new Date(Date.now() + 3 * 24 * 60 * 60 * 1000);
           const motivo = `Alta taxa de cancelamento: ${cancelledRecent} de ${totalRecent} pedidos recentes cancelados (${pct}%)`;
           await supabase.from('users').update({
             approval_status: 'suspended',
@@ -465,7 +479,7 @@ router.patch('/:id/status', authMiddleware, async (req, res) => {
             rejection_reason: motivo
           }).eq('id', req.user.id);
           const dtStr = suspendedUntil.toLocaleDateString('pt-BR');
-          await notifyUser(req.user.id, 'Conta suspensa por 7 dias',
+          await notifyUser(req.user.id, 'Conta suspensa por 3 dias',
             `Taxa de cancelamento: ${pct}%. Suspensão até ${dtStr}. Contate o suporte.`, 'system');
           console.log(`[Orders] Motoboy ${req.user.id} suspenso 7 dias: ${cancelledRecent}/${totalRecent}`);
         } else if (rate >= 0.15) {

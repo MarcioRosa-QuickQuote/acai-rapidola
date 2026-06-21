@@ -382,6 +382,10 @@ export default function CustomerTracking() {
   const [msgText, setMsgText] = useState('');
   const [msgSending, setMsgSending] = useState(false);
   const chatBottomRef = useRef(null);
+  const [ratingValue, setRatingValue] = useState(0);
+  const [ratingHover, setRatingHover] = useState(0);
+  const [ratingDone, setRatingDone] = useState(false);
+  const [ratingSending, setRatingSending] = useState(false);
 
   // Rota loja → cliente via OSRM (mesma rota que aparece no mapa).
   // Usada pelo animateToPos para manter o saquinho sobre as ruas.
@@ -459,6 +463,11 @@ export default function CustomerTracking() {
           }
         }
       }
+      // Verifica se já avaliou este pedido
+      if (data.status === 'delivered' && data.motoboy_id) {
+        const check = await apiFetch(`/ratings/check/${id}`);
+        if (check.rated) setRatingDone(true);
+      }
     }
   }
 
@@ -466,6 +475,14 @@ export default function CustomerTracking() {
     if (!storeId) return;
     const data = await apiFetch(`/messages/conversation/${storeId}`);
     if (data.data) setChatMessages(data.data);
+  }
+
+  async function submitRating() {
+    if (!ratingValue || ratingSending) return;
+    setRatingSending(true);
+    await apiFetch('/ratings', { method: 'POST', body: JSON.stringify({ order_id: id, rating: ratingValue }) });
+    setRatingDone(true);
+    setRatingSending(false);
   }
 
   useEffect(() => {
@@ -565,6 +582,45 @@ export default function CustomerTracking() {
         </div>
 
         <GiriasParaenses />
+
+        {/* Card de avaliação do entregador — aparece quando entregue */}
+        {order.status === 'delivered' && order.motoboy_id && (
+          <div className="card" style={{ textAlign: 'center' }}>
+            {ratingDone ? (
+              <>
+                <div style={{ fontSize: 32, marginBottom: 6 }}>⭐</div>
+                <div style={{ fontWeight: 700, fontSize: 15, color: '#6A1B9A' }}>Obrigado pela avaliação!</div>
+                <div style={{ fontSize: 13, color: '#888', marginTop: 4 }}>Sua nota ajuda a manter a qualidade das entregas.</div>
+              </>
+            ) : (
+              <>
+                <div style={{ fontWeight: 700, fontSize: 15, marginBottom: 4 }}>Como foi a entrega?</div>
+                <div style={{ fontSize: 13, color: '#888', marginBottom: 12 }}>Avalie o entregador</div>
+                <div style={{ display: 'flex', justifyContent: 'center', gap: 8, marginBottom: 16 }}>
+                  {[1, 2, 3, 4, 5].map(star => (
+                    <button key={star}
+                      onClick={() => setRatingValue(star)}
+                      onMouseEnter={() => setRatingHover(star)}
+                      onMouseLeave={() => setRatingHover(0)}
+                      style={{ fontSize: 36, background: 'none', border: 'none', cursor: 'pointer', padding: 0,
+                        filter: (ratingHover || ratingValue) >= star ? 'none' : 'grayscale(1) opacity(0.35)',
+                        transition: 'filter 0.1s', transform: (ratingHover || ratingValue) >= star ? 'scale(1.15)' : 'scale(1)' }}>
+                      ⭐
+                    </button>
+                  ))}
+                </div>
+                <button onClick={submitRating} disabled={!ratingValue || ratingSending}
+                  style={{ width: '100%', padding: '11px', borderRadius: 12, border: 'none',
+                    background: ratingValue ? '#6A1B9A' : '#ddd',
+                    color: ratingValue ? 'white' : '#aaa',
+                    fontWeight: 700, fontSize: 14, cursor: ratingValue ? 'pointer' : 'not-allowed',
+                    transition: 'background 0.2s' }}>
+                  {ratingSending ? 'Enviando…' : 'Enviar avaliação'}
+                </button>
+              </>
+            )}
+          </div>
+        )}
 
         {(motoboyPos || order.status === 'picked_up' || order.status === 'arriving') && order.status !== 'delivered' && (
           <div className="card">
