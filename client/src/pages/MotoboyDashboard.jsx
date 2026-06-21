@@ -1302,7 +1302,7 @@ export default function MotoboyDashboard() {
           </label>
           <div>
             <div style={{ fontWeight: 800, fontSize: 16 }}>{user?.name}</div>
-            <div style={{ fontSize: 12, color: '#888' }}>Motoboy</div>
+            <div style={{ fontSize: 12, color: '#888' }}>Entregador</div>
           </div>
         </div>
         <div className="form-group">

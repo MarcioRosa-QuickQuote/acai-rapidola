@@ -182,19 +182,30 @@ router.post('/login', async (req, res) => {
 });
 
 router.get('/me', authMiddleware, async (req, res) => {
-  const { data: user, error: userErr } = await supabase.from('users')
-    .select('id, name, phone, email, role, address, lat, lng, photo_url, cpf, created_at')
+  let { data: user, error: userErr } = await supabase.from('users')
+    .select('id, name, phone, email, role, address, lat, lng, photo_url, cpf, created_at, approval_status, rejection_reason')
     .eq('id', req.user.id).single();
 
   if (userErr) {
-    // PGRST116 = nenhuma linha encontrada (.single() falhou por falta do registro)
-    // Trata como 404 para o cliente fazer logout e permitir re-login
     if (userErr.code === 'PGRST116') {
-      console.warn('[auth/me] Usuário não encontrado no banco. ID:', req.user?.id, '| Token sub válido mas sem registro.');
+      console.warn('[auth/me] Usuário não encontrado no banco. ID:', req.user?.id);
       return res.status(404).json({ error: 'Usuário não encontrado' });
     }
-    console.error('[auth/me] Supabase error:', userErr.code, userErr.message);
-    return res.status(503).json({ error: 'Serviço temporariamente indisponível' });
+    // Coluna rejection_reason pode não existir ainda — tenta sem ela
+    if (userErr.code === '42703') {
+      const fallback = await supabase.from('users')
+        .select('id, name, phone, email, role, address, lat, lng, photo_url, cpf, created_at, approval_status')
+        .eq('id', req.user.id).single();
+      if (fallback.error) {
+        console.error('[auth/me] Supabase error:', fallback.error.code, fallback.error.message);
+        return res.status(503).json({ error: 'Serviço temporariamente indisponível' });
+      }
+      user = { ...fallback.data, rejection_reason: null };
+      userErr = null;
+    } else {
+      console.error('[auth/me] Supabase error:', userErr.code, userErr.message);
+      return res.status(503).json({ error: 'Serviço temporariamente indisponível' });
+    }
   }
   if (!user) return res.status(404).json({ error: 'Usuário não encontrado' });
 
