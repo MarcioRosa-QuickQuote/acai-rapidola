@@ -439,6 +439,33 @@ router.patch('/:id/status', authMiddleware, async (req, res) => {
     }
   }
 
+  // Auto-suspensão: verifica taxa de cancelamento do motoboy após ele cancelar
+  if (status === 'cancelled' && req.user.role === 'motoboy') {
+    try {
+      const { data: recentOrders } = await supabase
+        .from('orders')
+        .select('status')
+        .eq('motoboy_id', req.user.id)
+        .order('created_at', { ascending: false })
+        .limit(10);
+
+      if (recentOrders && recentOrders.length >= 5) {
+        const totalRecent = recentOrders.length;
+        const cancelledRecent = recentOrders.filter(o => o.status === 'cancelled').length;
+        const rate = cancelledRecent / totalRecent;
+        if (rate >= 0.3) {
+          await supabase.from('users')
+            .update({ approval_status: 'suspended', rejection_reason: `Suspenso automaticamente: ${cancelledRecent} de ${totalRecent} pedidos recentes cancelados (${Math.round(rate * 100)}%)` })
+            .eq('id', req.user.id);
+          await notifyUser(req.user.id, 'Conta suspensa', 'Sua conta foi suspensa por alta taxa de cancelamento. Entre em contato com o suporte.', 'system');
+          console.log(`[Orders] Motoboy ${req.user.id} suspenso: ${cancelledRecent}/${totalRecent} cancelamentos`);
+        }
+      }
+    } catch (suspendErr) {
+      console.error('[Orders] auto-suspend check error:', suspendErr?.message);
+    }
+  }
+
   const io = getIO();
   if (io) {
     io.to(`order:${req.params.id}`).emit('order_status', { orderId: req.params.id, status });

@@ -435,6 +435,11 @@ export default function AdminPanel() {
     loadEntregadores();
   }
 
+  async function suspendEntregador(id, reason) {
+    await api(`/entregadores/${id}/suspend`, { method: 'PATCH', body: { reason } });
+    loadEntregadores();
+  }
+
   useEffect(() => {
     if (user?.role !== 'admin') { navigate('/login'); return; }
     loadAll();
@@ -619,7 +624,7 @@ export default function AdminPanel() {
 
             {/* Filtros */}
             <div style={{ display: 'flex', gap: 8, marginBottom: 14, flexWrap: 'wrap' }}>
-              {[['pending','Pendentes'],['approved','Aprovados'],['rejected','Recusados'],['all','Todos']].map(([v,l]) => (
+              {[['pending','Pendentes'],['approved','Aprovados'],['suspended','Suspensos'],['rejected','Recusados'],['all','Todos']].map(([v,l]) => (
                 <button key={v} onClick={() => setFilterApproval(v)} style={{
                   padding: '7px 14px', borderRadius: 10, border: '1.5px solid',
                   borderColor: filterApproval === v ? '#6A1B9A' : '#ddd',
@@ -672,10 +677,10 @@ export default function AdminPanel() {
                           <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 4 }}>
                             <div style={{ fontWeight: 700, fontSize: 15 }}>{e.name}</div>
                             <Badge
-                              color={e.approval_status === 'approved' ? '#2E7D32' : e.approval_status === 'rejected' ? '#e53935' : '#FF6D00'}
-                              bg={e.approval_status === 'approved' ? '#e8f5e9' : e.approval_status === 'rejected' ? '#ffeaea' : '#fff3e0'}
+                              color={e.approval_status === 'approved' ? '#2E7D32' : e.approval_status === 'rejected' ? '#e53935' : e.approval_status === 'suspended' ? '#6A1B9A' : '#FF6D00'}
+                              bg={e.approval_status === 'approved' ? '#e8f5e9' : e.approval_status === 'rejected' ? '#ffeaea' : e.approval_status === 'suspended' ? '#F3E5F5' : '#fff3e0'}
                             >
-                              {e.approval_status === 'approved' ? 'Aprovado' : e.approval_status === 'rejected' ? 'Recusado' : 'Pendente'}
+                              {e.approval_status === 'approved' ? 'Aprovado' : e.approval_status === 'rejected' ? 'Recusado' : e.approval_status === 'suspended' ? 'Suspenso' : 'Pendente'}
                             </Badge>
                           </div>
                           <div style={{ fontSize: 12, color: '#666', marginBottom: 2 }}>📱 {e.phone} {e.email && `· ✉️ ${e.email}`}</div>
@@ -687,6 +692,40 @@ export default function AdminPanel() {
                           {e.pix_key && <div style={{ fontSize: 12, color: '#666', marginBottom: 2 }}>Pix: {e.pix_key}</div>}
                           {e.rejection_reason && <div style={{ fontSize: 12, color: '#e53935', marginTop: 4 }}>Motivo: {e.rejection_reason}</div>}
                           <div style={{ fontSize: 11, color: '#aaa', marginTop: 4 }}>Cadastro em {fmtDate(e.created_at)}</div>
+
+                          {/* Stats de pedidos */}
+                          {e.stats && e.stats.total > 0 && (
+                            <div style={{ display: 'flex', gap: 10, marginTop: 8, flexWrap: 'wrap' }}>
+                              <span style={{ fontSize: 11, background: '#e8f5e9', color: '#2E7D32', padding: '2px 8px', borderRadius: 8, fontWeight: 600 }}>
+                                ✅ {e.stats.delivered} entregues
+                              </span>
+                              {e.stats.cancelled > 0 && (
+                                <span style={{ fontSize: 11, background: '#ffeaea', color: '#e53935', padding: '2px 8px', borderRadius: 8, fontWeight: 600 }}>
+                                  ✕ {e.stats.cancelled} cancelados
+                                  {e.stats.total >= 5 && ` (${Math.round(e.stats.cancelled / e.stats.total * 100)}%)`}
+                                </span>
+                              )}
+                              <span style={{ fontSize: 11, color: '#999' }}>{e.stats.total} total</span>
+                            </div>
+                          )}
+
+                          {/* Botões de verificação rápida */}
+                          <div style={{ display: 'flex', gap: 6, marginTop: 8, flexWrap: 'wrap' }}>
+                            <a href={`https://www.google.com/search?q=${encodeURIComponent((e.name || '') + ' ' + (e.cpf || ''))}`} target="_blank" rel="noreferrer"
+                              style={{ fontSize: 11, padding: '3px 8px', borderRadius: 7, border: '1px solid #ddd', color: '#555', textDecoration: 'none', background: '#fafafa' }}>
+                              🔍 Google
+                            </a>
+                            <a href="https://bnmp.cnj.jus.br/" target="_blank" rel="noreferrer"
+                              style={{ fontSize: 11, padding: '3px 8px', borderRadius: 7, border: '1px solid #ddd', color: '#555', textDecoration: 'none', background: '#fafafa' }}>
+                              ⚖️ BNMP
+                            </a>
+                            {e.cpf && (
+                              <a href={`https://servicos.receita.fazenda.gov.br/servicos/cpf/consultasituacao/consultapublica.asp`} target="_blank" rel="noreferrer"
+                                style={{ fontSize: 11, padding: '3px 8px', borderRadius: 7, border: '1px solid #ddd', color: '#555', textDecoration: 'none', background: '#fafafa' }}>
+                                🏛️ CPF Receita
+                              </a>
+                            )}
+                          </div>
                         </div>
                       </div>
 
@@ -704,18 +743,24 @@ export default function AdminPanel() {
                         </div>
                       )}
                       {e.approval_status !== 'pending' && (
-                        <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
-                          {e.approval_status === 'rejected' && (
+                        <div style={{ display: 'flex', gap: 8, marginTop: 12, flexWrap: 'wrap' }}>
+                          {(e.approval_status === 'rejected' || e.approval_status === 'suspended') && (
                             <button onClick={() => approveEntregador(e.id)} style={{
                               padding: '7px 16px', borderRadius: 10, border: 'none',
                               background: '#4CAF50', color: 'white', fontWeight: 700, fontSize: 12, cursor: 'pointer'
-                            }}>✅ Aprovar mesmo assim</button>
+                            }}>✅ Reativar</button>
                           )}
                           {e.approval_status === 'approved' && (
+                            <button onClick={() => suspendEntregador(e.id, 'Suspenso pelo administrador')} style={{
+                              padding: '7px 16px', borderRadius: 10, border: 'none',
+                              background: '#6A1B9A', color: 'white', fontWeight: 700, fontSize: 12, cursor: 'pointer'
+                            }}>⏸ Suspender</button>
+                          )}
+                          {(e.approval_status === 'approved' || e.approval_status === 'suspended') && (
                             <button onClick={() => setRejectTarget(e)} style={{
                               padding: '7px 16px', borderRadius: 10, border: 'none',
-                              background: '#ff9800', color: 'white', fontWeight: 700, fontSize: 12, cursor: 'pointer'
-                            }}>Suspender</button>
+                              background: '#e53935', color: 'white', fontWeight: 700, fontSize: 12, cursor: 'pointer'
+                            }}>✕ Recusar</button>
                           )}
                         </div>
                       )}

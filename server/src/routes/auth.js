@@ -3,6 +3,7 @@ const bcrypt = require('bcryptjs');
 const { v4: uuid } = require('uuid');
 const { supabase } = require('../database');
 const { signToken, authMiddleware } = require('../auth');
+const { sendEmail } = require('../services/email');
 
 const router = Router();
 
@@ -114,6 +115,31 @@ router.post('/register', async (req, res) => {
       { motoboy_id: id, lat: -23.5505, lng: -46.6333, online: 1 },
       { onConflict: 'motoboy_id' }
     );
+
+    // Notifica admin por email quando motoboy se cadastra aguardando aprovação
+    const adminEmail = process.env.ADMIN_EMAIL;
+    if (adminEmail && approval_status === 'pending') {
+      const vehicleLabel = { moto: 'Moto', bicycle: 'Bicicleta', car: 'Carro' }[insertData.vehicle_type] || insertData.vehicle_type || '—';
+      sendEmail(
+        adminEmail,
+        'Novo entregador aguardando aprovação — Pé de Açaí',
+        `<div style="font-family:sans-serif;max-width:520px;margin:0 auto;padding:24px">
+          <h2 style="color:#6A1B9A;margin-bottom:4px">Novo entregador cadastrado</h2>
+          <p style="color:#555;margin-top:0">Aguardando sua aprovação no painel admin.</p>
+          <table style="width:100%;border-collapse:collapse;margin:16px 0">
+            <tr><td style="padding:8px 0;color:#888;width:120px">Nome</td><td style="font-weight:700">${name}</td></tr>
+            <tr><td style="padding:8px 0;color:#888">Telefone</td><td>${phone}</td></tr>
+            <tr><td style="padding:8px 0;color:#888">E-mail</td><td>${email || '—'}</td></tr>
+            <tr><td style="padding:8px 0;color:#888">Veículo</td><td>${vehicleLabel}</td></tr>
+            <tr><td style="padding:8px 0;color:#888">Placa</td><td>${insertData.plate || '—'}</td></tr>
+            <tr><td style="padding:8px 0;color:#888">CPF</td><td>${insertData.cpf || '—'}</td></tr>
+          </table>
+          <p style="color:#888;font-size:13px">Acesse o painel admin &gt; Entregadores para aprovar ou recusar.</p>
+          <hr style="border:none;border-top:1px solid #eee;margin:20px 0">
+          <p style="color:#bbb;font-size:11px">Pé de Açaí · Rapidola</p>
+        </div>`
+      ).catch(() => {});
+    }
   }
 
   if (inviteToken) {

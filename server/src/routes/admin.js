@@ -246,41 +246,71 @@ router.get('/logs', adminOnly, async (req, res) => {
 
 // ── Entregadores ──────────────────────────────────────────────────────────────
 router.get('/entregadores', adminOnly, async (req, res) => {
-  // Tentativa completa
-  const { data, error } = await supabase
-    .from('users')
-    .select('id, name, phone, email, cpf, vehicle_type, plate, pix_key, selfie_url, document_url, approval_status, rejection_reason, created_at')
-    .eq('role', 'motoboy')
-    .order('created_at', { ascending: false });
-  if (!error) return res.json(data || []);
+  // Busca usuários e stats de pedidos em paralelo
+  const [usersResult, ordersResult] = await Promise.all([
+    (async () => {
+      const { data, error } = await supabase
+        .from('users')
+        .select('id, name, phone, email, cpf, vehicle_type, plate, pix_key, selfie_url, document_url, approval_status, rejection_reason, created_at')
+        .eq('role', 'motoboy')
+        .order('created_at', { ascending: false });
+      if (!error) return { data };
 
-  console.error('[admin/entregadores] query error:', error.code, error.message);
+      console.error('[admin/entregadores] query error:', error.code, error.message);
 
-  // Fallback sem rejection_reason e/ou document_url (colunas podem não existir)
-  const { data: data2, error: err2 } = await supabase
-    .from('users')
-    .select('id, name, phone, email, cpf, vehicle_type, plate, pix_key, selfie_url, approval_status, created_at')
-    .eq('role', 'motoboy')
-    .order('created_at', { ascending: false });
-  if (!err2) return res.json((data2 || []).map(u => ({ ...u, rejection_reason: null, document_url: null })));
+      const { data: data2, error: err2 } = await supabase
+        .from('users')
+        .select('id, name, phone, email, cpf, vehicle_type, plate, pix_key, selfie_url, approval_status, created_at')
+        .eq('role', 'motoboy')
+        .order('created_at', { ascending: false });
+      if (!err2) return { data: (data2 || []).map(u => ({ ...u, rejection_reason: null, document_url: null })) };
 
-  console.error('[admin/entregadores] fallback error:', err2.code, err2.message);
+      console.error('[admin/entregadores] fallback error:', err2.code, err2.message);
 
-  // Fallback mínimo garantido
-  const { data: data3 } = await supabase
-    .from('users')
-    .select('id, name, phone, email, created_at, approval_status')
-    .eq('role', 'motoboy')
-    .order('created_at', { ascending: false });
-  return res.json((data3 || []).map(u => ({
-    ...u, cpf: null, vehicle_type: null, plate: null,
-    pix_key: null, selfie_url: null, document_url: null, rejection_reason: null
-  })));
+      const { data: data3 } = await supabase
+        .from('users')
+        .select('id, name, phone, email, created_at, approval_status')
+        .eq('role', 'motoboy')
+        .order('created_at', { ascending: false });
+      return { data: (data3 || []).map(u => ({
+        ...u, cpf: null, vehicle_type: null, plate: null,
+        pix_key: null, selfie_url: null, document_url: null, rejection_reason: null
+      })) };
+    })(),
+    // Stats de pedidos: total atribuídos, entregues e cancelados por motoboy
+    supabase.from('orders')
+      .select('motoboy_id, status')
+      .not('motoboy_id', 'is', null)
+  ]);
+
+  // Consolida stats por motoboy
+  const statsMap = {};
+  for (const o of (ordersResult.data || [])) {
+    if (!statsMap[o.motoboy_id]) statsMap[o.motoboy_id] = { total: 0, delivered: 0, cancelled: 0 };
+    statsMap[o.motoboy_id].total++;
+    if (o.status === 'delivered') statsMap[o.motoboy_id].delivered++;
+    if (o.status === 'cancelled') statsMap[o.motoboy_id].cancelled++;
+  }
+
+  const result = (usersResult.data || []).map(u => ({
+    ...u,
+    stats: statsMap[u.id] || { total: 0, delivered: 0, cancelled: 0 }
+  }));
+  return res.json(result);
 });
 
 router.patch('/entregadores/:id/approve', adminOnly, async (req, res) => {
   const { error } = await supabase.from('users')
     .update({ approval_status: 'approved', rejection_reason: '' })
+    .eq('id', req.params.id);
+  if (error) return res.status(500).json({ error: error.message });
+  res.json({ ok: true });
+});
+
+router.patch('/entregadores/:id/suspend', adminOnly, async (req, res) => {
+  const { reason = 'Suspenso pelo administrador' } = req.body;
+  const { error } = await supabase.from('users')
+    .update({ approval_status: 'suspended', rejection_reason: reason })
     .eq('id', req.params.id);
   if (error) return res.status(500).json({ error: error.message });
   res.json({ ok: true });
