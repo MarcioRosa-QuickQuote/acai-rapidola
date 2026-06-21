@@ -1481,7 +1481,7 @@ export default function StoreDashboard() {
         {/* ─── KPI Row ─── */}
         {isDesktop ? (
           <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1fr', gap: 12, marginBottom: 20 }}>
-            {/* Faturamento destacado */}
+            {/* Faturamento — único destaque colorido */}
             <div style={{
               background: 'linear-gradient(135deg, #6A1B9A 0%, #9C27B0 55%, #CE93D8 100%)',
               borderRadius: 14, padding: '18px 22px', color: 'white', position: 'relative', overflow: 'hidden'
@@ -1493,26 +1493,29 @@ export default function StoreDashboard() {
             </div>
             {/* Ativos */}
             <div onClick={() => { setOrderFilter('ativos'); setView('pedidos'); }} style={{
-              background: '#F3E5F5', borderRadius: 14, padding: '18px 16px', cursor: 'pointer',
-              border: '1px solid #E1BEE7', display: 'flex', flexDirection: 'column', justifyContent: 'space-between'
+              background: 'white', borderRadius: 14, padding: '18px 16px', cursor: 'pointer',
+              border: '1px solid #eee', boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
+              display: 'flex', flexDirection: 'column', justifyContent: 'space-between'
             }}>
-              <div style={{ fontSize: 10, color: '#7B1FA2', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5 }}>Ativos</div>
+              <div style={{ fontSize: 10, color: '#aaa', fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.5 }}>Ativos</div>
               <div style={{ fontSize: 34, fontWeight: 800, color: '#6A1B9A', lineHeight: 1 }}>{pendingOrders.length}</div>
             </div>
             {/* Pendentes */}
             <div onClick={() => { setOrderFilter('pendentes'); setView('pedidos'); }} style={{
-              background: '#FFF3E0', borderRadius: 14, padding: '18px 16px', cursor: 'pointer',
-              border: '1px solid #FFE0B2', display: 'flex', flexDirection: 'column', justifyContent: 'space-between'
+              background: 'white', borderRadius: 14, padding: '18px 16px', cursor: 'pointer',
+              border: '1px solid #eee', boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
+              display: 'flex', flexDirection: 'column', justifyContent: 'space-between'
             }}>
-              <div style={{ fontSize: 10, color: '#E65100', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5 }}>Pendentes</div>
+              <div style={{ fontSize: 10, color: '#aaa', fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.5 }}>Pendentes</div>
               <div style={{ fontSize: 34, fontWeight: 800, color: '#E65100', lineHeight: 1 }}>{pedidosPendentes}</div>
             </div>
             {/* Concluídos */}
             <div onClick={() => { setOrderFilter('concluidos'); setView('pedidos'); }} style={{
-              background: '#E8F5E9', borderRadius: 14, padding: '18px 16px', cursor: 'pointer',
-              border: '1px solid #C8E6C9', display: 'flex', flexDirection: 'column', justifyContent: 'space-between'
+              background: 'white', borderRadius: 14, padding: '18px 16px', cursor: 'pointer',
+              border: '1px solid #eee', boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
+              display: 'flex', flexDirection: 'column', justifyContent: 'space-between'
             }}>
-              <div style={{ fontSize: 10, color: '#2E7D32', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5 }}>Concluídos</div>
+              <div style={{ fontSize: 10, color: '#aaa', fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.5 }}>Concluídos</div>
               <div style={{ fontSize: 34, fontWeight: 800, color: '#2E7D32', lineHeight: 1 }}>{concludedOrders.length}</div>
             </div>
           </div>
@@ -1543,17 +1546,17 @@ export default function StoreDashboard() {
 
             {/* Status cards: 3 colunas */}
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10, marginBottom: 14 }}>
-              <div onClick={() => { setOrderFilter('pendentes'); setView('pedidos'); }} style={{ background: '#FFF3E0', borderRadius: 14, padding: '14px 10px', cursor: 'pointer', border: '1px solid #FFE0B2', textAlign: 'center' }}>
+              <div onClick={() => { setOrderFilter('pendentes'); setView('pedidos'); }} style={{ background: 'white', borderRadius: 14, padding: '14px 10px', cursor: 'pointer', border: '1px solid #eee', boxShadow: '0 1px 4px rgba(0,0,0,0.04)', textAlign: 'center' }}>
                 <div style={{ fontSize: 26, fontWeight: 800, color: '#E65100', lineHeight: 1 }}>{pedidosPendentes}</div>
-                <div style={{ fontSize: 11, color: '#E65100', fontWeight: 600, marginTop: 4 }}>Pendentes</div>
+                <div style={{ fontSize: 11, color: '#aaa', fontWeight: 500, marginTop: 4 }}>Pendentes</div>
               </div>
-              <div onClick={() => { setOrderFilter('ativos'); setView('pedidos'); }} style={{ background: '#F3E5F5', borderRadius: 14, padding: '14px 10px', cursor: 'pointer', border: '1px solid #E1BEE7', textAlign: 'center' }}>
+              <div onClick={() => { setOrderFilter('ativos'); setView('pedidos'); }} style={{ background: 'white', borderRadius: 14, padding: '14px 10px', cursor: 'pointer', border: '1px solid #eee', boxShadow: '0 1px 4px rgba(0,0,0,0.04)', textAlign: 'center' }}>
                 <div style={{ fontSize: 26, fontWeight: 800, color: '#6A1B9A', lineHeight: 1 }}>{pendingOrders.length}</div>
-                <div style={{ fontSize: 11, color: '#6A1B9A', fontWeight: 600, marginTop: 4 }}>Ativos</div>
+                <div style={{ fontSize: 11, color: '#aaa', fontWeight: 500, marginTop: 4 }}>Ativos</div>
               </div>
-              <div onClick={() => { setOrderFilter('concluidos'); setView('pedidos'); }} style={{ background: '#E8F5E9', borderRadius: 14, padding: '14px 10px', cursor: 'pointer', border: '1px solid #C8E6C9', textAlign: 'center' }}>
+              <div onClick={() => { setOrderFilter('concluidos'); setView('pedidos'); }} style={{ background: 'white', borderRadius: 14, padding: '14px 10px', cursor: 'pointer', border: '1px solid #eee', boxShadow: '0 1px 4px rgba(0,0,0,0.04)', textAlign: 'center' }}>
                 <div style={{ fontSize: 26, fontWeight: 800, color: '#2E7D32', lineHeight: 1 }}>{concludedOrders.length}</div>
-                <div style={{ fontSize: 11, color: '#2E7D32', fontWeight: 600, marginTop: 4 }}>Concluídos</div>
+                <div style={{ fontSize: 11, color: '#aaa', fontWeight: 500, marginTop: 4 }}>Concluídos</div>
               </div>
             </div>
           </>
