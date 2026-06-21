@@ -53,18 +53,12 @@ export default function Login() {
   }
 
   return (
-    <div style={{
+    <div className="login-container" style={{
       display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'center',
       minHeight: '100vh',
       background: 'linear-gradient(160deg, #6A1B9A 0%, #9C27B0 45%, #CE93D8 100%)',
       padding: '24px 20px 20px', position: 'relative', overflow: 'hidden'
     }}>
-      {/* Vídeo: tela inteira no mobile, lado esquerdo no desktop */}
-      <video autoPlay loop muted playsInline className="login-video">
-        <source src="/video4.mp4" type="video/mp4" />
-      </video>
-      {/* Overlay roxo */}
-      <div className="login-video-overlay" />
 
       {/* Logo — z-index abaixo do card para a estaca ficar "fincada" no modal */}
       <div style={{ textAlign: 'center', marginBottom: -24, zIndex: 1, position: 'relative',
@@ -292,6 +286,12 @@ export default function Login() {
           <Link to="/termos" style={{ color: '#fff', textDecoration: 'underline' }}>Termos</Link>
         </span>
       </p>
+
+      {/* Vídeo: lado esquerdo no desktop (position:absolute), abaixo do modal no mobile (position:static via CSS) */}
+      <video autoPlay loop muted playsInline className="login-video">
+        <source src="/video4.mp4" type="video/mp4" />
+      </video>
+      <div className="login-video-overlay" />
     </div>
   );
 }
