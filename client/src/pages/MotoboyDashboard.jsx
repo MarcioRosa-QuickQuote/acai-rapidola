@@ -878,7 +878,7 @@ export default function MotoboyDashboard() {
       minHeight: '100vh', padding: 32, textAlign: 'center',
       background: 'linear-gradient(160deg, #1a0533 0%, #4A148C 100%)'
     }}>
-      <img src="/lp_motoboy.png" alt="entregador" style={{ width: 180, objectFit: 'contain', marginBottom: 24 }} />
+      <img src="/lp_motoboytrans.png" alt="entregador" style={{ width: 220, objectFit: 'contain', marginBottom: 24 }} />
       <div style={{ fontSize: 40, marginBottom: 12 }}>⏳</div>
       <div style={{ fontWeight: 800, fontSize: 22, color: 'white', marginBottom: 8 }}>Cadastro em análise</div>
       <div style={{ fontSize: 14, color: 'rgba(255,255,255,0.7)', lineHeight: 1.6, maxWidth: 320, marginBottom: 32 }}>
