@@ -40,11 +40,12 @@ function useAdminApi(token) {
 }
 
 /* ── Stat Card ───────────────────────────────────────────────── */
-function StatCard({ icon, label, value, sub, color = '#6A1B9A' }) {
+function StatCard({ icon, label, value, sub, color = '#6A1B9A', onClick }) {
   return (
-    <div style={{
+    <div onClick={onClick} style={{
       background: 'white', borderRadius: 14, padding: '18px 20px',
-      boxShadow: '0 1px 4px rgba(0,0,0,.08)', display: 'flex', gap: 14, alignItems: 'center'
+      boxShadow: '0 1px 4px rgba(0,0,0,.08)', display: 'flex', gap: 14, alignItems: 'center',
+      cursor: onClick ? 'pointer' : 'default'
     }}>
       <div style={{
         width: 46, height: 46, borderRadius: 12, background: color + '18',
@@ -465,8 +466,8 @@ export default function AdminPanel() {
         background: '#4A148C', color: 'white', padding: '0 20px',
         display: 'flex', alignItems: 'center', gap: 12, height: 56, flexShrink: 0
       }}>
-        <div style={{ fontSize: 20 }}>🍇</div>
-        <div style={{ fontWeight: 800, fontSize: 16, letterSpacing: -0.3 }}>Açaí Rapidola · Admin</div>
+        <img src="/saco_acai.png" style={{ width: 28, height: 28, objectFit: 'contain' }} alt="" />
+        <div style={{ fontWeight: 800, fontSize: 16, letterSpacing: -0.3 }}>Pé de Açaí · Admin</div>
         <div style={{ flex: 1 }} />
         <div style={{ fontSize: 13, opacity: 0.8 }}>Olá, {user?.name}</div>
         <button onClick={logout} style={{
@@ -504,7 +505,7 @@ export default function AdminPanel() {
             <StatCard icon="📦" label="Pedidos hoje" value={stats.ordersToday} sub={`${stats.totalOrders30d} em 30 dias`} color="#1565C0" />
             <StatCard icon="💰" label="Receita hoje" value={fmtMoney(stats.revenueToday)} color="#2E7D32" />
             <StatCard icon="👥" label="Clientes" value={stats.totalCustomers} color="#0097A7" />
-            <StatCard icon="🛵" label="Entregadores" value={stats.totalMotoboys} sub={stats.pendingMotoboys > 0 ? `${stats.pendingMotoboys} aguardando` : undefined} color="#795548" />
+            <StatCard icon="🛵" label="Entregadores" value={stats.totalMotoboys} sub={stats.pendingMotoboys > 0 ? `${stats.pendingMotoboys} aguardando` : undefined} color="#795548" onClick={() => setView('entregadores')} />
           </div>
         )}
 

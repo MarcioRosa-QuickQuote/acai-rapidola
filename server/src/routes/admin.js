@@ -246,11 +246,20 @@ router.get('/logs', adminOnly, async (req, res) => {
 
 // ── Entregadores ──────────────────────────────────────────────────────────────
 router.get('/entregadores', adminOnly, async (req, res) => {
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from('users')
     .select('id, name, phone, email, cpf, vehicle_type, plate, pix_key, selfie_url, approval_status, rejection_reason, created_at')
     .eq('role', 'motoboy')
     .order('created_at', { ascending: false });
+  if (error) {
+    // Fallback: rejection_reason pode não existir ainda no banco
+    const { data: data2 } = await supabase
+      .from('users')
+      .select('id, name, phone, email, cpf, vehicle_type, plate, pix_key, selfie_url, approval_status, created_at')
+      .eq('role', 'motoboy')
+      .order('created_at', { ascending: false });
+    return res.json((data2 || []).map(u => ({ ...u, rejection_reason: null })));
+  }
   res.json(data || []);
 });
 
