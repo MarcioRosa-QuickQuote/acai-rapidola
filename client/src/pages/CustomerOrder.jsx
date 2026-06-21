@@ -1,25 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
-import L from 'leaflet';
-import 'leaflet/dist/leaflet.css';
-
-delete L.Icon.Default.prototype._getIconUrl;
-L.Icon.Default.mergeOptions({
-  iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon-2x.png',
-  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon.png',
-  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
-});
-
-function MapClickHandler({ onClick }) {
-  useMapEvents({
-    click(e) {
-      onClick(e.latlng.lat, e.latlng.lng);
-    }
-  });
-  return null;
-}
 
 export default function CustomerOrder() {
   const { user, apiFetch } = useAuth();
@@ -40,10 +21,7 @@ export default function CustomerOrder() {
   const [error, setError] = useState('');
   const [lat, setLat] = useState(null);
   const [lng, setLng] = useState(null);
-  const [mapCenter, setMapCenter] = useState([-23.5505, -46.6333]);
   const [geocoding, setGeocoding] = useState(false);
-  const [showMap, setShowMap] = useState(false);
-  const [addrSaved, setAddrSaved] = useState(false);
   const [editAddr, setEditAddr] = useState(false);
   const [splitLiter, setSplitLiter] = useState(false);
   const [cep, setCep] = useState('');
@@ -55,9 +33,9 @@ export default function CustomerOrder() {
     try { return JSON.parse(localStorage.getItem('user_addresses') || '[]'); }
     catch { return []; }
   });
-  const [showAddrList, setShowAddrList] = useState(false);
   const [addressSuggestions, setAddressSuggestions] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [showNotes, setShowNotes] = useState(false);
 
   function shortAddress(addr) {
     if (!addr) return '';
@@ -66,27 +44,59 @@ export default function CustomerOrder() {
     return parts.slice(0, 2).join(', ');
   }
 
+  function formatAddressLines(addr) {
+    if (!addr) return { line1: '', line2: '' };
+    const parts = addr.split(',').map(p => p.trim());
+    return { line1: parts.slice(0, 2).join(', '), line2: parts.slice(2, 4).join(', ') };
+  }
+
   function cleanNominatimAddress(displayName) {
     if (!displayName) return '';
     const parts = displayName.split(',').map(p => p.trim());
     const skip = ['Região Norte', 'Região Nordeste', 'Região Sudeste', 'Região Sul', 'Região Centro-Oeste', 'Brazil', 'Brasil'];
-    const filtered = parts.filter((p) => {
-      if (skip.includes(p)) return false;
-      if (/^\d{5}-\d{3}$/.test(p)) return false;
-      return true;
-    });
-    return filtered.join(', ');
+    return parts.filter(p => !skip.includes(p) && !/^\d{5}-\d{3}$/.test(p)).join(', ');
   }
 
-  function formatAddressLines(addr) {
-    if (!addr) return { line1: '', line2: '', line3: '' };
-    const parts = addr.split(',').map(p => p.trim());
-    return {
-      line1: parts.slice(0, 2).join(', '),
-      line2: parts[2] || '',
-      line3: parts.slice(3, 5).join(', ')
-    };
+  function calcDistance(lat1, lng1, lat2, lng2) {
+    const R = 6371;
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLng = (lng2 - lng1) * Math.PI / 180;
+    const a = Math.sin(dLat / 2) ** 2 + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLng / 2) ** 2;
+    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   }
+
+  function checkDistanceWarning(newLat, newLng) {
+    if (user?.lat && user?.lng) {
+      const d = calcDistance(user.lat, user.lng, newLat, newLng);
+      setDistanceWarning(d > 5 ? `Você está a ${d.toFixed(1)}km do seu endereço cadastrado. Confirme se está correto.` : '');
+    }
+  }
+
+  function updateDeliveryFee(custLat, custLng) {
+    if (!store?.id || !custLat || !custLng) { setDeliveryFee(6.50); return; }
+    apiFetch('/orders/estimate-fee', {
+      method: 'POST',
+      body: JSON.stringify({ store_id: store.id, lat: custLat, lng: custLng })
+    }).then(d => { if (d.fee) setDeliveryFee(d.fee); }).catch(() => setDeliveryFee(6.50));
+  }
+
+  useEffect(() => {
+    if (!store) {
+      apiFetch('/stores').then(d => { if (d.data?.[0]) setStore(d.data[0]); });
+    }
+  }, []);
+
+  useEffect(() => { updateDeliveryFee(lat, lng); }, [lat, lng, store]);
+
+  useEffect(() => {
+    if (user?.address && !address) {
+      setAddress(user.address);
+      if (user.lat && user.lng) {
+        setLat(user.lat); setLng(user.lng);
+        updateDeliveryFee(user.lat, user.lng);
+      }
+    }
+  }, [user]);
 
   useEffect(() => {
     if (orderItems.some(i => (i.size_ml || product?.size_ml) >= 1000)) {
@@ -94,69 +104,26 @@ export default function CustomerOrder() {
     }
   }, []);
 
-  function updateDeliveryFee(custLat, custLng) {
-    if (!store?.id || !custLat || !custLng) { setDeliveryFee(6.50); return; }
-    apiFetch('/orders/estimate-fee', {
-      method: 'POST',
-      body: JSON.stringify({ store_id: store.id, lat: custLat, lng: custLng })
-    }).then(d => {
-      if (d.fee) setDeliveryFee(d.fee);
-    }).catch(() => setDeliveryFee(6.50));
-  }
-
-  useEffect(() => {
-    if (!store) {
-      apiFetch('/stores').then(d => {
-        if (d.data?.[0]) setStore(d.data[0]);
-      });
-    }
-  }, []);
-
-  useEffect(() => {
-    updateDeliveryFee(lat, lng);
-  }, [lat, lng, store]);
-
-  useEffect(() => {
-    if (user?.address && !address) {
-      setAddress(user.address);
-      if (user.lat && user.lng) {
-        setLat(user.lat);
-        setLng(user.lng);
-        setMapCenter([user.lat, user.lng]);
-        setShowMap(true);
-        updateDeliveryFee(user.lat, user.lng);
-      }
-      setAddrSaved(true);
-    }
-  }, [user]);
-
   async function geocodeAddress(addrOverride) {
     const addr = addrOverride || address;
     if (!addr) return;
-    setGeocoding(true);
-    setError('');
+    setGeocoding(true); setError('');
     try {
       const res = await fetch('/api/orders/geocode?q=' + encodeURIComponent(addr));
       const data = await res.json();
       if (data.length > 0) {
         const newLat = parseFloat(data[0].lat);
         const newLng = parseFloat(data[0].lon);
-        setLat(newLat);
-        setLng(newLng);
-        setMapCenter([newLat, newLng]);
-        setShowMap(true);
+        setLat(newLat); setLng(newLng);
         updateDeliveryFee(newLat, newLng);
         checkDistanceWarning(newLat, newLng);
+        setEditAddr(false);
       } else {
-        setError('Endereço não encontrado. Tente um endereço mais específico ou o CEP.');
+        setError('Endereço não encontrado. Tente ser mais específico ou use o CEP.');
         setTimeout(() => setError(''), 4000);
       }
-    } catch {
-      setError('Erro ao buscar endereço.');
-      setTimeout(() => setError(''), 4000);
-    } finally {
-      setGeocoding(false);
-    }
+    } catch { setError('Erro ao buscar endereço.'); setTimeout(() => setError(''), 4000); }
+    finally { setGeocoding(false); }
   }
 
   async function searchAddress(q) {
@@ -171,201 +138,235 @@ export default function CustomerOrder() {
 
   function selectSuggestion(suggestion) {
     setAddress(suggestion.display_name);
-    setAddressSuggestions([]);
-    setShowSuggestions(false);
+    setAddressSuggestions([]); setShowSuggestions(false);
     if (suggestion.place_id) {
       fetch('/api/orders/place-details?place_id=' + encodeURIComponent(suggestion.place_id))
         .then(r => r.json()).then(data => {
           if (data.lat) {
-            setLat(parseFloat(data.lat));
-            setLng(parseFloat(data.lng));
-            setMapCenter([parseFloat(data.lat), parseFloat(data.lng)]);
-            setShowMap(true);
+            setLat(parseFloat(data.lat)); setLng(parseFloat(data.lng));
             updateDeliveryFee(parseFloat(data.lat), parseFloat(data.lng));
             checkDistanceWarning(parseFloat(data.lat), parseFloat(data.lng));
+            setEditAddr(false);
           }
-        }).catch(() => {});
-    } else {
-      geocodeAddress(suggestion.display_name);
-    }
+        }).catch(() => geocodeAddress(suggestion.display_name));
+    } else { geocodeAddress(suggestion.display_name); }
   }
 
   async function lookupCep() {
     const cleaned = cep.replace(/\D/g, '');
     if (cleaned.length !== 8) return;
-    setCepLoading(true);
-    setError('');
+    setCepLoading(true); setError('');
     try {
       const res = await fetch(`/api/orders/cep/${cleaned}`);
       const data = await res.json();
-      if (data.error) {
-        setError(data.error);
-        setTimeout(() => setError(''), 4000);
-        return;
-      }
-      const fullAddr = data.display_name;
-      setAddress(fullAddr);
-      const geoRes = await fetch(`/api/orders/geocode?q=${encodeURIComponent(fullAddr)}`);
-      const geoData = await geoRes.json();
-      if (geoData.length > 0) {
-        const newLat = parseFloat(geoData[0].lat);
-        const newLng = parseFloat(geoData[0].lon);
-        setLat(newLat);
-        setLng(newLng);
-        setMapCenter([newLat, newLng]);
-        setShowMap(true);
-        updateDeliveryFee(newLat, newLng);
-        checkDistanceWarning(newLat, newLng);
-      }
-      setEditAddr(true);
-    } catch {
-      setError('Erro ao consultar CEP.');
-      setTimeout(() => setError(''), 4000);
-    } finally {
-      setCepLoading(false);
-    }
-  }
-
-  function checkDistanceWarning(newLat, newLng) {
-    if (user?.lat && user?.lng) {
-      const d = calcDistance(user.lat, user.lng, newLat, newLng);
-      if (d > 5) {
-        setDistanceWarning(`Você está a ${d.toFixed(1)}km do seu endereço cadastrado. Confirme se o endereço está correto.`);
-      } else {
-        setDistanceWarning('');
-      }
-    }
-  }
-
-  function calcDistance(lat1, lng1, lat2, lng2) {
-    const R = 6371;
-    const dLat = (lat2 - lat1) * Math.PI / 180;
-    const dLng = (lng2 - lng1) * Math.PI / 180;
-    const a = Math.sin(dLat / 2) ** 2 + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLng / 2) ** 2;
-    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+      if (data.error) { setError(data.error); setTimeout(() => setError(''), 4000); return; }
+      setAddress(data.display_name);
+      await geocodeAddress(data.display_name);
+    } catch { setError('Erro ao consultar CEP.'); setTimeout(() => setError(''), 4000); }
+    finally { setCepLoading(false); }
   }
 
   function useMyLocation() {
-    if (!navigator.geolocation) {
-      setError('Geolocalização não disponível no seu navegador.');
-      setTimeout(() => setError(''), 4000);
-      return;
-    }
-    setGpsLoading(true);
-    setError('');
+    if (!navigator.geolocation) { setError('Geolocalização não disponível.'); return; }
+    setGpsLoading(true); setError('');
     navigator.geolocation.getCurrentPosition(
       async (pos) => {
         const { latitude, longitude } = pos.coords;
-        setLat(latitude);
-        setLng(longitude);
-        setMapCenter([latitude, longitude]);
-        setShowMap(true);
-        setEditAddr(true);
+        setLat(latitude); setLng(longitude);
         try {
           const res = await fetch(`/api/orders/reverse-geocode?lat=${latitude}&lng=${longitude}`);
           const data = await res.json();
-          if (data.display_name) {
-            setAddress(cleanNominatimAddress(data.display_name));
-          } else {
-            setAddress(`${latitude.toFixed(5)}, ${longitude.toFixed(5)}`);
-          }
-        } catch {
-          setAddress(`${latitude.toFixed(5)}, ${longitude.toFixed(5)}`);
-        }
+          setAddress(data.display_name ? cleanNominatimAddress(data.display_name) : `${latitude.toFixed(5)}, ${longitude.toFixed(5)}`);
+        } catch { setAddress(`${latitude.toFixed(5)}, ${longitude.toFixed(5)}`); }
         updateDeliveryFee(latitude, longitude);
         setGpsLoading(false);
+        setEditAddr(false);
       },
       (err) => {
         setGpsLoading(false);
-        if (err.code === 1) {
-          setError('Permissão de localização negada. Digite o endereço manualmente.');
-        } else {
-          setError('Não foi possível obter sua localização. Digite o endereço.');
-        }
+        setError(err.code === 1 ? 'Permissão negada. Digite o endereço manualmente.' : 'Não foi possível obter sua localização.');
         setTimeout(() => setError(''), 5000);
       },
       { enableHighAccuracy: true, timeout: 10000, maximumAge: 120000 }
     );
   }
 
-  function handleMapClick(clickLat, clickLng) {
-    setLat(clickLat);
-    setLng(clickLng);
-    updateDeliveryFee(clickLat, clickLng);
-  }
-
-  async function handleSubmit(e) {
-    e.preventDefault();
+  async function handleSubmit() {
     if (!address) { setError('Informe o endereço de entrega'); return; }
-    if (!store?.id) { setError('Loja não encontrada. Volte ao cardápio e tente novamente.'); return; }
-    setLoading(true);
-    setError('');
-
+    if (!store?.id) { setError('Loja não encontrada. Volte ao cardápio.'); return; }
+    setLoading(true); setError('');
     try {
       const data = await apiFetch('/orders', {
         method: 'POST',
         body: JSON.stringify({
           store_id: store.id,
           items: orderItems.map(i => ({ product_id: i.product_id, quantity: i.quantity })),
-          address,
-          lat: lat,
-          lng: lng,
+          address, lat, lng,
           notes: splitLiter ? `Modo: ${(orderItems[0]?.quantity || 1)}L dividido. ` + (notes || '') : notes
         })
       });
-      console.log('[Order response]', data);
       if (data.order?.id) {
         navigate(`/customer/payment/${data.order.id}`);
       } else {
-        const msg = data.error || data.message || JSON.stringify(data);
-        setError(msg || 'Erro ao criar pedido');
+        setError(data.error || data.message || 'Erro ao criar pedido');
       }
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
+    } catch (err) { setError(err.message); }
+    finally { setLoading(false); }
   }
 
+  const addrLines = formatAddressLines(address);
+  const hasAddress = !!address;
+  const hasSplitOption = orderItems.some(i => (i.size_ml || product?.size_ml) >= 1000);
+
   return (
-    <div>
-      <div className="header">
-        <div className="header-left">
-          <button className="btn btn-sm"
-            style={{ background: 'var(--border)', color: 'var(--primary-dark)', fontSize: 22, width: 36, height: 36, borderRadius: '50%', padding: 0, fontWeight: 700, lineHeight: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-            onClick={() => navigate(-1)}>
-            ‹
-          </button>
-        </div>
-        <div className="header-title">Resumo do Pedido</div>
-        <div className="header-right" />
+    <div style={{ minHeight: '100vh', background: 'white', display: 'flex', flexDirection: 'column' }}>
+
+      {/* Header */}
+      <div style={{ display: 'flex', alignItems: 'center', padding: '14px 16px', borderBottom: '1px solid #EFEFEF', flexShrink: 0 }}>
+        <button onClick={() => navigate(-1)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 26, color: '#333', padding: 0, lineHeight: 1, width: 36 }}>‹</button>
+        <span style={{ flex: 1, textAlign: 'center', fontWeight: 800, fontSize: 15, letterSpacing: 1 }}>SACOLA</span>
+        <div style={{ width: 36 }} />
       </div>
 
-      <div className="container">
-        <div className="card">
-          <h3 style={{ marginBottom: 12, color: 'var(--primary)' }}>Resumo do Pedido</h3>
-          {orderItems.map((item, i) => (
-            <div key={i} className="flex-between" style={{ padding: '8px 0', borderBottom: '1px solid var(--border)' }}>
-              <div>
-                <span style={{ fontWeight: 600 }}>{item.quantity}x </span>
-                {item.name}
-              </div>
-              <span className="font-bold">R$ {((item.price || 0) * (item.quantity || 1)).toFixed(2)}</span>
-            </div>
-          ))}
-          <div className="flex-between" style={{ padding: '8px 0', fontSize: 14, color: '#666' }}>
-            <span>Taxa de entrega</span>
-            <span>R$ {deliveryFee.toFixed(2)}</span>
-          </div>
-          <div className="flex-between font-bold" style={{ marginTop: 12, fontSize: 18, color: 'var(--primary)' }}>
-            <span>Total</span>
-            <span>R$ {total.toFixed(2)}</span>
-          </div>
+      {/* Conteúdo rolável */}
+      <div style={{ flex: 1, overflowY: 'auto', paddingBottom: 100 }}>
 
-          {orderItems.some(i => i.size_ml >= 1000 || i.product?.size_ml >= 1000) && (
-            <div style={{ marginTop: 12 }}>
-              <div style={{ fontSize: 13, fontWeight: 600, color: '#888', marginBottom: 8 }}>Como quer receber?</div>
-              <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+        {error && (
+          <div style={{ background: '#FFEBEE', color: '#C62828', padding: '12px 16px', fontSize: 14, fontWeight: 600 }}>
+            {error}
+          </div>
+        )}
+
+        {distanceWarning && (
+          <div style={{ background: '#FFF3E0', color: '#E65100', padding: '12px 16px', fontSize: 13, fontWeight: 600 }}>
+            {distanceWarning}
+          </div>
+        )}
+
+        {/* Seção: endereço */}
+        <div style={{ padding: '20px 16px 20px' }}>
+          <div style={{ fontWeight: 700, fontSize: 17, marginBottom: 16 }}>Entregar no endereço</div>
+
+          {!editAddr && hasAddress ? (
+            <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#333" strokeWidth="2" style={{ marginTop: 2, flexShrink: 0 }}>
+                <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/><circle cx="12" cy="9" r="2.5"/>
+              </svg>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontWeight: 700, fontSize: 15, lineHeight: 1.3 }}>{addrLines.line1}</div>
+                {addrLines.line2 && <div style={{ fontSize: 13, color: '#888', marginTop: 2 }}>{addrLines.line2}</div>}
+              </div>
+              <button onClick={() => setEditAddr(true)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--primary)', fontWeight: 700, fontSize: 14, flexShrink: 0 }}>
+                Trocar
+              </button>
+            </div>
+          ) : (
+            <div style={{ background: '#F8F4FC', borderRadius: 12, padding: 16 }}>
+              {/* GPS */}
+              <button type="button" onClick={useMyLocation} disabled={gpsLoading}
+                style={{ display: 'flex', alignItems: 'center', gap: 8, width: '100%', background: 'white', border: '1px solid #DDD', borderRadius: 8, padding: '10px 14px', cursor: 'pointer', marginBottom: 12, fontSize: 14, color: '#333', fontWeight: 600 }}>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/>
+                  <line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/>
+                  <line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/>
+                </svg>
+                {gpsLoading ? 'Obtendo localização...' : 'Usar minha localização atual'}
+              </button>
+
+              {/* Endereços salvos */}
+              {savedAddresses.length > 0 && (
+                <select className="input" style={{ marginBottom: 10, fontSize: 14 }}
+                  value=""
+                  onChange={e => {
+                    const a = savedAddresses.find(s => s.address === e.target.value);
+                    if (a) { setAddress(a.address); if (a.lat && a.lng) { setLat(a.lat); setLng(a.lng); updateDeliveryFee(a.lat, a.lng); } setEditAddr(false); }
+                  }}>
+                  <option value="">Selecionar endereço salvo...</option>
+                  {savedAddresses.map(a => <option key={a.id} value={a.address}>{a.label || shortAddress(a.address)}</option>)}
+                </select>
+              )}
+
+              {/* Campo de texto */}
+              <div style={{ position: 'relative', marginBottom: 10 }}>
+                <input className="input" type="text" value={address}
+                  onChange={e => { setAddress(e.target.value); searchAddress(e.target.value); }}
+                  onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
+                  placeholder="Rua, número, bairro" />
+                {showSuggestions && addressSuggestions.length > 0 && (
+                  <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 10, background: 'white', border: '1px solid #DDD', borderRadius: 8, maxHeight: 180, overflow: 'auto', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
+                    {addressSuggestions.map((s, i) => (
+                      <div key={i} onMouseDown={() => selectSuggestion(s)}
+                        style={{ padding: '10px 14px', cursor: 'pointer', fontSize: 13, borderBottom: '1px solid #F0F0F0' }}>
+                        {s.display_name}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* CEP */}
+              {!showCep ? (
+                <button type="button" onClick={() => setShowCep(true)}
+                  style={{ background: 'none', border: 'none', color: 'var(--primary)', fontSize: 13, fontWeight: 600, cursor: 'pointer', padding: '4px 0', marginBottom: 12 }}>
+                  Buscar por CEP
+                </button>
+              ) : (
+                <div style={{ display: 'flex', gap: 8, marginBottom: 12, alignItems: 'center' }}>
+                  <input className="input" type="text" value={cep}
+                    onChange={e => setCep(e.target.value.replace(/\D/g, '').slice(0, 8))}
+                    placeholder="CEP (ex: 66000000)" style={{ width: 140, flexShrink: 0 }} />
+                  <button type="button" onClick={lookupCep} disabled={cepLoading || cep.replace(/\D/g, '').length !== 8}
+                    style={{ background: 'var(--primary)', color: 'white', border: 'none', borderRadius: 8, padding: '10px 14px', fontWeight: 700, cursor: 'pointer', fontSize: 13, whiteSpace: 'nowrap' }}>
+                    {cepLoading ? '...' : 'Buscar'}
+                  </button>
+                  <button type="button" onClick={() => setShowCep(false)}
+                    style={{ background: 'none', border: 'none', color: '#999', fontSize: 20, cursor: 'pointer' }}>×</button>
+                </div>
+              )}
+
+              <div style={{ display: 'flex', gap: 8 }}>
+                <button type="button" onClick={() => geocodeAddress()} disabled={geocoding || !address}
+                  style={{ flex: 1, background: 'var(--primary)', color: 'white', border: 'none', borderRadius: 8, padding: '12px', fontWeight: 700, cursor: 'pointer', fontSize: 14 }}>
+                  {geocoding ? 'Buscando...' : 'Confirmar endereço'}
+                </button>
+                {hasAddress && (
+                  <button type="button" onClick={() => { setEditAddr(false); setShowCep(false); }}
+                    style={{ background: 'white', border: '1px solid #DDD', borderRadius: 8, padding: '12px 14px', cursor: 'pointer', fontSize: 14 }}>
+                    Cancelar
+                  </button>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+
+        <div style={{ height: 8, background: '#F5F5F5' }} />
+
+        {/* Opções de entrega */}
+        <div style={{ padding: '20px 16px' }}>
+          <div style={{ fontWeight: 700, fontSize: 17, marginBottom: 16 }}>Opções de entrega</div>
+
+          <div style={{ border: '2px solid #333', borderRadius: 12, padding: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div>
+              <div style={{ fontWeight: 700, fontSize: 15 }}>Padrão</div>
+              <div style={{ fontSize: 13, color: '#888', marginTop: 3 }}>Hoje, 30 – 45 min</div>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              <span style={{ fontWeight: 700, fontSize: 15 }}>R$ {deliveryFee.toFixed(2)}</span>
+              <div style={{ width: 24, height: 24, borderRadius: '50%', border: '2px solid var(--primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <div style={{ width: 14, height: 14, borderRadius: '50%', background: 'var(--primary)' }} />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Split litro (apenas para produtos >= 1L) */}
+        {hasSplitOption && (
+          <>
+            <div style={{ height: 8, background: '#F5F5F5' }} />
+            <div style={{ padding: '20px 16px' }}>
+              <div style={{ fontWeight: 700, fontSize: 17, marginBottom: 12 }}>Como quer receber?</div>
+              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                 {Array.from({ length: (orderItems[0]?.quantity || 1) + 1 }, (_, k) => {
                   const litrosInteiros = (orderItems[0]?.quantity || 1) - k;
                   const meios = k * 2;
@@ -374,196 +375,46 @@ export default function CustomerOrder() {
                   if (litrosInteiros > 0 && meios > 0) label = `${litrosInteiros}L + ${meios} de meio`;
                   else if (litrosInteiros > 0) label = `${litrosInteiros}L`;
                   else label = `${meios} de meio`;
-                  const isActive = k > 0;
+                  const isActive = (k > 0) === splitLiter;
                   return (
-                    <button key={k}
-                      onClick={() => setSplitLiter(k > 0)}
-                      style={{
-                        padding: '6px 12px', borderRadius: 20, border: isActive ? '2px solid #6A1B9A' : '1px solid #DDD',
-                        background: isActive ? '#F3E5F5' : 'white', color: isActive ? '#6A1B9A' : '#666',
-                        fontSize: 13, fontWeight: isActive ? 700 : 400, cursor: 'pointer'
-                      }}>
+                    <button key={k} onClick={() => setSplitLiter(k > 0)}
+                      style={{ padding: '8px 14px', borderRadius: 20, border: isActive ? '2px solid var(--primary)' : '1px solid #DDD', background: isActive ? '#F3E5F5' : 'white', color: isActive ? 'var(--primary)' : '#666', fontSize: 13, fontWeight: isActive ? 700 : 400, cursor: 'pointer' }}>
                       {label}
                     </button>
                   );
                 })}
               </div>
             </div>
+          </>
+        )}
+
+        <div style={{ height: 8, background: '#F5F5F5' }} />
+
+        {/* Observações */}
+        <div style={{ padding: '16px' }}>
+          <button type="button" onClick={() => setShowNotes(v => !v)}
+            style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', background: 'none', border: 'none', cursor: 'pointer', padding: '4px 0' }}>
+            <span style={{ fontWeight: 700, fontSize: 15 }}>Observações</span>
+            <span style={{ color: '#888', fontSize: 18 }}>{showNotes ? '−' : '+'}</span>
+          </button>
+          {showNotes && (
+            <textarea className="input" value={notes} onChange={e => setNotes(e.target.value)}
+              placeholder="Ex: Sem granola, troco para R$ 50..."
+              style={{ resize: 'none', minHeight: 72, fontSize: 14, marginTop: 12 }} />
           )}
         </div>
 
-        <div className="card">
-          <form onSubmit={handleSubmit}>
-            {error && (
-              <div style={{ background: '#FFEBEE', color: '#C62828', padding: 12, borderRadius: 8, marginBottom: 16, fontSize: 14 }}>
-                {error}
-              </div>
-            )}
+      </div>
 
-            <div className="form-group">
-              <label className="label">Endereço de entrega</label>
-              {savedAddresses.length > 0 && !editAddr && (
-                <div style={{ marginBottom: 8 }}>
-                  <select className="input" value={address} onChange={e => {
-                    const addr = savedAddresses.find(a => a.address === e.target.value);
-                    if (addr) {
-                      setAddress(addr.address);
-                      if (addr.lat && addr.lng) {
-                        setLat(addr.lat);
-                        setLng(addr.lng);
-                        setMapCenter([addr.lat, addr.lng]);
-                        setShowMap(true);
-                        updateDeliveryFee(addr.lat, addr.lng);
-                      }
-                    }
-                  }} style={{ fontSize: 14, fontWeight: 600, color: '#333' }}>
-                    <option value={user?.address || ''}>{shortAddress(user?.address) || 'Selecione...'}</option>
-                    {savedAddresses.filter(a => a.address !== user?.address).map(addr => (
-                      <option key={addr.id} value={addr.address}>
-                        {addr.label} — {shortAddress(addr.address)}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              )}
-              {user?.address && !editAddr ? (
-                <div>
-                  <div style={{ fontSize: 15, fontWeight: 600, color: '#333', marginBottom: 6 }}>{shortAddress(user.address)}</div>
-                  <button type="button" className="btn btn-sm btn-outline"
-                    onClick={() => { setEditAddr(true); setAddress(user.address); }}>
-                    Alterar endereço
-                  </button>
-                  <input type="hidden" value={user.address} />
-                </div>
-              ) : (
-                <>
-                  {!lat && (
-                    <button type="button" className="btn btn-outline"
-                      onClick={useMyLocation} disabled={gpsLoading}
-                      style={{ marginBottom: 12, width: '100%', justifyContent: 'flex-start', gap: 10, padding: '12px 16px' }}>
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/>
-                        <line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/>
-                        <line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/>
-                      </svg>
-                      {gpsLoading ? 'Obtendo sua localização...' : 'Usar minha localização atual'}
-                    </button>
-                  )}
-                  <div style={{ position: 'relative' }}>
-                    <div className="flex-row" style={{ gap: 8 }}>
-                      <input className="input" type="text" value={address}
-                        onChange={e => { setAddress(e.target.value); searchAddress(e.target.value); }}
-                        onFocus={() => { if (addressSuggestions.length > 0) setShowSuggestions(true); }}
-                        onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
-                        placeholder="Rua, número, bairro - Cidade" required
-                        style={{ flex: 1 }} />
-                      <button type="button" className="btn btn-sm btn-secondary"
-                        onClick={geocodeAddress} disabled={geocoding || !address}
-                        style={{ width: 'auto', whiteSpace: 'nowrap' }}>
-                        {geocoding ? '...' : 'Buscar'}
-                      </button>
-                    </div>
-                    {showSuggestions && addressSuggestions.length > 0 && (
-                      <div style={{
-                        position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 10,
-                        background: 'white', border: '1px solid #DDD', borderRadius: 8, maxHeight: 200, overflow: 'auto',
-                        boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
-                      }}>
-                        {addressSuggestions.map((s, i) => (
-                          <div key={i} onMouseDown={() => selectSuggestion(s)}
-                            style={{ padding: '10px 14px', cursor: 'pointer', fontSize: 13, borderBottom: '1px solid #F0F0F0' }}>
-                            {s.display_name}
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                  {!showCep ? (
-                    <button type="button" onClick={() => setShowCep(true)}
-                      style={{ background: 'none', border: 'none', color: 'var(--primary)', fontSize: 13, fontWeight: 600, cursor: 'pointer', padding: '8px 0', textDecoration: 'underline' }}>
-                      Buscar por CEP
-                    </button>
-                  ) : (
-                    <div className="flex-row" style={{ gap: 8, marginTop: 8 }}>
-                      <input className="input" type="text" value={cep}
-                        onChange={e => { setCep(e.target.value.replace(/\D/g, '').slice(0, 8)); }}
-                        placeholder="CEP (ex: 01001000)" maxLength={8}
-                        style={{ width: 140, flexShrink: 0 }} />
-                      <button type="button" className="btn btn-sm btn-secondary"
-                        onClick={lookupCep} disabled={cepLoading || cep.replace(/\D/g, '').length !== 8}
-                        style={{ whiteSpace: 'nowrap' }}>
-                        {cepLoading ? '...' : 'Buscar CEP'}
-                      </button>
-                      <button type="button" onClick={() => setShowCep(false)}
-                        style={{ background: 'none', border: 'none', color: '#999', fontSize: 20, cursor: 'pointer', padding: '0 4px' }}>
-                        ×
-                      </button>
-                    </div>
-                  )}
-                </>
-              )}
-            </div>
-
-            {distanceWarning && (
-              <div style={{ background: '#FFF3E0', color: '#E65100', padding: 12, borderRadius: 8, marginBottom: 12, fontSize: 14, fontWeight: 600 }}>
-                {distanceWarning}
-              </div>
-            )}
-
-            {showMap && lat && editAddr && (
-              <div className="form-group">
-                <label className="label">Confirme no mapa (clique para ajustar)</label>
-                <div style={{ height: 250, borderRadius: 8, overflow: 'hidden', border: '1px solid var(--border)' }}>
-                  <MapContainer
-                    center={mapCenter}
-                    zoom={15}
-                    style={{ height: '100%', width: '100%' }}
-                    key="cust-map"
-                  >
-                    <TileLayer
-                      attribution='&copy; OpenStreetMap'
-                      url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                    />
-                    {lat && lng && (
-                      <Marker
-                        position={[lat, lng]}
-                        draggable={true}
-                        eventHandlers={{
-                          dragend(e) {
-                            const pos = e.target.getLatLng();
-                            setLat(pos.lat);
-                            setLng(pos.lng);
-                            checkDistanceWarning(pos.lat, pos.lng);
-                          }
-                        }}
-                      />
-                    )}
-                    <MapClickHandler onClick={(clickLat, clickLng) => {
-                      handleMapClick(clickLat, clickLng);
-                      checkDistanceWarning(clickLat, clickLng);
-                    }} />
-                  </MapContainer>
-                </div>
-                <p className="text-xs text-muted mt-2">Arraste o marcador ou clique para posicionar exatamente.</p>
-              </div>
-            )}
-
-            <div className="form-group">
-              <label className="label">Observações (opcional)</label>
-              <textarea className="input" value={notes} onChange={e => setNotes(e.target.value)}
-                placeholder="Ex: Sem granola, troco para R$ 50..."
-                style={{ resize: 'vertical', minHeight: 60 }} />
-            </div>
-
-            <button className="btn btn-primary" type="submit" disabled={loading}>
-              {loading ? <img className="spin" src="/saco_acai.png" style={{ width: 20, height: 20 }} /> : 'Ir para Pagamento'}
-            </button>
-
-            <p className="text-xs text-muted" style={{ marginTop: 8, textAlign: 'center' }}>
-              Pagamento seguro via Mercado Pago
-            </p>
-          </form>
-        </div>
+      {/* Barra inferior fixa */}
+      <div style={{ position: 'fixed', bottom: 0, left: 0, right: 0, background: 'white', borderTop: '1px solid #EFEFEF', padding: '12px 16px', paddingBottom: 'max(12px, env(safe-area-inset-bottom))' }}>
+        <button className="btn btn-primary"
+          style={{ fontSize: 15, padding: '14px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', opacity: (!hasAddress || loading) ? 0.6 : 1 }}
+          disabled={!hasAddress || loading}
+          onClick={handleSubmit}>
+          <span>{loading ? 'Processando...' : 'Continuar'}</span>
+          <span>R$ {total.toFixed(2)} com entrega</span>
+        </button>
       </div>
     </div>
   );
