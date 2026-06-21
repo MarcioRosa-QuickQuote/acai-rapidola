@@ -41,7 +41,7 @@ function ReconnectScreen({ onRetry }) {
 
 function ProtectedRoute({ role, children }) {
   const { user, loading, networkError, retryAuth } = useAuth();
-  if (loading) return <div className="loading"><img className="spin" src="/saco_acai.png" /></div>;
+  if (loading) return <div className="loading" style={{ flexDirection: 'column' }}><img className="spin" src="/saco_acai.png" /></div>;
   if (networkError) return <ReconnectScreen onRetry={retryAuth} />;
   if (!user) return <Navigate to="/login" />;
   if (role && user.role !== role) return <Navigate to={`/${user.role}`} />;
