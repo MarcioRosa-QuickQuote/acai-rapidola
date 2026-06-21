@@ -1320,83 +1320,58 @@ export default function StoreDashboard() {
     }
 
     if (perfilTab === 'assinatura') {
-      const planoAtual = storeData?.plan || 'basico';
-      const isPremium = planoAtual === 'premium';
-
-      const Feature = ({ ok, text }) => (
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-          <span style={{ fontSize: 14, flexShrink: 0 }}>{ok ? '✅' : '🔒'}</span>
-          <span style={{ fontSize: 13, color: ok ? 'var(--text)' : '#aaa' }}>{text}</span>
-        </div>
-      );
+      const isPremium = (storeData?.plan || 'basico') === 'premium';
+      const checkIcon = <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6A1B9A" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>;
 
       return (
         <div>
           <div className="page-title" style={{ fontSize: 20, marginBottom: 20 }}>Assinatura</div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: isDesktop ? '1fr 1fr' : '1fr', gap: 16 }}>
-
-            {/* BÁSICO */}
-            <div style={{ borderRadius: 16, border: `2px solid ${!isPremium ? '#6A1B9A' : '#e0e0e0'}`, padding: 20, position: 'relative', background: !isPremium ? '#fdf8ff' : 'white' }}>
-              {!isPremium && (
-                <div style={{ position: 'absolute', top: -12, left: 20, background: '#6A1B9A', color: 'white', fontSize: 11, fontWeight: 700, padding: '3px 12px', borderRadius: 20 }}>
-                  PLANO ATUAL
-                </div>
-              )}
-              <div style={{ marginBottom: 4, fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, color: '#888' }}>Básico</div>
-              <div style={{ fontSize: 30, fontWeight: 800, color: '#1a1a1a' }}>Grátis</div>
-              <div style={{ fontSize: 12, color: '#888', marginBottom: 16, marginTop: 2 }}>Para começar a vender</div>
-              <Feature ok text="Painel de pedidos" />
-              <Feature ok text="Cardápio digital (até 15 produtos)" />
-              <Feature ok text="1 entregador parceiro" />
-              <Feature ok text="Pagamento via Pix e cartão (Mercado Pago)" />
-              <Feature ok text="Notificações em tempo real" />
-              <Feature ok={false} text="Relatório financeiro" />
-              <Feature ok={false} text="Tela de TV (modo operação)" />
-              <Feature ok={false} text="Entregadores ilimitados" />
-              <Feature ok={false} text="Histórico de 90 dias" />
-              <Feature ok={false} text="Exportação de dados (CSV)" />
-              <Feature ok={false} text="Suporte prioritário via WhatsApp" />
+          {/* Card único */}
+          <div style={{ borderRadius: 16, border: `2px solid ${isPremium ? '#6A1B9A' : '#e0e0e0'}`, padding: 24, position: 'relative', background: isPremium ? '#fdf8ff' : 'white', boxShadow: '0 2px 16px rgba(106,27,154,0.07)' }}>
+            <div style={{ position: 'absolute', top: -12, left: 20, background: isPremium ? '#6A1B9A' : '#1a1a1a', color: 'white', fontSize: 11, fontWeight: 700, padding: '3px 14px', borderRadius: 20 }}>
+              {isPremium ? 'PLANO ATUAL' : '✦ 1 mês grátis'}
             </div>
 
-            {/* PREMIUM */}
-            <div style={{ borderRadius: 16, border: `2px solid ${isPremium ? '#6A1B9A' : '#e0e0e0'}`, padding: 20, position: 'relative', background: isPremium ? '#fdf8ff' : 'white' }}>
-              {isPremium && (
-                <div style={{ position: 'absolute', top: -12, left: 20, background: '#6A1B9A', color: 'white', fontSize: 11, fontWeight: 700, padding: '3px 12px', borderRadius: 20 }}>
-                  PLANO ATUAL
-                </div>
-              )}
-              <div style={{ position: 'absolute', top: -12, right: 20, background: 'linear-gradient(90deg,#FF6D00,#FF9100)', color: 'white', fontSize: 11, fontWeight: 700, padding: '3px 12px', borderRadius: 20 }}>
-                ⭐ PREMIUM
-              </div>
-              <div style={{ marginBottom: 4, fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, color: '#888' }}>Premium</div>
-              <div style={{ fontSize: 30, fontWeight: 800, color: '#1a1a1a' }}>R$ 89<span style={{ fontSize: 15, fontWeight: 400, color: '#888' }}>/mês</span></div>
-              <div style={{ fontSize: 12, color: '#888', marginBottom: 16, marginTop: 2 }}>Para quem quer crescer</div>
-              <Feature ok text="Tudo do Básico" />
-              <Feature ok text="Relatório financeiro completo" />
-              <Feature ok text="Tela de TV (modo operação)" />
-              <Feature ok text="Entregadores ilimitados" />
-              <Feature ok text="Histórico de 90 dias" />
-              <Feature ok text="Exportação de dados (CSV)" />
-              <Feature ok text="Suporte prioritário via WhatsApp" />
-              <Feature ok text="Alarme de entregador chegando" />
-              <Feature ok text="Dashboard de desempenho semanal" />
-              {!isPremium && (
-                <button style={{
-                  marginTop: 16, width: '100%', background: 'linear-gradient(135deg, #6A1B9A, #9C27B0)',
-                  color: 'white', border: 'none', borderRadius: 12, padding: '14px 0',
-                  fontSize: 15, fontWeight: 700, cursor: 'pointer'
-                }}>
-                  Assinar Premium →
-                </button>
-              )}
+            <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.8, color: '#888', marginBottom: 10, marginTop: 4 }}>Plano Loja</div>
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: 3, marginBottom: 4 }}>
+              <span style={{ fontSize: 16, color: '#888', fontWeight: 600 }}>R$</span>
+              <span style={{ fontSize: 42, fontWeight: 800, color: '#1a1a1a', lineHeight: 1 }}>129</span>
+              <span style={{ fontSize: 13, color: '#888' }}>/mês</span>
             </div>
+            <div style={{ fontSize: 12, color: '#aaa', marginBottom: 22 }}>sem comissão por pedido · cancele quando quiser</div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 24 }}>
+              {[
+                'App completo para clientes',
+                'Painel com pedidos ao vivo',
+                'Entregadores integrados',
+                'Cardápio digital com fotos',
+                'Rastreamento em tempo real',
+                'Relatório financeiro',
+                'Tela de TV (modo operação)',
+                'Exportação de dados CSV',
+                'Suporte via WhatsApp',
+              ].map(f => (
+                <div key={f} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  {checkIcon}
+                  <span style={{ fontSize: 13, color: '#444' }}>{f}</span>
+                </div>
+              ))}
+            </div>
+
+            {!isPremium && (
+              <a href="https://wa.me/5591920655109?text=Olá,%20quero%20assinar%20o%20Pé%20de%20Açaí!" target="_blank" rel="noopener noreferrer"
+                style={{ display: 'block', width: '100%', background: 'linear-gradient(135deg, #6A1B9A, #9C27B0)', color: 'white', border: 'none', borderRadius: 12, padding: '14px 0', fontSize: 15, fontWeight: 700, cursor: 'pointer', textAlign: 'center', textDecoration: 'none', boxSizing: 'border-box' }}>
+                Começar 1 mês grátis →
+              </a>
+            )}
           </div>
 
-          <div style={{ marginTop: 20, padding: '14px 16px', background: '#f9f5ff', borderRadius: 12, border: '1px solid #e1bee7', fontSize: 13, color: '#555' }}>
-            💡 Dúvidas sobre os planos? Fale com a gente pelo WhatsApp:{' '}
-            <a href="https://wa.me/5591999999999" target="_blank" rel="noopener noreferrer" style={{ color: '#6A1B9A', fontWeight: 700 }}>
-              (91) 99999-9999
+          <div style={{ marginTop: 16, padding: '14px 16px', background: 'white', borderRadius: 12, border: '1px solid #eee', fontSize: 13, color: '#555' }}>
+            Dúvidas? Fale com a gente pelo WhatsApp:{' '}
+            <a href="https://wa.me/5591920655109" target="_blank" rel="noopener noreferrer" style={{ color: '#6A1B9A', fontWeight: 700 }}>
+              (91) 92065-5109
             </a>
           </div>
         </div>
@@ -2102,24 +2077,27 @@ export default function StoreDashboard() {
           <div style={{ background: 'white', borderRadius: 20, padding: 28, maxWidth: 380, width: '100%', boxShadow: '0 20px 60px rgba(0,0,0,0.2)' }}
             onClick={e => e.stopPropagation()}>
             <div style={{ textAlign: 'center', marginBottom: 20 }}>
-              <div style={{ fontSize: 40, marginBottom: 8 }}>⭐</div>
-              <div style={{ fontSize: 20, fontWeight: 800, color: '#1a1a1a' }}>Recurso Premium</div>
-              <div style={{ fontSize: 14, color: '#666', marginTop: 6, lineHeight: 1.5 }}>Este recurso está disponível apenas no plano Premium.</div>
+              <div style={{ fontSize: 20, fontWeight: 800, color: '#1a1a1a' }}>Plano Loja</div>
+              <div style={{ fontSize: 14, color: '#888', marginTop: 6, lineHeight: 1.5 }}>Este recurso faz parte do plano pago.</div>
             </div>
-            <div style={{ background: '#fdf8ff', borderRadius: 12, padding: '14px 16px', marginBottom: 20, border: '1px solid #e1bee7' }}>
+            <div style={{ background: '#fafafa', borderRadius: 12, padding: '14px 16px', marginBottom: 20, border: '1px solid #eee' }}>
               {[
-                '💰 Relatório financeiro completo',
-                '📺 Tela de TV (modo operação)',
-                '🏍️ Entregadores ilimitados',
-                '📊 Dashboard de desempenho',
-                '📁 Exportação de dados CSV',
-                '💬 Suporte prioritário WhatsApp',
+                'Relatório financeiro completo',
+                'Tela de TV (modo operação)',
+                'Entregadores ilimitados',
+                'Dashboard de desempenho',
+                'Exportação de dados CSV',
+                'Suporte prioritário WhatsApp',
               ].map((f, i) => (
-                <div key={i} style={{ fontSize: 13, color: '#555', marginBottom: 6, display: 'flex', alignItems: 'center', gap: 8 }}>{f}</div>
+                <div key={i} style={{ fontSize: 13, color: '#555', marginBottom: 6, display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#6A1B9A" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                  {f}
+                </div>
               ))}
             </div>
             <div style={{ textAlign: 'center', marginBottom: 16 }}>
-              <div style={{ fontSize: 28, fontWeight: 800, color: '#1a1a1a' }}>R$ 89<span style={{ fontSize: 14, fontWeight: 400, color: '#888' }}>/mês</span></div>
+              <div style={{ fontSize: 11, color: '#aaa', marginBottom: 4 }}>1 mês grátis · sem comissão por pedido</div>
+              <div style={{ fontSize: 28, fontWeight: 800, color: '#1a1a1a' }}>R$ 129<span style={{ fontSize: 14, fontWeight: 400, color: '#888' }}>/mês</span></div>
             </div>
             <button
               onClick={() => { setShowUpgradeModal(false); setView('perfil'); setPerfilTab('assinatura'); }}
