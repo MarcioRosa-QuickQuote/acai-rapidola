@@ -60,7 +60,7 @@ export default function Login() {
       padding: '24px 20px 20px', position: 'relative', overflow: 'hidden'
     }}>
       {/* Vídeo: lado esquerdo no desktop, tela inteira no mobile */}
-      <video autoPlay loop muted playsInline className="login-video">
+      <video autoPlay loop muted playsInline preload="auto" className="login-video">
         <source src="/video4.mp4" type="video/mp4" />
       </video>
       <div className="login-video-overlay" />
@@ -279,7 +279,7 @@ export default function Login() {
         </div>
       </div>
 
-      <p style={{ marginTop: 16, fontSize: 12, color: '#fff', zIndex: 1, textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, flexWrap: 'wrap', textShadow: '0 1px 3px rgba(0,0,0,0.6), 0 0 6px rgba(0,0,0,0.4)' }}>
+      <p style={{ marginTop: 16, fontSize: 12, color: '#fff', position: 'relative', zIndex: 1, textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, flexWrap: 'wrap', textShadow: '0 1px 3px rgba(0,0,0,0.6), 0 0 6px rgba(0,0,0,0.4)' }}>
         <a href="/landing" style={{ color: '#fff', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 3 }}>
           <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
           Página de Vendas
