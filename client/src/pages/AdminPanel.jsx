@@ -652,6 +652,19 @@ export default function AdminPanel() {
                           )}
                         </div>
 
+                        {/* CNH */}
+                        {e.document_url && (
+                          <div style={{ flexShrink: 0 }}>
+                            <div style={{ fontSize: 10, color: '#888', marginBottom: 2, textAlign: 'center' }}>CNH</div>
+                            <a href={e.document_url} target="_blank" rel="noreferrer">
+                              <img src={e.document_url} alt="CNH" style={{
+                                width: 90, height: 60, borderRadius: 8, objectFit: 'cover',
+                                border: '1px solid #ddd', display: 'block'
+                              }} />
+                            </a>
+                          </div>
+                        )}
+
                         {/* Info */}
                         <div style={{ flex: 1, minWidth: 0 }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 4 }}>

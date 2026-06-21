@@ -249,20 +249,20 @@ router.get('/entregadores', adminOnly, async (req, res) => {
   // Tentativa completa
   const { data, error } = await supabase
     .from('users')
-    .select('id, name, phone, email, cpf, vehicle_type, plate, pix_key, selfie_url, approval_status, rejection_reason, created_at')
+    .select('id, name, phone, email, cpf, vehicle_type, plate, pix_key, selfie_url, document_url, approval_status, rejection_reason, created_at')
     .eq('role', 'motoboy')
     .order('created_at', { ascending: false });
   if (!error) return res.json(data || []);
 
   console.error('[admin/entregadores] query error:', error.code, error.message);
 
-  // Fallback sem rejection_reason (coluna pode não existir)
+  // Fallback sem rejection_reason e/ou document_url (colunas podem não existir)
   const { data: data2, error: err2 } = await supabase
     .from('users')
     .select('id, name, phone, email, cpf, vehicle_type, plate, pix_key, selfie_url, approval_status, created_at')
     .eq('role', 'motoboy')
     .order('created_at', { ascending: false });
-  if (!err2) return res.json((data2 || []).map(u => ({ ...u, rejection_reason: null })));
+  if (!err2) return res.json((data2 || []).map(u => ({ ...u, rejection_reason: null, document_url: null })));
 
   console.error('[admin/entregadores] fallback error:', err2.code, err2.message);
 
@@ -274,7 +274,7 @@ router.get('/entregadores', adminOnly, async (req, res) => {
     .order('created_at', { ascending: false });
   return res.json((data3 || []).map(u => ({
     ...u, cpf: null, vehicle_type: null, plate: null,
-    pix_key: null, selfie_url: null, rejection_reason: null
+    pix_key: null, selfie_url: null, document_url: null, rejection_reason: null
   })));
 });
 

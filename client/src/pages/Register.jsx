@@ -33,7 +33,7 @@ export default function Register() {
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
 
   // Wizard entregador
-  const [wizardStep, setWizardStep] = useState(null); // null | 1 | 2 | 3
+  const [wizardStep, setWizardStep] = useState(null); // null | 1 | 2 | 3 | 4
   const [cpf, setCpf] = useState('');
   const [vehicleType, setVehicleType] = useState('moto');
   const [plate, setPlate] = useState('');
@@ -44,6 +44,12 @@ export default function Register() {
   const [cameraStream, setCameraStream] = useState(null);
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
+  const [cnhDataUrl, setCnhDataUrl] = useState(null);
+  const [cnhCameraActive, setCnhCameraActive] = useState(false);
+  const [cnhCameraError, setCnhCameraError] = useState('');
+  const [cnhCameraStream, setCnhCameraStream] = useState(null);
+  const cnhVideoRef = useRef(null);
+  const cnhCanvasRef = useRef(null);
 
   const googleLogin = useGoogleLogin({
     onSuccess: async (tokenResponse) => {
@@ -98,6 +104,22 @@ export default function Register() {
     return () => { cameraStream?.getTracks().forEach(t => t.stop()); };
   }, [cameraStream]);
 
+  useEffect(() => {
+    return () => { cnhCameraStream?.getTracks().forEach(t => t.stop()); };
+  }, [cnhCameraStream]);
+
+  // ── Helper de upload ──────────────────────────────────────────────────────
+
+  async function uploadDoc(dataUrl, prefix) {
+    const fetchRes = await fetch(dataUrl);
+    const blob = await fetchRes.blob();
+    const form = new FormData();
+    form.append('file', blob, `${prefix}-${Date.now()}.jpg`);
+    const r = await fetch('/api/auth/upload-doc', { method: 'POST', body: form });
+    const d = await r.json();
+    return d.url || null;
+  }
+
   // ── Câmera ────────────────────────────────────────────────────────────────
 
   async function startCamera() {
@@ -136,6 +158,43 @@ export default function Register() {
     stopCamera();
   }
 
+  // ── Câmera CNH (traseira) ─────────────────────────────────────────────────
+
+  async function startCnhCamera() {
+    setCnhCameraError('');
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } }
+      });
+      setCnhCameraStream(stream);
+      setCnhCameraActive(true);
+      setTimeout(() => {
+        if (cnhVideoRef.current) cnhVideoRef.current.srcObject = stream;
+      }, 50);
+    } catch {
+      setCnhCameraError('Câmera não disponível. Use a opção de galeria ou pule esta etapa.');
+    }
+  }
+
+  function stopCnhCamera() {
+    cnhCameraStream?.getTracks().forEach(t => t.stop());
+    setCnhCameraStream(null);
+    setCnhCameraActive(false);
+  }
+
+  function captureCnhPhoto() {
+    const video = cnhVideoRef.current;
+    const canvas = cnhCanvasRef.current;
+    if (!video || !canvas) return;
+    const maxW = 1280;
+    const scale = Math.min(1, maxW / (video.videoWidth || maxW));
+    canvas.width = (video.videoWidth || maxW) * scale;
+    canvas.height = (video.videoHeight || 720) * scale;
+    canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
+    setCnhDataUrl(canvas.toDataURL('image/jpeg', 0.85));
+    stopCnhCamera();
+  }
+
   // ── Wizard handlers ───────────────────────────────────────────────────────
 
   function handleSelectEntregador() {
@@ -155,9 +214,25 @@ export default function Register() {
     startCamera();
   }
 
-  function goToStep3() {
+  async function goToStep3() {
     stopCamera();
+    if (selfieDataUrl?.startsWith('data:')) {
+      setLoading(true);
+      try { const url = await uploadDoc(selfieDataUrl, 'selfie'); if (url) setSelfieDataUrl(url); } catch {}
+      setLoading(false);
+    }
     setWizardStep(3);
+    startCnhCamera();
+  }
+
+  async function goToStep4() {
+    stopCnhCamera();
+    if (cnhDataUrl?.startsWith('data:')) {
+      setLoading(true);
+      try { const url = await uploadDoc(cnhDataUrl, 'cnh'); if (url) setCnhDataUrl(url); } catch {}
+      setLoading(false);
+    }
+    setWizardStep(4);
   }
 
   async function handleWizardSubmit() {
@@ -170,7 +245,8 @@ export default function Register() {
         vehicle_type: vehicleType,
         plate: plate.toUpperCase(),
         pix_key: pixKey,
-        selfie_url: selfieDataUrl || ''
+        selfie_url: selfieDataUrl || '',
+        document_url: cnhDataUrl || ''
       });
       // O AuthContext já faz login e o App redireciona para /motoboy/*
     } catch (err) {
@@ -201,7 +277,7 @@ export default function Register() {
     return (
       <div style={{ marginBottom: 16 }}>
         <div style={{ display: 'flex', gap: 6, marginBottom: 8 }}>
-          {[1, 2, 3].map(i => (
+          {[1, 2, 3, 4].map(i => (
             <div key={i} style={{
               flex: 1, height: 4, borderRadius: 2,
               background: i <= wizardStep ? '#9C27B0' : '#E8E0F0',
@@ -210,7 +286,7 @@ export default function Register() {
           ))}
         </div>
         <div style={{ fontSize: 12, fontWeight: 700, color: '#9C27B0', textTransform: 'uppercase', letterSpacing: 0.5 }}>
-          Passo {wizardStep} de 3
+          Passo {wizardStep} de 4
         </div>
       </div>
     );
@@ -334,6 +410,87 @@ export default function Register() {
   }
 
   function renderStep3() {
+    return (
+      <>
+        {renderProgress()}
+        <div style={{ fontWeight: 700, fontSize: 18, marginBottom: 4 }}>CNH — Categoria A ou AB</div>
+        <div style={{ fontSize: 14, color: '#888', marginBottom: 16 }}>
+          Foto legível da frente da CNH (obrigatório para moto)
+        </div>
+
+        {!cnhDataUrl ? (
+          <>
+            <div style={{
+              position: 'relative', borderRadius: 12, overflow: 'hidden',
+              background: '#111', marginBottom: 12,
+              aspectRatio: '16/9', display: 'flex', alignItems: 'center', justifyContent: 'center'
+            }}>
+              <video ref={cnhVideoRef} autoPlay playsInline muted
+                style={{ width: '100%', height: '100%', objectFit: 'cover', display: cnhCameraActive ? 'block' : 'none' }} />
+              {!cnhCameraActive && !cnhCameraError && (
+                <div style={{ textAlign: 'center', color: '#666' }}>
+                  <svg width="48" height="48" viewBox="0 0 24 24" fill="#555" style={{ marginBottom: 8 }}>
+                    <path d="M12 15.2A3.2 3.2 0 0 1 8.8 12 3.2 3.2 0 0 1 12 8.8 3.2 3.2 0 0 1 15.2 12 3.2 3.2 0 0 1 12 15.2M12 7a5 5 0 0 0-5 5 5 5 0 0 0 5 5 5 5 0 0 0 5-5 5 5 0 0 0-5-5m0-7.5L8 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2h-4l-4-4.5z"/>
+                  </svg>
+                  <div style={{ fontSize: 14 }}>Câmera desligada</div>
+                </div>
+              )}
+              {cnhCameraError && (
+                <div style={{ padding: 16, textAlign: 'center', color: '#999', fontSize: 13 }}>{cnhCameraError}</div>
+              )}
+            </div>
+            <canvas ref={cnhCanvasRef} style={{ display: 'none' }} />
+
+            {!cnhCameraError && (
+              <button type="button" onClick={cnhCameraActive ? captureCnhPhoto : startCnhCamera} style={btnPrimary}>
+                {cnhCameraActive ? '📸 Fotografar CNH' : '📷 Abrir câmera'}
+              </button>
+            )}
+
+            <label style={{
+              display: 'block', width: '100%', padding: '11px', marginBottom: 8,
+              background: 'white', color: '#6A1B9A', border: '2px solid #9C27B0', borderRadius: 10,
+              fontSize: 14, fontWeight: 600, cursor: 'pointer', textAlign: 'center', boxSizing: 'border-box'
+            }}>
+              Ou selecionar da galeria
+              <input type="file" accept="image/*" style={{ display: 'none' }}
+                onChange={e => {
+                  const file = e.target.files[0];
+                  if (!file) return;
+                  stopCnhCamera();
+                  const reader = new FileReader();
+                  reader.onload = ev => setCnhDataUrl(ev.target.result);
+                  reader.readAsDataURL(file);
+                }} />
+            </label>
+
+            <button type="button" onClick={goToStep4} style={btnSecondary}>
+              Pular (pode atrasar aprovação)
+            </button>
+          </>
+        ) : (
+          <>
+            <div style={{ borderRadius: 12, overflow: 'hidden', marginBottom: 8 }}>
+              <img src={cnhDataUrl} alt="CNH" style={{ width: '100%', display: 'block' }} />
+            </div>
+            <div style={{ fontSize: 13, color: '#2E7D32', fontWeight: 600, textAlign: 'center', marginBottom: 14 }}>
+              Foto capturada!
+            </div>
+            <button type="button" onClick={goToStep4} style={btnPrimary}>Usar esta foto →</button>
+            <button type="button" onClick={() => { setCnhDataUrl(null); startCnhCamera(); }} style={btnSecondary}>
+              Tirar outra
+            </button>
+          </>
+        )}
+
+        <button type="button" onClick={() => { stopCnhCamera(); setCnhDataUrl(null); setWizardStep(2); }} style={btnBack}>
+          ← Voltar
+        </button>
+      </>
+    );
+  }
+
+  function renderStep4() {
     const hasPlate = vehicleType === 'moto' || vehicleType === 'car';
     return (
       <>
@@ -389,7 +546,7 @@ export default function Register() {
           style={{ ...btnPrimary, opacity: loading ? 0.7 : 1 }}>
           {loading ? 'Enviando...' : 'Enviar cadastro'}
         </button>
-        <button type="button" onClick={() => setWizardStep(2)} style={btnBack}>
+        <button type="button" onClick={() => setWizardStep(3)} style={btnBack}>
           ← Voltar
         </button>
       </>
@@ -463,6 +620,7 @@ export default function Register() {
           {wizardStep === 1 && renderStep1()}
           {wizardStep === 2 && renderStep2()}
           {wizardStep === 3 && renderStep3()}
+          {wizardStep === 4 && renderStep4()}
 
           {/* ── Formulário cliente/loja ── */}
           {!wizardStep && (

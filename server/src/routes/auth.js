@@ -6,6 +6,38 @@ const { signToken, authMiddleware } = require('../auth');
 
 const router = Router();
 
+// ── Upload de documento (sem auth — usuário ainda não está logado) ────────────
+router.post('/upload-doc', (req, res) => {
+  const multer = require('multer');
+  const upload = multer({
+    storage: multer.memoryStorage(),
+    limits: { fileSize: 8 * 1024 * 1024 },
+    fileFilter: (req, file, cb) => {
+      if (file.mimetype.startsWith('image/')) cb(null, true);
+      else cb(new Error('Apenas imagens são aceitas'));
+    }
+  });
+
+  upload.single('file')(req, res, async (err) => {
+    if (err) return res.status(400).json({ error: err.message });
+    if (!req.file) return res.status(400).json({ error: 'Nenhum arquivo enviado' });
+
+    const ext = req.file.originalname.split('.').pop() || 'jpg';
+    const fileName = `docs/doc-${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+    const { error: uploadErr } = await supabase.storage.from('uploads').upload(fileName, req.file.buffer, {
+      contentType: req.file.mimetype, upsert: true
+    });
+
+    if (uploadErr) {
+      console.error('[Auth] upload-doc error:', uploadErr);
+      return res.status(500).json({ error: 'Erro ao enviar documento' });
+    }
+
+    const { data: { publicUrl } } = supabase.storage.from('uploads').getPublicUrl(fileName);
+    res.json({ url: publicUrl });
+  });
+});
+
 router.post('/register', async (req, res) => {
   const { sanitize } = require('../helpers');
   const name = sanitize(req.body.name, 100);
@@ -18,6 +50,7 @@ router.post('/register', async (req, res) => {
   const cpf = sanitize((req.body.cpf || extra.cpf || '').replace(/\D/g, ''), 11);
   const plate = sanitize(req.body.plate || extra.plate || '', 10);
   const selfie_url = req.body.selfie_url || extra.selfie_url || '';
+  const document_url = req.body.document_url || extra.document_url || '';
   const vehicle_type = sanitize(req.body.vehicle_type || extra.vehicle_type || '', 20);
   const pix_key = sanitize(req.body.pix_key || extra.pix_key || '', 100);
   if (!name || !phone || !password || !role) {
@@ -54,10 +87,17 @@ router.post('/register', async (req, res) => {
   if (cpf) insertData.cpf = cpf;
   if (plate) insertData.plate = plate;
   if (selfie_url) insertData.selfie_url = selfie_url;
+  if (document_url) insertData.document_url = document_url;
   if (vehicle_type) insertData.vehicle_type = vehicle_type;
   if (pix_key) insertData.pix_key = pix_key;
 
-  const { error: regInsertErr } = await supabase.from('users').insert(insertData);
+  let { error: regInsertErr } = await supabase.from('users').insert(insertData);
+  if (regInsertErr?.code === '42703' && insertData.document_url) {
+    // coluna document_url não existe ainda — tenta sem ela
+    delete insertData.document_url;
+    const retry = await supabase.from('users').insert(insertData);
+    regInsertErr = retry.error;
+  }
   if (regInsertErr) {
     console.error('[Auth] Register insert error:', regInsertErr);
     return res.status(500).json({ error: 'Erro ao criar conta: ' + regInsertErr.message });
