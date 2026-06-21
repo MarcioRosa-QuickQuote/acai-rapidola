@@ -755,11 +755,11 @@ export default function AdminPanel() {
                       {e.approval_status === 'pending' && (
                         <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
                           <button onClick={() => approveEntregador(e.id)} style={{
-                            flex: 1, padding: '9px', borderRadius: 10, border: 'none',
+                            padding: '8px 20px', borderRadius: 10, border: 'none',
                             background: '#4CAF50', color: 'white', fontWeight: 700, fontSize: 13, cursor: 'pointer'
                           }}>✅ Aprovar</button>
                           <button onClick={() => setRejectTarget(e)} style={{
-                            flex: 1, padding: '9px', borderRadius: 10, border: 'none',
+                            padding: '8px 20px', borderRadius: 10, border: 'none',
                             background: '#e53935', color: 'white', fontWeight: 700, fontSize: 13, cursor: 'pointer'
                           }}>✕ Recusar</button>
                         </div>
