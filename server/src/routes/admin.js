@@ -251,16 +251,26 @@ router.get('/entregadores', adminOnly, async (req, res) => {
     .select('id, name, phone, email, cpf, vehicle_type, plate, pix_key, selfie_url, approval_status, rejection_reason, created_at')
     .eq('role', 'motoboy')
     .order('created_at', { ascending: false });
-  if (error) {
-    // Fallback: rejection_reason pode não existir ainda no banco
-    const { data: data2 } = await supabase
-      .from('users')
-      .select('id, name, phone, email, cpf, vehicle_type, plate, pix_key, selfie_url, approval_status, created_at')
-      .eq('role', 'motoboy')
-      .order('created_at', { ascending: false });
-    return res.json((data2 || []).map(u => ({ ...u, rejection_reason: null })));
+  if (!error) return res.json(data || []);
+
+  console.error('[admin/entregadores] query error:', error.code, error.message);
+
+  // Fallback mínimo — só colunas que existem desde o início
+  const { data: data2, error: err2 } = await supabase
+    .from('users')
+    .select('id, name, phone, email, created_at, approval_status')
+    .eq('role', 'motoboy')
+    .order('created_at', { ascending: false });
+
+  if (err2) {
+    console.error('[admin/entregadores] fallback error:', err2.code, err2.message);
+    return res.json([]);
   }
-  res.json(data || []);
+  return res.json((data2 || []).map(u => ({
+    ...u,
+    cpf: null, vehicle_type: null, plate: null,
+    pix_key: null, selfie_url: null, rejection_reason: null
+  })));
 });
 
 router.patch('/entregadores/:id/approve', adminOnly, async (req, res) => {
