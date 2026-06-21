@@ -83,9 +83,9 @@ export default function App() {
 
   if (loading) {
     return (
-      <div className="loading" style={{ flexDirection: 'column', gap: 12 }}>
+      <div className="loading">
         <img className="spin" src="/saco_acai.png" />
-        <span style={{ fontSize: 13, color: '#9C27B0', fontWeight: 600, opacity: slowHint ? 0.8 : 0, transition: 'opacity 0.4s' }}>
+        <span style={{ position: 'absolute', top: 'calc(50% + 44px)', fontSize: 13, color: '#9C27B0', fontWeight: 600, opacity: slowHint ? 0.8 : 0, transition: 'opacity 0.4s' }}>
           Aguardando servidor...
         </span>
       </div>

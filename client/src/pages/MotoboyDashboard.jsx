@@ -869,11 +869,7 @@ export default function MotoboyDashboard() {
     }
   }, [online]);
 
-  if (loading) return (
-    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh' }}>
-      <img className="spin" src="/saco_acai.png" />
-    </div>
-  );
+  if (loading) return <div className="loading"><img className="spin" src="/saco_acai.png" /></div>;
 
   // Tela de aprovação pendente
   if (user?.approval_status === 'pending') return (
