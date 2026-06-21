@@ -906,74 +906,90 @@ export default function CustomerHome() {
 
         {renderCardapio()}
 
+        {/* Sacola — tela cheia estilo iFood */}
         {Object.keys(cart).length > 0 && showCart && (
-          <div style={{
-            position: 'fixed', bottom: 0, left: 0, right: 0,
-            background: 'white', zIndex: 200,
-            borderTopLeftRadius: 20, borderTopRightRadius: 20,
-            boxShadow: '0 -8px 30px rgba(0,0,0,0.15)',
-            maxHeight: '60vh', overflow: 'auto', paddingBottom: 20
-          }}>
-            <div style={{
-              display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-              padding: '16px 20px 12px', borderBottom: '1px solid var(--border)'
-            }}>
-              <span style={{ fontWeight: 800, fontSize: 16, color: 'var(--primary-dark)' }}>🛒 Carrinho</span>
-              <button onClick={() => setShowCart(false)}
-                style={{ background: 'none', border: 'none', fontSize: 18, color: '#999', cursor: 'pointer' }}>
-                ✕
-              </button>
+          <div style={{ position: 'fixed', inset: 0, background: 'white', zIndex: 200, display: 'flex', flexDirection: 'column' }}>
+
+            {/* Header */}
+            <div style={{ display: 'flex', alignItems: 'center', padding: '14px 16px', borderBottom: '1px solid #EFEFEF', flexShrink: 0 }}>
+              <button onClick={() => setShowCart(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 26, color: '#333', padding: 0, lineHeight: 1, width: 36 }}>‹</button>
+              <span style={{ flex: 1, textAlign: 'center', fontWeight: 800, fontSize: 15, letterSpacing: 1 }}>SACOLA</span>
+              <button onClick={() => { setCart({}); setShowCart(false); }} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 14, color: 'var(--primary)', fontWeight: 600, width: 52, textAlign: 'right' }}>Limpar</button>
             </div>
-            <div style={{ padding: '0 20px' }}>
-              {Object.entries(cart).map(([id, qty]) => {
-                const prod = products.find(pp => pp.id === id);
-                if (!prod) return null;
-                return (
-                  <div key={id} style={{
-                    display: 'flex', alignItems: 'center', gap: 12,
-                    padding: '14px 0', borderBottom: '1px solid #F5F5F5'
-                  }}>
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontWeight: 700, fontSize: 14 }}>{prod.name}</div>
-                      <div style={{ fontSize: 13, color: 'var(--primary)', fontWeight: 600 }}>
-                        R$ {prod.price.toFixed(2)} cada
+
+            {/* Conteúdo rolável */}
+            <div style={{ flex: 1, overflowY: 'auto' }}>
+
+              {/* Info da loja */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '16px 16px 12px' }}>
+                {store?.logo ? (
+                  <img src={store.logo} alt={store.name} style={{ width: 44, height: 44, borderRadius: '50%', objectFit: 'cover', border: '1px solid #EEE', flexShrink: 0 }} />
+                ) : (
+                  <div style={{ width: 44, height: 44, borderRadius: '50%', background: 'var(--primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 800, fontSize: 18, flexShrink: 0 }}>
+                    {store?.name?.charAt(0).toUpperCase()}
+                  </div>
+                )}
+                <div>
+                  <div style={{ fontWeight: 700, fontSize: 15 }}>{store?.name}</div>
+                  <button onClick={() => setShowCart(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, color: 'var(--primary)', fontWeight: 600, fontSize: 13 }}>
+                    Adicionar mais itens
+                  </button>
+                </div>
+              </div>
+
+              {/* Lista de itens */}
+              <div style={{ padding: '4px 16px 0' }}>
+                <div style={{ fontWeight: 700, fontSize: 15, marginBottom: 12, color: '#222' }}>Itens adicionados</div>
+                {Object.entries(cart).map(([id, qty]) => {
+                  const prod = products.find(pp => pp.id === id);
+                  if (!prod) return null;
+                  return (
+                    <div key={id} style={{ display: 'flex', alignItems: 'center', gap: 12, paddingBottom: 16, marginBottom: 16, borderBottom: '1px solid #F0F0F0' }}>
+                      {/* Foto */}
+                      {prod.image ? (
+                        <img src={prod.image} alt={prod.name} style={{ width: 72, height: 72, borderRadius: 8, objectFit: 'cover', flexShrink: 0 }} />
+                      ) : (
+                        <div style={{ width: 72, height: 72, borderRadius: 8, background: '#F3E5F5', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: 30 }}>🍇</div>
+                      )}
+                      {/* Info */}
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontWeight: 700, fontSize: 14, lineHeight: 1.3 }}>{prod.name}</div>
+                        {prod.description && (
+                          <div style={{ fontSize: 12, color: '#999', marginTop: 2, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                            {prod.description}
+                          </div>
+                        )}
+                        <div style={{ fontWeight: 700, fontSize: 14, color: '#222', marginTop: 4 }}>
+                          R$ {(prod.price * qty).toFixed(2)}
+                        </div>
+                      </div>
+                      {/* Controles de quantidade */}
+                      <div style={{ display: 'flex', alignItems: 'center', background: '#F5F5F5', borderRadius: 8, padding: '6px 8px', gap: 4, flexShrink: 0 }}>
+                        <button onClick={() => removeFromCart(id)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '0 4px', display: 'flex', alignItems: 'center', color: 'var(--primary)' }}>
+                          {qty === 1 ? (
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+                          ) : (
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                          )}
+                        </button>
+                        <span style={{ fontWeight: 700, fontSize: 15, minWidth: 20, textAlign: 'center' }}>{qty}</span>
+                        <button onClick={() => addToCart(id)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '0 4px', display: 'flex', alignItems: 'center', color: 'var(--primary)' }}>
+                          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                        </button>
                       </div>
                     </div>
-                    <div className="flex-row" style={{ gap: 0, flexShrink: 0 }}>
-                      <button onClick={() => removeFromCart(id)}
-                        style={{
-                          width: 34, height: 34, borderRadius: '50%',
-                          border: '1px solid #DDD', background: 'white',
-                          fontSize: 18, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                          cursor: 'pointer', color: '#C62828'
-                        }}>
-                        {cart[id] === 1 ? '🗑' : '-'}
-                      </button>
-                      <span style={{ fontWeight: 700, minWidth: 28, textAlign: 'center' }}>{qty}</span>
-                      <button onClick={() => addToCart(id)}
-                        style={{
-                          width: 34, height: 34, borderRadius: '50%',
-                          border: 'none', background: 'var(--primary)',
-                          color: 'white', fontSize: 18,
-                          display: 'flex', alignItems: 'center', justifyContent: 'center',
-                          cursor: 'pointer'
-                        }}>+</button>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-            <div style={{ padding: '16px 20px' }}>
-              <div className="flex-between" style={{ marginBottom: 14, fontSize: 15 }}>
-                <span style={{ fontWeight: 600 }}>Total</span>
-                <span style={{ fontWeight: 800, color: 'var(--primary-dark)', fontSize: 20 }}>
-                  R$ {Object.entries(cart).reduce((s, [id, qty]) => {
-                    const pr = products.find(pp => pp.id === id);
-                    return s + (pr?.price || 0) * qty;
-                  }, 0).toFixed(2)}
-                </span>
+                  );
+                })}
+
+                <button onClick={() => setShowCart(false)} style={{ display: 'block', width: '100%', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--primary)', fontWeight: 700, fontSize: 14, padding: '12px 0 20px', textAlign: 'center' }}>
+                  + Adicionar mais itens
+                </button>
               </div>
-              <button className="btn btn-primary" style={{ fontSize: 16, padding: '14px' }}
+            </div>
+
+            {/* Barra inferior fixa */}
+            <div style={{ flexShrink: 0, borderTop: '1px solid #EFEFEF', padding: '12px 16px', paddingBottom: 'max(12px, env(safe-area-inset-bottom))', background: 'white' }}>
+              <button className="btn btn-primary" style={{ fontSize: 15, padding: '14px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
                 onClick={() => {
                   const items = Object.entries(cart).map(([id, qty]) => {
                     const pr = products.find(pp => pp.id === id);
@@ -982,29 +998,31 @@ export default function CustomerHome() {
                   const total = items.reduce((s, i) => s + (i.price || 0) * i.quantity, 0);
                   navigate('/customer/order', { state: { items, store, total } });
                 }}>
-                Finalizar Pedido
+                <span>Continuar</span>
+                <span>R$ {(Object.entries(cart).reduce((s, [id, qty]) => {
+                  const pr = products.find(pp => pp.id === id);
+                  return s + (pr?.price || 0) * qty;
+                }, 0) + 6.50).toFixed(2)} com entrega</span>
               </button>
             </div>
           </div>
         )}
+
+        {/* Botão flutuante "Ver sacola" quando fechada */}
         {Object.keys(cart).length > 0 && !showCart && (
-          <div style={{
-            position: 'fixed', bottom: 0, left: 0, right: 0,
-            zIndex: 199, padding: '12px 20px', display: 'flex', justifyContent: 'center'
-          }}>
-            <button className="btn btn-primary" style={{ maxWidth: 400, margin: '0 auto', padding: '14px', fontSize: 16 }}
-              onClick={() => {
-                const items = Object.entries(cart).map(([id, qty]) => {
-                  const pr = products.find(pp => pp.id === id);
-                  return { product_id: id, quantity: qty, name: pr?.name, price: pr?.price };
-                });
-                const total = items.reduce((s, i) => s + (i.price || 0) * i.quantity, 0);
-                navigate('/customer/order', { state: { items, store, total } });
-              }}>
-              Finalizar Pedido — R$ {Object.entries(cart).reduce((s, [id, qty]) => {
+          <div style={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 199, padding: '12px 16px', paddingBottom: 'max(12px, env(safe-area-inset-bottom))' }}>
+            <button className="btn btn-primary" style={{ maxWidth: 500, margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '14px 20px', fontSize: 15 }}
+              onClick={() => setShowCart(true)}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <div style={{ background: 'rgba(255,255,255,0.25)', borderRadius: 6, padding: '2px 8px', fontWeight: 800 }}>
+                  {Object.values(cart).reduce((a, b) => a + b, 0)}
+                </div>
+                <span>Ver sacola</span>
+              </div>
+              <span>R$ {Object.entries(cart).reduce((s, [id, qty]) => {
                 const pr = products.find(pp => pp.id === id);
                 return s + (pr?.price || 0) * qty;
-              }, 0).toFixed(2)}
+              }, 0).toFixed(2)}</span>
             </button>
           </div>
         )}
