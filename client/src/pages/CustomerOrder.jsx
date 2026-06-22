@@ -51,7 +51,22 @@ export default function CustomerOrder() {
   function formatAddressLines(addr) {
     if (!addr) return { line1: '', line2: '' };
     const parts = addr.split(',').map(p => p.trim());
-    return { line1: parts.slice(0, 2).join(', '), line2: parts.slice(2, 4).join(', ') };
+    let line1 = parts[0];
+    let line2 = '';
+    if (parts.length > 1) {
+      const second = parts[1];
+      const dashIdx = second.indexOf(' - ');
+      if (dashIdx > 0) {
+        line1 = parts[0] + ', ' + second.slice(0, dashIdx).trim();
+        line2 = second.slice(dashIdx + 3).trim();
+      } else if (/^\d/.test(second)) {
+        line1 = parts[0] + ', ' + second;
+        line2 = parts[2] || '';
+      } else {
+        line2 = second;
+      }
+    }
+    return { line1, line2 };
   }
 
   function cleanNominatimAddress(displayName) {
@@ -299,8 +314,11 @@ export default function CustomerOrder() {
               </svg>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ fontWeight: 700, fontSize: 15, lineHeight: 1.3 }}>{addrLines.line1}</div>
-                {addrLines.line2 && <div style={{ fontSize: 13, color: '#888', marginTop: 2 }}>{addrLines.line2}</div>}
-                {complement && <div style={{ fontSize: 13, color: '#666', marginTop: 3, fontWeight: 400 }}>{complement}</div>}
+                {(addrLines.line2 || complement) && (
+                  <div style={{ fontSize: 13, color: '#888', marginTop: 3, fontWeight: 400 }}>
+                    {addrLines.line2}{addrLines.line2 && complement ? ' — ' : ''}{complement}
+                  </div>
+                )}
               </div>
               <button onClick={() => setEditAddr(true)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--primary)', fontWeight: 700, fontSize: 14, flexShrink: 0 }}>
                 Trocar
