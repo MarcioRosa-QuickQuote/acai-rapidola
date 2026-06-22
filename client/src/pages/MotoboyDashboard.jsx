@@ -1492,9 +1492,9 @@ export default function MotoboyDashboard() {
       '--border':       mb.cardBorder,
     }}>
       {/* ── TOPBAR ──────────────────────────────────────────────── */}
-      <div className="header" style={{ padding: '4px 16px', background: '#967BB6', borderBottom: '1px solid #7D5FA0' }}>
-        <div className="header-left" style={{ gap: 10 }}>
-          <img src="/logo_placa.png" alt="Pé de Açaí" style={{ width: 58, height: 58, objectFit: 'contain', flexShrink: 0, transform: 'rotate(15deg)' }} />
+      <div className="header" style={{ padding: '4px 16px', background: mb.accent, borderBottom: `1px solid ${mb.accentDark}`, overflow: 'visible' }}>
+        <div className="header-left" style={{ gap: 10, overflow: 'visible' }}>
+          <img src="/logo_placa.png" alt="Pé de Açaí" style={{ width: 58, height: 58, objectFit: 'contain', flexShrink: 0, transform: 'rotate(15deg)', alignSelf: 'flex-end', marginBottom: -4 }} />
         </div>
         <div className="header-right" style={{ gap: 14 }}>
           {/* Dark/light toggle */}
@@ -1502,16 +1502,13 @@ export default function MotoboyDashboard() {
             style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 20, lineHeight: 1, padding: 2, opacity: 0.8 }}>
             {darkMode ? '☀️' : '🌙'}
           </button>
-          {/* Avatar (sem nome) */}
-          <div style={{ cursor: 'pointer' }} onClick={() => setPageTab('perfil')}>
-            {user?.photo_url ? (
-              <img src={user.photo_url} alt="Foto"
-                style={{ width: 36, height: 36, borderRadius: '50%', objectFit: 'cover', display: 'block' }}
-                onError={e => { e.target.style.display = 'none'; }} />
-            ) : (
-              <div style={{ width: 36, height: 36, borderRadius: '50%', background: 'linear-gradient(135deg, #CE93D8, #6A1B9A)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 700, fontSize: 16 }}>
-                {user?.name?.charAt(0)?.toUpperCase()}
-              </div>
+          {/* Sino de notificação */}
+          <div style={{ position: 'relative', cursor: 'pointer', lineHeight: 1 }} onClick={() => setPageTab('pedidos')}>
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="rgba(255,255,255,0.9)">
+              <path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/>
+            </svg>
+            {notifications.length > 0 && (
+              <div style={{ position: 'absolute', top: -3, right: -3, width: 9, height: 9, borderRadius: '50%', background: '#FF3B30', border: '1.5px solid white' }} />
             )}
           </div>
         </div>
@@ -1555,7 +1552,7 @@ export default function MotoboyDashboard() {
             await updateStatus(fsOrder.id);
             closeNav();
           }}
-          statusLabel={nextStatus[fsOrder.status] ? nextStatusLabel[fsOrder.status] : null} />
+          statusLabel={nextStatus[fsOrder.status] ? 'Entregue ✓' : null} />
       )}
 
       {showPaymentModal && (
