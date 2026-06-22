@@ -368,6 +368,82 @@ export default function CustomerHome() {
 
       {!storeId && <CustomerBottomNav />}
 
+      {/* Sacola — fora do container para evitar bug de overflow-x:hidden no iOS Safari */}
+      {storeId && Object.keys(cart).length > 0 && showCart && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'white', zIndex: 500, display: 'flex', flexDirection: 'column' }}>
+
+          <div style={{ display: 'flex', alignItems: 'center', padding: '14px 16px', borderBottom: '1px solid #EFEFEF', flexShrink: 0 }}>
+            <button onClick={() => setShowCart(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 26, color: '#333', padding: 0, lineHeight: 1, width: 36 }}>‹</button>
+            <span style={{ flex: 1, textAlign: 'center', fontWeight: 800, fontSize: 15, letterSpacing: 1 }}>SACOLA</span>
+            <button onClick={() => { setCart({}); setShowCart(false); }} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 14, color: 'var(--primary)', fontWeight: 600, width: 52, textAlign: 'right' }}>Limpar</button>
+          </div>
+
+          <div style={{ flex: 1, overflowY: 'auto' }}>
+            <div style={{ padding: '16px 16px 0' }}>
+              <div style={{ fontWeight: 700, fontSize: 15, marginBottom: 12, color: '#222' }}>Itens adicionados</div>
+              {Object.entries(cart).map(([id, qty]) => {
+                const prod = products.find(pp => pp.id === id);
+                if (!prod) return null;
+                return (
+                  <div key={id} style={{ display: 'flex', alignItems: 'center', gap: 12, paddingBottom: 16, marginBottom: 16, borderBottom: '1px solid #F0F0F0' }}>
+                    {prod.image ? (
+                      <img src={prod.image} alt={prod.name} style={{ width: 72, height: 72, borderRadius: 8, objectFit: 'cover', flexShrink: 0 }} />
+                    ) : (
+                      <div style={{ width: 72, height: 72, borderRadius: 8, background: '#F3E5F5', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: 30 }}>🍇</div>
+                    )}
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontWeight: 700, fontSize: 14, lineHeight: 1.3 }}>{prod.name}</div>
+                      {prod.description && (
+                        <div style={{ fontSize: 12, color: '#999', marginTop: 2, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                          {prod.description}
+                        </div>
+                      )}
+                      <div style={{ fontWeight: 700, fontSize: 14, color: '#222', marginTop: 4 }}>
+                        R$ {(prod.price * qty).toFixed(2)}
+                      </div>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', background: '#F5F5F5', borderRadius: 8, padding: '6px 8px', gap: 4, flexShrink: 0 }}>
+                      <button onClick={() => removeFromCart(id)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '0 4px', display: 'flex', alignItems: 'center', color: 'var(--primary)' }}>
+                        {qty === 1 ? (
+                          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+                        ) : (
+                          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                        )}
+                      </button>
+                      <span style={{ fontWeight: 700, fontSize: 15, minWidth: 20, textAlign: 'center' }}>{qty}</span>
+                      <button onClick={() => addToCart(id)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '0 4px', display: 'flex', alignItems: 'center', color: 'var(--primary)' }}>
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+              <button onClick={() => setShowCart(false)} style={{ display: 'block', width: '100%', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--primary)', fontWeight: 700, fontSize: 14, padding: '12px 0 20px', textAlign: 'center' }}>
+                + Adicionar mais itens
+              </button>
+            </div>
+          </div>
+
+          <div style={{ flexShrink: 0, borderTop: '1px solid #EFEFEF', padding: '12px 16px', paddingBottom: 'max(12px, env(safe-area-inset-bottom))', background: 'white' }}>
+            <button className="btn btn-primary" style={{ fontSize: 15, padding: '14px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+              onClick={() => {
+                const items = Object.entries(cart).map(([id, qty]) => {
+                  const pr = products.find(pp => pp.id === id);
+                  return { product_id: id, quantity: qty, name: pr?.name, price: pr?.price };
+                });
+                const total = items.reduce((s, i) => s + (i.price || 0) * i.quantity, 0);
+                navigate('/customer/order', { state: { items, store, total } });
+              }}>
+              <span>Continuar</span>
+              <span>R$ {Object.entries(cart).reduce((s, [id, qty]) => {
+                const pr = products.find(pp => pp.id === id);
+                return s + (pr?.price || 0) * qty;
+              }, 0).toFixed(2)}</span>
+            </button>
+          </div>
+        </div>
+      )}
+
       {msgStore && (
         <div style={{ position: 'fixed', inset: 0, zIndex: 2000, display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }}
           onClick={() => setMsgStore(null)}>
@@ -910,91 +986,6 @@ export default function CustomerHome() {
         )}
 
         {renderCardapio()}
-
-        {/* Sacola — tela cheia estilo iFood */}
-        {Object.keys(cart).length > 0 && showCart && (
-          <div style={{ position: 'fixed', inset: 0, background: 'white', zIndex: 200, display: 'flex', flexDirection: 'column' }}>
-
-            {/* Header */}
-            <div style={{ display: 'flex', alignItems: 'center', padding: '14px 16px', borderBottom: '1px solid #EFEFEF', flexShrink: 0 }}>
-              <button onClick={() => setShowCart(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 26, color: '#333', padding: 0, lineHeight: 1, width: 36 }}>‹</button>
-              <span style={{ flex: 1, textAlign: 'center', fontWeight: 800, fontSize: 15, letterSpacing: 1 }}>SACOLA</span>
-              <button onClick={() => { setCart({}); setShowCart(false); }} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 14, color: 'var(--primary)', fontWeight: 600, width: 52, textAlign: 'right' }}>Limpar</button>
-            </div>
-
-            {/* Conteúdo rolável */}
-            <div style={{ flex: 1, overflowY: 'auto' }}>
-
-              {/* Lista de itens */}
-              <div style={{ padding: '16px 16px 0' }}>
-                <div style={{ fontWeight: 700, fontSize: 15, marginBottom: 12, color: '#222' }}>Itens adicionados</div>
-                {Object.entries(cart).map(([id, qty]) => {
-                  const prod = products.find(pp => pp.id === id);
-                  if (!prod) return null;
-                  return (
-                    <div key={id} style={{ display: 'flex', alignItems: 'center', gap: 12, paddingBottom: 16, marginBottom: 16, borderBottom: '1px solid #F0F0F0' }}>
-                      {/* Foto */}
-                      {prod.image ? (
-                        <img src={prod.image} alt={prod.name} style={{ width: 72, height: 72, borderRadius: 8, objectFit: 'cover', flexShrink: 0 }} />
-                      ) : (
-                        <div style={{ width: 72, height: 72, borderRadius: 8, background: '#F3E5F5', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: 30 }}>🍇</div>
-                      )}
-                      {/* Info */}
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ fontWeight: 700, fontSize: 14, lineHeight: 1.3 }}>{prod.name}</div>
-                        {prod.description && (
-                          <div style={{ fontSize: 12, color: '#999', marginTop: 2, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
-                            {prod.description}
-                          </div>
-                        )}
-                        <div style={{ fontWeight: 700, fontSize: 14, color: '#222', marginTop: 4 }}>
-                          R$ {(prod.price * qty).toFixed(2)}
-                        </div>
-                      </div>
-                      {/* Controles de quantidade */}
-                      <div style={{ display: 'flex', alignItems: 'center', background: '#F5F5F5', borderRadius: 8, padding: '6px 8px', gap: 4, flexShrink: 0 }}>
-                        <button onClick={() => removeFromCart(id)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '0 4px', display: 'flex', alignItems: 'center', color: 'var(--primary)' }}>
-                          {qty === 1 ? (
-                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
-                          ) : (
-                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                          )}
-                        </button>
-                        <span style={{ fontWeight: 700, fontSize: 15, minWidth: 20, textAlign: 'center' }}>{qty}</span>
-                        <button onClick={() => addToCart(id)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '0 4px', display: 'flex', alignItems: 'center', color: 'var(--primary)' }}>
-                          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                        </button>
-                      </div>
-                    </div>
-                  );
-                })}
-
-                <button onClick={() => setShowCart(false)} style={{ display: 'block', width: '100%', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--primary)', fontWeight: 700, fontSize: 14, padding: '12px 0 20px', textAlign: 'center' }}>
-                  + Adicionar mais itens
-                </button>
-              </div>
-            </div>
-
-            {/* Barra inferior fixa */}
-            <div style={{ flexShrink: 0, borderTop: '1px solid #EFEFEF', padding: '12px 16px', paddingBottom: 'max(12px, env(safe-area-inset-bottom))', background: 'white' }}>
-              <button className="btn btn-primary" style={{ fontSize: 15, padding: '14px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
-                onClick={() => {
-                  const items = Object.entries(cart).map(([id, qty]) => {
-                    const pr = products.find(pp => pp.id === id);
-                    return { product_id: id, quantity: qty, name: pr?.name, price: pr?.price };
-                  });
-                  const total = items.reduce((s, i) => s + (i.price || 0) * i.quantity, 0);
-                  navigate('/customer/order', { state: { items, store, total } });
-                }}>
-                <span>Continuar</span>
-                <span>R$ {Object.entries(cart).reduce((s, [id, qty]) => {
-                  const pr = products.find(pp => pp.id === id);
-                  return s + (pr?.price || 0) * qty;
-                }, 0).toFixed(2)}</span>
-              </button>
-            </div>
-          </div>
-        )}
 
         {/* Botão flutuante "Ver sacola" quando fechada */}
         {Object.keys(cart).length > 0 && !showCart && (
