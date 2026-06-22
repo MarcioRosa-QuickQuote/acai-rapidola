@@ -397,6 +397,10 @@ export default function CustomerHome() {
               {Object.entries(cart).map(([id, qty]) => {
                 const prod = products.find(pp => pp.id === id);
                 if (!prod) return null;
+                const splitK = splitItems[id] || 0;
+                const litrosInteiros = qty - splitK;
+                const meios = splitK * 2;
+                const splitLabel = splitK > 0 ? (litrosInteiros > 0 ? `${litrosInteiros}L + ${meios} de meio` : `${meios} de meio`) : '';
                 return (
                   <div key={id} style={{ display: 'flex', alignItems: 'center', gap: 12, paddingBottom: 16, marginBottom: 16, borderBottom: '1px solid #F0F0F0' }}>
                     {prod.image ? (
@@ -406,6 +410,9 @@ export default function CustomerHome() {
                     )}
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ fontWeight: 700, fontSize: 14, lineHeight: 1.3 }}>{prod.name}</div>
+                      {splitLabel && (
+                        <div style={{ fontSize: 12, color: 'var(--primary)', fontWeight: 600, marginTop: 2 }}>{splitLabel}</div>
+                      )}
                       {prod.description && (
                         <div style={{ fontSize: 12, color: '#999', marginTop: 2, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
                           {prod.description}
