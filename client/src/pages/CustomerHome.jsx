@@ -28,7 +28,7 @@ const statusColors = {
 };
 
 export default function CustomerHome() {
-  const { user, apiFetch, logout } = useAuth();
+  const { user, apiFetch, logout, retryAuth } = useAuth();
   const { socket, joinOrder } = useSocket();
   const { storeId } = useParams();
   const [store, setStore] = useState(null);
@@ -571,6 +571,7 @@ export default function CustomerHome() {
       const data = await apiFetch('/auth/profile', { method: 'PATCH', body: JSON.stringify(body) });
       if (data.ok) {
         setAddrMsg('Endereço salvo!');
+        retryAuth();
       } else {
         setAddrMsg(data.error || 'Erro ao salvar');
       }
@@ -934,33 +935,30 @@ export default function CustomerHome() {
                     style={{ whiteSpace: 'nowrap' }}>{cepLoading ? '...' : 'Buscar CEP'}</button>
                 </div>
               )}
-              {addrMsg && <div style={{ fontSize: 13, fontWeight: 600, color: addrMsg.includes('Erro') ? '#C62828' : '#2E7D32', marginTop: 8 }}>{addrMsg}</div>}
-              <button className="btn btn-primary" style={{ marginTop: 14, width: '100%' }} onClick={saveAddress} disabled={savingAddr}>
-                {savingAddr ? 'Salvando…' : 'Salvar Endereço Principal'}
-              </button>
               {(addrForm || user?.address) && (
-                <div style={{ marginTop: 10 }}>
-                  <div style={{ fontSize: 12, color: '#888', marginBottom: 6 }}>Salvar também como endereço favorito:</div>
-                  <div style={{ display: 'flex', gap: 8 }}>
-                    {['Casa', 'Trabalho'].map(label => (
-                      <button key={label} type="button" disabled={savingAddr}
-                        onClick={async () => {
-                          const addr = addrForm || user?.address || '';
-                          if (!addr) return;
-                          setSavingAddr(true);
-                          const ok = await saveAddressAsLabel(label, addr, addrComplement, contaMapLat || user?.lat, contaMapLng || user?.lng);
-                          setAddrMsg(ok ? `Salvo como ${label}!` : 'Erro ao salvar');
-                          setTimeout(() => setAddrMsg(''), 3000);
-                          setSavingAddr(false);
-                        }}
-                        style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, padding: '10px', border: '1px solid #DDD', borderRadius: 10, background: 'white', cursor: 'pointer', fontSize: 14, fontWeight: 600, color: '#333' }}>
-                        <span>{label === 'Casa' ? '🏠' : '💼'}</span>
-                        <span>{label}</span>
-                      </button>
-                    ))}
-                  </div>
+                <div style={{ display: 'flex', gap: 8, marginTop: 14 }}>
+                  {['Casa', 'Trabalho'].map(label => (
+                    <button key={label} type="button" disabled={savingAddr}
+                      onClick={async () => {
+                        const addr = addrForm || user?.address || '';
+                        if (!addr) return;
+                        setSavingAddr(true);
+                        const ok = await saveAddressAsLabel(label, addr, addrComplement, contaMapLat || user?.lat, contaMapLng || user?.lng);
+                        setAddrMsg(ok ? `Salvo como ${label}!` : 'Erro ao salvar');
+                        setTimeout(() => setAddrMsg(''), 3000);
+                        setSavingAddr(false);
+                      }}
+                      style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, padding: '10px', border: '1px solid #DDD', borderRadius: 10, background: 'white', cursor: 'pointer', fontSize: 14, fontWeight: 600, color: '#333' }}>
+                      <span>{label === 'Casa' ? '🏠' : '💼'}</span>
+                      <span>{label}</span>
+                    </button>
+                  ))}
                 </div>
               )}
+              {addrMsg && <div style={{ fontSize: 13, fontWeight: 600, color: addrMsg.includes('Erro') ? '#C62828' : '#2E7D32', marginTop: 8 }}>{addrMsg}</div>}
+              <button className="btn btn-primary" style={{ marginTop: 10, width: '100%' }} onClick={saveAddress} disabled={savingAddr}>
+                {savingAddr ? 'Salvando…' : 'Salvar Endereço Principal'}
+              </button>
             </div>
           )}
 
