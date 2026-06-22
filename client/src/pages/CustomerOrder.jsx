@@ -103,8 +103,12 @@ export default function CustomerOrder() {
     if (!store) {
       apiFetch('/stores').then(d => { if (d.data?.[0]) setStore(d.data[0]); });
     }
-    apiFetch('/addresses').then(d => { if (d.data) setSavedAddresses(d.data); }).catch(() => {});
   }, []);
+
+  useEffect(() => {
+    if (!user) return;
+    apiFetch('/addresses').then(d => { if (d.data) setSavedAddresses(d.data); }).catch(() => {});
+  }, [user?.id]);
 
   useEffect(() => { updateDeliveryFee(lat, lng); }, [lat, lng, store]);
 
@@ -337,20 +341,6 @@ export default function CustomerOrder() {
                 {gpsLoading ? 'Obtendo localização...' : 'Usar minha localização atual'}
               </button>
 
-              {/* Endereços salvos */}
-              {savedAddresses.length > 0 && (
-                <div style={{ display: 'flex', gap: 8, marginBottom: 12, flexWrap: 'wrap' }}>
-                  {savedAddresses.map(a => (
-                    <button key={a.id} type="button"
-                      onClick={() => { setAddress(a.address); setComplement(a.complement || ''); if (a.lat && a.lng) { setLat(a.lat); setLng(a.lng); updateDeliveryFee(a.lat, a.lng); } setEditAddr(false); }}
-                      style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 14px', borderRadius: 20, border: '1px solid #DDD', background: 'white', cursor: 'pointer', fontSize: 14, fontWeight: 600, color: '#333' }}>
-                      <span>{a.label === 'Casa' ? '🏠' : a.label === 'Trabalho' ? '💼' : '📍'}</span>
-                      <span>{a.label}</span>
-                    </button>
-                  ))}
-                </div>
-              )}
-
               {/* Campo de texto */}
               <div style={{ position: 'relative', marginBottom: 10 }}>
                 <input ref={addrInputRef} className="input" type="text" value={address}
@@ -380,12 +370,26 @@ export default function CustomerOrder() {
                 placeholder="Complemento (apto, bloco, referência...)"
                 style={{ marginBottom: 10 }} />
 
-              {/* CEP */}
+              {/* CEP + endereços salvos na mesma linha */}
               {!showCep ? (
-                <button type="button" onClick={() => setShowCep(true)}
-                  style={{ background: 'none', border: 'none', color: 'var(--primary)', fontSize: 13, fontWeight: 600, cursor: 'pointer', padding: '4px 0', marginBottom: 12 }}>
-                  Buscar por CEP
-                </button>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+                  <button type="button" onClick={() => setShowCep(true)}
+                    style={{ background: 'none', border: 'none', color: 'var(--primary)', fontSize: 13, fontWeight: 600, cursor: 'pointer', padding: '4px 0' }}>
+                    Buscar por CEP
+                  </button>
+                  {savedAddresses.length > 0 && (
+                    <div style={{ display: 'flex', gap: 6 }}>
+                      {savedAddresses.map(a => (
+                        <button key={a.id} type="button"
+                          onClick={() => { setAddress(a.address); setComplement(a.complement || ''); if (a.lat && a.lng) { setLat(a.lat); setLng(a.lng); updateDeliveryFee(a.lat, a.lng); } setEditAddr(false); }}
+                          style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '5px 12px', borderRadius: 20, border: '1px solid #DDD', background: 'white', cursor: 'pointer', fontSize: 13, fontWeight: 600, color: '#333' }}>
+                          <span>{a.label === 'Casa' ? '🏠' : '💼'}</span>
+                          <span>{a.label}</span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
               ) : (
                 <div style={{ display: 'flex', gap: 8, marginBottom: 12, alignItems: 'center' }}>
                   <input className="input" type="text" value={cep}

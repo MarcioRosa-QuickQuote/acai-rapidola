@@ -63,8 +63,9 @@ export default function CustomerHome() {
   const [msgSent, setMsgSent] = useState(false);
 
   useEffect(() => {
+    if (!user) return;
     apiFetch('/addresses').then(d => { if (d.data) setSavedAddresses(d.data); }).catch(() => {});
-  }, []);
+  }, [user?.id]);
 
   function addAddress() {
     if (!addrForm || addrForm.length < 5) { setAddrMsg('Digite um endereço'); setTimeout(() => setAddrMsg(''), 3000); return; }
@@ -829,8 +830,8 @@ export default function CustomerHome() {
             icon={<svg width="20" height="20" viewBox="0 0 24 24" fill="var(--primary)"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>}
           >
             <SubCard label="Dados" active={perfilSection === 'dados'} onClick={() => setPerfilSection(s => s === 'dados' ? null : 'dados')} />
-            <SubCard label="Endereço" active={perfilSection === 'endereco'} onClick={() => setPerfilSection(s => s === 'endereco' ? null : 'endereco')} />
             <SubCard label="Trocar Senha" active={perfilSection === 'senha'} onClick={() => setPerfilSection(s => s === 'senha' ? null : 'senha')} />
+            <SubCard label="Endereço" active={perfilSection === 'endereco'} onClick={() => setPerfilSection(s => s === 'endereco' ? null : 'endereco')} />
           </CardRow>
 
           {/* Dados */}
