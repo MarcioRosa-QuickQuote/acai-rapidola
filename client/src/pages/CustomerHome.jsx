@@ -824,7 +824,7 @@ export default function CustomerHome() {
           >
             <SubCard label="Dados" active={perfilSection === 'dados'} onClick={() => setPerfilSection(s => s === 'dados' ? null : 'dados')} />
             <SubCard label="Trocar Senha" active={perfilSection === 'senha'} onClick={() => setPerfilSection(s => s === 'senha' ? null : 'senha')} />
-            <SubCard label="Endereço" active={perfilSection === 'endereco'} onClick={() => { setPerfilSection(s => s === 'endereco' ? null : 'endereco'); setTimeout(() => enderecoBtnRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50); }} />
+            <SubCard label="Endereço" active={perfilSection === 'endereco'} onClick={() => { setPerfilSection(s => s === 'endereco' ? null : 'endereco'); setTimeout(() => { const el = enderecoBtnRef.current; if (!el) return; const top = el.getBoundingClientRect().top + window.scrollY - 72; window.scrollTo({ top, behavior: 'smooth' }); }, 120); }} />
           </CardRow>
 
           {/* Dados */}
