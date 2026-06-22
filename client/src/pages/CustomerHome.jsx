@@ -944,6 +944,12 @@ export default function CustomerHome() {
                         if (!addr) return;
                         setSavingAddr(true);
                         const ok = await saveAddressAsLabel(label, addr, addrComplement, contaMapLat || user?.lat, contaMapLng || user?.lng);
+                        if (ok) {
+                          setAddrForm('');
+                          setAddrComplement('');
+                          setContaMapLat(null);
+                          setContaMapLng(null);
+                        }
                         setAddrMsg(ok ? `Salvo como ${label}!` : 'Erro ao salvar');
                         setTimeout(() => setAddrMsg(''), 3000);
                         setSavingAddr(false);
@@ -957,7 +963,7 @@ export default function CustomerHome() {
               )}
               {addrMsg && <div style={{ fontSize: 13, fontWeight: 600, color: addrMsg.includes('Erro') ? '#C62828' : '#2E7D32', marginTop: 8 }}>{addrMsg}</div>}
               <button className="btn btn-primary" style={{ marginTop: 10, width: '100%' }} onClick={saveAddress} disabled={savingAddr}>
-                {savingAddr ? 'Salvando…' : 'Salvar Endereço Principal'}
+                {savingAddr ? 'Salvando…' : 'Salvar'}
               </button>
 
               {/* Endereços salvos dentro da aba */}
