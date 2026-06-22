@@ -339,13 +339,11 @@ export default function CustomerOrder() {
                 })()}
               </div>
 
-              {/* Complemento — aparece quando há endereço */}
-              {address && (
-                <input className="input" type="text" value={complement}
-                  onChange={e => setComplement(e.target.value)}
-                  placeholder="Complemento (apto, bloco, referência...)"
-                  style={{ marginBottom: 10 }} />
-              )}
+              {/* Complemento */}
+              <input className="input" type="text" value={complement}
+                onChange={e => setComplement(e.target.value)}
+                placeholder="Complemento (apto, bloco, referência...)"
+                style={{ marginBottom: 10 }} />
 
               {/* CEP */}
               {!showCep ? (
