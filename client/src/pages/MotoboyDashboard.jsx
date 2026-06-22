@@ -1015,6 +1015,13 @@ export default function MotoboyDashboard() {
           </div>
         </div>
 
+        {/* ── Label "Em andamento" ── */}
+        {activeDeliveries.length > 0 && (
+          <div style={{ fontSize: 12, fontWeight: 700, color: mb.sub, textTransform: 'uppercase', letterSpacing: 1.2, paddingLeft: 2 }}>
+            Em andamento
+          </div>
+        )}
+
         {/* ── Entrega ativa — card HERO ── */}
         {primary && (
           <div style={{
@@ -1484,9 +1491,9 @@ export default function MotoboyDashboard() {
       '--border':       mb.cardBorder,
     }}>
       {/* ── TOPBAR ──────────────────────────────────────────────── */}
-      <div className="header" style={{ padding: '8px 16px', background: mb.hdr, borderBottom: `1px solid ${mb.hdrBorder}` }}>
+      <div className="header" style={{ padding: '4px 16px', background: '#967BB6', borderBottom: '1px solid #7D5FA0' }}>
         <div className="header-left" style={{ gap: 10 }}>
-          <img src="/logo_placa.png" alt="Pé de Açaí" style={{ width: 80, height: 80, objectFit: 'contain', flexShrink: 0 }} />
+          <img src="/logo_placa.png" alt="Pé de Açaí" style={{ width: 58, height: 58, objectFit: 'contain', flexShrink: 0, transform: 'rotate(15deg)' }} />
         </div>
         <div className="header-right" style={{ gap: 14 }}>
           {/* Dark/light toggle */}
