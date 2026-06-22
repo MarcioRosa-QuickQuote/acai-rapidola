@@ -114,7 +114,13 @@ export default function CustomerOrder() {
 
   useEffect(() => {
     if (user?.address && !address && user.address !== 'RETIRADA NA LOJA') {
-      setAddress(user.address);
+      const dashIdx = user.address.indexOf(' — ');
+      if (dashIdx > 0) {
+        setAddress(user.address.slice(0, dashIdx));
+        setComplement(user.address.slice(dashIdx + 3));
+      } else {
+        setAddress(user.address);
+      }
       if (user.lat && user.lng) {
         setLat(user.lat); setLng(user.lng);
         updateDeliveryFee(user.lat, user.lng);
@@ -146,6 +152,14 @@ export default function CustomerOrder() {
   async function geocodeAddress(addrOverride) {
     const addr = addrOverride || address;
     if (!addr) return;
+
+    // Se já temos lat/lng (de sugestão autocomplete ou GPS), só confirma
+    if (lat && lng && !addrOverride) {
+      setEditAddr(false);
+      setShowSavePrompt(true);
+      return;
+    }
+
     setGeocoding(true); setError('');
     try {
       const res = await fetch('/api/orders/geocode?q=' + encodeURIComponent(addr));
