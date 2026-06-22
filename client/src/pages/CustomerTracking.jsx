@@ -386,6 +386,7 @@ export default function CustomerTracking() {
   const [ratingHover, setRatingHover] = useState(0);
   const [ratingDone, setRatingDone] = useState(false);
   const [ratingSending, setRatingSending] = useState(false);
+  const [savedAddresses, setSavedAddresses] = useState([]);
 
   // Rota loja → cliente via OSRM (mesma rota que aparece no mapa).
   // Usada pelo animateToPos para manter o saquinho sobre as ruas.
@@ -489,6 +490,10 @@ export default function CustomerTracking() {
     if (order?.store_id) loadChat(order.store_id);
   }, [order?.store_id]);
 
+  useEffect(() => {
+    apiFetch('/addresses').then(d => { if (d.data) setSavedAddresses(d.data); }).catch(() => {});
+  }, []);
+
   // Cancela animação ao desmontar (evita setState em componente morto)
   useEffect(() => {
     return () => cancelAnimationFrame(animFrameRef.current);
@@ -579,6 +584,64 @@ export default function CustomerTracking() {
 
         <GiriasParaenses />
 
+        {/* Mapa do trajeto */}
+        {order.store_lat && order.customer_lat && (() => {
+          const matched = savedAddresses.find(a =>
+            a.lat && a.lng &&
+            Math.abs(a.lat - order.customer_lat) < 0.0005 &&
+            Math.abs(a.lng - order.customer_lng) < 0.0005
+          );
+          const custEmoji = matched?.label === 'Trabalho' ? '💼' : '🏠';
+          const custIconHtml = `<span style="font-size:28px;line-height:1;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.35))">${custEmoji}</span>`;
+          const motoboyActive = (motoboyPos || ['picked_up','in_transit','arriving'].includes(order.status)) && order.status !== 'delivered';
+          return (
+            <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
+              {motoboyActive && (
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 16px 8px' }}>
+                  <div style={{ fontWeight: 700, fontSize: 15, color: 'var(--primary)' }}>
+                    🛵 {motoboyPos?.name || 'Entregador a caminho'}
+                  </div>
+                  {eta !== null && (
+                    <span style={{ background: '#E3F2FD', padding: '4px 10px', borderRadius: 8, fontWeight: 700, color: '#1565C0', fontSize: 13 }}>
+                      ~{eta} min
+                    </span>
+                  )}
+                </div>
+              )}
+              {!motoboyActive && (
+                <div style={{ padding: '12px 16px 8px', fontWeight: 700, fontSize: 15, color: 'var(--primary)' }}>
+                  📍 Acompanhe seu pedido
+                </div>
+              )}
+              <div style={{ height: 260 }}>
+                <MapContainer
+                  center={[(order.store_lat + order.customer_lat) / 2, ((order.store_lng || 0) + (order.customer_lng || 0)) / 2]}
+                  zoom={14} style={{ height: '100%', width: '100%' }} scrollWheelZoom={false}>
+                  <TileLayer attribution='&copy; OSM' url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+                  <Marker position={[order.store_lat, order.store_lng]}
+                    icon={L.divIcon({ html: '<img src="/logo_placa.png" style="width:46px;height:46px;object-fit:contain;filter:drop-shadow(0 2px 6px rgba(0,0,0,0.5))"/>', className: '', iconSize: [46, 46], iconAnchor: [23, 23] })} />
+                  <Marker position={[order.customer_lat, order.customer_lng]}
+                    icon={L.divIcon({ html: custIconHtml, className: '', iconSize: [34, 34], iconAnchor: [17, 17] })} />
+                  {(displayPos || motoboyPos) && order.status !== 'delivered' && (
+                    <Marker
+                      position={[(displayPos || motoboyPos).lat, (displayPos || motoboyPos).lng]}
+                      icon={L.divIcon({ html: '<img src="/saco_acai.png" style="width:52px;height:52px;object-fit:contain;filter:drop-shadow(0 2px 8px rgba(0,0,0,0.6))"/>', className: '', iconSize: [52, 52], iconAnchor: [26, 26] })}
+                    />
+                  )}
+                  <RoutePolyline from={{ lat: order.store_lat, lng: order.store_lng }} to={{ lat: order.customer_lat, lng: order.customer_lng }} />
+                </MapContainer>
+              </div>
+              {order.status !== 'delivered' && (
+                <div style={{ padding: '8px 16px 12px', fontSize: 13, color: '#888' }}>
+                  {order.status === 'picked_up' && '🛵 Entregador saiu da loja com seu açaí!'}
+                  {order.status === 'arriving' && '🔔 O entregador está chegando! Fique atento!'}
+                  {!['picked_up','arriving'].includes(order.status) && 'Seu pedido está sendo preparado'}
+                </div>
+              )}
+            </div>
+          );
+        })()}
+
         {/* Card de avaliação do entregador — aparece quando entregue */}
         {order.status === 'delivered' && order.motoboy_id && (
           <div className="card" style={{ textAlign: 'center' }}>
@@ -618,57 +681,8 @@ export default function CustomerTracking() {
           </div>
         )}
 
-        {(motoboyPos || order.status === 'picked_up' || order.status === 'arriving') && order.status !== 'delivered' && (
-          <div className="card">
-            <div className="flex-between" style={{ marginBottom: 8 }}>
-              <h3 style={{ color: 'var(--primary)', fontSize: 16 }}>
-                {motoboyPos?.name || 'Entregador'}
-              </h3>
-              {eta !== null && (
-                <span style={{ background: '#E3F2FD', padding: '4px 10px', borderRadius: 8, fontWeight: 700, color: '#1565C0', fontSize: 13 }}>
-                  ~{eta} min
-                </span>
-              )}
-            </div>
-
-            {order.store_lat && order.customer_lat && (
-              <div style={{ height: 220, borderRadius: 12, overflow: 'hidden', border: '1px solid var(--border)', marginBottom: 8 }}>
-                <MapContainer
-                  center={[(order.store_lat + order.customer_lat) / 2, ((order.store_lng || 0) + (order.customer_lng || 0)) / 2]}
-                  zoom={14} style={{ height: '100%', width: '100%' }} scrollWheelZoom={false}>
-                  <TileLayer attribution='&copy; OSM' url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-                  <Marker position={[order.store_lat, order.store_lng]} icon={L.divIcon({ html: '<img src="/logo_placa.png" style="width:44px;height:44px;object-fit:contain;filter:drop-shadow(0 2px 6px rgba(0,0,0,0.5))"/>', className: '', iconSize: [44, 44], iconAnchor: [22, 22] })} />
-                  <Marker position={[order.customer_lat, order.customer_lng]} />
-                  {(displayPos || motoboyPos) && (
-                    <Marker
-                      position={[(displayPos || motoboyPos).lat, (displayPos || motoboyPos).lng]}
-                      icon={L.divIcon({ html: '<img src="/saco_acai.png" style="width:52px;height:52px;object-fit:contain;filter:drop-shadow(0 2px 8px rgba(0,0,0,0.6))"/>', className: '', iconSize: [52, 52], iconAnchor: [26, 26] })}
-                    />
-                  )}
-                  <RoutePolyline from={{ lat: order.store_lat, lng: order.store_lng }} to={{ lat: order.customer_lat, lng: order.customer_lng }} />
-                </MapContainer>
-              </div>
-            )}
-
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <StoreLogo logo={order.store_logo} />
-                <span className="text-xs" style={{ color: '#888' }}>Loja</span>
-              </div>
-              <span className="text-xs" style={{ color: '#888' }}>↓ {order.customer_address}</span>
-
-            </div>
-
-            <div style={{ marginTop: 8, fontSize: 13, color: '#888' }}>
-              {order.status === 'picked_up' && 'Entregador saiu da loja com seu açaí!'}
-              {order.status === 'arriving' && 'O entregador está chegando! Fique atento!'}
-              {order.status === 'picked_up' || order.status === 'arriving' ? '' : 'Aguardando...'}
-            </div>
-          </div>
-        )}
-
         <div className="card">
-          <h3 className="text-sm font-bold text-muted mb-2">Detalhes</h3>
+          <h3 className="text-sm font-bold text-muted mb-2">Detalhes do pedido</h3>
           <div className="text-sm" style={{ marginTop: 4 }}>
             <span style={{ color: '#888' }}>Loja: </span><span className="font-bold">{order.store_name}</span>
           </div>
