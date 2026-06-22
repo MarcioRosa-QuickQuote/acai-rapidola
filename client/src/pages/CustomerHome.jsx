@@ -920,25 +920,8 @@ export default function CustomerHome() {
             {/* Conteúdo rolável */}
             <div style={{ flex: 1, overflowY: 'auto' }}>
 
-              {/* Info da loja */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '16px 16px 12px' }}>
-                {store?.logo ? (
-                  <img src={store.logo} alt={store.name} style={{ width: 44, height: 44, borderRadius: '50%', objectFit: 'cover', border: '1px solid #EEE', flexShrink: 0 }} />
-                ) : (
-                  <div style={{ width: 44, height: 44, borderRadius: '50%', background: 'var(--primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 800, fontSize: 18, flexShrink: 0 }}>
-                    {store?.name?.charAt(0).toUpperCase()}
-                  </div>
-                )}
-                <div>
-                  <div style={{ fontWeight: 700, fontSize: 15 }}>{store?.name}</div>
-                  <button onClick={() => setShowCart(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, color: 'var(--primary)', fontWeight: 600, fontSize: 13 }}>
-                    Adicionar mais itens
-                  </button>
-                </div>
-              </div>
-
               {/* Lista de itens */}
-              <div style={{ padding: '4px 16px 0' }}>
+              <div style={{ padding: '16px 16px 0' }}>
                 <div style={{ fontWeight: 700, fontSize: 15, marginBottom: 12, color: '#222' }}>Itens adicionados</div>
                 {Object.entries(cart).map(([id, qty]) => {
                   const prod = products.find(pp => pp.id === id);
