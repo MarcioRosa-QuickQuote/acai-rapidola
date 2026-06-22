@@ -2,6 +2,17 @@ const { Router } = require('express');
 const { supabase } = require('../database');
 const { authMiddleware, roleMiddleware } = require('../auth');
 
+const MAX_SIMULTANEOUS = 3;
+const MAX_PROXIMITY_KM = 1.5;
+
+function haversineKm(lat1, lng1, lat2, lng2) {
+  const R = 6371;
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLng = (lng2 - lng1) * Math.PI / 180;
+  const a = Math.sin(dLat / 2) ** 2 + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLng / 2) ** 2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
 const router = Router();
 
 router.get('/available', authMiddleware, roleMiddleware('motoboy'), async (req, res) => {
@@ -51,6 +62,26 @@ router.post('/accept/:orderId', authMiddleware, roleMiddleware('motoboy'), async
   if (!order) return res.status(404).json({ error: 'Pedido não encontrado ou não pago' });
   if (order.motoboy_id && order.motoboy_id !== req.user.id) {
     return res.status(409).json({ error: 'Pedido já atribuído a outro motoboy' });
+  }
+
+  // Busca pedidos ativos do motoboy para validar limite e proximidade
+  const { data: activeOrders } = await supabase.from('orders')
+    .select('customer_lat, customer_lng')
+    .eq('motoboy_id', req.user.id)
+    .not('status', 'in', '("delivered","cancelled")');
+
+  if ((activeOrders || []).length >= MAX_SIMULTANEOUS) {
+    return res.status(409).json({ error: `Limite de ${MAX_SIMULTANEOUS} pedidos simultâneos atingido. Finalize uma entrega antes de aceitar outra.` });
+  }
+
+  if (order.customer_lat && order.customer_lng && activeOrders?.length > 0) {
+    for (const active of activeOrders) {
+      if (!active.customer_lat || !active.customer_lng) continue;
+      const dist = haversineKm(order.customer_lat, order.customer_lng, active.customer_lat, active.customer_lng);
+      if (dist > MAX_PROXIMITY_KM) {
+        return res.status(409).json({ error: `Entrega muito distante dos seus pedidos atuais (${dist.toFixed(1)}km). Aceite pedidos próximos para não atrasar ninguém.` });
+      }
+    }
   }
 
   const newStatus = order.status !== 'assigned' ? 'assigned' : order.status;

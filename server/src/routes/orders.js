@@ -4,6 +4,30 @@ const { supabase } = require('../database');
 const { authMiddleware, roleMiddleware } = require('../auth');
 const { sendPixTransfer } = require('../services/pixTransfer');
 
+const MAX_SIMULTANEOUS = 3;
+const MAX_PROXIMITY_KM = 1.5;
+function haversineKm(lat1, lng1, lat2, lng2) {
+  const R = 6371;
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLng = (lng2 - lng1) * Math.PI / 180;
+  const a = Math.sin(dLat / 2) ** 2 + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLng / 2) ** 2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+async function motoboyCanTakeOrder(motoboyId, newOrderLat, newOrderLng) {
+  const { data: active } = await supabase.from('orders')
+    .select('customer_lat, customer_lng')
+    .eq('motoboy_id', motoboyId)
+    .not('status', 'in', '("delivered","cancelled")');
+  if ((active || []).length >= MAX_SIMULTANEOUS) return false;
+  if (newOrderLat && newOrderLng) {
+    for (const o of active || []) {
+      if (!o.customer_lat || !o.customer_lng) continue;
+      if (haversineKm(newOrderLat, newOrderLng, o.customer_lat, o.customer_lng) > MAX_PROXIMITY_KM) return false;
+    }
+  }
+  return true;
+}
+
 const router = Router();
 
 function getIO() {
@@ -426,8 +450,14 @@ router.patch('/:id/status', authMiddleware, async (req, res) => {
       .eq('store_id', order.store_id).eq('motoboy_locations.online', 1)
       .order('updated_at', { foreignTable: 'motoboy_locations', ascending: false });
 
-    if (motoboys?.length > 0) {
-      const motoboyId = motoboys[0].motoboy_id;
+    let motoboyId = null;
+    for (const mb of motoboys || []) {
+      if (await motoboyCanTakeOrder(mb.motoboy_id, order.customer_lat, order.customer_lng)) {
+        motoboyId = mb.motoboy_id;
+        break;
+      }
+    }
+    if (motoboyId) {
       await supabase.from('orders').update({ motoboy_id: motoboyId, status: 'assigned' }).eq('id', req.params.id);
       const io = getIO();
       if (io) io.to(`user:${motoboyId}`).emit('order_updated', { orderId: req.params.id, status: 'assigned' });

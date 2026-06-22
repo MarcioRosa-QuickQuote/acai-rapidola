@@ -807,7 +807,8 @@ export default function MotoboyDashboard() {
   }
 
   async function acceptOrder(orderId) {
-    await apiFetch(`/motoboy/accept/${orderId}`, { method: 'POST' });
+    const result = await apiFetch(`/motoboy/accept/${orderId}`, { method: 'POST' });
+    if (result.error) { setToast(result.error); return; }
     setToast('Pedido aceito!');
     const [, mine] = await Promise.all([
       apiFetch('/motoboy/available'),
