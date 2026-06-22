@@ -309,7 +309,21 @@ export default function CustomerOrder() {
 
         {/* Seção: endereço — só aparece quando modo entrega */}
         <div style={{ padding: '20px 16px 20px', display: deliveryType === 'pickup' ? 'none' : 'block' }}>
-          <div style={{ fontWeight: 700, fontSize: 17, marginBottom: 16 }}>Entregar no endereço</div>
+          <div style={{ fontWeight: 700, fontSize: 17, marginBottom: savedAddresses.length > 0 ? 10 : 16 }}>Entregar no endereço</div>
+
+          {/* Chips Casa/Trabalho — sempre visíveis quando existem endereços salvos */}
+          {savedAddresses.length > 0 && (
+            <div style={{ display: 'flex', gap: 8, marginBottom: 14, flexWrap: 'wrap' }}>
+              {savedAddresses.map(a => (
+                <button key={a.id} type="button"
+                  onClick={() => { setAddress(a.address); setComplement(a.complement || ''); if (a.lat && a.lng) { setLat(a.lat); setLng(a.lng); updateDeliveryFee(a.lat, a.lng); } setEditAddr(false); }}
+                  style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 14px', borderRadius: 20, border: address === a.address ? '2px solid var(--primary)' : '1px solid #DDD', background: address === a.address ? '#F3E5F5' : 'white', cursor: 'pointer', fontSize: 13, fontWeight: 600, color: address === a.address ? 'var(--primary)' : '#333' }}>
+                  <span>{a.label === 'Casa' ? '🏠' : '💼'}</span>
+                  <span>{a.label}</span>
+                </button>
+              ))}
+            </div>
+          )}
 
           {!editAddr && hasAddress ? (
             <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
@@ -370,25 +384,13 @@ export default function CustomerOrder() {
                 placeholder="Complemento (apto, bloco, referência...)"
                 style={{ marginBottom: 10 }} />
 
-              {/* CEP + endereços salvos na mesma linha */}
+              {/* CEP */}
               {!showCep ? (
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+                <div style={{ marginBottom: 12 }}>
                   <button type="button" onClick={() => setShowCep(true)}
                     style={{ background: 'none', border: 'none', color: 'var(--primary)', fontSize: 13, fontWeight: 600, cursor: 'pointer', padding: '4px 0' }}>
                     Buscar por CEP
                   </button>
-                  {savedAddresses.length > 0 && (
-                    <div style={{ display: 'flex', gap: 6 }}>
-                      {savedAddresses.map(a => (
-                        <button key={a.id} type="button"
-                          onClick={() => { setAddress(a.address); setComplement(a.complement || ''); if (a.lat && a.lng) { setLat(a.lat); setLng(a.lng); updateDeliveryFee(a.lat, a.lng); } setEditAddr(false); }}
-                          style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '5px 12px', borderRadius: 20, border: '1px solid #DDD', background: 'white', cursor: 'pointer', fontSize: 13, fontWeight: 600, color: '#333' }}>
-                          <span>{a.label === 'Casa' ? '🏠' : '💼'}</span>
-                          <span>{a.label}</span>
-                        </button>
-                      ))}
-                    </div>
-                  )}
                 </div>
               ) : (
                 <div style={{ display: 'flex', gap: 8, marginBottom: 12, alignItems: 'center' }}>
