@@ -283,7 +283,7 @@ export default function CustomerOrder() {
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ fontWeight: 700, fontSize: 15, lineHeight: 1.3 }}>{addrLines.line1}</div>
                 {addrLines.line2 && <div style={{ fontSize: 13, color: '#888', marginTop: 2 }}>{addrLines.line2}</div>}
-                {complement && <div style={{ fontSize: 13, color: 'var(--primary)', marginTop: 2, fontWeight: 600 }}>{complement}</div>}
+                {complement && <div style={{ fontSize: 13, color: '#666', marginTop: 2, fontWeight: 400 }}>{complement}</div>}
               </div>
               <button onClick={() => setEditAddr(true)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--primary)', fontWeight: 700, fontSize: 14, flexShrink: 0 }}>
                 Trocar
@@ -466,8 +466,11 @@ export default function CustomerOrder() {
           style={{ fontSize: 15, padding: '14px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', opacity: ((!hasAddress && deliveryType === 'delivery') || loading) ? 0.6 : 1 }}
           disabled={(!hasAddress && deliveryType === 'delivery') || loading}
           onClick={handleSubmit}>
+          <div style={{ textAlign: 'left' }}>
+            <div style={{ fontWeight: 800, fontSize: 16 }}>R$ {total.toFixed(2)}</div>
+            <div style={{ fontSize: 12, opacity: 0.85 }}>{deliveryType === 'pickup' ? 'retirada grátis' : 'com entrega'}</div>
+          </div>
           <span>{loading ? 'Processando...' : 'Continuar'}</span>
-          <span>R$ {total.toFixed(2)} · {deliveryType === 'pickup' ? 'retirada grátis' : 'com entrega'}</span>
         </button>
       </div>
     </div>
