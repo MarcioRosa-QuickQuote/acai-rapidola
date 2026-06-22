@@ -40,6 +40,7 @@ export default function CustomerOrder() {
   const [complement, setComplement] = useState('');
   const [showNotes, setShowNotes] = useState(false);
   const searchDebounceRef = useRef(null);
+  const addrInputRef = useRef(null);
 
   function shortAddress(addr) {
     if (!addr) return '';
@@ -317,20 +318,25 @@ export default function CustomerOrder() {
 
               {/* Campo de texto */}
               <div style={{ position: 'relative', marginBottom: 10 }}>
-                <input className="input" type="text" value={address}
+                <input ref={addrInputRef} className="input" type="text" value={address}
                   onChange={e => { setAddress(e.target.value); searchAddress(e.target.value); }}
-                  onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
+                  onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
+                  onFocus={() => { if (addressSuggestions.length > 0) setShowSuggestions(true); }}
                   placeholder="Rua, número, bairro" />
-                {showSuggestions && addressSuggestions.length > 0 && (
-                  <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 10, background: 'white', border: '1px solid #DDD', borderRadius: 8, maxHeight: 180, overflow: 'auto', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
-                    {addressSuggestions.map((s, i) => (
-                      <div key={i} onMouseDown={() => selectSuggestion(s)}
-                        style={{ padding: '10px 14px', cursor: 'pointer', fontSize: 13, borderBottom: '1px solid #F0F0F0' }}>
-                        {s.display_name}
-                      </div>
-                    ))}
-                  </div>
-                )}
+                {showSuggestions && addressSuggestions.length > 0 && (() => {
+                  const rect = addrInputRef.current?.getBoundingClientRect();
+                  return (
+                    <div style={{ position: 'fixed', top: rect ? rect.bottom + 2 : 0, left: rect ? rect.left : 0, width: rect ? rect.width : '100%', zIndex: 1000, background: 'white', border: '1px solid #DDD', borderRadius: 8, maxHeight: 220, overflow: 'auto', boxShadow: '0 4px 16px rgba(0,0,0,0.15)' }}>
+                      {addressSuggestions.map((s, i) => (
+                        <div key={i} onMouseDown={e => { e.preventDefault(); selectSuggestion(s); }}
+                          style={{ padding: '10px 14px', cursor: 'pointer', fontSize: 13, borderBottom: '1px solid #F0F0F0', display: 'flex', alignItems: 'flex-start', gap: 8 }}>
+                          <span style={{ color: 'var(--primary)', flexShrink: 0 }}>📍</span>
+                          <span>{s.display_name}</span>
+                        </div>
+                      ))}
+                    </div>
+                  );
+                })()}
               </div>
 
               {/* Complemento — aparece quando há endereço */}
