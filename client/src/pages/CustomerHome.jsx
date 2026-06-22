@@ -959,6 +959,30 @@ export default function CustomerHome() {
               <button className="btn btn-primary" style={{ marginTop: 10, width: '100%' }} onClick={saveAddress} disabled={savingAddr}>
                 {savingAddr ? 'Salvando…' : 'Salvar Endereço Principal'}
               </button>
+
+              {/* Endereços salvos dentro da aba */}
+              <div style={{ marginTop: 20 }}>
+                <div style={{ fontWeight: 700, fontSize: 14, color: '#333', marginBottom: 8 }}>Endereços salvos</div>
+                {savedAddresses.length === 0 ? (
+                  <div style={{ fontSize: 13, color: '#AAA' }}>Nenhum salvo ainda.</div>
+                ) : (
+                  savedAddresses.map(a => (
+                    <div key={a.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 0', borderTop: '1px solid var(--border)' }}>
+                      <span style={{ fontSize: 22, flexShrink: 0 }}>{a.label === 'Casa' ? '🏠' : a.label === 'Trabalho' ? '💼' : '📍'}</span>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontWeight: 700, fontSize: 14 }}>{a.label}</div>
+                        <div style={{ fontSize: 12, color: '#888', marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          {a.address}{a.complement ? ` — ${a.complement}` : ''}
+                        </div>
+                      </div>
+                      <button onClick={() => removeAddress(a.id)}
+                        style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#C62828', fontSize: 13, fontWeight: 600, flexShrink: 0 }}>
+                        Remover
+                      </button>
+                    </div>
+                  ))
+                )}
+              </div>
             </div>
           )}
 
@@ -985,42 +1009,6 @@ export default function CustomerHome() {
             </div>
           )}
 
-          {perfilExpanded && (
-            <div style={{ padding: '16px 20px', borderTop: '1px solid var(--border)', background: 'white' }}>
-              <button className="btn" style={{ width: '100%', background: '#FFEBEE', color: '#C62828', border: 'none', fontWeight: 700, fontSize: 15, padding: '12px', borderRadius: 10, cursor: 'pointer' }} onClick={logout}>
-                Sair da Conta
-              </button>
-            </div>
-          )}
-        </div>
-
-        {/* Card: Endereços salvos */}
-        <div className="card" style={{ padding: 0, overflow: 'hidden', marginBottom: 12 }}>
-          <div style={{ padding: '14px 16px', display: 'flex', alignItems: 'center', gap: 12 }}>
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="var(--primary)"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
-            <span style={{ fontWeight: 700, fontSize: 15 }}>Endereços salvos</span>
-          </div>
-          {savedAddresses.length === 0 ? (
-            <div style={{ padding: '0 16px 16px', fontSize: 13, color: '#888' }}>
-              Nenhum endereço salvo. Ao finalizar um pedido, você pode salvar como Casa ou Trabalho.
-            </div>
-          ) : (
-            savedAddresses.map((a, idx) => (
-              <div key={a.id} style={{ padding: '12px 16px', borderTop: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: 12 }}>
-                <span style={{ fontSize: 22, flexShrink: 0 }}>{a.label === 'Casa' ? '🏠' : a.label === 'Trabalho' ? '💼' : '📍'}</span>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontWeight: 700, fontSize: 14 }}>{a.label}</div>
-                  <div style={{ fontSize: 12, color: '#888', marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                    {a.address}{a.complement ? ` — ${a.complement}` : ''}
-                  </div>
-                </div>
-                <button onClick={() => removeAddress(a.id)}
-                  style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#C62828', fontSize: 13, fontWeight: 600, flexShrink: 0, padding: '4px 0' }}>
-                  Remover
-                </button>
-              </div>
-            ))
-          )}
         </div>
 
         {/* Card: Pagamentos */}
@@ -1039,6 +1027,13 @@ export default function CustomerHome() {
         <div className="card" style={{ padding: 0, overflow: 'hidden', marginBottom: 12 }}>
           <NavCard label="Favoritos" onClick={() => navigate('/customer/favoritos')}
             icon={<svg width="20" height="20" viewBox="0 0 24 24" fill="var(--primary)"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>} />
+        </div>
+
+        {/* Sair */}
+        <div className="card" style={{ padding: '16px 20px', marginBottom: 12 }}>
+          <button className="btn" style={{ width: '100%', background: '#FFEBEE', color: '#C62828', border: 'none', fontWeight: 700, fontSize: 15, padding: '12px', borderRadius: 10, cursor: 'pointer' }} onClick={logout}>
+            Sair da Conta
+          </button>
         </div>
       </>
     );
