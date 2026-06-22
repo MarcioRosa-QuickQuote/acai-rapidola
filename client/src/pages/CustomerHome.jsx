@@ -50,7 +50,6 @@ export default function CustomerHome() {
   const [contaTab, setContaTab] = useState('perfil');
   const [perfilExpanded, setPerfilExpanded] = useState(false);
   const [perfilSection, setPerfilSection] = useState(null);
-  const [showCepConta, setShowCepConta] = useState(false);
   const [showCart, setShowCart] = useState(false);
   const [contaMapLat, setContaMapLat] = useState(null);
   const [contaMapLng, setContaMapLng] = useState(null);
@@ -183,12 +182,11 @@ export default function CustomerHome() {
   const [addressSuggestions, setAddressSuggestions] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [placesSource, setPlacesSource] = useState(null);
-  const [cep, setCep] = useState('');
-  const [cepLoading, setCepLoading] = useState(false);
   const [searchingAddr, setSearchingAddr] = useState(false);
   const [userCity, setUserCity] = useState('');
   const photoRef = useRef(null);
   const searchDebounceRef = useRef(null);
+  const enderecoBtnRef = useRef(null);
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -658,27 +656,6 @@ export default function CustomerHome() {
       }, 350);
     }
 
-    async function lookupCep() {
-      const cleaned = cep.replace(/\D/g, '');
-      if (cleaned.length !== 8) return;
-      setCepLoading(true);
-      try {
-        const res = await fetch(`/api/orders/cep/${cleaned}`);
-        const data = await res.json();
-        if (data.error) {
-          setAddrMsg(data.error);
-          setTimeout(() => setAddrMsg(''), 3000);
-          return;
-        }
-        setAddrForm(shortAddress(data.display_name));
-        setShowSuggestions(false);
-      } catch {
-        setAddrMsg('Erro ao consultar CEP');
-        setTimeout(() => setAddrMsg(''), 3000);
-      } finally {
-        setCepLoading(false);
-      }
-    }
 
     async function selectAddress(suggestion) {
       let name = suggestion.display_name;
@@ -847,7 +824,7 @@ export default function CustomerHome() {
           >
             <SubCard label="Dados" active={perfilSection === 'dados'} onClick={() => setPerfilSection(s => s === 'dados' ? null : 'dados')} />
             <SubCard label="Trocar Senha" active={perfilSection === 'senha'} onClick={() => setPerfilSection(s => s === 'senha' ? null : 'senha')} />
-            <SubCard label="Endereço" active={perfilSection === 'endereco'} onClick={() => setPerfilSection(s => s === 'endereco' ? null : 'endereco')} />
+            <SubCard label="Endereço" active={perfilSection === 'endereco'} onClick={() => { setPerfilSection(s => s === 'endereco' ? null : 'endereco'); setTimeout(() => enderecoBtnRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50); }} />
           </CardRow>
 
           {/* Dados */}
@@ -858,7 +835,7 @@ export default function CustomerHome() {
           {/* Endereço */}
           {perfilExpanded && perfilSection === 'endereco' && (
             <div style={{ padding: '16px 20px', borderTop: '1px solid var(--border)', background: 'white' }}>
-              <button type="button" className="btn btn-outline btn-sm"
+              <button ref={enderecoBtnRef} type="button" className="btn btn-outline btn-sm"
                 onClick={useMyLocationConta} disabled={savingAddr}
                 style={{ width: '100%', justifyContent: 'flex-start', gap: 8, marginBottom: 10, padding: '10px 14px' }}>
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -919,21 +896,6 @@ export default function CustomerHome() {
                         }} />
                     </MapContainer>
                   </div>
-                </div>
-              )}
-              {!showCepConta ? (
-                <button type="button" onClick={() => setShowCepConta(true)}
-                  style={{ background: 'none', border: 'none', color: 'var(--primary)', fontSize: 12, fontWeight: 600, cursor: 'pointer', padding: '2px 0', textDecoration: 'underline' }}>
-                  Buscar por CEP
-                </button>
-              ) : (
-                <div className="flex-row" style={{ gap: 8, marginBottom: 8 }}>
-                  <input className="input" type="text" value={cep}
-                    onChange={e => { setCep(e.target.value.replace(/\D/g, '').slice(0, 8)); }}
-                    placeholder="CEP (ex: 01001000)" maxLength={8} style={{ width: 140, flexShrink: 0 }} />
-                  <button type="button" className="btn btn-sm btn-secondary"
-                    onClick={lookupCep} disabled={cepLoading || cep.replace(/\D/g, '').length !== 8}
-                    style={{ whiteSpace: 'nowrap' }}>{cepLoading ? '...' : 'Buscar CEP'}</button>
                 </div>
               )}
               <div style={{ fontSize: 12, color: '#888', marginTop: 14, marginBottom: 6 }}>Salvar como:</div>
