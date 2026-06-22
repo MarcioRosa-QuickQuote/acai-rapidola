@@ -3,7 +3,7 @@
 // shell + imagens, network-only para API / socket / Supabase.
 // Vite coloca hash no nome dos assets → pode cachear para sempre.
 
-const STATIC_V  = 'rapidola-static-v101';
+const STATIC_V  = 'rapidola-static-v102';
 const IMAGE_V   = 'rapidola-images-v1';
 const MAX_IMGS  = 120; // máx de imagens em cache
 
@@ -46,7 +46,7 @@ self.addEventListener('message', e => {
   if (e.data?.type === 'SKIP_WAITING') self.skipWaiting();
 });
 
-// ── Activate: remove caches antigos e recarrega todas as abas ───────────────
+// ── Activate: remove caches antigos ─────────────────────────────────────────
 self.addEventListener('activate', e => {
   e.waitUntil(
     caches.keys()
@@ -54,8 +54,6 @@ self.addEventListener('activate', e => {
         keys.filter(k => k !== STATIC_V && k !== IMAGE_V).map(k => caches.delete(k))
       ))
       .then(() => self.clients.claim())
-      .then(() => self.clients.matchAll({ type: 'window', includeUncontrolled: true }))
-      .then(clients => Promise.all(clients.map(c => c.navigate(c.url))))
   );
 });
 
@@ -129,7 +127,7 @@ self.addEventListener('fetch', e => {
               }
               return resp;
             })
-            .catch(() => cached);
+            .catch(() => cached || new Response('', { status: 503 }));
 
           // Serve do cache imediatamente se disponível
           return cached || netFetch;
@@ -166,13 +164,13 @@ self.addEventListener('fetch', e => {
           }
           return resp;
         })
-        .catch(() => caches.open(STATIC_V).then(c => c.match('/')))
+        .catch(() => caches.open(STATIC_V).then(c => c.match('/').then(r => r || new Response('Offline', { status: 503 }))))
     );
     return;
   }
 
   // 5. Demais recursos estáticos (sons, pdfs, etc.) → network com fallback
   e.respondWith(
-    fetch(e.request).catch(() => caches.match(e.request))
+    fetch(e.request).catch(() => caches.match(e.request).then(r => r || new Response('', { status: 503 })))
   );
 });
