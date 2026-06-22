@@ -277,18 +277,23 @@ export default function CustomerOrder() {
           <div style={{ fontWeight: 700, fontSize: 17, marginBottom: 16 }}>Entregar no endereço</div>
 
           {!editAddr && hasAddress ? (
-            <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#333" strokeWidth="2" style={{ marginTop: 2, flexShrink: 0 }}>
-                <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/><circle cx="12" cy="9" r="2.5"/>
-              </svg>
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontWeight: 700, fontSize: 15, lineHeight: 1.3 }}>{addrLines.line1}</div>
-                {addrLines.line2 && <div style={{ fontSize: 13, color: '#888', marginTop: 2 }}>{addrLines.line2}</div>}
-                {complement && <div style={{ fontSize: 13, color: '#666', marginTop: 2, fontWeight: 400 }}>{complement}</div>}
+            <div>
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12, marginBottom: 10 }}>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#333" strokeWidth="2" style={{ marginTop: 2, flexShrink: 0 }}>
+                  <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/><circle cx="12" cy="9" r="2.5"/>
+                </svg>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontWeight: 700, fontSize: 15, lineHeight: 1.3 }}>{addrLines.line1}</div>
+                  {addrLines.line2 && <div style={{ fontSize: 13, color: '#888', marginTop: 2 }}>{addrLines.line2}</div>}
+                </div>
+                <button onClick={() => setEditAddr(true)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--primary)', fontWeight: 700, fontSize: 14, flexShrink: 0 }}>
+                  Trocar
+                </button>
               </div>
-              <button onClick={() => setEditAddr(true)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--primary)', fontWeight: 700, fontSize: 14, flexShrink: 0 }}>
-                Trocar
-              </button>
+              <input className="input" type="text" value={complement}
+                onChange={e => setComplement(e.target.value)}
+                placeholder="Complemento (apto, bloco, referência...)"
+                style={{ fontSize: 14 }} />
             </div>
           ) : (
             <div style={{ background: '#F8F4FC', borderRadius: 12, padding: 16 }}>
