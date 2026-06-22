@@ -161,6 +161,7 @@ export default function CustomerHome() {
   const [addrForm, setAddrForm] = useState(null);
   const [savingAddr, setSavingAddr] = useState(false);
   const [addrMsg, setAddrMsg] = useState('');
+  const [addrComplement, setAddrComplement] = useState('');
   const [pwCurrent, setPwCurrent] = useState('');
   const [pwNew, setPwNew] = useState('');
   const [pwMsg, setPwMsg] = useState('');
@@ -551,7 +552,7 @@ export default function CustomerHome() {
 
     async function saveAddress() {
       setSavingAddr(true);
-      const newAddr = addrForm || '';
+      const newAddr = addrComplement ? `${addrForm || ''} — ${addrComplement}` : (addrForm || '');
       const body = { address: newAddr };
       if (contaMapLat && contaMapLng) { body.lat = contaMapLat; body.lng = contaMapLng; }
       const data = await apiFetch('/auth/profile', { method: 'PATCH', body: JSON.stringify(body) });
@@ -880,6 +881,11 @@ export default function CustomerHome() {
                   </div>
                 )}
               </div>
+              <input className="input" type="text" value={addrComplement}
+                onChange={e => setAddrComplement(e.target.value)}
+                placeholder="Complemento (apto, bloco, referência...)"
+                style={{ marginBottom: 8 }} />
+
               {(contaMapLat || user?.lat) && (contaMapLng || user?.lng) && (
                 <div style={{ marginBottom: 12 }}>
                   <div style={{ fontSize: 11, color: '#888', marginBottom: 4 }}>Use o mapa para ajustar o ponto exato</div>
