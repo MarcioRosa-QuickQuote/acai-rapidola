@@ -31,14 +31,13 @@ export default function CustomerOrder() {
   const [distanceWarning, setDistanceWarning] = useState('');
   const [gpsLoading, setGpsLoading] = useState(false);
   const [showCep, setShowCep] = useState(false);
-  const [savedAddresses, setSavedAddresses] = useState(() => {
-    try { return JSON.parse(localStorage.getItem('user_addresses') || '[]'); }
-    catch { return []; }
-  });
+  const [savedAddresses, setSavedAddresses] = useState([]);
   const [addressSuggestions, setAddressSuggestions] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [complement, setComplement] = useState('');
   const [showNotes, setShowNotes] = useState(false);
+  const [showSavePrompt, setShowSavePrompt] = useState(false);
+  const [savingAddr, setSavingAddr] = useState(false);
   const searchDebounceRef = useRef(null);
   const addrInputRef = useRef(null);
 
@@ -89,6 +88,7 @@ export default function CustomerOrder() {
     if (!store) {
       apiFetch('/stores').then(d => { if (d.data?.[0]) setStore(d.data[0]); });
     }
+    apiFetch('/addresses').then(d => { if (d.data) setSavedAddresses(d.data); }).catch(() => {});
   }, []);
 
   useEffect(() => { updateDeliveryFee(lat, lng); }, [lat, lng, store]);
@@ -109,6 +109,21 @@ export default function CustomerOrder() {
     }
   }, []);
 
+  async function saveAddressAs(label) {
+    setShowSavePrompt(false);
+    setSavingAddr(true);
+    try {
+      const existing = savedAddresses.find(a => a.label === label);
+      if (existing) {
+        await apiFetch(`/addresses/${existing.id}`, { method: 'PATCH', body: JSON.stringify({ label, address, complement: complement || null, lat, lng }) });
+        setSavedAddresses(prev => prev.map(a => a.id === existing.id ? { ...a, address, complement, lat, lng } : a));
+      } else {
+        const d = await apiFetch('/addresses', { method: 'POST', body: JSON.stringify({ label, address, complement: complement || null, lat, lng }) });
+        if (d.data) setSavedAddresses(prev => [...prev, d.data]);
+      }
+    } catch {} finally { setSavingAddr(false); }
+  }
+
   async function geocodeAddress(addrOverride) {
     const addr = addrOverride || address;
     if (!addr) return;
@@ -123,6 +138,7 @@ export default function CustomerOrder() {
         updateDeliveryFee(newLat, newLng);
         checkDistanceWarning(newLat, newLng);
         setEditAddr(false);
+        setShowSavePrompt(true);
       } else {
         setError('Endereço não encontrado. Tente ser mais específico ou use o CEP.');
         setTimeout(() => setError(''), 4000);
@@ -172,10 +188,9 @@ export default function CustomerOrder() {
             setLat(parseFloat(data.lat)); setLng(parseFloat(data.lng));
             updateDeliveryFee(parseFloat(data.lat), parseFloat(data.lng));
             checkDistanceWarning(parseFloat(data.lat), parseFloat(data.lng));
-            setEditAddr(false);
           }
-        }).catch(() => geocodeAddress(suggestion.display_name));
-    } else { geocodeAddress(suggestion.display_name); }
+        }).catch(() => {});
+    }
   }
 
   async function lookupCep() {
@@ -207,6 +222,7 @@ export default function CustomerOrder() {
         updateDeliveryFee(latitude, longitude);
         setGpsLoading(false);
         setEditAddr(false);
+        setShowSavePrompt(true);
       },
       (err) => {
         setGpsLoading(false);
@@ -277,23 +293,18 @@ export default function CustomerOrder() {
           <div style={{ fontWeight: 700, fontSize: 17, marginBottom: 16 }}>Entregar no endereço</div>
 
           {!editAddr && hasAddress ? (
-            <div>
-              <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12, marginBottom: 10 }}>
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#333" strokeWidth="2" style={{ marginTop: 2, flexShrink: 0 }}>
-                  <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/><circle cx="12" cy="9" r="2.5"/>
-                </svg>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontWeight: 700, fontSize: 15, lineHeight: 1.3 }}>{addrLines.line1}</div>
-                  {addrLines.line2 && <div style={{ fontSize: 13, color: '#888', marginTop: 2 }}>{addrLines.line2}</div>}
-                </div>
-                <button onClick={() => setEditAddr(true)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--primary)', fontWeight: 700, fontSize: 14, flexShrink: 0 }}>
-                  Trocar
-                </button>
+            <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#333" strokeWidth="2" style={{ marginTop: 2, flexShrink: 0 }}>
+                <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/><circle cx="12" cy="9" r="2.5"/>
+              </svg>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontWeight: 700, fontSize: 15, lineHeight: 1.3 }}>{addrLines.line1}</div>
+                {addrLines.line2 && <div style={{ fontSize: 13, color: '#888', marginTop: 2 }}>{addrLines.line2}</div>}
+                {complement && <div style={{ fontSize: 13, color: '#666', marginTop: 3, fontWeight: 400 }}>{complement}</div>}
               </div>
-              <input className="input" type="text" value={complement}
-                onChange={e => setComplement(e.target.value)}
-                placeholder="Complemento (apto, bloco, referência...)"
-                style={{ fontSize: 14 }} />
+              <button onClick={() => setEditAddr(true)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--primary)', fontWeight: 700, fontSize: 14, flexShrink: 0 }}>
+                Trocar
+              </button>
             </div>
           ) : (
             <div style={{ background: '#F8F4FC', borderRadius: 12, padding: 16 }}>
@@ -310,15 +321,16 @@ export default function CustomerOrder() {
 
               {/* Endereços salvos */}
               {savedAddresses.length > 0 && (
-                <select className="input" style={{ marginBottom: 10, fontSize: 14 }}
-                  value=""
-                  onChange={e => {
-                    const a = savedAddresses.find(s => s.address === e.target.value);
-                    if (a) { setAddress(a.address); if (a.lat && a.lng) { setLat(a.lat); setLng(a.lng); updateDeliveryFee(a.lat, a.lng); } setEditAddr(false); }
-                  }}>
-                  <option value="">Selecionar endereço salvo...</option>
-                  {savedAddresses.map(a => <option key={a.id} value={a.address}>{a.label || shortAddress(a.address)}</option>)}
-                </select>
+                <div style={{ display: 'flex', gap: 8, marginBottom: 12, flexWrap: 'wrap' }}>
+                  {savedAddresses.map(a => (
+                    <button key={a.id} type="button"
+                      onClick={() => { setAddress(a.address); setComplement(a.complement || ''); if (a.lat && a.lng) { setLat(a.lat); setLng(a.lng); updateDeliveryFee(a.lat, a.lng); } setEditAddr(false); }}
+                      style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 14px', borderRadius: 20, border: '1px solid #DDD', background: 'white', cursor: 'pointer', fontSize: 14, fontWeight: 600, color: '#333' }}>
+                      <span>{a.label === 'Casa' ? '🏠' : a.label === 'Trabalho' ? '💼' : '📍'}</span>
+                      <span>{a.label}</span>
+                    </button>
+                  ))}
+                </div>
               )}
 
               {/* Campo de texto */}
@@ -468,6 +480,28 @@ export default function CustomerOrder() {
         </div>
 
       </div>
+
+      {/* Modal: Salvar endereço como */}
+      {showSavePrompt && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)', zIndex: 900, display: 'flex', alignItems: 'flex-end' }} onClick={() => setShowSavePrompt(false)}>
+          <div style={{ background: 'white', borderRadius: '16px 16px 0 0', padding: '20px 16px 32px', width: '100%' }} onClick={e => e.stopPropagation()}>
+            <div style={{ fontWeight: 700, fontSize: 16, marginBottom: 4 }}>Salvar endereço?</div>
+            <div style={{ fontSize: 13, color: '#888', marginBottom: 20 }}>{shortAddress(address)}</div>
+            {['Casa', 'Trabalho'].map(label => (
+              <button key={label} onClick={() => saveAddressAs(label)} disabled={savingAddr}
+                style={{ display: 'flex', alignItems: 'center', gap: 14, width: '100%', padding: '14px 4px', background: 'none', border: 'none', borderBottom: '1px solid #F0F0F0', cursor: 'pointer', fontSize: 15, color: '#222' }}>
+                <span style={{ fontSize: 20 }}>{label === 'Casa' ? '🏠' : '💼'}</span>
+                <span style={{ fontWeight: 600 }}>{label}</span>
+                {savedAddresses.some(a => a.label === label) && <span style={{ marginLeft: 'auto', fontSize: 12, color: '#888' }}>Atualizar</span>}
+              </button>
+            ))}
+            <button onClick={() => setShowSavePrompt(false)}
+              style={{ display: 'block', width: '100%', padding: '16px 4px 0', background: 'none', border: 'none', cursor: 'pointer', fontSize: 15, color: '#888', textAlign: 'left' }}>
+              Não salvar
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Barra inferior fixa */}
       <div style={{ position: 'fixed', bottom: 0, left: 0, right: 0, background: 'white', borderTop: '1px solid #EFEFEF', padding: '12px 16px', paddingBottom: 'max(12px, env(safe-area-inset-bottom))' }}>

@@ -54,10 +54,7 @@ export default function CustomerHome() {
   const [showCart, setShowCart] = useState(false);
   const [contaMapLat, setContaMapLat] = useState(null);
   const [contaMapLng, setContaMapLng] = useState(null);
-  const [savedAddresses, setSavedAddresses] = useState(() => {
-    try { return JSON.parse(localStorage.getItem('user_addresses') || '[]'); }
-    catch { return []; }
-  });
+  const [savedAddresses, setSavedAddresses] = useState([]);
   const [showAddrForm, setShowAddrForm] = useState(false);
   const [addrLabel, setAddrLabel] = useState('');
   const [msgStore, setMsgStore] = useState(null);
@@ -66,8 +63,8 @@ export default function CustomerHome() {
   const [msgSent, setMsgSent] = useState(false);
 
   useEffect(() => {
-    localStorage.setItem('user_addresses', JSON.stringify(savedAddresses));
-  }, [savedAddresses]);
+    apiFetch('/addresses').then(d => { if (d.data) setSavedAddresses(d.data); }).catch(() => {});
+  }, []);
 
   function addAddress() {
     if (!addrForm || addrForm.length < 5) { setAddrMsg('Digite um endereço'); setTimeout(() => setAddrMsg(''), 3000); return; }
@@ -88,8 +85,9 @@ export default function CustomerHome() {
     setTimeout(() => setAddrMsg(''), 3000);
   }
 
-  function removeAddress(id) {
+  async function removeAddress(id) {
     setSavedAddresses(prev => prev.filter(a => a.id !== id));
+    await apiFetch(`/addresses/${id}`, { method: 'DELETE' }).catch(() => {});
   }
 
   function setPrimaryAddress(addr) {
@@ -957,6 +955,35 @@ export default function CustomerHome() {
                 Sair da Conta
               </button>
             </div>
+          )}
+        </div>
+
+        {/* Card: Endereços salvos */}
+        <div className="card" style={{ padding: 0, overflow: 'hidden', marginBottom: 12 }}>
+          <div style={{ padding: '14px 16px', display: 'flex', alignItems: 'center', gap: 12 }}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="var(--primary)"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+            <span style={{ fontWeight: 700, fontSize: 15 }}>Endereços salvos</span>
+          </div>
+          {savedAddresses.length === 0 ? (
+            <div style={{ padding: '0 16px 16px', fontSize: 13, color: '#888' }}>
+              Nenhum endereço salvo. Ao finalizar um pedido, você pode salvar como Casa ou Trabalho.
+            </div>
+          ) : (
+            savedAddresses.map((a, idx) => (
+              <div key={a.id} style={{ padding: '12px 16px', borderTop: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: 12 }}>
+                <span style={{ fontSize: 22, flexShrink: 0 }}>{a.label === 'Casa' ? '🏠' : a.label === 'Trabalho' ? '💼' : '📍'}</span>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontWeight: 700, fontSize: 14 }}>{a.label}</div>
+                  <div style={{ fontSize: 12, color: '#888', marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    {a.address}{a.complement ? ` — ${a.complement}` : ''}
+                  </div>
+                </div>
+                <button onClick={() => removeAddress(a.id)}
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#C62828', fontSize: 13, fontWeight: 600, flexShrink: 0, padding: '4px 0' }}>
+                  Remover
+                </button>
+              </div>
+            ))
           )}
         </div>
 

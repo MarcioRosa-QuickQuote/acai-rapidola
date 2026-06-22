@@ -18,6 +18,7 @@ const messageRoutes = require('./routes/messages');
 const adminRoutes = require('./routes/admin');
 const ratingsRoutes = require('./routes/ratings');
 const notificationsRoutes = require('./routes/notifications');
+const addressesRoutes = require('./routes/addresses');
 
 const { supabase } = require('./database');
 
@@ -131,6 +132,7 @@ app.use('/api/messages', messageRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/ratings', ratingsRoutes);
 app.use('/api/notifications', notificationsRoutes);
+app.use('/api/addresses', addressesRoutes);
 
 app.use((err, req, res, next) => {
   console.error('[Server] Erro:', err?.message || err);
