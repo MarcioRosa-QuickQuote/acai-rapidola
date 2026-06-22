@@ -250,7 +250,7 @@ export default function CustomerOrder() {
 
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', padding: '14px 16px', borderBottom: '1px solid #EFEFEF', flexShrink: 0 }}>
-        <button onClick={() => navigate(-1)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 26, color: '#333', padding: 0, lineHeight: 1, width: 36 }}>‹</button>
+        <button onClick={() => navigate(`/customer/${store?.id}`, { state: { openCart: true } })} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 26, color: '#333', padding: 0, lineHeight: 1, width: 36 }}>‹</button>
         <span style={{ flex: 1, textAlign: 'center', fontWeight: 800, fontSize: 15, letterSpacing: 1 }}>SACOLA</span>
         <div style={{ width: 36 }} />
       </div>

@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import { useNavigate, useParams, useSearchParams, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import CustomerHeader from '../components/CustomerHeader';
 import CustomerBottomNav from '../components/CustomerBottomNav';
@@ -175,6 +175,11 @@ export default function CustomerHome() {
   const photoRef = useRef(null);
   const searchDebounceRef = useRef(null);
   const navigate = useNavigate();
+  const location = useLocation();
+
+  useEffect(() => {
+    if (location.state?.openCart) setShowCart(true);
+  }, []);
 
   useEffect(() => {
     if (searchParams.get('tab') === 'conta') setView('conta');
@@ -982,10 +987,10 @@ export default function CustomerHome() {
                   navigate('/customer/order', { state: { items, store, total } });
                 }}>
                 <span>Continuar</span>
-                <span>R$ {(Object.entries(cart).reduce((s, [id, qty]) => {
+                <span>R$ {Object.entries(cart).reduce((s, [id, qty]) => {
                   const pr = products.find(pp => pp.id === id);
                   return s + (pr?.price || 0) * qty;
-                }, 0) + 6.50).toFixed(2)} com entrega</span>
+                }, 0).toFixed(2)}</span>
               </button>
             </div>
           </div>
