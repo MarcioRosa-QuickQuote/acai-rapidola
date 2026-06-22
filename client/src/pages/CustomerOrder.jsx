@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -38,6 +38,7 @@ export default function CustomerOrder() {
   const [addressSuggestions, setAddressSuggestions] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [showNotes, setShowNotes] = useState(false);
+  const searchDebounceRef = useRef(null);
 
   function shortAddress(addr) {
     if (!addr) return '';
@@ -91,7 +92,7 @@ export default function CustomerOrder() {
   useEffect(() => { updateDeliveryFee(lat, lng); }, [lat, lng, store]);
 
   useEffect(() => {
-    if (user?.address && !address) {
+    if (user?.address && !address && user.address !== 'RETIRADA NA LOJA') {
       setAddress(user.address);
       if (user.lat && user.lng) {
         setLat(user.lat); setLng(user.lng);
@@ -128,14 +129,35 @@ export default function CustomerOrder() {
     finally { setGeocoding(false); }
   }
 
-  async function searchAddress(q) {
-    if (q.length < 4) { setAddressSuggestions([]); setShowSuggestions(false); return; }
-    try {
-      const res = await fetch(`/api/orders/places-autocomplete?q=${encodeURIComponent(q)}`);
-      const data = await res.json();
-      setAddressSuggestions(data.results || []);
-      setShowSuggestions((data.results || []).length > 0);
-    } catch { setShowSuggestions(false); }
+  function searchAddress(q) {
+    if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);
+    if (q.length < 3) { setAddressSuggestions([]); setShowSuggestions(false); return; }
+    searchDebounceRef.current = setTimeout(async () => {
+      try {
+        const curLat = lat || user?.lat || '';
+        const curLng = lng || user?.lng || '';
+        const params = new URLSearchParams({ q });
+        if (curLat) params.set('lat', curLat);
+        if (curLng) params.set('lng', curLng);
+        const res = await fetch(`/api/orders/places-autocomplete?${params}`);
+        const data = await res.json();
+        let results = data.results || [];
+        if (results.length === 0 && q.length >= 5) {
+          const numInQuery = q.match(/(\d[\d\s\-]*)$/);
+          const streetQ = numInQuery ? q.replace(numInQuery[0], '').trim() : q;
+          const nomUrl = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(streetQ + ', Belém, Pará')}&countrycodes=br&limit=5&addressdetails=1`;
+          const nomRes = await fetch(nomUrl, { headers: { 'User-Agent': 'PedeAcai/1.0' } });
+          const nomData = await nomRes.json();
+          results = (nomData || []).map(r => {
+            const parts = r.display_name.split(',').map(p => p.trim());
+            const short = parts.slice(0, 3).join(', ');
+            return { display_name: numInQuery ? short.replace(/(,\s*\d+)?(\s*-)/, `, ${numInQuery[1].trim()} -`) : short, lat: r.lat, lon: r.lon };
+          });
+        }
+        setAddressSuggestions(results);
+        setShowSuggestions(results.length > 0);
+      } catch { setShowSuggestions(false); }
+    }, 350);
   }
 
   function selectSuggestion(suggestion) {
@@ -248,8 +270,8 @@ export default function CustomerOrder() {
           </div>
         )}
 
-        {/* Seção: endereço */}
-        <div style={{ padding: '20px 16px 20px' }}>
+        {/* Seção: endereço — só aparece quando modo entrega */}
+        <div style={{ padding: '20px 16px 20px', display: deliveryType === 'pickup' ? 'none' : 'block' }}>
           <div style={{ fontWeight: 700, fontSize: 17, marginBottom: 16 }}>Entregar no endereço</div>
 
           {!editAddr && hasAddress ? (

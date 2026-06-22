@@ -96,7 +96,7 @@ router.post('/', authMiddleware, roleMiddleware('customer'), async (req, res) =>
     }))
   );
 
-  if (address) {
+  if (address && !pickup) {
     await supabase.from('users').update({ address, lat: lat || null, lng: lng || null }).eq('id', customerId);
   }
 
