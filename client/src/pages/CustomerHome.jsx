@@ -175,6 +175,7 @@ export default function CustomerHome() {
   const [savingAddr, setSavingAddr] = useState(false);
   const [addrMsg, setAddrMsg] = useState('');
   const [addrComplement, setAddrComplement] = useState('');
+  const [pickedLabel, setPickedLabel] = useState(null);
   const [pwCurrent, setPwCurrent] = useState('');
   const [pwNew, setPwNew] = useState('');
   const [pwMsg, setPwMsg] = useState('');
@@ -935,34 +936,45 @@ export default function CustomerHome() {
                     style={{ whiteSpace: 'nowrap' }}>{cepLoading ? '...' : 'Buscar CEP'}</button>
                 </div>
               )}
-              {(addrForm || user?.address) && (
-                <div style={{ display: 'flex', gap: 8, marginTop: 14 }}>
-                  {['Casa', 'Trabalho'].map(label => (
-                    <button key={label} type="button" disabled={savingAddr}
-                      onClick={async () => {
-                        const addr = addrForm || user?.address || '';
-                        if (!addr) return;
-                        setSavingAddr(true);
-                        const ok = await saveAddressAsLabel(label, addr, addrComplement, contaMapLat || user?.lat, contaMapLng || user?.lng);
-                        if (ok) {
-                          setAddrForm('');
-                          setAddrComplement('');
-                          setContaMapLat(null);
-                          setContaMapLng(null);
-                        }
-                        setAddrMsg(ok ? `Salvo como ${label}!` : 'Erro ao salvar');
-                        setTimeout(() => setAddrMsg(''), 3000);
-                        setSavingAddr(false);
-                      }}
-                      style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, padding: '10px', border: '1px solid #DDD', borderRadius: 10, background: 'white', cursor: 'pointer', fontSize: 14, fontWeight: 600, color: '#333' }}>
-                      <span>{label === 'Casa' ? '🏠' : '💼'}</span>
-                      <span>{label}</span>
-                    </button>
-                  ))}
-                </div>
-              )}
+              <div style={{ fontSize: 12, color: '#888', marginTop: 14, marginBottom: 6 }}>Salvar como:</div>
+              <div style={{ display: 'flex', gap: 8 }}>
+                {['Casa', 'Trabalho'].map(label => (
+                  <button key={label} type="button" disabled={savingAddr}
+                    onClick={() => setPickedLabel(l => l === label ? null : label)}
+                    style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, padding: '10px', border: `1.5px solid ${pickedLabel === label ? 'var(--primary)' : '#DDD'}`, borderRadius: 10, background: pickedLabel === label ? '#E8F5E9' : 'white', cursor: 'pointer', fontSize: 14, fontWeight: 600, color: pickedLabel === label ? 'var(--primary)' : '#555' }}>
+                    <span>{label === 'Casa' ? '🏠' : '💼'}</span>
+                    <span>{label}</span>
+                  </button>
+                ))}
+              </div>
               {addrMsg && <div style={{ fontSize: 13, fontWeight: 600, color: addrMsg.includes('Erro') ? '#C62828' : '#2E7D32', marginTop: 8 }}>{addrMsg}</div>}
-              <button className="btn btn-primary" style={{ marginTop: 10, width: '100%' }} onClick={saveAddress} disabled={savingAddr}>
+              <button className="btn btn-primary" style={{ marginTop: 10, width: '100%' }}
+                disabled={savingAddr || !pickedLabel}
+                onClick={async () => {
+                  if (!pickedLabel) return;
+                  setSavingAddr(true);
+                  const addr = currentAddr;
+                  const lat = contaMapLat || user?.lat;
+                  const lng = contaMapLng || user?.lng;
+                  const labelOk = addr ? await saveAddressAsLabel(pickedLabel, addr, addrComplement, lat, lng) : true;
+                  const newAddr = addrComplement ? `${addr} — ${addrComplement}` : addr;
+                  const body = { address: newAddr };
+                  if (contaMapLat && contaMapLng) { body.lat = contaMapLat; body.lng = contaMapLng; }
+                  const data = await apiFetch('/auth/profile', { method: 'PATCH', body: JSON.stringify(body) });
+                  if (data.ok && labelOk) {
+                    setAddrForm('');
+                    setAddrComplement('');
+                    setContaMapLat(null);
+                    setContaMapLng(null);
+                    setPickedLabel(null);
+                    setAddrMsg(`Salvo como ${pickedLabel}!`);
+                    retryAuth();
+                  } else {
+                    setAddrMsg('Erro ao salvar');
+                  }
+                  setTimeout(() => setAddrMsg(''), 3000);
+                  setSavingAddr(false);
+                }}>
                 {savingAddr ? 'Salvando…' : 'Salvar'}
               </button>
 

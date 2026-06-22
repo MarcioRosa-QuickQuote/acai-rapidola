@@ -321,7 +321,19 @@ export default function CustomerOrder() {
           </div>
         )}
 
-        {/* Seção: endereço — só aparece quando modo entrega */}
+        {/* Seção: endereço de entrega ou loja (retirada) */}
+        {deliveryType === 'pickup' && store?.address && (
+          <div style={{ padding: '20px 16px 20px' }}>
+            <div style={{ fontWeight: 700, fontSize: 17, marginBottom: 16 }}>Retirar na loja</div>
+            <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
+              <span style={{ fontSize: 22, flexShrink: 0 }}>🏪</span>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontWeight: 700, fontSize: 15, lineHeight: 1.3 }}>{store.name}</div>
+                <div style={{ fontSize: 13, color: '#888', marginTop: 3 }}>{store.address}</div>
+              </div>
+            </div>
+          </div>
+        )}
         <div style={{ padding: '20px 16px 20px', display: deliveryType === 'pickup' ? 'none' : 'block' }}>
           <div style={{ fontWeight: 700, fontSize: 17, marginBottom: 16 }}>Entregar no endereço</div>
 
