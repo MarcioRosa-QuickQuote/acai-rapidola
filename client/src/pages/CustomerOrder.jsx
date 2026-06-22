@@ -26,11 +26,8 @@ export default function CustomerOrder() {
   const [geocoding, setGeocoding] = useState(false);
   const [editAddr, setEditAddr] = useState(false);
   const [splitLiter, setSplitLiter] = useState(false);
-  const [cep, setCep] = useState('');
-  const [cepLoading, setCepLoading] = useState(false);
   const [distanceWarning, setDistanceWarning] = useState('');
   const [gpsLoading, setGpsLoading] = useState(false);
-  const [showCep, setShowCep] = useState(false);
   const [savedAddresses, setSavedAddresses] = useState([]);
   const [addressSuggestions, setAddressSuggestions] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
@@ -226,19 +223,6 @@ export default function CustomerOrder() {
     }
   }
 
-  async function lookupCep() {
-    const cleaned = cep.replace(/\D/g, '');
-    if (cleaned.length !== 8) return;
-    setCepLoading(true); setError('');
-    try {
-      const res = await fetch(`/api/orders/cep/${cleaned}`);
-      const data = await res.json();
-      if (data.error) { setError(data.error); setTimeout(() => setError(''), 4000); return; }
-      setAddress(data.display_name);
-      await geocodeAddress(data.display_name);
-    } catch { setError('Erro ao consultar CEP.'); setTimeout(() => setError(''), 4000); }
-    finally { setCepLoading(false); }
-  }
 
   function useMyLocation() {
     if (!navigator.geolocation) { setError('Geolocalização não disponível.'); return; }
@@ -412,27 +396,6 @@ export default function CustomerOrder() {
                 placeholder="Complemento (apto, bloco, referência...)"
                 style={{ marginBottom: 10 }} />
 
-              {/* CEP */}
-              {!showCep ? (
-                <div style={{ marginBottom: 12 }}>
-                  <button type="button" onClick={() => setShowCep(true)}
-                    style={{ background: 'none', border: 'none', color: 'var(--primary)', fontSize: 13, fontWeight: 600, cursor: 'pointer', padding: '4px 0' }}>
-                    Buscar por CEP
-                  </button>
-                </div>
-              ) : (
-                <div style={{ display: 'flex', gap: 8, marginBottom: 12, alignItems: 'center' }}>
-                  <input className="input" type="text" value={cep}
-                    onChange={e => setCep(e.target.value.replace(/\D/g, '').slice(0, 8))}
-                    placeholder="CEP (ex: 66000000)" style={{ width: 140, flexShrink: 0 }} />
-                  <button type="button" onClick={lookupCep} disabled={cepLoading || cep.replace(/\D/g, '').length !== 8}
-                    style={{ background: 'var(--primary)', color: 'white', border: 'none', borderRadius: 8, padding: '10px 14px', fontWeight: 700, cursor: 'pointer', fontSize: 13, whiteSpace: 'nowrap' }}>
-                    {cepLoading ? '...' : 'Buscar'}
-                  </button>
-                  <button type="button" onClick={() => setShowCep(false)}
-                    style={{ background: 'none', border: 'none', color: '#999', fontSize: 20, cursor: 'pointer' }}>×</button>
-                </div>
-              )}
 
               <div style={{ display: 'flex', gap: 8 }}>
                 <button type="button" onClick={() => geocodeAddress()} disabled={geocoding || !address}
