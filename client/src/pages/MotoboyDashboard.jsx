@@ -58,11 +58,6 @@ const nextStatus = {
   arriving:   'delivered',
 };
 
-const nextStatusLabel = {
-  picked_up: 'Entregue ✓',
-  in_transit: 'Entregue ✓',
-  arriving:   'Entregue ✓',
-};
 
 function FollowMotoboy({ pos, follow }) {
   const map = useMap();
@@ -1068,12 +1063,25 @@ export default function MotoboyDashboard() {
                 </>
               );
             })()}
-            {/* Navegar chip */}
-            <div style={{ marginTop: 14, display: 'flex', alignItems: 'center', gap: 6, color: 'rgba(255,255,255,0.75)', fontSize: 12, fontWeight: 600 }}>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="rgba(255,255,255,0.75)">
-                <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
-              </svg>
-              Toque para navegar
+            {/* Botão Entregue + Navegar */}
+            <div style={{ marginTop: 14, display: 'flex', gap: 10, alignItems: 'center' }}>
+              {nextStatus[primary.status] && (
+                <button onClick={e => { e.stopPropagation(); updateStatus(primary.id); }}
+                  style={{
+                    flex: 1, height: 44,
+                    background: 'rgba(255,255,255,0.18)', color: 'white',
+                    border: '1.5px solid rgba(255,255,255,0.4)', borderRadius: 12,
+                    fontSize: 14, fontWeight: 700, cursor: 'pointer'
+                  }}>
+                  ✅ Entregue
+                </button>
+              )}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, color: 'rgba(255,255,255,0.7)', fontSize: 12, fontWeight: 600, flexShrink: 0 }}>
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="rgba(255,255,255,0.7)">
+                  <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+                </svg>
+                Navegar
+              </div>
             </div>
           </div>
         )}
@@ -1125,12 +1133,8 @@ export default function MotoboyDashboard() {
         {/* ── Pedidos disponíveis para aceitar (avulso) ── */}
         {!isLinked && filteredAvailable.length > 0 && (
           <>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10, margin: '4px 0' }}>
-              <div style={{ flex: 1, height: 1, background: mb.cardBorder }} />
-              <span style={{ fontSize: 10, fontWeight: 700, color: mb.sub, textTransform: 'uppercase', letterSpacing: 0.8, whiteSpace: 'nowrap' }}>
-                Disponíveis para aceitar
-              </span>
-              <div style={{ flex: 1, height: 1, background: mb.cardBorder }} />
+            <div style={{ fontSize: 12, fontWeight: 700, color: mb.sub, textTransform: 'uppercase', letterSpacing: 1.2, paddingLeft: 2 }}>
+              Disponíveis para aceitar
             </div>
             {filteredAvailable.map(order => (
               <div key={order.id} style={{ background: mb.card, borderRadius: 14, padding: '14px 16px', border: `1px solid ${mb.cardBorder}` }}>
@@ -1473,10 +1477,6 @@ export default function MotoboyDashboard() {
     tabActive:   '#6A1B9A',
   };
 
-  // botão hero: mostra quando há entrega ativa com ação disponível e está na tab início
-  const heroOrder = activeDeliveries[0];
-  const heroAction = heroOrder ? nextStatus[heroOrder.status] : null;
-
   return (
     <div style={{
       display: 'flex', flexDirection: 'column', minHeight: '100vh',
@@ -1518,29 +1518,13 @@ export default function MotoboyDashboard() {
       </div>
 
       {/* ── CONTEÚDO ────────────────────────────────────────────── */}
-      <div className="container" style={{ flex: 1, paddingBottom: pageTab === 'inicio' && heroAction ? 148 : 88 }}>
+      <div className="container" style={{ flex: 1, paddingBottom: 88 }}>
         {pageTab === 'inicio' && renderInicio()}
         {pageTab === 'pedidos' && renderPedidos()}
         {pageTab === 'saldo' && renderSaldo()}
         {pageTab === 'perfil' && renderPerfil()}
       </div>
 
-      {/* ── BOTÃO HERO FIXO (Entregue ✓) ────────────────────────── */}
-      {pageTab === 'inicio' && heroAction && (
-        <div style={{ position: 'fixed', bottom: 78, left: 0, right: 0, padding: '0 16px', zIndex: 250 }}>
-          <button onClick={() => updateStatus(heroOrder.id)}
-            style={{
-              width: '100%', height: 56,
-              background: 'linear-gradient(135deg, #1B8A3A, #2E7D32)',
-              color: 'white', border: 'none', borderRadius: 16,
-              fontSize: 17, fontWeight: 800, cursor: 'pointer',
-              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
-              boxShadow: '0 4px 20px rgba(27,138,58,0.45)'
-            }}>
-            ✅ {nextStatusLabel[heroOrder.status]}
-          </button>
-        </div>
-      )}
 
       {/* ── NAV BAR ─────────────────────────────────────────────── */}
       <div style={{
