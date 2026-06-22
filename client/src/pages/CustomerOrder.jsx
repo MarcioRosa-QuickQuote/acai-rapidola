@@ -323,27 +323,16 @@ export default function CustomerOrder() {
 
         {/* Seção: endereço — só aparece quando modo entrega */}
         <div style={{ padding: '20px 16px 20px', display: deliveryType === 'pickup' ? 'none' : 'block' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
-            <div style={{ fontWeight: 700, fontSize: 17 }}>Entregar no endereço</div>
-            {savedAddresses.length > 0 && (
-              <div style={{ display: 'flex', gap: 6 }}>
-                {savedAddresses.map(a => (
-                  <button key={a.id} type="button"
-                    onClick={() => { setAddress(a.address); setComplement(a.complement || ''); if (a.lat && a.lng) { setLat(a.lat); setLng(a.lng); updateDeliveryFee(a.lat, a.lng); } setEditAddr(false); }}
-                    style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '6px 12px', borderRadius: 20, border: address === a.address ? '2px solid var(--primary)' : '1px solid #DDD', background: address === a.address ? '#F3E5F5' : 'white', cursor: 'pointer', fontSize: 13, fontWeight: 600, color: address === a.address ? 'var(--primary)' : '#333' }}>
-                    <span>{a.label === 'Casa' ? '🏠' : '💼'}</span>
-                    <span>{a.label}</span>
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
+          <div style={{ fontWeight: 700, fontSize: 17, marginBottom: 16 }}>Entregar no endereço</div>
 
           {!editAddr && hasAddress ? (
             <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#333" strokeWidth="2" style={{ marginTop: 2, flexShrink: 0 }}>
-                <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/><circle cx="12" cy="9" r="2.5"/>
-              </svg>
+              {(() => {
+                const active = savedAddresses.find(a => a.address === address);
+                return active
+                  ? <span style={{ fontSize: 22, flexShrink: 0, marginTop: 0 }}>{active.label === 'Casa' ? '🏠' : '💼'}</span>
+                  : <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#333" strokeWidth="2" style={{ marginTop: 2, flexShrink: 0 }}><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/><circle cx="12" cy="9" r="2.5"/></svg>;
+              })()}
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ fontWeight: 700, fontSize: 15, lineHeight: 1.3 }}>{addrLines.line1}</div>
                 {(addrLines.line2 || complement) && (
@@ -358,6 +347,19 @@ export default function CustomerOrder() {
             </div>
           ) : (
             <div style={{ background: '#F8F4FC', borderRadius: 12, padding: 16 }}>
+              {/* Chips Casa/Trabalho no topo do form */}
+              {savedAddresses.length > 0 && (
+                <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
+                  {savedAddresses.map(a => (
+                    <button key={a.id} type="button"
+                      onClick={() => { setAddress(a.address); setComplement(a.complement || ''); if (a.lat && a.lng) { setLat(a.lat); setLng(a.lng); updateDeliveryFee(a.lat, a.lng); } setEditAddr(false); }}
+                      style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '6px 12px', borderRadius: 20, border: '1px solid #DDD', background: 'white', cursor: 'pointer', fontSize: 13, fontWeight: 600, color: '#333' }}>
+                      <span>{a.label === 'Casa' ? '🏠' : '💼'}</span>
+                      <span>{a.label}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
               {/* GPS */}
               <button type="button" onClick={useMyLocation} disabled={gpsLoading}
                 style={{ display: 'flex', alignItems: 'center', gap: 8, width: '100%', background: 'white', border: '1px solid #DDD', borderRadius: 8, padding: '10px 14px', cursor: 'pointer', marginBottom: 12, fontSize: 14, color: '#333', fontWeight: 600 }}>
