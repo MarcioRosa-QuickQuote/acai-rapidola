@@ -37,6 +37,7 @@ export default function CustomerOrder() {
   });
   const [addressSuggestions, setAddressSuggestions] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [complement, setComplement] = useState('');
   const [showNotes, setShowNotes] = useState(false);
   const searchDebounceRef = useRef(null);
 
@@ -225,7 +226,7 @@ export default function CustomerOrder() {
         body: JSON.stringify({
           store_id: store.id,
           items: orderItems.map(i => ({ product_id: i.product_id, quantity: i.quantity })),
-          address: deliveryType === 'pickup' ? 'RETIRADA NA LOJA' : address,
+          address: deliveryType === 'pickup' ? 'RETIRADA NA LOJA' : (complement ? `${address} — ${complement}` : address),
           lat: deliveryType === 'pickup' ? null : lat,
           lng: deliveryType === 'pickup' ? null : lng,
           pickup: deliveryType === 'pickup',
@@ -282,6 +283,7 @@ export default function CustomerOrder() {
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ fontWeight: 700, fontSize: 15, lineHeight: 1.3 }}>{addrLines.line1}</div>
                 {addrLines.line2 && <div style={{ fontSize: 13, color: '#888', marginTop: 2 }}>{addrLines.line2}</div>}
+                {complement && <div style={{ fontSize: 13, color: 'var(--primary)', marginTop: 2, fontWeight: 600 }}>{complement}</div>}
               </div>
               <button onClick={() => setEditAddr(true)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--primary)', fontWeight: 700, fontSize: 14, flexShrink: 0 }}>
                 Trocar
@@ -330,6 +332,14 @@ export default function CustomerOrder() {
                   </div>
                 )}
               </div>
+
+              {/* Complemento — aparece quando há endereço */}
+              {address && (
+                <input className="input" type="text" value={complement}
+                  onChange={e => setComplement(e.target.value)}
+                  placeholder="Complemento (apto, bloco, referência...)"
+                  style={{ marginBottom: 10 }} />
+              )}
 
               {/* CEP */}
               {!showCep ? (
