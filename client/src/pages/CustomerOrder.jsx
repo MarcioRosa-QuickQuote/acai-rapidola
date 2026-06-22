@@ -206,6 +206,7 @@ export default function CustomerOrder() {
           address: deliveryType === 'pickup' ? 'RETIRADA NA LOJA' : address,
           lat: deliveryType === 'pickup' ? null : lat,
           lng: deliveryType === 'pickup' ? null : lng,
+          pickup: deliveryType === 'pickup',
           notes: splitLiter ? `Modo: ${(orderItems[0]?.quantity || 1)}L dividido. ` + (notes || '') : notes
         })
       });

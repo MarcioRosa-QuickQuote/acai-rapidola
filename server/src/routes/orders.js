@@ -44,7 +44,7 @@ function calcDeliveryFee(distanceKm) {
 
 router.post('/', authMiddleware, roleMiddleware('customer'), async (req, res) => {
   try {
-  const { store_id, items, address, lat, lng, notes } = req.body;
+  const { store_id, items, address, lat, lng, notes, pickup } = req.body;
   if (!store_id || !items || !items.length || !address) {
     return res.status(400).json({ error: 'Loja, itens e endereço são obrigatórios' });
   }
@@ -75,7 +75,7 @@ router.post('/', authMiddleware, roleMiddleware('customer'), async (req, res) =>
     storeData?.lat || store?.lat, storeData?.lng || store?.lng,
     lat || -23.55, lng || -46.63
   );
-  const deliveryFee = calcDeliveryFee(distanceKm);
+  const deliveryFee = pickup ? 0 : calcDeliveryFee(distanceKm);
 
   const { data: created, error: insertErr } = await supabase.from('orders').insert({
     id: orderId, customer_id: customerId, store_id,
