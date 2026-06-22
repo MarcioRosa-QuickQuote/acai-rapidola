@@ -918,18 +918,19 @@ export default function CustomerHome() {
                   const addr = currentAddr;
                   const lat = contaMapLat || user?.lat;
                   const lng = contaMapLng || user?.lng;
-                  const labelOk = addr ? await saveAddressAsLabel(pickedLabel, addr, addrComplement, lat, lng) : true;
+                  const savedLabel = pickedLabel;
+                  const labelOk = addr ? await saveAddressAsLabel(savedLabel, addr, addrComplement, lat, lng) : true;
                   const newAddr = addrComplement ? `${addr} — ${addrComplement}` : addr;
                   const body = { address: newAddr };
                   if (contaMapLat && contaMapLng) { body.lat = contaMapLat; body.lng = contaMapLng; }
                   const data = await apiFetch('/auth/profile', { method: 'PATCH', body: JSON.stringify(body) });
+                  setAddrForm('');
+                  setAddrComplement('');
+                  setContaMapLat(null);
+                  setContaMapLng(null);
+                  setPickedLabel(null);
                   if (data.ok && labelOk) {
-                    setAddrForm('');
-                    setAddrComplement('');
-                    setContaMapLat(null);
-                    setContaMapLng(null);
-                    setPickedLabel(null);
-                    setAddrMsg(`Salvo como ${pickedLabel}!`);
+                    setAddrMsg(`Salvo como ${savedLabel}!`);
                     retryAuth();
                   } else {
                     setAddrMsg('Erro ao salvar');
