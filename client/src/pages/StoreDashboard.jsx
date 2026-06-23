@@ -1444,6 +1444,17 @@ export default function StoreDashboard() {
           </div>
         ))}
 
+        <div style={{ borderTop: '1px solid var(--border)', marginTop: 20, paddingTop: 16, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div>
+            <div style={{ fontSize: 13, fontWeight: 600 }}>Modo demonstração</div>
+            <div style={{ fontSize: 11, color: 'var(--text-light)', marginTop: 2 }}>Exibe pedidos fictícios para prints</div>
+          </div>
+          <div className="toggle-switch" onClick={() => setDemoActive(d => !d)}>
+            <input type="checkbox" checked={demoActive} readOnly />
+            <span className="toggle-slider" />
+          </div>
+        </div>
+
         <button className="btn btn-outline" style={{ marginTop: 16, width: '100%', color: '#C62828', borderColor: '#FFCDD2' }}
           onClick={logout}>
           Sair da Conta
@@ -1962,9 +1973,6 @@ export default function StoreDashboard() {
                 <span style={{ fontSize: 11, fontWeight: 600, color: open ? 'var(--success)' : 'var(--danger)' }}>
                   {open ? 'Aberta' : 'Fechada'}
                 </span>
-                <div style={{ cursor: 'pointer', padding: '3px 10px', borderRadius: 20, background: demoActive ? '#E8EAF6' : '#F5F5F5', border: `1px solid ${demoActive ? '#9FA8DA' : '#DDD'}`, fontSize: 11, fontWeight: 700, color: demoActive ? '#3949AB' : '#9E9E9E' }} onClick={() => setDemoActive(d => !d)}>
-                  {demoActive ? '📊 Demo ON' : '📊 Demo'}
-                </div>
               </div>
               <div className="header-right" style={{ gap: 8 }}>
                 {/* Sino de notificações */}
@@ -2048,9 +2056,6 @@ export default function StoreDashboard() {
                   <div style={{ display: 'flex', alignItems: 'center', gap: 5, cursor: 'pointer', padding: '3px 8px', borderRadius: 20, background: open ? '#E8F5E9' : '#F5F5F5', border: `1px solid ${open ? '#A8D5B5' : '#DDD'}` }} onClick={toggleOpen}>
                     <div style={{ width: 7, height: 7, borderRadius: '50%', background: open ? '#1B8A3A' : '#9E9E9E', boxShadow: open ? '0 0 0 2px rgba(27,138,58,0.25)' : 'none', flexShrink: 0 }} />
                     <span style={{ fontSize: 11, fontWeight: 700, color: open ? '#1B8A3A' : '#9E9E9E', letterSpacing: 0.2 }}>{open ? 'Aberta' : 'Fechada'}</span>
-                  </div>
-                  <div style={{ cursor: 'pointer', padding: '3px 8px', borderRadius: 20, background: demoActive ? '#E8EAF6' : '#F5F5F5', border: `1px solid ${demoActive ? '#9FA8DA' : '#DDD'}`, fontSize: 11, fontWeight: 700, color: demoActive ? '#3949AB' : '#9E9E9E' }} onClick={() => setDemoActive(d => !d)}>
-                    {demoActive ? '📊 Demo ON' : '📊 Demo'}
                   </div>
                 </div>
               </div>
