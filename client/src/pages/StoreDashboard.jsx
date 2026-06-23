@@ -2166,20 +2166,20 @@ export default function StoreDashboard() {
             {[
               { key: 'painel', label: 'Painel', svg: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg> },
               { key: 'pedidos', label: 'Pedidos', svg: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><line x1="9" y1="6" x2="20" y2="6"/><line x1="9" y1="12" x2="20" y2="12"/><line x1="9" y1="18" x2="20" y2="18"/><circle cx="4" cy="6" r="1.2" fill="currentColor" stroke="none"/><circle cx="4" cy="12" r="1.2" fill="currentColor" stroke="none"/><circle cx="4" cy="18" r="1.2" fill="currentColor" stroke="none"/></svg> },
-              { key: 'produtos', label: 'Produtos', svg: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg> },
-              { key: 'financeiro', label: 'Financeiro', isPremium: true, svg: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg> },
+              { key: 'produtos', label: 'Cardápio', alignRight: true, svg: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg> },
+              { key: 'financeiro', label: 'Financeiro', isPremium: true, alignRight: true, svg: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg> },
               { key: 'perfil', label: 'Perfil', svg: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> },
             ].map(item => {
               const isActive = view === item.key || (item.key === 'perfil' && !!perfilTab);
               return (
                 <div key={item.key} style={{
-                  flex: 1, textAlign: 'center', padding: '8px 4px', cursor: 'pointer',
+                  flex: 1, textAlign: item.alignRight ? 'right' : 'center', padding: '8px 4px', cursor: 'pointer',
                   borderTop: isActive ? '2px solid #6A1B9A' : '2px solid transparent',
                 }} onClick={() => {
                   if (item.isPremium && storeData?.plan !== 'premium') { setShowUpgradeModal(true); return; }
                   setView(item.key); if (item.key !== 'perfil') setPerfilTab(null);
                 }}>
-                  <div style={{ color: isActive ? '#6A1B9A' : '#bbb', display: 'flex', justifyContent: 'center' }}>
+                  <div style={{ color: isActive ? '#6A1B9A' : '#bbb', display: 'flex', justifyContent: item.alignRight ? 'flex-end' : 'center' }}>
                     {item.svg}
                   </div>
                   <div style={{ fontSize: 10, fontWeight: isActive ? 700 : 400, color: isActive ? '#6A1B9A' : '#bbb', marginTop: 2 }}>
