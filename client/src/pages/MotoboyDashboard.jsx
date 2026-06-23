@@ -23,7 +23,7 @@ const statusLabels = {
   pending: 'Aguardando pgto', confirmed: 'Aguardando preparo', preparing: 'Preparando',
   ready: 'Pronto p/ retirar', assigned: 'Retirar na loja',
   picked_up: 'Saiu pra entrega', in_transit: 'Saiu pra entrega',
-  arriving: 'Chegando!', delivered: 'Entregue', cancelled: 'Cancelado'
+  arriving: 'Saiu pra entrega', delivered: 'Entregue', cancelled: 'Cancelado'
 };
 
 const statusColors = {

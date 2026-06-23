@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { fmt } from '../utils/fmt';
 
 export default function CustomerOrder() {
   const { user, apiFetch } = useAuth();
@@ -427,7 +428,7 @@ export default function CustomerOrder() {
               <div style={{ fontSize: 13, color: '#888', marginTop: 3 }}>Hoje, 30 – 45 min</div>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-              <span style={{ fontWeight: 700, fontSize: 15 }}>R$ {deliveryFee.toFixed(2)}</span>
+              <span style={{ fontWeight: 700, fontSize: 15 }}>R$ {fmt(deliveryFee)}</span>
               <div style={{ width: 24, height: 24, borderRadius: '50%', border: `2px solid ${deliveryType === 'delivery' ? 'var(--primary)' : '#CCC'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                 {deliveryType === 'delivery' && <div style={{ width: 14, height: 14, borderRadius: '50%', background: 'var(--primary)' }} />}
               </div>
@@ -525,7 +526,7 @@ export default function CustomerOrder() {
           disabled={(!hasAddress && deliveryType === 'delivery') || loading}
           onClick={handleSubmit}>
           <div style={{ textAlign: 'left' }}>
-            <div style={{ fontWeight: 800, fontSize: 16 }}>R$ {total.toFixed(2)}</div>
+            <div style={{ fontWeight: 800, fontSize: 16 }}>R$ {fmt(total)}</div>
             <div style={{ fontSize: 12, opacity: 0.85 }}>{deliveryType === 'pickup' ? 'retirada grátis' : 'com entrega'}</div>
           </div>
           <span>{loading ? 'Processando...' : 'Continuar'}</span>

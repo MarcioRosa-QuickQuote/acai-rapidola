@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { fmt } from '../utils/fmt';
 import CustomerBottomNav from '../components/CustomerBottomNav';
 import { useSocket } from '../contexts/SocketContext';
 import { MapContainer, TileLayer, Marker } from 'react-leaflet';
@@ -690,7 +691,7 @@ export default function CustomerTracking() {
             <span style={{ color: '#888' }}>Endereço: </span><span>{order.customer_address}</span>
           </div>
           <div className="text-sm" style={{ marginTop: 4 }}>
-            <span style={{ color: '#888' }}>Total: </span><span className="font-bold" style={{ color: 'var(--primary)' }}>R$ {order.total.toFixed(2)}</span>
+            <span style={{ color: '#888' }}>Total: </span><span className="font-bold" style={{ color: 'var(--primary)' }}>R$ {fmt(order.total)}</span>
           </div>
           <div className="text-sm" style={{ marginTop: 4 }}>
             <span style={{ color: '#888' }}>Pedido em: </span><span>{new Date(order.created_at).toLocaleString('pt-BR')}</span>
@@ -700,7 +701,7 @@ export default function CustomerTracking() {
               {order.items.map((item, i) => (
                 <div key={i} className="text-sm" style={{ marginTop: 2 }}>
                   <span>{item.quantity}x {item.product_name} ({item.size_ml}ml) — </span>
-                  <span style={{ fontWeight: 700 }}>R$ {(item.unit_price * item.quantity).toFixed(2)}</span>
+                  <span style={{ fontWeight: 700 }}>R$ {fmt(item.unit_price * item.quantity)}</span>
                 </div>
               ))}
             </div>
@@ -776,18 +777,18 @@ export default function CustomerTracking() {
                     {(order.items || []).map((item, i) => (
                       <div key={i} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, marginBottom: 3 }}>
                         <span>{item.quantity}x {item.product_name || 'Produto'}</span>
-                        <span style={{ fontWeight: 600 }}>R$ {(item.unit_price * item.quantity).toFixed(2)}</span>
+                        <span style={{ fontWeight: 600 }}>R$ {fmt(item.unit_price * item.quantity)}</span>
                       </div>
                     ))}
                     {order.delivery_fee > 0 && (
                       <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, marginTop: 4 }}>
                         <span style={{ color: '#888' }}>Frete</span>
-                        <span>R$ {order.delivery_fee.toFixed(2)}</span>
+                        <span>R$ {fmt(order.delivery_fee)}</span>
                       </div>
                     )}
                     <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 14, fontWeight: 700, color: '#6A1B9A', marginTop: 8, borderTop: '1px solid #E1BEE7', paddingTop: 8 }}>
                       <span>Total</span>
-                      <span>R$ {order.total?.toFixed(2)}</span>
+                      <span>R$ {fmt(order.total)}</span>
                     </div>
                   </div>
                 </div>

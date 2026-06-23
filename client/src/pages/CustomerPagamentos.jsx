@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { fmt } from '../utils/fmt';
 import CustomerHeader from '../components/CustomerHeader';
 import CustomerBottomNav from '../components/CustomerBottomNav';
 
@@ -51,7 +52,7 @@ export default function CustomerPagamentos() {
                 </span>
               </div>
               <div style={{ fontSize: 13, color: '#888' }}>
-                R$ {order.total?.toFixed(2)} • {new Date(order.created_at).toLocaleDateString('pt-BR')}
+                R$ {fmt(order.total)} • {new Date(order.created_at).toLocaleDateString('pt-BR')}
               </div>
             </div>
           ))

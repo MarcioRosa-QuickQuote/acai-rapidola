@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { fmt } from '../utils/fmt';
 import CustomerHeader from '../components/CustomerHeader';
 import CustomerBottomNav from '../components/CustomerBottomNav';
 
@@ -57,7 +58,7 @@ export default function CustomerPedidos() {
                   )}
                   <div style={{ minWidth: 0 }}>
                     <span style={{ fontWeight: 700, fontSize: 15, display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{order.store_name}</span>
-                    <span style={{ fontSize: 12, color: '#888' }}>R$ {order.total?.toFixed(2)} • {new Date(order.created_at).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: '2-digit' })}</span>
+                    <span style={{ fontSize: 12, color: '#888' }}>R$ {fmt(order.total)} • {new Date(order.created_at).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: '2-digit' })}</span>
                   </div>
                 </div>
                 <span className={`badge ${statusColors[order.status] || 'badge-warning'}`} style={{ fontSize: 11, flexShrink: 0, marginLeft: 8 }}>

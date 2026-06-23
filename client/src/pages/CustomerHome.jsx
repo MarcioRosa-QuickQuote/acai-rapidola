@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams, useSearchParams, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { fmt } from '../utils/fmt';
 import CustomerHeader from '../components/CustomerHeader';
 import CustomerBottomNav from '../components/CustomerBottomNav';
 import { useSocket } from '../contexts/SocketContext';
@@ -419,7 +420,7 @@ export default function CustomerHome() {
                         </div>
                       )}
                       <div style={{ fontWeight: 700, fontSize: 14, color: '#222', marginTop: 4 }}>
-                        R$ {(prod.price * qty).toFixed(2)}
+                        R$ {fmt(prod.price * qty)}
                       </div>
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', background: '#F5F5F5', borderRadius: 8, padding: '6px 8px', gap: 4, flexShrink: 0 }}>
@@ -455,10 +456,10 @@ export default function CustomerHome() {
                 navigate('/customer/order', { state: { items, store, total } });
               }}>
               <span>Continuar</span>
-              <span>R$ {Object.entries(cart).reduce((s, [id, qty]) => {
+              <span>R$ {fmt(Object.entries(cart).reduce((s, [id, qty]) => {
                 const pr = products.find(pp => pp.id === id);
                 return s + (pr?.price || 0) * qty;
-              }, 0).toFixed(2)}</span>
+              }, 0))}</span>
             </button>
           </div>
         </div>
@@ -1050,10 +1051,10 @@ export default function CustomerHome() {
                 </div>
                 <span>Ver sacola</span>
               </div>
-              <span>R$ {Object.entries(cart).reduce((s, [id, qty]) => {
+              <span>R$ {fmt(Object.entries(cart).reduce((s, [id, qty]) => {
                 const pr = products.find(pp => pp.id === id);
                 return s + (pr?.price || 0) * qty;
-              }, 0).toFixed(2)}</span>
+              }, 0))}</span>
             </button>
           </div>
         )}
@@ -1088,7 +1089,7 @@ export default function CustomerHome() {
         </div>
         <div className="flex-between" style={{ marginTop: 8 }}>
           <span style={{ fontSize: 22, fontWeight: 800, color: 'var(--primary)' }}>
-            R$ {prod.price.toFixed(2)}
+            R$ {fmt(prod.price)}
           </span>
           <div className="flex-row">
             {cart[prod.id] ? (
@@ -1170,7 +1171,7 @@ export default function CustomerHome() {
         <div className="flex-between text-sm text-muted">
           <span>{order.store_name}</span>
           <span className="font-bold" style={{ color: 'var(--primary)' }}>
-            R$ {order.total.toFixed(2)}
+            R$ {fmt(order.total)}
           </span>
         </div>
         <div className="flex-between text-xs text-muted" style={{ marginTop: 4 }}>

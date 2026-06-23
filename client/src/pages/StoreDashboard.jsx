@@ -809,7 +809,7 @@ export default function StoreDashboard() {
             <div key={order.id} className="card" style={{ padding: 14, marginBottom: 8, cursor: 'pointer' }}
               onClick={() => setExpandedOrder(expandedOrder === order.id ? null : order.id)}>
               <div className="flex-between" style={{ marginBottom: 4 }}>
-                <span style={{ fontWeight: 700, fontSize: 13 }}>#{order.id.slice(0,8)}</span>
+                <span style={{ fontWeight: 700, fontSize: 13 }}>#{order.id.slice(-6)}</span>
                 <span style={{ fontSize: 12, color: '#888' }}>{new Date(order.created_at).toLocaleDateString('pt-BR')}</span>
               </div>
               <div className="flex-between" style={{ marginBottom: 4 }}>
@@ -903,7 +903,7 @@ export default function StoreDashboard() {
                     {order.payment_status !== 'paid' && (
                       <span className="badge badge-warning" style={{ marginLeft: 8, fontSize: 11 }}>Pendente</span>
                     )}
-                    <span style={{ fontSize: 10, color: '#bbb', marginLeft: 8, fontFamily: 'monospace', letterSpacing: 0.3, userSelect: 'all' }}>#{order.id.slice(0,8)}</span>
+                    <span style={{ fontSize: 10, color: '#bbb', marginLeft: 8, fontFamily: 'monospace', letterSpacing: 0.3, userSelect: 'all' }}>#{order.id.slice(-6)}</span>
                   </div>
                   {hasAction ? (
                     <button className="btn btn-sm btn-primary"
