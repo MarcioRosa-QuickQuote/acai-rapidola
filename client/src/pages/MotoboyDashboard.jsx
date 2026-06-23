@@ -973,9 +973,6 @@ export default function MotoboyDashboard() {
   const filteredAvailable = availableOrders.filter(o => !activeIds.has(o.id));
 
   function renderInicio() {
-    const primary = activeDeliveries[0];
-    const others  = activeDeliveries.slice(1);
-
     return (
       <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
 
@@ -1018,106 +1015,66 @@ export default function MotoboyDashboard() {
           </div>
         )}
 
-        {/* ── Entrega ativa — card HERO ── */}
-        {primary && (
-          <div style={{
-            background: `linear-gradient(145deg, ${mb.accentDark}, ${mb.accent})`,
-            borderRadius: 18, padding: '20px 20px 18px',
-            position: 'relative', overflow: 'hidden', cursor: 'pointer'
-          }} onClick={() => openNav(primary)}>
-            {/* Círculo decorativo */}
-            <div style={{ position: 'absolute', top: -28, right: -28, width: 130, height: 130, borderRadius: '50%', background: 'rgba(255,255,255,0.06)', pointerEvents: 'none' }} />
-            {(() => {
-              const isToStore = primary.status === 'assigned';
-              const destName    = isToStore ? primary.store_name    : primary.customer_name;
-              const destAddr    = isToStore ? (primary.store_address || primary.store_name) : primary.customer_address;
-              const destLabel   = isToStore ? '🏪 Buscar na loja' : '📦 Entregar ao cliente';
-              const secondLabel = isToStore ? `👤 ${primary.customer_name}` : `🏪 ${primary.store_name}`;
-              return (
-                <>
-                  {/* Topo: label + valor no canto direito */}
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10 }}>
-                    <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.65)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1.2 }}>
-                      {destLabel}
-                    </div>
-                    <div style={{ textAlign: 'right', flexShrink: 0, marginLeft: 12 }}>
-                      <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.55)', marginBottom: 1 }}>Seu frete</div>
-                      <div style={{ fontSize: 20, fontWeight: 800, color: 'white', lineHeight: 1 }}>R$ {(primary.delivery_fee ?? 0).toFixed(2)}</div>
-                    </div>
-                  </div>
-                  {/* Linha 1 — destino principal (grande) */}
-                  <div style={{ fontSize: 22, fontWeight: 800, color: 'white', lineHeight: 1.2, marginBottom: 4 }}>
-                    {destName}
-                  </div>
-                  {/* Linha 2 — endereço do destino */}
-                  <div style={{ fontSize: 14, color: 'rgba(255,255,255,0.8)', marginBottom: 16, lineHeight: 1.4 }}>
-                    📍 {fmtAddr(destAddr)}
-                  </div>
-                  {/* Linha 3 — info secundária + status */}
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.65)' }}>{secondLabel}</div>
-                    <div style={{ fontSize: 12, fontWeight: 700, color: 'white', background: 'rgba(255,255,255,0.16)', padding: '4px 12px', borderRadius: 20 }}>
-                      {statusLabels[primary.status] || primary.status}
-                    </div>
-                  </div>
-                </>
-              );
-            })()}
-            {/* Botão Entregue + Navegar */}
-            <div style={{ marginTop: 14, display: 'flex', gap: 10, alignItems: 'center' }}>
-              {nextStatus[primary.status] && (
-                <button onClick={e => { e.stopPropagation(); updateStatus(primary.id); }}
-                  style={{
-                    flex: 1, height: 44,
-                    background: 'rgba(255,255,255,0.18)', color: 'white',
-                    border: '1.5px solid rgba(255,255,255,0.4)', borderRadius: 12,
-                    fontSize: 14, fontWeight: 700, cursor: 'pointer'
-                  }}>
-                  ✅ Entregue
-                </button>
-              )}
-              <div style={{ display: 'flex', alignItems: 'center', gap: 6, color: 'rgba(255,255,255,0.7)', fontSize: 12, fontWeight: 600, flexShrink: 0 }}>
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="rgba(255,255,255,0.7)">
-                  <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
-                </svg>
-                Navegar
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* ── Outras entregas ativas (se houver mais de 1) ── */}
-        {others.map(order => (
-          <div key={order.id} style={{
-            background: mb.card, borderRadius: 14, padding: '14px 16px',
-            border: `1px solid ${mb.accent}44`, cursor: 'pointer',
-            display: 'flex', justifyContent: 'space-between', alignItems: 'center'
-          }} onClick={() => openNav(order)}>
-            {(() => {
-              const toStore = !['picked_up', 'in_transit', 'arriving', 'delivered'].includes(order.status);
-              return (
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  {/* Linha 1 */}
-                  <div style={{ fontSize: 15, fontWeight: 700, color: mb.text, marginBottom: 3 }}>
-                    {toStore ? order.store_name : order.customer_name}
-                  </div>
-                  {/* Linha 2 */}
-                  <div style={{ fontSize: 12, color: mb.sub, marginBottom: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                    📍 {fmtAddr(toStore ? (order.store_address || order.store_name) : order.customer_address)}
-                  </div>
-                  {/* Linha 3 */}
-                  <div style={{ fontSize: 11, color: mb.sub }}>
-                    #{order.id.slice(-4)} · {toStore ? `👤 ${order.customer_name}` : `🏪 ${order.store_name}`}
-                  </div>
+        {/* ── Entregas ativas — cards compactos uniformes ── */}
+        {activeDeliveries.map(order => {
+          const toStore = !['picked_up', 'in_transit', 'arriving', 'delivered'].includes(order.status);
+          const destName = toStore ? order.store_name : order.customer_name;
+          const destAddr = toStore ? (order.store_address || order.store_name) : order.customer_address;
+          const destIcon = toStore ? '🏪' : '👤';
+          const canDeliver = !!nextStatus[order.status];
+          return (
+            <div key={order.id} style={{
+              background: mb.card, borderRadius: 14, padding: '13px 14px',
+              border: `1px solid ${mb.accent}55`, cursor: 'pointer'
+            }} onClick={() => openNav(order)}>
+              {/* Linha topo: destino + valor */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 3 }}>
+                <div style={{ fontSize: 15, fontWeight: 700, color: mb.text, flex: 1, minWidth: 0, marginRight: 10, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  {destIcon} {destName}
                 </div>
-              );
-            })()}
-            <div style={{ textAlign: 'right', flexShrink: 0, marginLeft: 12 }}>
-              <div style={{ fontSize: 16, fontWeight: 800, color: mb.accent }}>R$ {(order.delivery_fee ?? 0).toFixed(2)}</div>
-              <div style={{ fontSize: 11, color: mb.sub, marginTop: 3 }}>{statusLabels[order.status]}</div>
+                <div style={{ fontSize: 15, fontWeight: 800, color: mb.accent, flexShrink: 0 }}>
+                  R$ {(order.delivery_fee ?? 0).toFixed(2)}
+                </div>
+              </div>
+              {/* Linha endereço */}
+              <div style={{ fontSize: 12, color: mb.sub, marginBottom: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                📍 {fmtAddr(destAddr)}
+              </div>
+              {/* Linha info: ID + status badge */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 6 }}>
+                <div style={{ fontSize: 11, color: mb.sub }}>
+                  #{order.id.slice(-4)} · {toStore ? `👤 ${order.customer_name}` : `🏪 ${order.store_name}`}
+                </div>
+                <div style={{ fontSize: 11, fontWeight: 700, color: mb.accent, background: mb.accentLight, padding: '3px 9px', borderRadius: 20 }}>
+                  {statusLabels[order.status]}
+                </div>
+              </div>
+              {/* Ações: Entregue + Navegar */}
+              {canDeliver && (
+                <div style={{ display: 'flex', gap: 8, marginTop: 10 }}>
+                  <button onClick={e => { e.stopPropagation(); updateStatus(order.id); }}
+                    style={{
+                      flex: 1, height: 38,
+                      background: mb.accent, color: 'white',
+                      border: 'none', borderRadius: 10,
+                      fontSize: 13, fontWeight: 700, cursor: 'pointer'
+                    }}>
+                    ✅ Entregue
+                  </button>
+                  <button onClick={e => { e.stopPropagation(); openNav(order); }}
+                    style={{
+                      height: 38, padding: '0 14px',
+                      background: mb.accentLight, color: mb.accent,
+                      border: `1px solid ${mb.accent}44`, borderRadius: 10,
+                      fontSize: 13, fontWeight: 600, cursor: 'pointer'
+                    }}>
+                    🗺 Navegar
+                  </button>
+                </div>
+              )}
             </div>
-          </div>
-        ))}
+          );
+        })}
 
         {/* ── Aguardando (vinculado, sem pedido ativo) ── */}
         {isLinked && activeDeliveries.length === 0 && (
