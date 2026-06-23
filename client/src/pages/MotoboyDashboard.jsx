@@ -976,38 +976,6 @@ export default function MotoboyDashboard() {
     return (
       <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
 
-        {/* ── Status online/offline ── */}
-        <div style={{
-          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          background: online ? mb.greenBg : mb.card,
-          borderRadius: 14, padding: '14px 18px',
-          border: `1px solid ${online ? mb.greenBorder : mb.cardBorder}`
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-            <div style={{
-              width: 11, height: 11, borderRadius: '50%',
-              background: online ? mb.green : mb.sub,
-              boxShadow: online ? `0 0 0 3px ${mb.greenBorder}` : 'none'
-            }} />
-            <div>
-              <div style={{ fontSize: 15, fontWeight: 700, color: online ? mb.green : mb.sub }}>
-                {online ? 'Online · aceitando corridas' : 'Offline'}
-              </div>
-              <div style={{ fontSize: 11, color: mb.sub, marginTop: 1 }}>
-                {online ? 'Toque para pausar' : 'Toque para ativar'}
-              </div>
-            </div>
-          </div>
-          <div className="toggle-switch" onClick={() => {
-            if (online) { setOnline(false); return; }
-            if (!user?.cpf || !user?.pix_key) { setShowPaymentModal(true); return; }
-            setOnline(true); sendLocation();
-          }}>
-            <input type="checkbox" checked={online} readOnly />
-            <span className="toggle-slider" />
-          </div>
-        </div>
-
         {/* ── Label "Em andamento" ── */}
         {activeDeliveries.length > 0 && (
           <div style={{ fontSize: 12, fontWeight: 700, color: mb.sub, textTransform: 'uppercase', letterSpacing: 1.2, paddingLeft: 2 }}>
@@ -1399,8 +1367,17 @@ export default function MotoboyDashboard() {
           }} disabled={pwSaving}>{pwSaving ? 'Salvando...' : 'Alterar Senha'}</button>
         </div>
 
+        {/* Modo escuro */}
+        <div style={{ borderTop: '1px solid var(--border)', marginTop: 24, paddingTop: 16, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <span style={{ fontSize: 14, fontWeight: 600, color: mb.text }}>{darkMode ? '🌙 Modo escuro' : '☀️ Modo claro'}</span>
+          <div className="toggle-switch" onClick={toggleDark}>
+            <input type="checkbox" checked={darkMode} readOnly />
+            <span className="toggle-slider" />
+          </div>
+        </div>
+
         {/* Sair */}
-        <div style={{ borderTop: '1px solid var(--border)', marginTop: 24, paddingTop: 16 }}>
+        <div style={{ borderTop: '1px solid var(--border)', marginTop: 16, paddingTop: 16 }}>
           <button className="btn btn-outline" onClick={logout}
             style={{ width: '100%', color: '#C62828', borderColor: '#FFCDD2', fontWeight: 600 }}>
             🚪 Sair da Conta
@@ -1453,15 +1430,26 @@ export default function MotoboyDashboard() {
         <div className="header-left" style={{ gap: 10, overflow: 'visible' }}>
           <img src="/logo_placa.png" alt="Pé de Açaí" style={{ width: 58, height: 58, objectFit: 'contain', flexShrink: 0, transform: 'rotate(15deg)', alignSelf: 'flex-end', marginBottom: -4 }} />
         </div>
-        <div className="header-right" style={{ gap: 14 }}>
-          {/* Dark/light toggle */}
-          <button onClick={toggleDark}
-            style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 20, lineHeight: 1, padding: 2, opacity: 0.8 }}>
-            {darkMode ? '☀️' : '🌙'}
-          </button>
+        <div className="header-right" style={{ gap: 16 }}>
+          {/* Toggle online/offline compacto */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 7, cursor: 'pointer' }} onClick={() => {
+            if (online) { setOnline(false); return; }
+            if (!user?.cpf || !user?.pix_key) { setShowPaymentModal(true); return; }
+            setOnline(true); sendLocation();
+          }}>
+            <div style={{
+              width: 8, height: 8, borderRadius: '50%',
+              background: online ? '#4ADE80' : 'rgba(255,255,255,0.4)',
+              boxShadow: online ? '0 0 0 2px rgba(74,222,128,0.35)' : 'none',
+              flexShrink: 0
+            }} />
+            <span style={{ fontSize: 12, fontWeight: 700, color: online ? '#4ADE80' : 'rgba(255,255,255,0.5)', letterSpacing: 0.3 }}>
+              {online ? 'Online' : 'Offline'}
+            </span>
+          </div>
           {/* Sino de notificação */}
           <div style={{ position: 'relative', cursor: 'pointer', lineHeight: 1 }} onClick={() => setPageTab('pedidos')}>
-            <svg width="26" height="26" viewBox="0 0 24 24" fill="rgba(255,255,255,0.9)">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="rgba(255,255,255,0.85)">
               <path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/>
             </svg>
             {notifications.length > 0 && (
