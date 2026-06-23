@@ -675,9 +675,10 @@ export default function StoreDashboard() {
     setTimeout(() => setPayoutMsg(''), 4000);
   }
 
-  const unpaidOrders = orders.filter(o => o.payment_status !== 'paid');
-  const pendingOrders = orders.filter(o => o.payment_status === 'paid' && !['delivered','cancelled'].includes(o.status));
-  const paidOrders = orders.filter(o => o.payment_status === 'paid');
+  const effectiveOrders = orders.length === 0 ? DEMO_ORDERS : orders;
+  const unpaidOrders = effectiveOrders.filter(o => o.payment_status !== 'paid');
+  const pendingOrders = effectiveOrders.filter(o => o.payment_status === 'paid' && !['delivered','cancelled'].includes(o.status));
+  const paidOrders = effectiveOrders.filter(o => o.payment_status === 'paid');
 
   const now = Date.now();
   const staleUnpaid = unpaidOrders.filter(o => {
@@ -685,12 +686,11 @@ export default function StoreDashboard() {
     return (now - created) > 2 * 60 * 60 * 1000;
   });
 
-  const concludedOrders = orders.filter(o => ['delivered', 'cancelled'].includes(o.status));
-  const _realDisplay = orderFilter === 'pendentes' ? unpaidOrders.filter(o => {
-    const created = new Date(o.created_at).getTime();
-    return (now - created) <= 2 * 60 * 60 * 1000;
-  }) : orderFilter === 'ativos' ? pendingOrders : orderFilter === 'concluidos' ? concludedOrders : orders.filter(o => (Date.now() - new Date(o.created_at).getTime()) <= 4 * 60 * 60 * 1000);
-  const displayOrders = _realDisplay.length === 0 && orders.length === 0 ? DEMO_ORDERS : _realDisplay;
+  const concludedOrders = effectiveOrders.filter(o => ['delivered', 'cancelled'].includes(o.status));
+  const displayOrders = orderFilter === 'pendentes' ? unpaidOrders.filter(o => (now - new Date(o.created_at).getTime()) <= 2*60*60*1000)
+    : orderFilter === 'ativos' ? pendingOrders
+    : orderFilter === 'concluidos' ? concludedOrders
+    : effectiveOrders.filter(o => (Date.now() - new Date(o.created_at).getTime()) <= 24*60*60*1000);
 
   const pedidosPendentes = unpaidOrders.filter(o => (now - new Date(o.created_at).getTime()) <= 2*60*60*1000).length;
 
@@ -1452,8 +1452,8 @@ export default function StoreDashboard() {
   }
 
   function PainelView() {
-    const totalPedidosHoje = orders.filter(o => new Date(o.created_at).toDateString() === new Date().toDateString()).length;
-    const faturamentoHoje = orders.filter(o => o.payment_status === 'paid' && new Date(o.created_at).toDateString() === new Date().toDateString()).reduce((s, o) => s + o.total, 0);
+    const totalPedidosHoje = effectiveOrders.filter(o => new Date(o.created_at).toDateString() === new Date().toDateString()).length;
+    const faturamentoHoje = effectiveOrders.filter(o => o.payment_status === 'paid' && new Date(o.created_at).toDateString() === new Date().toDateString()).reduce((s, o) => s + o.total, 0);
     const totalProdutos = products.filter(p => p.active).length;
 
     const statusColors = {
