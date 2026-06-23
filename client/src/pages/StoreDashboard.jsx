@@ -91,6 +91,7 @@ export default function StoreDashboard() {
   const { user, store: storeData, apiFetch, logout, setStore } = useAuth();
   const { socket, joinStore, toast, setToast, notifications } = useSocket();
   const [orders, setOrders] = useState([]);
+  const [demoActive, setDemoActive] = useState(false);
   const [open, setOpen] = useState(true);
   const [loading, setLoading] = useState(true);
   const [view, setView] = useState('painel');
@@ -284,10 +285,7 @@ export default function StoreDashboard() {
 
   async function loadOrders() {
     const data = await apiFetch('/orders');
-    const real = data.data || [];
-    const todayStr = new Date().toDateString();
-    const hasToday = real.some(o => new Date(o.created_at).toDateString() === todayStr);
-    setOrders(hasToday ? real : [...DEMO_ORDERS, ...real]);
+    if (data.data) setOrders(data.data);
     setLoading(false);
   }
 
@@ -678,9 +676,10 @@ export default function StoreDashboard() {
     setTimeout(() => setPayoutMsg(''), 4000);
   }
 
-  const unpaidOrders = orders.filter(o => o.payment_status !== 'paid');
-  const pendingOrders = orders.filter(o => o.payment_status === 'paid' && !['delivered','cancelled'].includes(o.status));
-  const paidOrders = orders.filter(o => o.payment_status === 'paid');
+  const activeOrders = demoActive ? DEMO_ORDERS : orders;
+  const unpaidOrders = activeOrders.filter(o => o.payment_status !== 'paid');
+  const pendingOrders = activeOrders.filter(o => o.payment_status === 'paid' && !['delivered','cancelled'].includes(o.status));
+  const paidOrders = activeOrders.filter(o => o.payment_status === 'paid');
 
   const now = Date.now();
   const staleUnpaid = unpaidOrders.filter(o => {
@@ -688,11 +687,11 @@ export default function StoreDashboard() {
     return (now - created) > 2 * 60 * 60 * 1000;
   });
 
-  const concludedOrders = orders.filter(o => ['delivered', 'cancelled'].includes(o.status));
+  const concludedOrders = activeOrders.filter(o => ['delivered', 'cancelled'].includes(o.status));
   const displayOrders = orderFilter === 'pendentes' ? unpaidOrders.filter(o => (now - new Date(o.created_at).getTime()) <= 2*60*60*1000)
     : orderFilter === 'ativos' ? pendingOrders
     : orderFilter === 'concluidos' ? concludedOrders
-    : orders.filter(o => (Date.now() - new Date(o.created_at).getTime()) <= 24*60*60*1000);
+    : activeOrders.filter(o => (Date.now() - new Date(o.created_at).getTime()) <= 24*60*60*1000);
 
   const pedidosPendentes = unpaidOrders.filter(o => (now - new Date(o.created_at).getTime()) <= 2*60*60*1000).length;
 
@@ -1454,8 +1453,8 @@ export default function StoreDashboard() {
   }
 
   function PainelView() {
-    const totalPedidosHoje = orders.filter(o => new Date(o.created_at).toDateString() === new Date().toDateString()).length;
-    const faturamentoHoje = orders.filter(o => o.payment_status === 'paid' && new Date(o.created_at).toDateString() === new Date().toDateString()).reduce((s, o) => s + o.total, 0);
+    const totalPedidosHoje = activeOrders.filter(o => new Date(o.created_at).toDateString() === new Date().toDateString()).length;
+    const faturamentoHoje = activeOrders.filter(o => o.payment_status === 'paid' && new Date(o.created_at).toDateString() === new Date().toDateString()).reduce((s, o) => s + o.total, 0);
     const totalProdutos = products.filter(p => p.active).length;
 
     const statusColors = {
@@ -2046,6 +2045,9 @@ export default function StoreDashboard() {
                   <div style={{ display: 'flex', alignItems: 'center', gap: 5, cursor: 'pointer', padding: '3px 8px', borderRadius: 20, background: open ? '#E8F5E9' : '#F5F5F5', border: `1px solid ${open ? '#A8D5B5' : '#DDD'}` }} onClick={toggleOpen}>
                     <div style={{ width: 7, height: 7, borderRadius: '50%', background: open ? '#1B8A3A' : '#9E9E9E', boxShadow: open ? '0 0 0 2px rgba(27,138,58,0.25)' : 'none', flexShrink: 0 }} />
                     <span style={{ fontSize: 11, fontWeight: 700, color: open ? '#1B8A3A' : '#9E9E9E', letterSpacing: 0.2 }}>{open ? 'Aberta' : 'Fechada'}</span>
+                  </div>
+                  <div style={{ cursor: 'pointer', padding: '3px 8px', borderRadius: 20, background: demoActive ? '#E8EAF6' : '#F5F5F5', border: `1px solid ${demoActive ? '#9FA8DA' : '#DDD'}`, fontSize: 11, fontWeight: 700, color: demoActive ? '#3949AB' : '#9E9E9E' }} onClick={() => setDemoActive(d => !d)}>
+                    {demoActive ? '📊 Demo ON' : '📊 Demo'}
                   </div>
                 </div>
               </div>
