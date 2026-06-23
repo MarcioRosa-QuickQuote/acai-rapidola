@@ -2109,12 +2109,6 @@ export default function StoreDashboard() {
                 </div>
               </div>
               <div className="header-right" style={{ gap: 8 }}>
-                <select value={dashLayout} onChange={e => setDashLayout(e.target.value)}
-                  style={{ border: '1.5px solid #E1BEE7', borderRadius: 8, padding: '5px 8px', fontSize: 12, color: '#6A1B9A', fontWeight: 700, background: 'white', cursor: 'pointer', outline: 'none' }}>
-                  <option value="kanban">⊞ Kanban</option>
-                  <option value="fila">⊟ Fila</option>
-                  <option value="linha">▤ Compacto</option>
-                </select>
                 <div style={{ position: 'relative', cursor: 'pointer' }}
                   onClick={() => { setView('perfil'); setPerfilTab('mensagens'); }}>
                   {unreadMessages > 0 && (
