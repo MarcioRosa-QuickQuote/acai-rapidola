@@ -121,7 +121,7 @@ export default function StoreDashboard() {
   const [view, setView] = useState('painel');
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [showMapForOrder, setShowMapForOrder] = useState(null);
-  const [settings, setSettings] = useState({ name: '', logo: '', address: '', lat: '', lng: '', pix_key: localStorage.getItem('store_pix_key') || '', cpf_cnpj: '' });
+  const [settings, setSettings] = useState({ name: '', logo: '', address: '', lat: '', lng: '', pix_key: localStorage.getItem('store_pix_key') || '', cpf_cnpj: localStorage.getItem('store_cpf_cnpj') || '' });
   const [saveMsg, setSaveMsg] = useState('');
   const [mapCenter, setMapCenter] = useState([-23.5505, -46.6333]);
   const [geocoding, setGeocoding] = useState(false);
@@ -221,7 +221,7 @@ export default function StoreDashboard() {
         lat: String(storeData.lat),
         lng: String(storeData.lng),
         pix_key: storeData.pix_key || localStorage.getItem('store_pix_key') || '',
-        cpf_cnpj: storeData.cpf_cnpj || ''
+        cpf_cnpj: storeData.cpf_cnpj || localStorage.getItem('store_cpf_cnpj') || ''
       });
       setMapCenter([storeData.lat, storeData.lng]);
     }
@@ -373,6 +373,10 @@ export default function StoreDashboard() {
 
   async function saveSettings() {
     if (!storeData) return;
+    if (!settings.pix_key.trim()) {
+      setSaveMsg('⚠️ Cadastre sua chave PIX para receber pagamentos.');
+      return;
+    }
     setSaveMsg('');
     setUploading(true);
 
@@ -390,7 +394,8 @@ export default function StoreDashboard() {
     });
     if (!data.error) {
       localStorage.setItem('store_pix_key', settings.pix_key);
-      if (data.id) setStore(data);
+      localStorage.setItem('store_cpf_cnpj', settings.cpf_cnpj);
+      if (data.id) setStore({ ...data, cpf_cnpj: settings.cpf_cnpj });
       setSaveMsg('Configurações salvas!');
       setTimeout(() => setSaveMsg(''), 3000);
     }
@@ -740,6 +745,15 @@ export default function StoreDashboard() {
     return (
       <div>
         <div className="page-title" style={{ fontSize: 20 }}>Financeiro</div>
+        {!storeData?.pix_key && (
+          <div style={{ background: '#FFF3E0', border: '1px solid #FFB300', borderRadius: 10, padding: '12px 14px', marginBottom: 14, display: 'flex', alignItems: 'flex-start', gap: 10 }}>
+            <span style={{ fontSize: 20 }}>⚠️</span>
+            <div>
+              <div style={{ fontSize: 13, fontWeight: 700, color: '#E65100' }}>Chave PIX não cadastrada</div>
+              <div style={{ fontSize: 12, color: '#BF360C', marginTop: 2 }}>Você não está recebendo os pagamentos. Acesse <b>Perfil → Configurações</b> e cadastre sua chave PIX.</div>
+            </div>
+          </div>
+        )}
         <div className="flex-row" style={{ marginBottom: 12, gap: 8 }}>
           <select className="input" value={finPeriod} onChange={e => setFinPeriod(e.target.value)}
             style={{ width: 'auto', flexShrink: 0, fontSize: 13, padding: '8px 12px' }}>
@@ -773,12 +787,12 @@ export default function StoreDashboard() {
           </div>
         </div>
 
-        {(demoActive ? true : earnings.store.pending > 0) && (
+        {earnings.store.pending > 0 && (
           <div className="card" style={{ background: '#FFF8E1', border: '1px solid #FFE082', marginBottom: 16 }}>
             <div className="flex-between">
               <div>
                 <div style={{ fontSize: 13, fontWeight: 600, color: '#E65100' }}>💵 A receber via PIX</div>
-                <div style={{ fontSize: 20, fontWeight: 800, color: '#BF360C' }}>R$ {demoActive ? '312,00' : earnings.store.pending.toFixed(2)}</div>
+                <div style={{ fontSize: 20, fontWeight: 800, color: '#BF360C' }}>R$ {earnings.store.pending.toFixed(2)}</div>
               </div>
               <button className="btn btn-sm btn-accent" onClick={doPayout} style={{ width: 'auto' }}>
                 Sacar
@@ -1139,10 +1153,19 @@ export default function StoreDashboard() {
               placeholder="000.000.000-00 ou 00.000.000/0000-00" />
           </div>
           <div className="form-group">
-            <label className="label">Chave PIX</label>
+            <label className="label" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+              Chave PIX
+              <span style={{ fontSize: 11, fontWeight: 700, color: '#fff', background: '#E53935', borderRadius: 4, padding: '1px 5px' }}>Obrigatório</span>
+            </label>
             <input className="input" type="text" value={settings.pix_key}
               onChange={e => setSettings(s => ({ ...s, pix_key: e.target.value }))}
-              placeholder="CPF, telefone, e-mail ou chave aleatória" />
+              placeholder="CPF, telefone, e-mail ou chave aleatória"
+              style={!settings.pix_key.trim() ? { borderColor: '#E53935', background: '#FFF8F8' } : {}} />
+            {!settings.pix_key.trim() && (
+              <div style={{ fontSize: 11, color: '#E53935', marginTop: 4 }}>
+                Sem chave PIX você não conseguirá receber os pagamentos.
+              </div>
+            )}
           </div>
           <div className="form-group">
             <label className="label">Logo da Loja</label>
