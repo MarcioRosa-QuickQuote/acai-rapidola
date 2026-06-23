@@ -244,18 +244,26 @@ router.post('/optimize-route', authMiddleware, roleMiddleware('motoboy'), async 
 });
 
 router.patch('/profile', authMiddleware, roleMiddleware('motoboy'), async (req, res) => {
-  const { pix_key, name, email, cpf, vehicle_type, whatsapp } = req.body;
+  const { pix_key, email, vehicle_type, whatsapp } = req.body;
   const update = {};
   if (pix_key !== undefined) update.pix_key = pix_key;
-  if (name !== undefined) update.name = name;
   if (email !== undefined) update.email = email;
-  if (cpf !== undefined) update.cpf = cpf;
-  if (vehicle_type !== undefined) update.vehicle_type = vehicle_type;
   if (whatsapp !== undefined) update.whatsapp = whatsapp;
+
+  if (vehicle_type !== undefined) {
+    const { data: current } = await supabase.from('users').select('vehicle_type').eq('id', req.user.id).single();
+    update.vehicle_type = vehicle_type;
+    if (current?.vehicle_type && current.vehicle_type !== vehicle_type) {
+      update.approval_status = 'pending';
+      update.rejection_reason = null;
+    }
+  }
+
   try {
     const { error } = await supabase.from('users').update(update).eq('id', req.user.id);
     if (error) throw error;
-    res.json({ ok: true });
+    const plateChanged = update.approval_status === 'pending';
+    res.json({ ok: true, plateChanged });
   } catch (err) {
     console.error('[Motoboy] Erro ao salvar perfil:', err?.message || err);
     res.status(500).json({ error: 'Erro ao salvar perfil' });

@@ -1288,15 +1288,24 @@ export default function MotoboyDashboard() {
         </div>
         <div className="form-group">
           <label className="label">Nome</label>
-          <input className="input" type="text" value={editName || user?.name || ''}
-            onChange={e => setEditName(e.target.value)} placeholder="Seu nome" />
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 12px', background: mb.bg, borderRadius: 8, border: `1px solid ${mb.border}` }}>
+            <span style={{ flex: 1, fontWeight: 600, color: mb.text }}>{user?.name || '—'}</span>
+            <span style={{ fontSize: 11, color: mb.sub }}>🔒 não editável</span>
+          </div>
+        </div>
+        <div className="form-group">
+          <label className="label">CPF</label>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 12px', background: mb.bg, borderRadius: 8, border: `1px solid ${mb.border}` }}>
+            <span style={{ flex: 1, fontWeight: 600, color: mb.text }}>{user?.cpf ? maskCpf(user.cpf) : '—'}</span>
+            <span style={{ fontSize: 11, color: mb.sub }}>🔒 não editável</span>
+          </div>
         </div>
         <div className="form-group">
           <label className="label" style={{ textTransform: 'none' }}>E-mail (usado para trocar a senha quando esquecer)</label>
           <input className="input" type="email" value={editEmail || user?.email || ''}
             onChange={e => setEditEmail(e.target.value)} placeholder="seu@email.com" />
         </div>
-        <div className="form-group"><label className="label">Telefone</label><div style={{ fontWeight: 600 }}>{user?.phone}</div></div>
+        <div className="form-group"><label className="label">Telefone</label><div style={{ fontWeight: 600, color: mb.text }}>{user?.phone}</div></div>
         <div className="form-group">
           <label className="label">WhatsApp</label>
           <input className="input" type="tel" value={editWhatsapp}
@@ -1304,14 +1313,14 @@ export default function MotoboyDashboard() {
             placeholder="(99) 99999-9999" />
         </div>
         <div className="form-group">
-          <label className="label">CPF</label>
-          <input className="input" type="text" value={editCpf}
-            onChange={e => setEditCpf(maskCpf(e.target.value))} placeholder="000.000.000-00" maxLength={14} />
-        </div>
-        <div className="form-group">
           <label className="label">Placa da moto</label>
           <input className="input" type="text" value={editPlate}
             onChange={e => setEditPlate(e.target.value.toUpperCase().slice(0, 8))} placeholder="ABC-1234" />
+          {editPlate && editPlate !== (user?.vehicle_type || '') && (
+            <div style={{ fontSize: 11, color: '#E65100', marginTop: 4 }}>
+              ⚠️ Ao salvar, sua conta ficará em análise até a nova placa ser aprovada.
+            </div>
+          )}
         </div>
         <div className="form-group">
           <label className="label">Chave PIX</label>
@@ -1325,14 +1334,15 @@ export default function MotoboyDashboard() {
           try {
             localStorage.setItem('motoboy_pix_key', pixKey);
             const body = { pix_key: pixKey };
-            if (editName) body.name = editName;
             if (editEmail) body.email = editEmail;
-            if (editCpf.replace(/\D/g, '').length === 11) body.cpf = editCpf;
             if (editPlate) body.vehicle_type = editPlate;
             if (editWhatsapp) body.whatsapp = editWhatsapp;
             const res = await apiFetch('/motoboy/profile', { method: 'PATCH', body: JSON.stringify(body) });
-            setPixMsg(res.ok ? 'Salvo com sucesso!' : (res.error || 'Erro ao salvar'));
-            if (res.ok && editName) { user.name = editName; window.location.reload(); }
+            if (res.ok) {
+              setPixMsg(res.plateChanged ? 'Placa atualizada — aguarde nova aprovação.' : 'Salvo com sucesso!');
+            } else {
+              setPixMsg(res.error || 'Erro ao salvar');
+            }
           } catch { localStorage.setItem('motoboy_pix_key', pixKey); setPixMsg('Salvo localmente!'); }
           setPixSaving(false);
           setTimeout(() => setPixMsg(''), 4000);
