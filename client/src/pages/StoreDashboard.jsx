@@ -675,7 +675,9 @@ export default function StoreDashboard() {
     setTimeout(() => setPayoutMsg(''), 4000);
   }
 
-  const effectiveOrders = orders.length === 0 ? DEMO_ORDERS : orders;
+  const todayStr = new Date().toDateString();
+  const hasRealOrdersToday = orders.some(o => new Date(o.created_at).toDateString() === todayStr);
+  const effectiveOrders = hasRealOrdersToday ? orders : DEMO_ORDERS;
   const unpaidOrders = effectiveOrders.filter(o => o.payment_status !== 'paid');
   const pendingOrders = effectiveOrders.filter(o => o.payment_status === 'paid' && !['delivered','cancelled'].includes(o.status));
   const paidOrders = effectiveOrders.filter(o => o.payment_status === 'paid');
