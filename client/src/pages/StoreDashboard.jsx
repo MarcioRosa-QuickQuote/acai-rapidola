@@ -81,10 +81,34 @@ function getAction(order) {
 }
 
 const DEMO_ORDERS = [
-  { id: 'demo-0001-aaaa-bbbb', customer_name: 'Ana Lima', status: 'confirmed', payment_status: 'paid', total: 32.00, delivery_fee: 5.00, customer_address: 'Av. Nazaré, 1200 - Nazaré, Belém', created_at: new Date(Date.now() - 4 * 60000).toISOString(), order_items: [{ quantity: 1, unit_price: 27.00, products: { name: 'Açaí 1L' } }] },
-  { id: 'demo-0002-cccc-dddd', customer_name: 'Carlos Mendes', status: 'preparing', payment_status: 'paid', total: 48.00, delivery_fee: 5.00, customer_address: 'Tv. Mauriti, 340 - Umarizal, Belém', created_at: new Date(Date.now() - 11 * 60000).toISOString(), order_items: [{ quantity: 2, unit_price: 21.50, products: { name: 'Açaí 500ml' } }] },
-  { id: 'demo-0003-eeee-ffff', customer_name: 'Fernanda Costa', status: 'ready', payment_status: 'paid', total: 55.00, delivery_fee: 6.00, customer_address: 'Rua dos Mundurucus, 720 - Batista Campos', created_at: new Date(Date.now() - 18 * 60000).toISOString(), motoboy_id: 'mb-demo', motoboy_name: 'João Silva', order_items: [{ quantity: 1, unit_price: 49.00, products: { name: 'Açaí 2L' } }] },
-  { id: 'demo-0004-gggg-hhhh', customer_name: 'Rafael Souza', status: 'picked_up', payment_status: 'paid', total: 39.00, delivery_fee: 5.00, customer_address: 'Passagem Marques, 18 - Marco, Belém', created_at: new Date(Date.now() - 25 * 60000).toISOString(), motoboy_name: 'Pedro Nunes', order_items: [{ quantity: 1, unit_price: 34.00, products: { name: 'Açaí 1L Especial' } }] },
+  { id: 'demo-0001-aaaa-bbbb', customer_name: 'Ana Lima',      status: 'confirmed',  payment_status: 'paid', total: 32.00, delivery_fee: 5.00, customer_address: 'Av. Nazaré, 1200 - Nazaré, Belém',            created_at: new Date(Date.now() - 4  * 60000).toISOString(), order_items: [{ quantity: 1, unit_price: 27.00, products: { name: 'Açaí 1L' } }] },
+  { id: 'demo-0002-cccc-dddd', customer_name: 'Carlos Mendes', status: 'preparing',  payment_status: 'paid', total: 48.00, delivery_fee: 5.00, customer_address: 'Tv. Mauriti, 340 - Umarizal, Belém',          created_at: new Date(Date.now() - 11 * 60000).toISOString(), order_items: [{ quantity: 2, unit_price: 21.50, products: { name: 'Açaí 500ml' } }] },
+  { id: 'demo-0003-eeee-ffff', customer_name: 'Fernanda Costa',status: 'ready',      payment_status: 'paid', total: 55.00, delivery_fee: 6.00, customer_address: 'Rua dos Mundurucus, 720 - Batista Campos',    created_at: new Date(Date.now() - 18 * 60000).toISOString(), motoboy_name: 'João Silva', order_items: [{ quantity: 1, unit_price: 49.00, products: { name: 'Açaí 2L' } }] },
+  { id: 'demo-0004-gggg-hhhh', customer_name: 'Rafael Souza',  status: 'picked_up', payment_status: 'paid', total: 39.00, delivery_fee: 5.00, customer_address: 'Passagem Marques, 18 - Marco, Belém',         created_at: new Date(Date.now() - 25 * 60000).toISOString(), motoboy_name: 'Pedro Nunes', order_items: [{ quantity: 1, unit_price: 34.00, products: { name: 'Açaí 1L Especial' } }] },
+];
+
+function d(day, hour = 12) { return new Date(2026, 5, day, hour, 0, 0).toISOString(); }
+const DEMO_FIN_ORDERS = [
+  { id: 'fin-01', customer_name: 'Mariana Dias',    status: 'delivered', payment_status: 'paid', total: 54.00, delivery_fee: 5.00, customer_address: 'Av. Nazaré, 780', created_at: d(1,11),  order_items: [{ quantity: 2, unit_price: 24.50, products: { name: 'Açaí 500ml' } }] },
+  { id: 'fin-02', customer_name: 'Lucas Ferreira',  status: 'delivered', payment_status: 'paid', total: 38.00, delivery_fee: 5.00, customer_address: 'Rua Boaventura, 14', created_at: d(2,13), order_items: [{ quantity: 1, unit_price: 33.00, products: { name: 'Açaí 1L' } }] },
+  { id: 'fin-03', customer_name: 'Camila Rocha',    status: 'delivered', payment_status: 'paid', total: 62.00, delivery_fee: 6.00, customer_address: 'Tv. Mauriti, 210',  created_at: d(3,12),  order_items: [{ quantity: 1, unit_price: 56.00, products: { name: 'Açaí 2L' } }] },
+  { id: 'fin-04', customer_name: 'João Neto',       status: 'delivered', payment_status: 'paid', total: 33.00, delivery_fee: 5.00, customer_address: 'Av. Almirante, 55', created_at: d(4,10),  order_items: [{ quantity: 1, unit_price: 28.00, products: { name: 'Açaí 1L' } }] },
+  { id: 'fin-05', customer_name: 'Tatiane Alves',   status: 'delivered', payment_status: 'paid', total: 47.00, delivery_fee: 5.00, customer_address: 'Rua Padre Eutíquio, 88', created_at: d(5,14), order_items: [{ quantity: 2, unit_price: 21.00, products: { name: 'Açaí 500ml' } }] },
+  { id: 'fin-06', customer_name: 'Paulo Carvalho',  status: 'delivered', payment_status: 'paid', total: 71.00, delivery_fee: 6.00, customer_address: 'Av. Visconde, 300', created_at: d(7,11),  order_items: [{ quantity: 1, unit_price: 65.00, products: { name: 'Açaí 3L' } }] },
+  { id: 'fin-07', customer_name: 'Aline Gomes',     status: 'delivered', payment_status: 'paid', total: 42.00, delivery_fee: 5.00, customer_address: 'Tv. 14 de Março, 67', created_at: d(8,13), order_items: [{ quantity: 1, unit_price: 37.00, products: { name: 'Açaí 1L' } }] },
+  { id: 'fin-08', customer_name: 'Bruno Monteiro',  status: 'delivered', payment_status: 'paid', total: 58.00, delivery_fee: 6.00, customer_address: 'Rua Municipalidade, 120', created_at: d(9,12), order_items: [{ quantity: 1, unit_price: 52.00, products: { name: 'Açaí 2L' } }] },
+  { id: 'fin-09', customer_name: 'Larissa Pinto',   status: 'delivered', payment_status: 'paid', total: 36.00, delivery_fee: 5.00, customer_address: 'Av. Gentil Bittencourt, 45', created_at: d(10,10), order_items: [{ quantity: 1, unit_price: 31.00, products: { name: 'Açaí 1L' } }] },
+  { id: 'fin-10', customer_name: 'Rodrigo Santos',  status: 'delivered', payment_status: 'paid', total: 49.00, delivery_fee: 5.00, customer_address: 'Rua Jerônimo Pimentel, 88', created_at: d(11,14), order_items: [{ quantity: 2, unit_price: 22.00, products: { name: 'Açaí 500ml' } }] },
+  { id: 'fin-11', customer_name: 'Vanessa Lima',    status: 'delivered', payment_status: 'paid', total: 65.00, delivery_fee: 6.00, customer_address: 'Av. Magalhães Barata, 200', created_at: d(12,11), order_items: [{ quantity: 1, unit_price: 59.00, products: { name: 'Açaí 2L' } }] },
+  { id: 'fin-12', customer_name: 'Felipe Araújo',   status: 'delivered', payment_status: 'paid', total: 44.00, delivery_fee: 5.00, customer_address: 'Rua dos Mundurucus, 512', created_at: d(14,13), order_items: [{ quantity: 1, unit_price: 39.00, products: { name: 'Açaí 1L' } }] },
+  { id: 'fin-13', customer_name: 'Natália Castro',  status: 'delivered', payment_status: 'paid', total: 53.00, delivery_fee: 5.00, customer_address: 'Av. Nazaré, 640', created_at: d(15,12), order_items: [{ quantity: 2, unit_price: 24.00, products: { name: 'Açaí 500ml' } }] },
+  { id: 'fin-14', customer_name: 'Thiago Barbosa',  status: 'delivered', payment_status: 'paid', total: 76.00, delivery_fee: 6.00, customer_address: 'Rua Bernal do Couto, 33', created_at: d(16,10), order_items: [{ quantity: 1, unit_price: 70.00, products: { name: 'Açaí 3L' } }] },
+  { id: 'fin-15', customer_name: 'Priscila Moura',  status: 'delivered', payment_status: 'paid', total: 40.00, delivery_fee: 5.00, customer_address: 'Tv. 9 de Janeiro, 77', created_at: d(17,14), order_items: [{ quantity: 1, unit_price: 35.00, products: { name: 'Açaí 1L' } }] },
+  { id: 'fin-16', customer_name: 'Eduardo Cunha',   status: 'delivered', payment_status: 'paid', total: 61.00, delivery_fee: 6.00, customer_address: 'Av. Brás de Aguiar, 180', created_at: d(18,11), order_items: [{ quantity: 1, unit_price: 55.00, products: { name: 'Açaí 2L' } }] },
+  { id: 'fin-17', customer_name: 'Débora Freitas',  status: 'delivered', payment_status: 'paid', total: 37.00, delivery_fee: 5.00, customer_address: 'Rua Siqueira Mendes, 22', created_at: d(19,13), order_items: [{ quantity: 1, unit_price: 32.00, products: { name: 'Açaí 1L' } }] },
+  { id: 'fin-18', customer_name: 'Gabriel Costa',   status: 'delivered', payment_status: 'paid', total: 52.00, delivery_fee: 5.00, customer_address: 'Av. 16 de Novembro, 290', created_at: d(20,12), order_items: [{ quantity: 2, unit_price: 23.50, products: { name: 'Açaí 500ml' } }] },
+  { id: 'fin-19', customer_name: 'Isabela Torres',  status: 'delivered', payment_status: 'paid', total: 68.00, delivery_fee: 6.00, customer_address: 'Rua Aristides Lobo, 55', created_at: d(21,10), order_items: [{ quantity: 1, unit_price: 62.00, products: { name: 'Açaí 2L' } }] },
+  { id: 'fin-20', customer_name: 'Marcos Vieira',   status: 'delivered', payment_status: 'paid', total: 45.00, delivery_fee: 5.00, customer_address: 'Tv. Mauriti, 410', created_at: d(22,11), order_items: [{ quantity: 1, unit_price: 40.00, products: { name: 'Açaí 1L' } }] },
 ];
 
 export default function StoreDashboard() {
@@ -676,7 +700,7 @@ export default function StoreDashboard() {
     setTimeout(() => setPayoutMsg(''), 4000);
   }
 
-  const activeOrders = demoActive ? DEMO_ORDERS : orders;
+  const activeOrders = demoActive ? [...DEMO_ORDERS, ...DEMO_FIN_ORDERS] : orders;
   const unpaidOrders = activeOrders.filter(o => o.payment_status !== 'paid');
   const pendingOrders = activeOrders.filter(o => o.payment_status === 'paid' && !['delivered','cancelled'].includes(o.status));
   const paidOrders = activeOrders.filter(o => o.payment_status === 'paid');
@@ -697,7 +721,8 @@ export default function StoreDashboard() {
 
   function FinanceiroTab() {
     const now = new Date();
-    const filteredOrders = orders.filter(o => {
+    const finOrders = demoActive ? activeOrders : orders;
+    const filteredOrders = finOrders.filter(o => {
       if (o.payment_status !== 'paid') return false;
       const d = new Date(o.created_at);
       if (finPeriod === 'hoje') return d.toDateString() === now.toDateString();
@@ -748,12 +773,12 @@ export default function StoreDashboard() {
           </div>
         </div>
 
-        {earnings.store.pending > 0 && (
+        {(demoActive ? true : earnings.store.pending > 0) && (
           <div className="card" style={{ background: '#FFF8E1', border: '1px solid #FFE082', marginBottom: 16 }}>
             <div className="flex-between">
               <div>
                 <div style={{ fontSize: 13, fontWeight: 600, color: '#E65100' }}>💵 A receber via PIX</div>
-                <div style={{ fontSize: 20, fontWeight: 800, color: '#BF360C' }}>R$ {earnings.store.pending.toFixed(2)}</div>
+                <div style={{ fontSize: 20, fontWeight: 800, color: '#BF360C' }}>R$ {demoActive ? '312,00' : earnings.store.pending.toFixed(2)}</div>
               </div>
               <button className="btn btn-sm btn-accent" onClick={doPayout} style={{ width: 'auto' }}>
                 Sacar
