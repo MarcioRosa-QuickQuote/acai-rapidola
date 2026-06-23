@@ -53,8 +53,8 @@ L.Icon.Default.mergeOptions({
 
 const statusLabels = {
   pending: 'Aguardando pgto', confirmed: 'Aguardando preparo', preparing: 'Preparando',
-  ready: 'Pronto — aguarda entregador', assigned: 'Entregador a caminho',
-  picked_up: 'Saiu pra entrega', in_transit: 'Saiu pra entrega', arriving: 'Chegando!',
+  ready: 'Aguardando Entregador', assigned: 'Entregador a caminho',
+  picked_up: 'Saiu pra entrega', in_transit: 'Saiu pra entrega', arriving: 'Saiu pra entrega',
   delivered: 'Entregue', cancelled: 'Cancelado'
 };
 
