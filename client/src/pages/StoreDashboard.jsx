@@ -80,6 +80,13 @@ function getAction(order) {
   return a;
 }
 
+const DEMO_ORDERS = [
+  { id: 'demo-0001-aaaa-bbbb', customer_name: 'Ana Lima', status: 'confirmed', payment_status: 'paid', total: 32.00, delivery_fee: 5.00, customer_address: 'Av. Nazaré, 1200 - Nazaré, Belém', created_at: new Date(Date.now() - 4 * 60000).toISOString(), order_items: [{ quantity: 1, unit_price: 27.00, products: { name: 'Açaí 1L' } }] },
+  { id: 'demo-0002-cccc-dddd', customer_name: 'Carlos Mendes', status: 'preparing', payment_status: 'paid', total: 48.00, delivery_fee: 5.00, customer_address: 'Tv. Mauriti, 340 - Umarizal, Belém', created_at: new Date(Date.now() - 11 * 60000).toISOString(), order_items: [{ quantity: 2, unit_price: 21.50, products: { name: 'Açaí 500ml' } }] },
+  { id: 'demo-0003-eeee-ffff', customer_name: 'Fernanda Costa', status: 'ready', payment_status: 'paid', total: 55.00, delivery_fee: 6.00, customer_address: 'Rua dos Mundurucus, 720 - Batista Campos', created_at: new Date(Date.now() - 18 * 60000).toISOString(), motoboy_id: 'mb-demo', motoboy_name: 'João Silva', order_items: [{ quantity: 1, unit_price: 49.00, products: { name: 'Açaí 2L' } }] },
+  { id: 'demo-0004-gggg-hhhh', customer_name: 'Rafael Souza', status: 'picked_up', payment_status: 'paid', total: 39.00, delivery_fee: 5.00, customer_address: 'Passagem Marques, 18 - Marco, Belém', created_at: new Date(Date.now() - 25 * 60000).toISOString(), motoboy_name: 'Pedro Nunes', order_items: [{ quantity: 1, unit_price: 34.00, products: { name: 'Açaí 1L Especial' } }] },
+];
+
 export default function StoreDashboard() {
   const { user, store: storeData, apiFetch, logout, setStore } = useAuth();
   const { socket, joinStore, toast, setToast, notifications } = useSocket();
@@ -679,10 +686,11 @@ export default function StoreDashboard() {
   });
 
   const concludedOrders = orders.filter(o => ['delivered', 'cancelled'].includes(o.status));
-  const displayOrders = orderFilter === 'pendentes' ? unpaidOrders.filter(o => {
+  const _realDisplay = orderFilter === 'pendentes' ? unpaidOrders.filter(o => {
     const created = new Date(o.created_at).getTime();
     return (now - created) <= 2 * 60 * 60 * 1000;
   }) : orderFilter === 'ativos' ? pendingOrders : orderFilter === 'concluidos' ? concludedOrders : orders.filter(o => (Date.now() - new Date(o.created_at).getTime()) <= 4 * 60 * 60 * 1000);
+  const displayOrders = _realDisplay.length === 0 && orders.length === 0 ? DEMO_ORDERS : _realDisplay;
 
   const pedidosPendentes = unpaidOrders.filter(o => (now - new Date(o.created_at).getTime()) <= 2*60*60*1000).length;
 
@@ -2033,9 +2041,9 @@ export default function StoreDashboard() {
                   <span style={{ fontSize: 15, fontWeight: 800, color: '#1a1a1a', maxWidth: 130, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                     {storeData?.name || 'Loja'}
                   </span>
-                  <div className="toggle-switch" onClick={toggleOpen} title={open ? 'Fechar loja' : 'Abrir loja'} style={{ transform: 'scale(0.75)', transformOrigin: 'center' }}>
-                    <input type="checkbox" checked={open} readOnly />
-                    <span className="toggle-slider" />
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 5, cursor: 'pointer', padding: '3px 8px', borderRadius: 20, background: open ? '#E8F5E9' : '#F5F5F5', border: `1px solid ${open ? '#A8D5B5' : '#DDD'}` }} onClick={toggleOpen}>
+                    <div style={{ width: 7, height: 7, borderRadius: '50%', background: open ? '#1B8A3A' : '#9E9E9E', boxShadow: open ? '0 0 0 2px rgba(27,138,58,0.25)' : 'none', flexShrink: 0 }} />
+                    <span style={{ fontSize: 11, fontWeight: 700, color: open ? '#1B8A3A' : '#9E9E9E', letterSpacing: 0.2 }}>{open ? 'Aberta' : 'Fechada'}</span>
                   </div>
                 </div>
               </div>
