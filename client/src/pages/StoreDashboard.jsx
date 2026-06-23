@@ -1962,6 +1962,9 @@ export default function StoreDashboard() {
                 <span style={{ fontSize: 11, fontWeight: 600, color: open ? 'var(--success)' : 'var(--danger)' }}>
                   {open ? 'Aberta' : 'Fechada'}
                 </span>
+                <div style={{ cursor: 'pointer', padding: '3px 10px', borderRadius: 20, background: demoActive ? '#E8EAF6' : '#F5F5F5', border: `1px solid ${demoActive ? '#9FA8DA' : '#DDD'}`, fontSize: 11, fontWeight: 700, color: demoActive ? '#3949AB' : '#9E9E9E' }} onClick={() => setDemoActive(d => !d)}>
+                  {demoActive ? '📊 Demo ON' : '📊 Demo'}
+                </div>
               </div>
               <div className="header-right" style={{ gap: 8 }}>
                 {/* Sino de notificações */}
