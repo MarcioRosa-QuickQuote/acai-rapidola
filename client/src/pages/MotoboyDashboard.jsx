@@ -1019,26 +1019,15 @@ export default function MotoboyDashboard() {
               </div>
               {/* Ações: Entregue + Navegar */}
               {canDeliver && (
-                <div style={{ display: 'flex', gap: 8, marginTop: 10 }}>
-                  <button onClick={e => { e.stopPropagation(); updateStatus(order.id); }}
-                    style={{
-                      flex: 1, height: 38,
-                      background: mb.accent, color: 'white',
-                      border: 'none', borderRadius: 10,
-                      fontSize: 13, fontWeight: 700, cursor: 'pointer'
-                    }}>
-                    ✅ Entregue
-                  </button>
-                  <button onClick={e => { e.stopPropagation(); openNav(order); }}
-                    style={{
-                      height: 38, padding: '0 14px',
-                      background: mb.accentLight, color: mb.accent,
-                      border: `1px solid ${mb.accent}44`, borderRadius: 10,
-                      fontSize: 13, fontWeight: 600, cursor: 'pointer'
-                    }}>
-                    🗺 Navegar
-                  </button>
-                </div>
+                <button onClick={e => { e.stopPropagation(); updateStatus(order.id); }}
+                  style={{
+                    width: '100%', height: 38, marginTop: 10,
+                    background: mb.accent, color: 'white',
+                    border: 'none', borderRadius: 10,
+                    fontSize: 13, fontWeight: 700, cursor: 'pointer'
+                  }}>
+                  ✅ Entregue
+                </button>
               )}
             </div>
           );
@@ -1073,7 +1062,7 @@ export default function MotoboyDashboard() {
                 {/* Linha 3 — cliente + ID */}
                 <div style={{ fontSize: 11, color: mb.sub, marginBottom: 12 }}>👤 {order.customer_name} · #{order.id.slice(-4)}</div>
                 <button style={{
-                  width: '100%', height: 44, background: mb.accent, color: 'white',
+                  width: '100%', height: 44, background: mb.green, color: 'white',
                   border: 'none', borderRadius: 12, fontSize: 14, fontWeight: 700, cursor: 'pointer'
                 }} onClick={() => acceptOrder(order.id)}>
                   Aceitar Entrega →
@@ -1246,7 +1235,16 @@ export default function MotoboyDashboard() {
   function renderPerfil() {
     return (
       <div className="card" style={{ textAlign: 'left' }}>
-        <div className="page-title" style={{ fontSize: 20 }}>Meu Perfil</div>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 0 }}>
+          <div className="page-title" style={{ fontSize: 20, marginBottom: 0 }}>Meu Perfil</div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <span style={{ fontSize: 12, color: mb.sub }}>{darkMode ? '🌙' : '☀️'}</span>
+            <div className="toggle-switch" onClick={toggleDark}>
+              <input type="checkbox" checked={darkMode} readOnly />
+              <span className="toggle-slider" />
+            </div>
+          </div>
+        </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
           <label style={{ cursor: 'pointer', position: 'relative' }}>
             {user?.photo_url ? (
@@ -1367,17 +1365,8 @@ export default function MotoboyDashboard() {
           }} disabled={pwSaving}>{pwSaving ? 'Salvando...' : 'Alterar Senha'}</button>
         </div>
 
-        {/* Modo escuro */}
-        <div style={{ borderTop: '1px solid var(--border)', marginTop: 24, paddingTop: 16, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <span style={{ fontSize: 14, fontWeight: 600, color: mb.text }}>{darkMode ? '🌙 Modo escuro' : '☀️ Modo claro'}</span>
-          <div className="toggle-switch" onClick={toggleDark}>
-            <input type="checkbox" checked={darkMode} readOnly />
-            <span className="toggle-slider" />
-          </div>
-        </div>
-
         {/* Sair */}
-        <div style={{ borderTop: '1px solid var(--border)', marginTop: 16, paddingTop: 16 }}>
+        <div style={{ borderTop: '1px solid var(--border)', marginTop: 24, paddingTop: 16 }}>
           <button className="btn btn-outline" onClick={logout}
             style={{ width: '100%', color: '#C62828', borderColor: '#FFCDD2', fontWeight: 600 }}>
             🚪 Sair da Conta
@@ -1428,7 +1417,7 @@ export default function MotoboyDashboard() {
       {/* ── TOPBAR ──────────────────────────────────────────────── */}
       <div className="header" style={{ padding: '4px 16px', background: mb.accent, borderBottom: `1px solid ${mb.accentDark}`, overflow: 'visible' }}>
         <div className="header-left" style={{ gap: 10, overflow: 'visible' }}>
-          <img src="/logo_placa.png" alt="Pé de Açaí" style={{ width: 58, height: 58, objectFit: 'contain', flexShrink: 0, transform: 'rotate(15deg)', alignSelf: 'flex-end', marginBottom: -4 }} />
+          <img src="/logo_placa.png" alt="Pé de Açaí" style={{ width: 58, height: 58, objectFit: 'contain', flexShrink: 0, transform: 'rotate(15deg)', alignSelf: 'flex-end', marginBottom: -10, marginLeft: 4 }} />
         </div>
         <div className="header-right" style={{ gap: 16 }}>
           {/* Toggle online/offline compacto */}
