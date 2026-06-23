@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import { fmt } from '../utils/fmt';
 import { useAuth } from '../contexts/AuthContext';
 import { useSocket } from '../contexts/SocketContext';
 
@@ -161,7 +162,7 @@ export default function CustomerPayment() {
         <div className="card" style={{ background: 'linear-gradient(135deg, #F3E5F5, #E1BEE7)', border: '1px solid #CE93D8' }}>
           <div style={{ fontSize: 13, fontWeight: 600, color: '#6A1B9A', marginBottom: 4 }}>Valor do pedido</div>
           <div style={{ fontSize: 32, fontWeight: 800, color: 'var(--primary-dark)' }}>
-            R$ {order.total.toFixed(2)}
+            R$ {fmt(order.total)}
           </div>
         </div>
 

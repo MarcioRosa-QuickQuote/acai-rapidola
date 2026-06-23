@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
+import { fmt } from '../utils/fmt';
 import { useAuth } from '../contexts/AuthContext';
 import { useSocket } from '../contexts/SocketContext';
 import { App as CapApp } from '@capacitor/app';
@@ -1001,7 +1002,7 @@ export default function MotoboyDashboard() {
                   {destIcon} {destName}
                 </div>
                 <div style={{ fontSize: 15, fontWeight: 800, color: mb.accent, flexShrink: 0 }}>
-                  R$ {(order.delivery_fee ?? 0).toFixed(2)}
+                  R$ {fmt(order.delivery_fee ?? 0)}
                 </div>
               </div>
               {/* Linha endereço */}
@@ -1055,7 +1056,7 @@ export default function MotoboyDashboard() {
                 {/* Linha 1 — destino + valor */}
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 6 }}>
                   <div style={{ fontSize: 16, fontWeight: 700, color: mb.text }}>🏪 {order.store_name}</div>
-                  <div style={{ fontSize: 18, fontWeight: 800, color: mb.green, flexShrink: 0, marginLeft: 10 }}>R$ {(order.delivery_fee ?? 0).toFixed(2)}</div>
+                  <div style={{ fontSize: 18, fontWeight: 800, color: mb.green, flexShrink: 0, marginLeft: 10 }}>R$ {fmt(order.delivery_fee ?? 0)}</div>
                 </div>
                 {/* Linha 2 — endereço da loja */}
                 <div style={{ fontSize: 13, color: mb.sub, marginBottom: 4 }}>📍 {fmtAddr(order.store_address || order.store_name)}</div>
@@ -1136,7 +1137,7 @@ export default function MotoboyDashboard() {
                   onClick={() => openNav(order)}>
                   <div className="flex-between" style={{ marginBottom: 4 }}>
                     <span style={{ fontSize: 11, color: '#bbb', fontFamily: 'monospace', letterSpacing: 0.3, userSelect: 'all' }}>#{order.id.slice(0, 8)}</span>
-                    <span className="badge badge-success">R$ {order.total.toFixed(2)}</span>
+                    <span className="badge badge-success">R$ {fmt(order.total)}</span>
                   </div>
                   <div className="text-sm text-muted"><strong>{order.customer_name}</strong></div>
                   <div className="text-sm text-muted" style={{ marginBottom: 4 }}>{fmtAddr(order.customer_address)}</div>
@@ -1197,11 +1198,11 @@ export default function MotoboyDashboard() {
           <div style={{ fontSize: 13, opacity: 0.8, marginBottom: 4 }}>
             Ganhos {finPeriod === 'dia' ? 'de hoje' : finPeriod === 'semana' ? 'da semana' : 'do mês'}
           </div>
-          <div style={{ fontSize: 42, fontWeight: 800, marginBottom: 4 }}>R$ {periodTotal.toFixed(2)}</div>
+          <div style={{ fontSize: 42, fontWeight: 800, marginBottom: 4 }}>R$ {fmt(periodTotal)}</div>
           {periodPending > 0 && (
             <div style={{ marginTop: 12, background: 'rgba(255,255,255,0.15)', borderRadius: 12, padding: '10px 16px', display: 'inline-block' }}>
               <span style={{ fontSize: 12, opacity: 0.8 }}>A receber: </span>
-              <span style={{ fontWeight: 700 }}>R$ {periodPending.toFixed(2)}</span>
+              <span style={{ fontWeight: 700 }}>R$ {fmt(periodPending)}</span>
             </div>
           )}
         </div>
@@ -1212,7 +1213,7 @@ export default function MotoboyDashboard() {
             {filtered.reverse().map((e, i) => (
               <div key={i} className="flex-between" style={{ padding: '8px 0', borderBottom: '1px solid #F5F5F5', fontSize: 13 }}>
                 <div>
-                  <span>R$ {e.amount.toFixed(2)}</span>
+                  <span>R$ {fmt(e.amount)}</span>
                   <span className="text-xs text-muted" style={{ marginLeft: 8 }}>
                     {new Date(e.created_at).toLocaleDateString('pt-BR')}
                   </span>

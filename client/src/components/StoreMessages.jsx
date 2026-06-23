@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { fmt } from '../utils/fmt';
 
 function OrderDetails({ orderId, apiFetch }) {
   const [order, setOrder] = useState(null);
@@ -22,18 +23,18 @@ function OrderDetails({ orderId, apiFetch }) {
       {(order.items || []).map((item, i) => (
         <div key={i} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, marginBottom: 2 }}>
           <span>{item.quantity}x {item.product_name || 'Produto'}</span>
-          <span>R$ {(item.unit_price * item.quantity).toFixed(2)}</span>
+          <span>R$ {fmt(item.unit_price * item.quantity)}</span>
         </div>
       ))}
       {order.delivery_fee > 0 && (
         <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, marginTop: 4 }}>
           <span>Frete</span>
-          <span>R$ {order.delivery_fee.toFixed(2)}</span>
+          <span>R$ {fmt(order.delivery_fee)}</span>
         </div>
       )}
       <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, fontWeight: 700, color: '#6A1B9A', marginTop: 6, borderTop: '1px solid #E1BEE7', paddingTop: 6 }}>
         <span>Total</span>
-        <span>R$ {order.total?.toFixed(2)}</span>
+        <span>R$ {fmt(order.total)}</span>
       </div>
     </div>
   );
