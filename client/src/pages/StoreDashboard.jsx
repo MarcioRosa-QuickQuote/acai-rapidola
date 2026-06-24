@@ -2024,6 +2024,14 @@ export default function StoreDashboard() {
                 </span>
               </div>
               <div className="header-right" style={{ gap: 8 }}>
+                {view === 'painel' && (
+                  <select value={dashLayout} onChange={e => setDashLayout(e.target.value)}
+                    style={{ fontSize: 13, padding: '5px 10px', borderRadius: 8, border: '1px solid #ddd', background: 'white', cursor: 'pointer', color: '#555', fontWeight: 500 }}>
+                    <option value="kanban">⊞  Kanban</option>
+                    <option value="fila">📋  Fila</option>
+                    <option value="linha">≡  Lista compacta</option>
+                  </select>
+                )}
                 {/* Sino de notificações */}
                 <div style={{ position: 'relative' }}>
                   <div style={{ cursor: 'pointer', position: 'relative' }} onClick={() => {
