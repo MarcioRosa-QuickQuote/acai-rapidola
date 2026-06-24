@@ -6,6 +6,7 @@ import UpdateBanner from './components/UpdateBanner';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Legal from './pages/Legal';
+import DeleteAccount from './pages/DeleteAccount';
 import CustomerStoreList from './pages/CustomerStoreList';
 import CustomerHome from './pages/CustomerHome';
 import CustomerOrder from './pages/CustomerOrder';
@@ -106,6 +107,7 @@ export default function App() {
       <Route path="/register" element={user ? <Navigate to={`/${user.role === 'customer' ? 'customer' : user.role}`} /> : <Register />} />
       <Route path="/privacidade" element={<Legal />} />
       <Route path="/termos" element={<Legal />} />
+      <Route path="/deletar-conta" element={<DeleteAccount />} />
 
       <Route path="/customer" element={
         <ProtectedRoute role="customer"><CustomerStoreList /></ProtectedRoute>
