@@ -1075,57 +1075,72 @@ export default function StoreDashboard() {
                   opacity: p.active ? 1 : 0.5,
                   background: p.active ? (isLow ? '#FFF8E1' : 'white') : '#F5F5F5'
                 }}>
-                  {/* Linha 1: nome + badges */}
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 2 }}>
-                    <span className="font-bold text-sm" style={{
-                      flex: 1, minWidth: 0,
-                      overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-                      textDecoration: p.active ? 'none' : 'line-through'
-                    }}>{p.name}</span>
-                    <span className="badge" style={{
-                      background: '#E8F5E9', color: '#2E7D32', fontSize: 11, whiteSpace: 'nowrap', flexShrink: 0
-                    }}>{p.size_ml}ml</span>
-                    {!p.active && (
-                      <span className="badge" style={{
-                        background: '#FFEBEE', color: '#C62828', fontSize: 10, flexShrink: 0
-                      }}>Inativo</span>
+                  <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
+                    {/* Imagem */}
+                    {p.image ? (
+                      <img src={p.image} alt={p.name}
+                        style={{ width: 64, height: 64, borderRadius: 10, objectFit: 'cover', flexShrink: 0, border: '1px solid #eee' }}
+                        onError={e => { e.target.style.display = 'none'; }} />
+                    ) : (
+                      <div style={{ width: 64, height: 64, borderRadius: 10, background: '#F3E5F5', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: 24 }}>
+                        🫙
+                      </div>
                     )}
-                  </div>
-                  {/* Linha 2: descrição */}
-                  {p.description && (
-                    <div className="text-xs text-muted" style={{ marginBottom: 4 }}>{p.description}</div>
-                  )}
-                  {/* Linha 3: preço + estoque */}
-                  <div style={{ display: 'flex', gap: 12, alignItems: 'center', marginBottom: 10 }}>
-                    <div className="text-sm font-bold" style={{ color: '#6A1B9A' }}>
-                      R$ {fmt(p.price)}
-                    </div>
-                    <div style={{ fontSize: 12, color: isLow ? '#E65100' : '#555' }}>
-                      Estoque: {p.stock_quantity != null ? p.stock_quantity : '—'}
-                      {p.min_stock_alert != null && p.stock_quantity != null && (
-                        <span style={{ color: '#999', marginLeft: 4 }}>
-                          / min {p.min_stock_alert}
-                        </span>
+                    {/* Detalhes */}
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      {/* Linha 1: nome + badges */}
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 2 }}>
+                        <span className="font-bold text-sm" style={{
+                          flex: 1, minWidth: 0,
+                          overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                          textDecoration: p.active ? 'none' : 'line-through'
+                        }}>{p.name}</span>
+                        <span className="badge" style={{
+                          background: '#E8F5E9', color: '#2E7D32', fontSize: 11, whiteSpace: 'nowrap', flexShrink: 0
+                        }}>{p.size_ml}ml</span>
+                        {!p.active && (
+                          <span className="badge" style={{
+                            background: '#FFEBEE', color: '#C62828', fontSize: 10, flexShrink: 0
+                          }}>Inativo</span>
+                        )}
+                      </div>
+                      {/* Linha 2: descrição */}
+                      {p.description && (
+                        <div className="text-xs text-muted" style={{ marginBottom: 4 }}>{p.description}</div>
                       )}
+                      {/* Linha 3: preço + estoque */}
+                      <div style={{ display: 'flex', gap: 12, alignItems: 'center', marginBottom: 10 }}>
+                        <div className="text-sm font-bold" style={{ color: '#6A1B9A' }}>
+                          R$ {fmt(p.price)}
+                        </div>
+                        <div style={{ fontSize: 12, color: isLow ? '#E65100' : '#555' }}>
+                          Estoque: {p.stock_quantity != null ? p.stock_quantity : '—'}
+                          {p.min_stock_alert != null && p.stock_quantity != null && (
+                            <span style={{ color: '#999', marginLeft: 4 }}>
+                              / min {p.min_stock_alert}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                      {/* Linha 4: ações */}
+                      <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                        <button className="btn btn-sm"
+                          style={{ fontSize: 12, padding: '5px 14px', background: '#F3E5F5', color: '#6A1B9A', border: 'none' }}
+                          onClick={() => editProduct(p)}>
+                          Editar
+                        </button>
+                        <button className="btn btn-sm"
+                          style={{ fontSize: 12, padding: '5px 14px', background: p.active ? '#FFF3E0' : '#E8F5E9', color: p.active ? '#E65100' : '#2E7D32', border: 'none' }}
+                          onClick={() => toggleProduct(p.id, p.active)}>
+                          {p.active ? 'Desativar' : 'Ativar'}
+                        </button>
+                        <button className="btn btn-sm"
+                          style={{ fontSize: 12, padding: '5px 14px', background: '#FFEBEE', color: '#C62828', border: 'none' }}
+                          onClick={() => deleteProduct(p.id)}>
+                          Excluir
+                        </button>
+                      </div>
                     </div>
-                  </div>
-                  {/* Linha 4: ações */}
-                  <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-                    <button className="btn btn-sm"
-                      style={{ fontSize: 12, padding: '5px 14px', background: '#F3E5F5', color: '#6A1B9A', border: 'none' }}
-                      onClick={() => editProduct(p)}>
-                      Editar
-                    </button>
-                    <button className="btn btn-sm"
-                      style={{ fontSize: 12, padding: '5px 14px', background: p.active ? '#FFF3E0' : '#E8F5E9', color: p.active ? '#E65100' : '#2E7D32', border: 'none' }}
-                      onClick={() => toggleProduct(p.id, p.active)}>
-                      {p.active ? 'Desativar' : 'Ativar'}
-                    </button>
-                    <button className="btn btn-sm"
-                      style={{ fontSize: 12, padding: '5px 14px', background: '#FFEBEE', color: '#C62828', border: 'none' }}
-                      onClick={() => deleteProduct(p.id)}>
-                      Excluir
-                    </button>
                   </div>
                 </div>
               );})
