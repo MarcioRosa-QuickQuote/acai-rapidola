@@ -1229,6 +1229,17 @@ export default function StoreDashboard() {
             setPwSaving(false);
             setTimeout(() => setPwMsg(''), 4000);
           }} disabled={pwSaving}>{pwSaving ? 'Salvando...' : 'Alterar Senha'}</button>
+
+          <div style={{ borderTop: '1px solid #f0f0f0', marginTop: 32, paddingTop: 16, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div>
+              <div style={{ fontSize: 12, fontWeight: 600, color: '#aaa' }}>Pedidos de exemplo</div>
+              <div style={{ fontSize: 11, color: '#ccc', marginTop: 2 }}>Exibe dados fictícios no painel</div>
+            </div>
+            <div className="toggle-switch" onClick={() => setDemoActive(d => !d)}>
+              <input type="checkbox" checked={demoActive} readOnly />
+              <span className="toggle-slider" />
+            </div>
+          </div>
         </div>
       );
     }
@@ -1492,17 +1503,6 @@ export default function StoreDashboard() {
             </div>
           </div>
         ))}
-
-        <div style={{ borderTop: '1px solid var(--border)', marginTop: 20, paddingTop: 16, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <div>
-            <div style={{ fontSize: 13, fontWeight: 600 }}>Pedidos de exemplo</div>
-            <div style={{ fontSize: 11, color: 'var(--text-light)', marginTop: 2 }}>Exibe pedidos fictícios no painel</div>
-          </div>
-          <div className="toggle-switch" onClick={() => setDemoActive(d => !d)}>
-            <input type="checkbox" checked={demoActive} readOnly />
-            <span className="toggle-slider" />
-          </div>
-        </div>
 
         <button className="btn btn-outline" style={{ marginTop: 16, width: '100%', color: '#C62828', borderColor: '#FFCDD2' }}
           onClick={logout}>
@@ -1802,7 +1802,7 @@ export default function StoreDashboard() {
               assigned:   { label: 'Entregador', dot: '#6A1B9A' },
               picked_up:  { label: 'Saiu',       dot: '#555' },
               in_transit: { label: 'A caminho',  dot: '#555' },
-              arriving:   { label: 'Chegando',   dot: '#C62828' },
+              arriving:   { label: 'Saiu pra entrega', dot: '#555' },
             };
             const thS = { color: '#999', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.6, padding: '10px 12px', borderBottom: '2px solid #f0f0f0', textAlign: 'left', whiteSpace: 'nowrap' };
             const tdS = { padding: '10px 12px', borderBottom: '1px solid #f5f5f5', verticalAlign: 'middle' };
@@ -1962,16 +1962,6 @@ export default function StoreDashboard() {
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
               Forçar atualização
             </button>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '6px 4px' }}>
-              <div>
-                <div style={{ fontSize: 12, fontWeight: 600, color: '#555' }}>Pedidos de exemplo</div>
-                <div style={{ fontSize: 10, color: '#aaa' }}>Dados fictícios no painel</div>
-              </div>
-              <div className="toggle-switch" onClick={() => setDemoActive(d => !d)}>
-                <input type="checkbox" checked={demoActive} readOnly />
-                <span className="toggle-slider" />
-              </div>
-            </div>
             <button onClick={logout}
               style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, padding: '7px 12px', background: 'none', color: '#888', border: '1px solid #eee', borderRadius: 8, fontSize: 13, fontWeight: 500, cursor: 'pointer' }}>
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
@@ -2435,7 +2425,7 @@ export default function StoreDashboard() {
           assigned:   { label: 'Entregador 🛵',  color: '#8e24aa', bg: 'rgba(142,36,170,0.12)' },
           picked_up:  { label: 'Saiu 🚀',     color: '#00695C', bg: 'rgba(0,105,92,0.12)' },
           in_transit: { label: 'A caminho',   color: '#00695C', bg: 'rgba(0,105,92,0.12)' },
-          arriving:   { label: '⚡ Chegando!', color: '#f44336', bg: 'rgba(244,67,54,0.14)' },
+          arriving:   { label: 'Saiu pra entrega', color: '#00695C', bg: 'rgba(0,105,92,0.12)' },
         };
         const thS = { color: tvSub, fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.8, padding: '10px 14px', borderBottom: `2px solid ${tvDivider}`, whiteSpace: 'nowrap', textAlign: 'left' };
         const tdS = { padding: '11px 14px', borderBottom: `1px solid ${tvDivider}`, verticalAlign: 'middle' };
