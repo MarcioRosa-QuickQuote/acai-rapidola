@@ -46,6 +46,8 @@ export default function CustomerHome() {
     setFavorites(next);
     localStorage.setItem('fav_stores', JSON.stringify(next));
   }
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleteLoading, setDeleteLoading] = useState(false);
   const [view, setView] = useState('menu');
   const [mainTab, setMainTab] = useState('menu');
   const [contaTab, setContaTab] = useState('perfil');
@@ -1024,6 +1026,46 @@ export default function CustomerHome() {
             Sair da Conta
           </button>
         </div>
+
+        {/* Excluir conta */}
+        <div style={{ padding: '0 4px 24px', textAlign: 'center' }}>
+          <button onClick={() => setShowDeleteModal(true)}
+            style={{ background: 'none', border: 'none', color: '#aaa', fontSize: 13, cursor: 'pointer', textDecoration: 'underline' }}>
+            Excluir minha conta
+          </button>
+        </div>
+
+        {/* Modal confirmação exclusão */}
+        {showDeleteModal && (
+          <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
+            <div style={{ background: 'white', borderRadius: 16, padding: 28, maxWidth: 340, width: '100%', boxShadow: '0 8px 32px rgba(0,0,0,0.2)' }}>
+              <h3 style={{ margin: '0 0 12px', fontSize: 18, fontWeight: 800, color: '#C62828' }}>Excluir conta?</h3>
+              <p style={{ margin: '0 0 8px', fontSize: 14, color: '#555', lineHeight: 1.6 }}>
+                Seus dados pessoais serão removidos permanentemente. Seu histórico de pedidos não poderá mais ser acessado.
+              </p>
+              <p style={{ margin: '0 0 24px', fontSize: 13, color: '#999' }}>Essa ação não pode ser desfeita.</p>
+              <div style={{ display: 'flex', gap: 10 }}>
+                <button onClick={() => setShowDeleteModal(false)} disabled={deleteLoading}
+                  style={{ flex: 1, padding: '11px', background: '#f5f5f5', border: 'none', borderRadius: 10, fontWeight: 700, fontSize: 14, cursor: 'pointer', color: '#555' }}>
+                  Cancelar
+                </button>
+                <button disabled={deleteLoading} onClick={async () => {
+                  setDeleteLoading(true);
+                  try {
+                    await apiFetch('/auth/account', { method: 'DELETE' });
+                    logout();
+                  } catch {
+                    setDeleteLoading(false);
+                    setShowDeleteModal(false);
+                  }
+                }}
+                  style={{ flex: 1, padding: '11px', background: '#C62828', border: 'none', borderRadius: 10, fontWeight: 700, fontSize: 14, cursor: deleteLoading ? 'default' : 'pointer', color: 'white', opacity: deleteLoading ? 0.7 : 1 }}>
+                  {deleteLoading ? 'Excluindo...' : 'Sim, excluir'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </>
     );
   }

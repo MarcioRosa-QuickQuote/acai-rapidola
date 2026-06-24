@@ -415,6 +415,22 @@ router.post('/reset-password', async (req, res) => {
   res.json({ ok: true, message: 'Senha redefinida com sucesso' });
 });
 
+router.delete('/account', authMiddleware, async (req, res) => {
+  const { id } = req.user;
+  const suffix = `deleted_${Date.now()}_${id.slice(0, 8)}`;
+  await supabase.from('users').update({
+    name: 'Usuário removido',
+    email: `${suffix}@deleted.invalid`,
+    phone: suffix,
+    password_hash: '',
+    photo_url: '',
+    address: null,
+    lat: null,
+    lng: null,
+  }).eq('id', id);
+  res.json({ ok: true });
+});
+
 router.patch('/password', authMiddleware, async (req, res) => {
   const { current_password, new_password } = req.body;
   if (!current_password || !new_password) {
