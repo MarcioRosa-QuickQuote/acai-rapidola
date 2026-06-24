@@ -1278,7 +1278,6 @@ export default function MotoboyDashboard() {
           </label>
           <div>
             <div style={{ fontWeight: 800, fontSize: 16 }}>{user?.name}</div>
-            <div style={{ fontSize: 12, color: '#888' }}>Entregador</div>
             {myRating && (
               <div style={{ fontSize: 13, color: '#F57F17', fontWeight: 700, marginTop: 2 }}>
                 ⭐ {myRating.avg} <span style={{ fontSize: 11, fontWeight: 400, color: '#888' }}>({myRating.count} avaliações)</span>
@@ -1305,7 +1304,6 @@ export default function MotoboyDashboard() {
           <input className="input" type="email" value={editEmail || user?.email || ''}
             onChange={e => setEditEmail(e.target.value)} placeholder="seu@email.com" />
         </div>
-        <div className="form-group"><label className="label">Telefone</label><div style={{ fontWeight: 600, color: mb.text }}>{user?.phone}</div></div>
         <div className="form-group">
           <label className="label">WhatsApp</label>
           <input className="input" type="tel" value={editWhatsapp}
