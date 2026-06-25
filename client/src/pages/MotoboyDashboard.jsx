@@ -1537,9 +1537,6 @@ export default function MotoboyDashboard() {
             </button>
           ))}
         </div>
-        <div style={{ textAlign: 'center', fontSize: 9, color: mb.sub, fontFamily: 'monospace', letterSpacing: 0.5, paddingBottom: 2 }}>
-          build #{APP_BUILD}
-        </div>
       </div>
 
       {fsOrder && (
