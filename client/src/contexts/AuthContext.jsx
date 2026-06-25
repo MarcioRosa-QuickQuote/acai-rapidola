@@ -3,18 +3,24 @@ import { createContext, useContext, useState, useEffect, useCallback } from 'rea
 const AuthContext = createContext(null);
 const API = '/api';
 
+function readUserCache() {
+  try { return JSON.parse(localStorage.getItem('_usr') || 'null'); } catch { return null; }
+}
+
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState(readUserCache);
   const [store, setStore] = useState(null);
   const [token, setToken] = useState(localStorage.getItem('token'));
-  const [loading, setLoading] = useState(true);
+  // Só mostra spinner se não houver usuário em cache (primeira abertura ou após logout)
+  const [loading, setLoading] = useState(!readUserCache() && !!localStorage.getItem('token'));
   const [networkError, setNetworkError] = useState(false);
 
   // Render free tier demora 30-60s no cold start e retorna 502 enquanto acorda.
   // Retentatvas automáticas evitam mostrar erro ao usuário nesse caso.
   const checkAuth = useCallback((tok, attempt = 0) => {
     if (!tok) { setLoading(false); return; }
-    setLoading(true);
+    // Só exibe spinner se não há usuário em cache (evita logo ao retomar app)
+    if (attempt === 0 && !readUserCache()) setLoading(true);
     if (attempt === 0) setNetworkError(false);
 
     fetch(`${API}/auth/me`, { headers: { Authorization: `Bearer ${tok}` } })
@@ -22,7 +28,11 @@ export function AuthProvider({ children }) {
         if (r.status === 401 || r.status === 403 || r.status === 404) { logout(); setLoading(false); return; }
         if (!r.ok) throw new Error(`HTTP ${r.status}`);
         return r.json().then(data => {
-          if (data) { setUser(data.user); setStore(data.store); }
+          if (data) {
+            setUser(data.user);
+            setStore(data.store);
+            if (data.user) localStorage.setItem('_usr', JSON.stringify(data.user));
+          }
           setLoading(false);
         });
       })
@@ -57,6 +67,7 @@ export function AuthProvider({ children }) {
       .then(data => {
         if (!data.ok) throw new Error(data.error || 'Login falhou');
         localStorage.setItem('token', data.token);
+        localStorage.setItem('_usr', JSON.stringify(data.user));
         setToken(data.token);
         setUser(data.user);
         setStore(data.store);
@@ -75,6 +86,7 @@ export function AuthProvider({ children }) {
       .then(data => {
         if (!data.ok) throw new Error(data.error || 'Cadastro falhou');
         localStorage.setItem('token', data.token);
+        localStorage.setItem('_usr', JSON.stringify(data.user));
         setToken(data.token);
         setUser(data.user);
         setNetworkError(false);
@@ -84,6 +96,7 @@ export function AuthProvider({ children }) {
 
   function loginWithToken(newToken, userData) {
     localStorage.setItem('token', newToken);
+    localStorage.setItem('_usr', JSON.stringify(userData));
     setToken(newToken);
     setUser(userData);
     setNetworkError(false);
@@ -91,6 +104,7 @@ export function AuthProvider({ children }) {
 
   function logout() {
     localStorage.removeItem('token');
+    localStorage.removeItem('_usr');
     setToken(null);
     setUser(null);
     setStore(null);

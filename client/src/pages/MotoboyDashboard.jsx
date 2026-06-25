@@ -141,6 +141,16 @@ function NavScreen({ order, onClose, onStatusUpdate, statusLabel }) {
     CapApp.addListener('backButton', () => onClose()).then(h => { handler = h; });
     return () => { handler?.remove(); };
   }, [onClose]);
+
+  // Pré-carrega o style.json do mapa durante o overview para o tile cache do browser
+  // já estar quente quando o usuário clicar "Iniciar corrida"
+  useEffect(() => {
+    const h = new Date().getHours();
+    const style = h >= 6 && h < 19
+      ? 'https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json'
+      : 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json';
+    fetch(style).catch(() => {});
+  }, []);
   const [currentStepIdx, setCurrentStepIdx] = useState(0);
   const [navStarted, setNavStarted] = useState(false);
   const prevPosRef = useRef(null);
@@ -185,7 +195,7 @@ function NavScreen({ order, onClose, onStatusUpdate, statusLabel }) {
         ? (() => { const { snappedPos } = snapToRoute(pos, c); return [snappedPos.lng, snappedPos.lat]; })()
         : [c[0][1], c[0][0]];
       try {
-        map.easeTo({ center, bearing: headingRef.current, pitch: 60, zoom: 17.5, duration: 700, padding: { top: 320, bottom: 0 } });
+        map.easeTo({ center, bearing: headingRef.current, pitch: 60, zoom: 17.5, duration: 700, padding: { top: 320, bottom: 120 } });
       } catch (_) {}
     }, 400);
     return () => clearTimeout(timer);
@@ -203,7 +213,7 @@ function NavScreen({ order, onClose, onStatusUpdate, statusLabel }) {
         pitch: 60,
         zoom: 17.5,
         duration: 900,
-        padding: { top: 320, bottom: 0, left: 0, right: 0 }
+        padding: { top: 320, bottom: 120, left: 0, right: 0 }
       });
     } catch (_) {}
   }, [pos?.lat, pos?.lng, heading, follow, navStarted]);
@@ -267,7 +277,7 @@ function NavScreen({ order, onClose, onStatusUpdate, statusLabel }) {
 
   // Ícones Leaflet (usados apenas na tela overview)
   const motoboyIcon = useMemo(() => L.divIcon({
-    html: `<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 40 40"><circle cx="20" cy="20" r="18" fill="#1565C0" stroke="white" stroke-width="3"/><polygon points="20,8 28,28 20,23 12,28" fill="white"/></svg>`,
+    html: `<div style="width:40px;height:40px;border-radius:50%;background:white;box-shadow:0 3px 12px rgba(0,80,220,0.4);display:flex;align-items:center;justify-content:center;"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="23" viewBox="0 0 18 23"><path d="M9 1 L17 21 L9 16 L1 21 Z" fill="#1565C0"/></svg></div>`,
     className: '', iconSize: [40, 40], iconAnchor: [20, 20]
   }), []);
 
@@ -467,14 +477,16 @@ function NavScreen({ order, onClose, onStatusUpdate, statusLabel }) {
               </MLMarker>
             )}
             {pos && (
-              <MLMarker longitude={pos.lng} latitude={pos.lat} anchor="center" offset={[0, 16]}>
+              <MLMarker longitude={pos.lng} latitude={pos.lat} anchor="center">
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                  <div style={{ filter: 'drop-shadow(0 4px 10px rgba(0,180,255,0.6))' }}>
-                    <svg width="48" height="64" viewBox="0 0 48 64" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M24 2 L44 60 L24 48 L4 60 Z"
-                        fill="#00BFFF" stroke="white" strokeWidth="2.5" strokeLinejoin="round"/>
-                      <ellipse cx="24" cy="18" rx="4" ry="6" fill="white" opacity="0.5"/>
-                      <ellipse cx="24" cy="44" rx="5" ry="7" fill="rgba(0,0,0,0.25)"/>
+                  <div style={{
+                    width: 48, height: 48, borderRadius: '50%',
+                    background: 'white',
+                    boxShadow: '0 3px 16px rgba(0,80,220,0.45)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center'
+                  }}>
+                    <svg width="22" height="28" viewBox="0 0 22 28" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M11 2 L20 25 L11 20 L2 25 Z" fill="#1565C0"/>
                     </svg>
                   </div>
                   {step?.street && (
@@ -641,7 +653,7 @@ function NavScreen({ order, onClose, onStatusUpdate, statusLabel }) {
             if (!f) {
               const map = mapRef.current?.getMap?.() ?? mapRef.current;
               if (map && pos) {
-                map.easeTo({ center: [pos.lng, pos.lat], bearing: heading, pitch: 60, zoom: 17.5, duration: 800, padding: { top: 320, bottom: 0 } });
+                map.easeTo({ center: [pos.lng, pos.lat], bearing: heading, pitch: 60, zoom: 17.5, duration: 800, padding: { top: 320, bottom: 120 } });
               }
             }
             return !f;
