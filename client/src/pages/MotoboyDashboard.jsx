@@ -157,6 +157,7 @@ function NavScreen({ order, onClose, onStatusUpdate, statusLabel }) {
   const [navStarted, setNavStarted] = useState(false);
   const prevPosRef = useRef(null);
   const headingRef = useRef(0);
+  const posRef = useRef(null);
   const coordsRef = useRef(null);
   const mapRef = useRef(null);
   const lastRouteOriginRef = useRef(null);
@@ -186,22 +187,22 @@ function NavScreen({ order, onClose, onStatusUpdate, statusLabel }) {
     setHeading(initBearing);
   }, [coords]);
 
-  // Quando nav inicia: posiciona câmera no ponto inicial da rota com bearing correto
-  useEffect(() => {
-    if (!navStarted) return;
-    const timer = setTimeout(() => {
-      const map = mapRef.current?.getMap?.() ?? mapRef.current;
-      const c = coordsRef.current;
-      if (!map || !c || c.length < 2) return;
-      const center = pos
-        ? (() => { const { snappedPos } = snapToRoute(pos, c); return [snappedPos.lng, snappedPos.lat]; })()
-        : [c[0][1], c[0][0]];
-      try {
-        map.easeTo({ center, bearing: headingRef.current, pitch: 60, zoom: 17.5, duration: 700, padding: { top: 320, bottom: 120 } });
-      } catch (_) {}
-    }, 400);
-    return () => clearTimeout(timer);
-  }, [navStarted]);
+  // Chamado pelo onLoad do MLMap: orienta câmera assim que o mapa está pronto
+  // Calcula bearing diretamente do primeiro segmento da rota (não usa headingRef,
+  // que pode ser 0 se o GPS ainda não atualizou desde o início)
+  function orientMapOnLoad(map) {
+    const c = coordsRef.current;
+    if (!map || !c || c.length < 2) return;
+    const currentPos = posRef.current;
+    const center = currentPos
+      ? (() => { const { snappedPos } = snapToRoute(currentPos, c); return [snappedPos.lng, snappedPos.lat]; })()
+      : [c[0][1], c[0][0]];
+    const bearing = calcBearing({ lat: c[0][0], lng: c[0][1] }, { lat: c[1][0], lng: c[1][1] });
+    headingRef.current = bearing;
+    try {
+      map.easeTo({ center, bearing, pitch: 60, zoom: 17.5, duration: 600, padding: { top: 320, bottom: 120 } });
+    } catch (_) {}
+  }
 
   // Segue o motoboy com câmera MapLibre (pitch 60°, bearing = direção de viagem)
   useEffect(() => {
@@ -241,6 +242,7 @@ function NavScreen({ order, onClose, onStatusUpdate, statusLabel }) {
         if (c && c.length >= 2) {
           // Snap to route: projeta GPS no segmento mais próximo
           const { snappedPos, routeBearing } = snapToRoute(rawPos, c);
+          posRef.current = snappedPos;
           setPos(snappedPos);
           // Suavização 30% no bearing da rota
           const diff = ((routeBearing - headingRef.current + 540) % 360) - 180;
@@ -248,6 +250,7 @@ function NavScreen({ order, onClose, onStatusUpdate, statusLabel }) {
           headingRef.current = smoothed;
           setHeading(smoothed);
         } else {
+          posRef.current = rawPos;
           setPos(rawPos);
         }
       },
@@ -452,6 +455,7 @@ function NavScreen({ order, onClose, onStatusUpdate, statusLabel }) {
             style={{ width: '100%', height: '100%' }}
             mapStyle={mapTileStyle}
             attributionControl={false}
+            onLoad={e => orientMapOnLoad(e.target)}
           >
             {routeGeoJSON && (
               <Source id="route-src" type="geojson" data={routeGeoJSON}>
