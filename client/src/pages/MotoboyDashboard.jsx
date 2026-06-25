@@ -111,6 +111,8 @@ function snapToRoute(pos, coords) {
       routeBearing = calcBearing(a, b);
     }
   }
+  // Acima de 40m da rota: usa GPS bruto (evita saltar para rua paralela)
+  if (minDist > 0.04) return { snappedPos: pos, routeBearing };
   return { snappedPos, routeBearing };
 }
 
@@ -305,6 +307,8 @@ function NavScreen({ order, onClose, onStatusUpdate, statusLabel }) {
       const dist = haversineKm(pos, foot);
       if (dist < minDist) { minDist = dist; bestIdx = i; bestT = t; }
     }
+    // Se longe da rota, não corta (GPS fora da rota ou início da navegação)
+    if (minDist > 0.04) return coords;
     const a = coords[bestIdx], b = coords[bestIdx + 1];
     const snapped = [a[0] + bestT * (b[0] - a[0]), a[1] + bestT * (b[1] - a[1])];
     return [snapped, ...coords.slice(bestIdx + 1)];
