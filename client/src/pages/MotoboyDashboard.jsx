@@ -165,7 +165,8 @@ function NavScreen({ order, onClose, onStatusUpdate, statusLabel }) {
   const [showOverview, setShowOverview] = useState(false);
   const [overviewPanned, setOverviewPanned] = useState(false); // usuário soltou a mão no overview
 
-  const isToStore = order.status === 'assigned';
+  // Motoboy vai à loja enquanto não pegou o pedido (picked_up/in_transit/arriving/delivered)
+  const isToStore = !['picked_up', 'in_transit', 'arriving', 'delivered'].includes(order.status);
 
   const storeCoords = { lat: order.store_lat, lng: order.store_lng };
   const customerCoords = { lat: order.customer_lat, lng: order.customer_lng };
@@ -1062,8 +1063,8 @@ export default function MotoboyDashboard() {
                   {statusLabels[order.status]}
                 </div>
               </div>
-              {/* Badge quando motoboy está a caminho da loja */}
-              {order.status === 'assigned' && (
+              {/* Badge quando motoboy ainda vai à loja (qualquer status antes de picked_up) */}
+              {toStore && (
                 <div style={{
                   marginTop: 8, padding: '5px 10px', borderRadius: 8,
                   background: '#E3F2FD', fontSize: 12, fontWeight: 700, color: '#1565C0'
