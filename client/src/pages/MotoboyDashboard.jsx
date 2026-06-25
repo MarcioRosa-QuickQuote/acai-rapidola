@@ -130,6 +130,7 @@ function PanDetector({ onPan }) {
 }
 
 function NavScreen({ order, onClose, onStatusUpdate, statusLabel }) {
+  const { setToast } = useSocket();
   const [pos, setPos] = useState(null);
   const [heading, setHeading] = useState(0);
   const [follow, setFollow] = useState(true);
@@ -156,7 +157,10 @@ function NavScreen({ order, onClose, onStatusUpdate, statusLabel }) {
   const storeCoords = { lat: order.store_lat, lng: order.store_lng };
   const customerCoords = { lat: order.customer_lat, lng: order.customer_lng };
   const routeDest = isToStore ? storeCoords : customerCoords;
-  const { steps, totalDist, totalDur, coords, loading: routeLoading } = useRoute(routeOrigin || {}, routeDest);
+  const { steps, totalDist, totalDur, coords, loading: routeLoading } = useRoute(
+    routeOrigin || {}, routeDest,
+    () => setToast('Sem conexão — rota não atualizada')
+  );
 
   // Quando a rota carrega: seta heading inicial pelo 1º segmento e guarda coords na ref
   useEffect(() => {
@@ -277,14 +281,34 @@ function NavScreen({ order, onClose, onStatusUpdate, statusLabel }) {
     className: '', iconSize: [44, 44], iconAnchor: [22, 22]
   }), []);
 
-  // GeoJSON da rota para MapLibre (formato [lng, lat])
+  // Corta a rota para mostrar apenas o trecho à frente do triângulo
+  const trimmedCoords = useMemo(() => {
+    if (!coords || coords.length < 2 || !pos) return coords;
+    let minDist = Infinity, bestIdx = 0, bestT = 0;
+    for (let i = 0; i < coords.length - 1; i++) {
+      const a = { lat: coords[i][0], lng: coords[i][1] };
+      const b = { lat: coords[i + 1][0], lng: coords[i + 1][1] };
+      const dx = b.lng - a.lng, dy = b.lat - a.lat;
+      const lenSq = dx * dx + dy * dy;
+      const t = lenSq === 0 ? 0 : Math.max(0, Math.min(1, ((pos.lng - a.lng) * dx + (pos.lat - a.lat) * dy) / lenSq));
+      const foot = { lat: a.lat + t * dy, lng: a.lng + t * dx };
+      const dist = haversineKm(pos, foot);
+      if (dist < minDist) { minDist = dist; bestIdx = i; bestT = t; }
+    }
+    const a = coords[bestIdx], b = coords[bestIdx + 1];
+    const snapped = [a[0] + bestT * (b[0] - a[0]), a[1] + bestT * (b[1] - a[1])];
+    return [snapped, ...coords.slice(bestIdx + 1)];
+  }, [pos?.lat, pos?.lng, coords]);
+
+  // GeoJSON da rota para MapLibre (formato [lng, lat]) — apenas trecho à frente
   const routeGeoJSON = useMemo(() => {
-    if (!coords || coords.length < 2) return null;
+    const c = trimmedCoords;
+    if (!c || c.length < 2) return null;
     return {
       type: 'Feature',
-      geometry: { type: 'LineString', coordinates: coords.map(([lat, lng]) => [lng, lat]) }
+      geometry: { type: 'LineString', coordinates: c.map(([lat, lng]) => [lng, lat]) }
     };
-  }, [coords]);
+  }, [trimmedCoords]);
 
   // ── OVERVIEW (igual tela 1 do Waze) ──────────────────────────────────────
   if (!navStarted) {
@@ -1018,6 +1042,15 @@ export default function MotoboyDashboard() {
                   {statusLabels[order.status]}
                 </div>
               </div>
+              {/* Badge quando motoboy está a caminho da loja */}
+              {order.status === 'assigned' && (
+                <div style={{
+                  marginTop: 8, padding: '5px 10px', borderRadius: 8,
+                  background: '#E3F2FD', fontSize: 12, fontWeight: 700, color: '#1565C0'
+                }}>
+                  🛵 A caminho da loja
+                </div>
+              )}
               {/* Ações: Entregue + Navegar */}
               {canDeliver && (
                 <button onClick={e => { e.stopPropagation(); updateStatus(order.id); }}

@@ -113,7 +113,7 @@ export function snapToRoute(pos, coords) {
   return best;
 }
 
-export function useRoute(from, to) {
+export function useRoute(from, to, onError) {
   const [routeData, setRouteData] = useState(null);
   // Mantém última rota boa enquanto carrega nova (sem piscar)
   const lastGoodRef = useRef(null);
@@ -145,7 +145,7 @@ export function useRoute(from, to) {
         }
         // Se falhou, mantém rota anterior (não limpa)
       })
-      .catch(() => {});
+      .catch(() => { if (!cancelled && onError) onError(); });
     return () => { cancelled = true; };
   }, [fLat, fLng, tLat, tLng]);
 
