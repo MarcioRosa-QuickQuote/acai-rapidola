@@ -1,17 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useGoogleLogin } from '@react-oauth/google';
-
-const berries = Array.from({ length: 15 }, (_, i) => ({
-  id: i,
-  left: `${5 + Math.random() * 90}%`,
-  top: `${10 + Math.random() * 80}%`,
-  size: 10 + Math.random() * 20,
-  duration: 7 + Math.random() * 8,
-  delay: Math.random() * 5,
-  parallax: 0.02 + Math.random() * 0.04
-}));
 
 export default function Login() {
   const { login, loginWithToken, apiFetch } = useAuth();
@@ -20,7 +10,6 @@ export default function Login() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
-  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
 
   const googleLogin = useGoogleLogin({
     onSuccess: async (tokenResponse) => {
@@ -43,14 +32,8 @@ export default function Login() {
     },
     onError: () => setError('Login com Google cancelado')
   });
-  useEffect(() => {
-    const handleMove = (e) => {
-      const w = window.innerWidth, h = window.innerHeight;
-      setMousePos({ x: (e.clientX - w / 2) / (w / 2), y: (e.clientY - h / 2) / (h / 2) });
-    };
-    window.addEventListener('mousemove', handleMove);
-    return () => window.removeEventListener('mousemove', handleMove);
-  }, []);
+  const videoRef = useRef(null);
+  useEffect(() => { videoRef.current?.play().catch(() => {}); }, []);
 
   const [showPw, setShowPw] = useState(false);
   const [recovery, setRecovery] = useState(false);
@@ -80,21 +63,10 @@ export default function Login() {
       background: 'linear-gradient(160deg, #6A1B9A 0%, #9C27B0 45%, #CE93D8 100%)',
       padding: '24px 20px 20px', position: 'relative', overflow: 'hidden'
     }}>
-      {berries.map(b => (
-        <div key={b.id} style={{
-          position: 'absolute',
-          left: b.left, top: b.top,
-          width: b.size, height: b.size,
-          borderRadius: '50%',
-          background: `radial-gradient(circle at 35% 35%, #7B1FA2, #1a0533)`,
-          opacity: 0.2 + b.parallax * 1.5,
-          filter: 'blur(0.5px)',
-          transform: `translate(${mousePos.x * b.size * b.parallax * -1}px, ${mousePos.y * b.size * b.parallax * -1}px)`,
-          transition: 'transform 0.6s ease-out',
-          animation: `floatBerry ${b.duration}s ease-in-out ${b.delay}s infinite`,
-          boxShadow: '0 0 6px rgba(155, 81, 224, 0.15)'
-        }} />
-      ))}
+      <video ref={videoRef} autoPlay loop muted playsInline preload="auto" className="login-video">
+        <source src="/video4.mp4" type="video/mp4" />
+      </video>
+      <div className="login-video-overlay" />
 
       {/* Logo — z-index abaixo do card para a estaca ficar "fincada" no modal */}
       <div style={{ textAlign: 'center', marginBottom: -24, marginTop: -40, zIndex: 2, position: 'relative',
@@ -331,13 +303,6 @@ export default function Login() {
           <Link to="/termos" style={{ color: '#fff', textDecoration: 'underline' }}>Termos</Link>
         </span>
       </p>
-
-      <style>{`
-        @keyframes floatBerry {
-          0%, 100% { transform: translateY(0px) scale(1); opacity: 0.2; }
-          50% { transform: translateY(-10px) scale(1.06); opacity: 0.3; }
-        }
-      `}</style>
 
     </div>
   );
