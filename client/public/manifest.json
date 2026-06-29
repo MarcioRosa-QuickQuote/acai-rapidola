@@ -1,7 +1,7 @@
 {
   "id": "com.pedeacai.app",
-  "name": "Pé de Açaí",
-  "short_name": "Pé de Açaí",
+  "name": "Vai de Açaí?",
+  "short_name": "Vai de Açaí?",
   "description": "Peça seu açaí favorito com entrega rápida em Belém do Pará",
   "start_url": "/",
   "scope": "/",
@@ -18,7 +18,7 @@
     { "src": "/icon-512.png?v=2", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
   ],
   "screenshots": [
-    { "src": "/icon-512.png?v=2", "sizes": "512x512", "type": "image/png", "form_factor": "narrow", "label": "Pé de Açaí" },
+    { "src": "/icon-512.png?v=2", "sizes": "512x512", "type": "image/png", "form_factor": "narrow", "label": "Vai de Açaí?" },
     { "src": "/screenshot-wide-1.png", "sizes": "1916x887", "type": "image/png", "form_factor": "wide", "label": "Painel de Pedidos" },
     { "src": "/screenshot-wide-2.png", "sizes": "1914x884", "type": "image/png", "form_factor": "wide", "label": "Visão compacta dos pedidos" }
   ]

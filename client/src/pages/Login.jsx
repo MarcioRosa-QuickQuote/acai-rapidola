@@ -72,7 +72,7 @@ export default function Login() {
       {/* Logo — z-index abaixo do card para a estaca ficar "fincada" no modal */}
       <div style={{ textAlign: 'center', marginBottom: -24, zIndex: 2, position: 'relative',
         filter: 'drop-shadow(0 6px 28px rgba(0,0,0,0.55))' }}>
-        <img src="/logo_placa.png" alt="Pé de Açaí" style={{
+        <img src="/vai_de_acai_transp.png" alt="Vai de Açaí?" style={{
           width: 190, height: 190, objectFit: 'contain', display: 'block', margin: '0 auto'
         }} />
       </div>
@@ -298,7 +298,7 @@ export default function Login() {
           Página de Vendas
         </a>
         <span>·</span>
-        <span>Pé de Açaí © 2026 —{' '}
+        <span>Vai de Açaí? © 2026 —{' '}
           <Link to="/privacidade" style={{ color: '#fff', textDecoration: 'underline' }}>Privacidade</Link>
           {' · '}
           <Link to="/termos" style={{ color: '#fff', textDecoration: 'underline' }}>Termos</Link>

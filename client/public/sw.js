@@ -1,15 +1,15 @@
-// ─── Pé de Açaí · Service Worker ───────────────────────────────────────────
+// ─── Vai de Açaí? · Service Worker ───────────────────────────────────────────
 // Estratégia: cache-first para assets estáticos, stale-while-revalidate para
 // shell + imagens, network-only para API / socket / Supabase.
 // Vite coloca hash no nome dos assets → pode cachear para sempre.
 
-const STATIC_V  = 'rapidola-static-v140';
+const STATIC_V  = 'rapidola-static-v141';
 const IMAGE_V   = 'rapidola-images-v1';
 const MAX_IMGS  = 120; // máx de imagens em cache
 
 // Arquivos precacheados no install (críticos para abrir o app)
 // Evitar arquivos grandes (>300KB) aqui — eles causam lentidão no install
-// logo_placa.png (1.3MB) fica de fora: será cacheado na primeira exibição
+// vai_de_acai_transp.png fica de fora: será cacheado na primeira exibição
 const PRECACHE = [
   '/',
   '/manifest.json',

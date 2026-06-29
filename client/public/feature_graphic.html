@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { width: 1024px; height: 500px; overflow: hidden; background: #000; }
+
+    .banner {
+      width: 1024px;
+      height: 500px;
+      background: linear-gradient(130deg, #0D0020 0%, #2A005A 38%, #5C0E9E 72%, #7B1FA2 100%);
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* ── Blobs de luz ── */
+    .blob { position: absolute; border-radius: 50%; filter: blur(90px); pointer-events: none; }
+    .blob-1 { width: 420px; height: 420px; background: rgba(138,43,226,0.28); top: -130px; right: 140px; }
+    .blob-2 { width: 240px; height: 240px; background: rgba(60,0,120,0.65);   bottom: -60px; left: 30px; }
+    .blob-3 { width: 200px; height: 200px; background: rgba(186,85,211,0.22); top: 50px; left: 370px; }
+
+    /* ── Bolinhas decorativas ── */
+    .dots { position: absolute; inset: 0; pointer-events: none; }
+
+    /* ── Texto esquerdo ── */
+    .left {
+      position: absolute;
+      left: 60px;
+      top: 0; bottom: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      z-index: 10;
+      max-width: 400px;
+    }
+
+    .logo-img {
+      width: 155px;
+      height: 155px;
+      object-fit: contain;
+      filter: drop-shadow(0 6px 28px rgba(0,0,0,0.7));
+      margin-bottom: 16px;
+    }
+
+    .tagline {
+      font-family: Georgia, 'Times New Roman', serif;
+      font-size: 28px;
+      color: #fff;
+      line-height: 1.35;
+      margin-bottom: 26px;
+      text-shadow: 0 2px 12px rgba(0,0,0,0.5);
+    }
+    .tagline strong { color: #E1A8FF; font-style: italic; }
+
+    .pills { display: flex; flex-direction: column; gap: 8px; }
+    .pill {
+      display: inline-flex;
+      align-self: flex-start;
+      align-items: center;
+      gap: 8px;
+      background: rgba(255,255,255,0.11);
+      border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 100px;
+      padding: 7px 18px;
+      color: rgba(255,255,255,0.88);
+      font-family: -apple-system, 'Segoe UI', sans-serif;
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    /* ── Glow atrás dos produtos ── */
+    .glow-products {
+      position: absolute;
+      right: 80px;
+      bottom: -80px;
+      width: 500px;
+      height: 420px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(156,39,176,0.38) 0%, transparent 68%);
+      z-index: 4;
+      filter: blur(35px);
+    }
+
+    /* ── Farinha de tapioca (esquerda dos produtos) ── */
+    .farinha-tapioca {
+      position: absolute;
+      z-index: 7;
+      bottom: -8px;
+      right: 520px;
+      width: 155px;
+      height: 175px;
+      object-fit: contain;
+      transform: rotate(-10deg);
+      filter: drop-shadow(-8px 16px 20px rgba(0,0,0,0.55));
+    }
+
+    /* ── Saco de açaí (centro, destaque) ── */
+    .saco-acai {
+      position: absolute;
+      z-index: 8;
+      bottom: -5px;
+      right: 350px;
+      width: 215px;
+      height: 235px;
+      object-fit: contain;
+      transform: rotate(-3deg);
+      filter: drop-shadow(-10px 20px 28px rgba(0,0,0,0.65)) drop-shadow(0 0 35px rgba(160,60,220,0.3));
+    }
+
+    /* ── Farinha d'água (direita dos produtos) ── */
+    .farinha-dagua {
+      position: absolute;
+      z-index: 7;
+      bottom: -8px;
+      right: 215px;
+      width: 155px;
+      height: 175px;
+      object-fit: contain;
+      transform: rotate(8deg);
+      filter: drop-shadow(8px 16px 20px rgba(0,0,0,0.55));
+    }
+
+    /* ── Motoboy (direita) ── */
+    .motoboy {
+      position: absolute;
+      z-index: 9;
+      bottom: -20px;
+      right: -18px;
+      width: 340px;
+      height: 370px;
+      object-fit: contain;
+      filter: drop-shadow(-18px 0 40px rgba(0,0,0,0.6));
+    }
+
+    /* ── Label "acompanhamentos" ── */
+    .label-acomp {
+      position: absolute;
+      z-index: 11;
+      bottom: 168px;
+      right: 365px;
+      background: rgba(255,255,255,0.13);
+      border: 1px solid rgba(255,255,255,0.22);
+      border-radius: 100px;
+      padding: 5px 14px;
+      color: rgba(255,255,255,0.75);
+      font-family: -apple-system, 'Segoe UI', sans-serif;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      white-space: nowrap;
+    }
+  </style>
+</head>
+<body>
+  <div class="banner">
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+    <div class="blob blob-3"></div>
+
+    <svg class="dots" viewBox="0 0 1024 500" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="36"  cy="48"  r="7"  fill="rgba(210,140,255,0.22)"/>
+      <circle cx="58"  cy="68"  r="4"  fill="rgba(210,140,255,0.15)"/>
+      <circle cx="20"  cy="82"  r="5"  fill="rgba(210,140,255,0.12)"/>
+      <circle cx="44"  cy="432" r="8"  fill="rgba(210,140,255,0.18)"/>
+      <circle cx="20"  cy="460" r="5"  fill="rgba(210,140,255,0.12)"/>
+      <circle cx="966" cy="30"  r="8"  fill="rgba(210,140,255,0.18)"/>
+      <circle cx="990" cy="52"  r="5"  fill="rgba(210,140,255,0.12)"/>
+      <circle cx="538" cy="14"  r="4"  fill="rgba(210,140,255,0.14)"/>
+      <circle cx="508" cy="487" r="5"  fill="rgba(210,140,255,0.12)"/>
+    </svg>
+
+    <!-- Esquerda: logo + texto -->
+    <div class="left">
+      <img src="vai_de_acai_transp.png" alt="Vai de Açaí?" class="logo-img"/>
+      <div class="tagline">
+        Açaí e acompanhamentos<br>
+        <strong>na sua porta.</strong>
+      </div>
+      <div class="pills">
+        <div class="pill">🏪 Belém · Manaus</div>
+        <div class="pill">⚡ Pedido em segundos</div>
+      </div>
+    </div>
+
+    <!-- Glow atrás dos produtos -->
+    <div class="glow-products"></div>
+
+    <!-- Label acompanhamentos -->
+    <div class="label-acomp">+ acompanhamentos</div>
+
+    <!-- Produtos: tapioca | açaí | farinha d'água -->
+    <img src="farinha de tapioca.png" alt="Farinha de Tapioca" class="farinha-tapioca"/>
+    <img src="saco_acai.png"          alt="Açaí"               class="saco-acai"/>
+    <img src="Farinha dagua.png"       alt="Farinha d'Água"     class="farinha-dagua"/>
+
+    <!-- Motoboy entregando -->
+    <img src="lp_motoboytrans.png" alt="Entregador" class="motoboy"/>
+  </div>
+</body>
+</html>

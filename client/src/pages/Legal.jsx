@@ -19,8 +19,8 @@ export default function Legal() {
             <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
           </svg>
         </button>
-        <img src="/logo_placa.png" style={{ width: 40, height: 40, objectFit: 'contain' }} />
-        <span style={{ fontWeight: 800, fontSize: 16, color: '#4A148C' }}>Pé de Açaí</span>
+        <img src="/vai_de_acai_transp.png" style={{ width: 40, height: 40, objectFit: 'contain' }} />
+        <span style={{ fontWeight: 800, fontSize: 16, color: '#4A148C' }}>Vai de Açaí?</span>
       </div>
 
       {/* Tabs */}
@@ -66,7 +66,7 @@ function PrivacyPolicy() {
       <p style={{ fontSize: 12, color: '#999', marginBottom: 28 }}>Última atualização: maio de 2025</p>
 
       <Section title="1. Quem somos">
-        O <strong>Pé de Açaí</strong> é uma plataforma de delivery que conecta clientes, lojas de açaí e motoboys
+        O <strong>Vai de Açaí?</strong> é uma plataforma de delivery que conecta clientes, lojas de açaí e motoboys
         na região de Belém do Pará. Operado por <strong>Açaí Rapidola</strong>.
         Contato: <a href="mailto:contato@pedeacai.dream2app.com.br" style={{ color: '#4A148C' }}>contato@pedeacai.dream2app.com.br</a>
       </Section>
@@ -147,12 +147,12 @@ function TermsOfService() {
       <p style={{ fontSize: 12, color: '#999', marginBottom: 28 }}>Última atualização: maio de 2025</p>
 
       <Section title="1. Aceitação dos termos">
-        Ao criar uma conta ou usar o aplicativo <strong>Pé de Açaí</strong>, você concorda com estes Termos de Uso.
+        Ao criar uma conta ou usar o aplicativo <strong>Vai de Açaí?</strong>, você concorda com estes Termos de Uso.
         Se não concordar, não utilize o serviço.
       </Section>
 
       <Section title="2. O serviço">
-        O Pé de Açaí é uma plataforma de intermediação que conecta clientes a lojas de açaí e motoboys independentes
+        O Vai de Açaí? é uma plataforma de intermediação que conecta clientes a lojas de açaí e motoboys independentes
         na região de Belém do Pará. Não somos fabricantes nem distribuidores dos produtos vendidos pelas lojas.
       </Section>
 
@@ -193,13 +193,13 @@ function TermsOfService() {
       </Section>
 
       <Section title="8. Limitação de responsabilidade">
-        O Pé de Açaí não se responsabiliza por atrasos causados por condições de trânsito ou clima,
+        O Vai de Açaí? não se responsabiliza por atrasos causados por condições de trânsito ou clima,
         qualidade dos produtos preparados pelas lojas, danos causados por informações incorretas fornecidas pelo usuário
         ou indisponibilidade temporária do serviço por manutenção ou falhas técnicas.
       </Section>
 
       <Section title="9. Propriedade intelectual">
-        A marca, logo e conteúdo do Pé de Açaí são de propriedade da Açaí Rapidola.
+        A marca, logo e conteúdo do Vai de Açaí? são de propriedade da Açaí Rapidola.
         É proibida a reprodução sem autorização prévia.
       </Section>
 
