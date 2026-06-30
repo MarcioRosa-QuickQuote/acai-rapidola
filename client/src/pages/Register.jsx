@@ -683,18 +683,13 @@ export default function Register() {
                 </div>
               </div>
 
-              {!inviteToken && (
-                <>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, margin: '4px 0 10px' }}>
-                    <div style={{ flex: 1, height: 1, background: '#E8E0F0' }} />
-                    <span style={{ fontSize: 12, color: '#555', whiteSpace: 'nowrap' }}>ou cadastre com</span>
-                    <div style={{ flex: 1, height: 1, background: '#E8E0F0' }} />
-                  </div>
+              <div style={{ display: 'flex', gap: 10, marginTop: 4 }}>
+                {!inviteToken && (
                   <button type="button" onClick={() => googleLogin()} disabled={googleLoading} style={{
-                    width: '100%', padding: '11px', marginBottom: 10,
+                    flex: 1, padding: '13px 8px',
                     background: 'white', color: '#333', border: '2px solid #E8E0F0', borderRadius: 10,
-                    fontSize: 15, fontWeight: 400, cursor: googleLoading ? 'default' : 'pointer',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
+                    fontSize: 14, fontWeight: 400, cursor: googleLoading ? 'default' : 'pointer',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
                     opacity: googleLoading ? 0.7 : 1, boxSizing: 'border-box'
                   }}>
                     {!googleLoading && (
@@ -706,21 +701,21 @@ export default function Register() {
                         <path fill="none" d="M0 0h48v48H0z"/>
                       </svg>
                     )}
-                    {googleLoading ? 'Aguarde...' : role === 'store' ? 'Cadastrar Loja com Google' : 'Cadastrar com Google'}
+                    {googleLoading ? 'Aguarde...' : 'Cadastrar com Google'}
                   </button>
-                </>
-              )}
+                )}
 
-              <button type="submit" disabled={loading} style={{
-                width: '100%', padding: '13px',
-                background: 'linear-gradient(135deg, #6A1B9A, #9C27B0)',
-                color: 'white', border: 'none', borderRadius: 10,
-                fontSize: 16, fontWeight: 700, cursor: loading ? 'default' : 'pointer',
-                opacity: loading ? 0.7 : 1,
-                boxShadow: '0 4px 14px rgba(106,27,154,0.4)'
-              }}>
-                {loading ? 'Criando conta...' : 'Cadastrar'}
-              </button>
+                <button type="submit" disabled={loading} style={{
+                  flex: inviteToken ? '1' : '1', padding: '13px',
+                  background: 'linear-gradient(135deg, #6A1B9A, #9C27B0)',
+                  color: 'white', border: 'none', borderRadius: 10,
+                  fontSize: 16, fontWeight: 700, cursor: loading ? 'default' : 'pointer',
+                  opacity: loading ? 0.7 : 1,
+                  boxShadow: '0 4px 14px rgba(106,27,154,0.4)'
+                }}>
+                  {loading ? 'Criando conta...' : 'Cadastrar'}
+                </button>
+              </div>
 
               <p style={{ textAlign: 'center', marginTop: 14, fontSize: 14, color: '#888' }}>
                 Já tem conta?{' '}
