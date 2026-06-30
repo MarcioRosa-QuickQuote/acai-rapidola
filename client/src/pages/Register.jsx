@@ -563,7 +563,7 @@ export default function Register() {
     }}>
 
       {/* Logo — z-index abaixo do card para a estaca ficar "fincada" no modal */}
-      <div className="login-logo" style={{ textAlign: 'center', marginBottom: -4, marginTop: -80, zIndex: 0, position: 'relative' }}>
+      <div className="login-logo" style={{ textAlign: 'center', marginBottom: -52, marginTop: -80, zIndex: 0, position: 'relative' }}>
         <img src="/vai_de_acai_transp.png" alt="Vai de Açaí?" style={{
           width: 180, height: 180, objectFit: 'contain', display: 'block', margin: '0 auto'
         }} />
