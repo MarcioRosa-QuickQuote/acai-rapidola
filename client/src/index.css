@@ -527,6 +527,10 @@ img { max-width: 100%; height: auto; }
 .leaflet-control { z-index: 2 !important; }
 
 /* ── Login/Cadastro: vídeo de fundo ────────────────────────────────────── */
+@keyframes videoFadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
 .login-video {
   position: absolute; top: 0; left: -5%;
   width: 55%; height: 100%;
@@ -534,6 +538,7 @@ img { max-width: 100%; height: auto; }
   pointer-events: none;
   -webkit-mask-image: linear-gradient(to right, black 55%, transparent 100%);
   mask-image: linear-gradient(to right, black 55%, transparent 100%);
+  animation: videoFadeIn 1.4s ease-in both;
 }
 .login-video-overlay {
   position: absolute; top: 0; left: 0;
