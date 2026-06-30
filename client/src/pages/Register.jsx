@@ -563,8 +563,7 @@ export default function Register() {
     }}>
 
       {/* Logo — z-index abaixo do card para a estaca ficar "fincada" no modal */}
-      <div style={{ textAlign: 'center', marginBottom: -4, marginTop: -80, zIndex: 0, position: 'relative',
-        filter: 'drop-shadow(0 6px 28px rgba(0,0,0,0.55))' }}>
+      <div style={{ textAlign: 'center', marginBottom: -4, marginTop: -80, zIndex: 0, position: 'relative' }}>
         <img src="/vai_de_acai_transp.png" alt="Vai de Açaí?" style={{
           width: 180, height: 180, objectFit: 'contain', display: 'block', margin: '0 auto'
         }} />

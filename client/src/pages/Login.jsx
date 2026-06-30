@@ -61,8 +61,7 @@ export default function Login() {
     }}>
 
       {/* Logo — z-index abaixo do card para a estaca ficar "fincada" no modal */}
-      <div style={{ textAlign: 'center', marginBottom: -4, marginTop: -80, zIndex: 2, position: 'relative',
-        filter: 'drop-shadow(0 6px 28px rgba(0,0,0,0.55))' }}>
+      <div style={{ textAlign: 'center', marginBottom: -4, marginTop: -80, zIndex: 2, position: 'relative' }}>
         <img src="/vai_de_acai_transp.png" alt="Vai de Açaí?" style={{
           width: 190, height: 190, objectFit: 'contain', display: 'block', margin: '0 auto'
         }} />
