@@ -600,12 +600,6 @@ export default function Register() {
         transition: 'transform 0.5s ease-out'
       }}>
         <div style={{ padding: '24px 30px 20px' }}>
-          {!wizardStep && (
-            <div style={{ textAlign: 'right', marginBottom: 16 }}>
-              <span style={{ fontSize: 14, fontWeight: 300, color: '#9C27B0', letterSpacing: '0.03em' }}>Crie sua conta</span>
-            </div>
-          )}
-
           {/* ── Wizard entregador ── */}
           {wizardStep === 1 && renderStep1()}
           {wizardStep === 2 && renderStep2()}
