@@ -570,7 +570,7 @@ export default function Register() {
       <div className="login-video-overlay" />
 
       {/* Logo — z-index abaixo do card para a estaca ficar "fincada" no modal */}
-      <div style={{ textAlign: 'center', marginBottom: -24, zIndex: 0, position: 'relative',
+      <div style={{ textAlign: 'center', marginBottom: -4, marginTop: -80, zIndex: 0, position: 'relative',
         filter: 'drop-shadow(0 6px 28px rgba(0,0,0,0.55))' }}>
         <img src="/vai_de_acai_transp.png" alt="Vai de Açaí?" style={{
           width: 180, height: 180, objectFit: 'contain', display: 'block', margin: '0 auto'
@@ -692,7 +692,7 @@ export default function Register() {
                   <button type="button" onClick={() => googleLogin()} disabled={googleLoading} style={{
                     width: '100%', padding: '11px', marginBottom: 10,
                     background: 'white', color: '#333', border: '2px solid #E8E0F0', borderRadius: 10,
-                    fontSize: 15, fontWeight: 600, cursor: googleLoading ? 'default' : 'pointer',
+                    fontSize: 15, fontWeight: 400, cursor: googleLoading ? 'default' : 'pointer',
                     display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
                     opacity: googleLoading ? 0.7 : 1, boxSizing: 'border-box'
                   }}>

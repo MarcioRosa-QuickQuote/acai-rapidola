@@ -164,7 +164,7 @@ export default function Login() {
             <button type="button" onClick={() => googleLogin()} disabled={googleLoading} style={{
               width: '100%', padding: '11px', marginTop: 10,
               background: 'white', color: '#333', border: '2px solid #E8E0F0', borderRadius: 10,
-              fontSize: 15, fontWeight: 600, cursor: googleLoading ? 'default' : 'pointer',
+              fontSize: 15, fontWeight: 400, cursor: googleLoading ? 'default' : 'pointer',
               display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
               opacity: googleLoading ? 0.7 : 1,
               transition: 'border-color 0.2s, box-shadow 0.2s',
