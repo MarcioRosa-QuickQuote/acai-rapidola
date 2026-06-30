@@ -41,13 +41,13 @@ function AuthLayout() {
   }, []);
 
   return (
-    <div style={{
-      minHeight: '100vh',
-      background: 'linear-gradient(160deg, #6A1B9A 0%, #9C27B0 45%, #CE93D8 100%)',
-      position: 'relative'
-    }}>
+    <div style={{ minHeight: '100vh', position: 'relative' }}>
       {createPortal(
         <>
+          <div style={{
+            position: 'fixed', inset: 0,
+            background: 'linear-gradient(160deg, #6A1B9A 0%, #9C27B0 45%, #CE93D8 100%)'
+          }} />
           <video ref={videoRef} autoPlay loop muted playsInline preload="auto" className="login-video">
             <source src="/video4.mp4" type="video/mp4" />
           </video>
