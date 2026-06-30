@@ -583,7 +583,7 @@ export default function Register() {
       </div>
 
       {/* Card */}
-      <div style={{
+      <div className="login-card" style={{
         width: '100%', maxWidth: 560,
         background: 'rgba(255,255,255,0.97)',
         borderRadius: 24,

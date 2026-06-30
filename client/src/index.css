@@ -553,6 +553,7 @@ img { max-width: 100%; height: auto; }
     padding-top: calc(env(safe-area-inset-top, 0px) + 6px) !important;
   }
   .login-logo { margin-top: 0 !important; transform: translateY(-20px); }
+  .login-card { transform: translateY(12px); }
   .login-video {
     position: fixed; top: -2%; left: -2%;
     width: 104%; height: 104%;

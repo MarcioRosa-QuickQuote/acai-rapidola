@@ -68,7 +68,7 @@ export default function Login() {
       </div>
 
       {/* Card — z-index acima da logo para cobrir a estaca */}
-      <div style={{
+      <div className="login-card" style={{
         width: '100%', maxWidth: 440,
         background: '#fff',
         borderRadius: 24,
