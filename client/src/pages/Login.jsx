@@ -58,7 +58,7 @@ export default function Login() {
 
   return (
     <div className="login-container" style={{
-      display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'center',
+      display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center',
       minHeight: '100vh',
       background: 'linear-gradient(160deg, #6A1B9A 0%, #9C27B0 45%, #CE93D8 100%)',
       padding: '24px 20px 20px', position: 'relative', overflow: 'hidden'
@@ -82,7 +82,7 @@ export default function Login() {
         background: '#fff',
         borderRadius: 24,
         boxShadow: '0 20px 60px rgba(0,0,0,0.35)',
-        position: 'relative', zIndex: 3, marginTop: 30,
+        position: 'relative', zIndex: 3,
       }}>
         {/* Form */}
         <div style={{ padding: '24px 30px 20px' }}>
