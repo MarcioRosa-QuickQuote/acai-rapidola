@@ -556,14 +556,14 @@ export default function Register() {
   // ── Render principal ──────────────────────────────────────────────────────
 
   return (
-    <div style={{
+    <div className="login-container" style={{
       display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center',
       minHeight: '100vh', background: 'transparent',
       padding: '100px 20px 20px', position: 'relative', overflow: 'visible'
     }}>
 
       {/* Logo — z-index abaixo do card para a estaca ficar "fincada" no modal */}
-      <div style={{ textAlign: 'center', marginBottom: -4, marginTop: -80, zIndex: 0, position: 'relative' }}>
+      <div className="login-logo" style={{ textAlign: 'center', marginBottom: -4, marginTop: -80, zIndex: 0, position: 'relative' }}>
         <img src="/vai_de_acai_transp.png" alt="Vai de Açaí?" style={{
           width: 180, height: 180, objectFit: 'contain', display: 'block', margin: '0 auto'
         }} />
