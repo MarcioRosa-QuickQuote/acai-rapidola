@@ -562,7 +562,7 @@ export default function Register() {
       display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'center',
       minHeight: '100vh',
       background: 'linear-gradient(160deg, #6A1B9A 0%, #9C27B0 45%, #CE93D8 100%)',
-      padding: '24px 20px 20px', position: 'relative', overflow: 'hidden'
+      padding: '24px 20px 20px', position: 'relative', overflow: 'visible'
     }}>
       <video ref={bgVideoRef} autoPlay loop muted playsInline preload="auto" className="login-video">
         <source src="/video4.mp4" type="video/mp4" />
@@ -623,17 +623,18 @@ export default function Register() {
                   placeholder="Seu nome" required style={inputStyle} onFocus={onFocus} onBlur={onBlur} />
               </div>
 
-              <div style={{ marginBottom: 12 }}>
-                <label style={labelStyle}>E-mail</label>
-                <input type="email" value={email} onChange={e => setEmail(e.target.value)}
-                  placeholder="seu@email.com" required style={inputStyle} onFocus={onFocus} onBlur={onBlur} />
-              </div>
-
-              <div style={{ marginBottom: 12 }}>
-                <label style={labelStyle}>Telefone</label>
-                <input type="text" value={phone} onChange={e => setPhone(e.target.value)}
-                  placeholder="(11) 99999-9999" required
-                  style={inputStyle} onFocus={onFocus} onBlur={onBlur} />
+              <div style={{ display: 'flex', gap: 10, marginBottom: 12 }}>
+                <div style={{ flex: 1 }}>
+                  <label style={labelStyle}>E-mail</label>
+                  <input type="email" value={email} onChange={e => setEmail(e.target.value)}
+                    placeholder="seu@email.com" required style={inputStyle} onFocus={onFocus} onBlur={onBlur} />
+                </div>
+                <div style={{ flex: 1 }}>
+                  <label style={labelStyle}>Celular</label>
+                  <input type="text" value={phone} onChange={e => setPhone(e.target.value)}
+                    placeholder="(11) 99999-9999" required
+                    style={inputStyle} onFocus={onFocus} onBlur={onBlur} />
+                </div>
               </div>
 
               <div style={{ marginBottom: 14 }}>
