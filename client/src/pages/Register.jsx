@@ -562,7 +562,7 @@ export default function Register() {
       display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center',
       minHeight: '100vh',
       background: 'linear-gradient(160deg, #6A1B9A 0%, #9C27B0 45%, #CE93D8 100%)',
-      padding: '24px 20px 20px', position: 'relative', overflow: 'visible'
+      padding: '100px 20px 20px', position: 'relative', overflow: 'visible'
     }}>
       <video ref={bgVideoRef} autoPlay loop muted playsInline preload="auto" className="login-video">
         <source src="/video4.mp4" type="video/mp4" />
