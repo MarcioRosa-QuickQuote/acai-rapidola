@@ -23,7 +23,22 @@ import AdminPanel from './pages/AdminPanel';
 
 function AuthLayout() {
   const videoRef = useRef(null);
-  useEffect(() => { videoRef.current?.play().catch(() => {}); }, []);
+  const location = useLocation();
+
+  useEffect(() => { videoRef.current?.play().catch(() => {}); }, [location.pathname]);
+
+  useEffect(() => {
+    const v = videoRef.current;
+    if (!v) return;
+    const resume = () => v.play().catch(() => {});
+    document.addEventListener('visibilitychange', resume);
+    v.addEventListener('pause', resume);
+    return () => {
+      document.removeEventListener('visibilitychange', resume);
+      v.removeEventListener('pause', resume);
+    };
+  }, []);
+
   return (
     <div style={{
       minHeight: '100vh',
