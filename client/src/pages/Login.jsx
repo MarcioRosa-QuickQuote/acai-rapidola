@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useGoogleLogin } from '@react-oauth/google';
@@ -32,9 +32,6 @@ export default function Login() {
     },
     onError: () => setError('Login com Google cancelado')
   });
-  const videoRef = useRef(null);
-  useEffect(() => { videoRef.current?.play().catch(() => {}); }, []);
-
   const [showPw, setShowPw] = useState(false);
   const [recovery, setRecovery] = useState(false);
   const [recoveryStep, setRecoveryStep] = useState(1);
@@ -59,14 +56,9 @@ export default function Login() {
   return (
     <div className="login-container" style={{
       display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center',
-      minHeight: '100vh',
-      background: 'linear-gradient(160deg, #6A1B9A 0%, #9C27B0 45%, #CE93D8 100%)',
-      padding: '24px 20px 20px', position: 'relative', overflow: 'hidden'
+      minHeight: '100vh', background: 'transparent',
+      padding: '24px 20px 20px', position: 'relative', overflow: 'visible'
     }}>
-      <video ref={videoRef} autoPlay loop muted playsInline preload="auto" className="login-video">
-        <source src="/video4.mp4" type="video/mp4" />
-      </video>
-      <div className="login-video-overlay" />
 
       {/* Logo — z-index abaixo do card para a estaca ficar "fincada" no modal */}
       <div style={{ textAlign: 'center', marginBottom: -4, marginTop: -80, zIndex: 2, position: 'relative',

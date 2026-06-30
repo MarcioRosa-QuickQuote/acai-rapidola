@@ -21,7 +21,6 @@ export default function Register() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
-  const bgVideoRef = useRef(null);
 
   // Wizard entregador
   const [wizardStep, setWizardStep] = useState(null); // null | 1 | 2 | 3 | 4
@@ -81,7 +80,6 @@ export default function Register() {
     }
   }, [inviteToken]);
 
-  useEffect(() => { bgVideoRef.current?.play().catch(() => {}); }, []);
 
   // Limpa câmera ao desmontar
   useEffect(() => {
@@ -560,14 +558,9 @@ export default function Register() {
   return (
     <div style={{
       display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center',
-      minHeight: '100vh',
-      background: 'linear-gradient(160deg, #6A1B9A 0%, #9C27B0 45%, #CE93D8 100%)',
+      minHeight: '100vh', background: 'transparent',
       padding: '100px 20px 20px', position: 'relative', overflow: 'visible'
     }}>
-      <video ref={bgVideoRef} autoPlay loop muted playsInline preload="auto" className="login-video">
-        <source src="/video4.mp4" type="video/mp4" />
-      </video>
-      <div className="login-video-overlay" />
 
       {/* Logo — z-index abaixo do card para a estaca ficar "fincada" no modal */}
       <div style={{ textAlign: 'center', marginBottom: -4, marginTop: -80, zIndex: 0, position: 'relative',

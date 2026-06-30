@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
-import { Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom';
+import { useEffect, useRef, useState } from 'react';
+import { Routes, Route, Navigate, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from './contexts/AuthContext';
 import { App as CapApp } from '@capacitor/app';
 import UpdateBanner from './components/UpdateBanner';
@@ -20,6 +20,24 @@ import CustomerNotificacoes from './pages/CustomerNotificacoes';
 import StoreDashboard from './pages/StoreDashboard';
 import MotoboyDashboard from './pages/MotoboyDashboard';
 import AdminPanel from './pages/AdminPanel';
+
+function AuthLayout() {
+  const videoRef = useRef(null);
+  useEffect(() => { videoRef.current?.play().catch(() => {}); }, []);
+  return (
+    <div style={{
+      minHeight: '100vh',
+      background: 'linear-gradient(160deg, #6A1B9A 0%, #9C27B0 45%, #CE93D8 100%)',
+      position: 'relative'
+    }}>
+      <video ref={videoRef} autoPlay loop muted playsInline preload="auto" className="login-video">
+        <source src="/video4.mp4" type="video/mp4" />
+      </video>
+      <div className="login-video-overlay" />
+      <Outlet />
+    </div>
+  );
+}
 
 function ReconnectScreen({ onRetry }) {
   return (
@@ -103,8 +121,10 @@ export default function App() {
       <BackButtonHandler />
       <UpdateBanner />
       <Routes>
-      <Route path="/login" element={user ? <Navigate to={`/${user.role === 'customer' ? 'customer' : user.role}`} /> : <Login />} />
-      <Route path="/register" element={user ? <Navigate to={`/${user.role === 'customer' ? 'customer' : user.role}`} /> : <Register />} />
+      <Route element={user ? <Navigate to={`/${user.role === 'customer' ? 'customer' : user.role}`} /> : <AuthLayout />}>
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+      </Route>
       <Route path="/privacidade" element={<Legal />} />
       <Route path="/termos" element={<Legal />} />
       <Route path="/deletar-conta" element={<DeleteAccount />} />
