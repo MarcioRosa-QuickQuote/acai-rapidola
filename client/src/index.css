@@ -562,7 +562,7 @@ img { max-width: 100%; height: auto; }
   .login-video-overlay {
     position: fixed; top: 0; left: 0;
     width: 100%; height: 100%;
-    background: rgba(74, 20, 140, 0.22);
+    background: rgba(74, 20, 140, 0.08);
     z-index: 1;
   }
 }
