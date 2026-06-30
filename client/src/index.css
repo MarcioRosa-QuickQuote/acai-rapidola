@@ -550,7 +550,7 @@ img { max-width: 100%; height: auto; }
   .login-container {
     background: transparent !important;
     justify-content: flex-start !important;
-    padding-top: calc(env(safe-area-inset-top, 0px) + 16px) !important;
+    padding-top: calc(env(safe-area-inset-top, 0px) + 6px) !important;
   }
   .login-logo { margin-top: 0 !important; }
   .login-video {
