@@ -82,7 +82,7 @@ export default function Login() {
         background: '#fff',
         borderRadius: 24,
         boxShadow: '0 20px 60px rgba(0,0,0,0.35)',
-        position: 'relative', zIndex: 3,
+        position: 'relative', zIndex: 3, marginTop: 30,
       }}>
         {/* Form */}
         <div style={{ padding: '24px 30px 20px' }}>
