@@ -34,9 +34,15 @@ function AuthLayout() {
     const resume = () => v.play().catch(() => {});
     document.addEventListener('visibilitychange', resume);
     v.addEventListener('pause', resume);
+    // autoplay pode ser bloqueado sem gesto do usuário no carregamento inicial;
+    // qualquer primeiro toque/clique na tela tenta de novo
+    document.addEventListener('touchstart', resume, { once: true });
+    document.addEventListener('click', resume, { once: true });
     return () => {
       document.removeEventListener('visibilitychange', resume);
       v.removeEventListener('pause', resume);
+      document.removeEventListener('touchstart', resume);
+      document.removeEventListener('click', resume);
     };
   }, []);
 
