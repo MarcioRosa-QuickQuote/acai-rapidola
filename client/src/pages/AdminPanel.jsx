@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+﻿import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 
@@ -478,8 +478,8 @@ export default function AdminPanel() {
         background: '#4A148C', color: 'white', padding: '0 20px',
         display: 'flex', alignItems: 'center', gap: 12, height: 56, flexShrink: 0
       }}>
-        <img src="/vai_de_acai_transp.png" style={{ width: 32, height: 32, objectFit: 'contain' }} alt="" />
-        <div style={{ fontWeight: 800, fontSize: 16, letterSpacing: -0.3 }}>Vai de Açaí? · Admin</div>
+        <img src="/vem_acai_transp.png" style={{ width: 32, height: 32, objectFit: 'contain' }} alt="" />
+        <div style={{ fontWeight: 800, fontSize: 16, letterSpacing: -0.3 }}>Vem Açaí · Admin</div>
         <div style={{ flex: 1 }} />
         <div style={{ fontSize: 13, opacity: 0.8 }}>Olá, {user?.name}</div>
         <button onClick={logout} style={{

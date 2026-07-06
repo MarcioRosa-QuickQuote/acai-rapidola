@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+﻿import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { fmt } from '../utils/fmt';
@@ -539,7 +539,7 @@ export default function CustomerTracking() {
             {/* Logo da loja no início */}
             <div className="order-status-step">
               <div style={{ height: 56, width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <img src="/vai_de_acai_transp.png" style={{ width: '100%', height: '100%', objectFit: 'contain', opacity: currentStep >= 0 ? 1 : 0.6 }} />
+                <img src="/vem_acai_transp.png" style={{ width: '100%', height: '100%', objectFit: 'contain', opacity: currentStep >= 0 ? 1 : 0.6 }} />
               </div>
               <span className="text-xs" style={{ color: 'var(--text-light)', textAlign: 'center' }}> </span>
             </div>
@@ -620,7 +620,7 @@ export default function CustomerTracking() {
                   zoom={14} style={{ height: '100%', width: '100%' }} scrollWheelZoom={false}>
                   <TileLayer attribution='&copy; OSM' url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
                   <Marker position={[order.store_lat, order.store_lng]}
-                    icon={L.divIcon({ html: '<img src="/vai_de_acai_transp.png" style="width:46px;height:46px;object-fit:contain;filter:drop-shadow(0 2px 6px rgba(0,0,0,0.5))"/>', className: '', iconSize: [46, 46], iconAnchor: [23, 23] })} />
+                    icon={L.divIcon({ html: '<img src="/vem_acai_transp.png" style="width:46px;height:46px;object-fit:contain;filter:drop-shadow(0 2px 6px rgba(0,0,0,0.5))"/>', className: '', iconSize: [46, 46], iconAnchor: [23, 23] })} />
                   <Marker position={[order.customer_lat, order.customer_lng]}
                     icon={L.divIcon({ html: custIconHtml, className: '', iconSize: [34, 34], iconAnchor: [17, 17] })} />
                   {(displayPos || motoboyPos) && order.status !== 'delivered' && (

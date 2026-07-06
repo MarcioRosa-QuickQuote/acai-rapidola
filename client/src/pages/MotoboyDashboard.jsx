@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useRef } from 'react';
+﻿import { useState, useEffect, useMemo, useRef } from 'react';
 import { fmt } from '../utils/fmt';
 import { useAuth } from '../contexts/AuthContext';
 import { useSocket } from '../contexts/SocketContext';
@@ -293,7 +293,7 @@ function NavScreen({ order, onClose, onStatusUpdate, statusLabel }) {
   }), []);
 
   const storeIcon = useMemo(() => L.divIcon({
-    html: `<img src="/vai_de_acai_transp.png" style="width:44px;height:44px;object-fit:contain;filter:drop-shadow(0 2px 6px rgba(0,0,0,0.5))"/>`,
+    html: `<img src="/vem_acai_transp.png" style="width:44px;height:44px;object-fit:contain;filter:drop-shadow(0 2px 6px rgba(0,0,0,0.5))"/>`,
     className: '', iconSize: [44, 44], iconAnchor: [22, 22]
   }), []);
 
@@ -344,7 +344,7 @@ function NavScreen({ order, onClose, onStatusUpdate, statusLabel }) {
               <PanDetector onPan={() => setOverviewPanned(true)} />
               {!overviewPanned && <LeafletRecenter pos={pos} />}
               {pos && <Marker position={[pos.lat, pos.lng]} icon={motoboyIcon} />}
-              {/* Loja SEMPRE visível como vai_de_acai_transp */}
+              {/* Loja SEMPRE visível como vem_acai_transp */}
               {order.store_lat && <Marker position={[order.store_lat, order.store_lng]} icon={storeIcon} />}
               {/* Destino do cliente (quando indo ao cliente) */}
               {!isToStore && <Marker position={[order.customer_lat, order.customer_lng]} icon={destIcon} />}
@@ -473,7 +473,7 @@ function NavScreen({ order, onClose, onStatusUpdate, statusLabel }) {
             )}
             {order.store_lat ? (
               <MLMarker longitude={order.store_lng} latitude={order.store_lat} anchor="bottom">
-                <img src="/vai_de_acai_transp.png" style={{ width: 52, height: 52, objectFit: 'contain', filter: 'drop-shadow(0 3px 8px rgba(0,0,0,0.6))' }} />
+                <img src="/vem_acai_transp.png" style={{ width: 52, height: 52, objectFit: 'contain', filter: 'drop-shadow(0 3px 8px rgba(0,0,0,0.6))' }} />
               </MLMarker>
             ) : null}
             {!isToStore && (
@@ -949,7 +949,7 @@ export default function MotoboyDashboard() {
         minHeight: '100vh', padding: 32, textAlign: 'center',
         background: 'linear-gradient(160deg, #1a0533 0%, #4A148C 100%)'
       }}>
-        <img src="/vai_de_acai_transp.png" alt="logo" style={{ width: 100, height: 100, objectFit: 'contain', marginBottom: 24, filter: 'drop-shadow(0 4px 16px rgba(0,0,0,0.5))' }} />
+        <img src="/vem_acai_transp.png" alt="logo" style={{ width: 100, height: 100, objectFit: 'contain', marginBottom: 24, filter: 'drop-shadow(0 4px 16px rgba(0,0,0,0.5))' }} />
         <div style={{ fontSize: 40, marginBottom: 12 }}>⏸</div>
         <div style={{ fontWeight: 800, fontSize: 22, color: 'white', marginBottom: 8 }}>Conta suspensa</div>
         {dtFmt && (
@@ -985,7 +985,7 @@ export default function MotoboyDashboard() {
       minHeight: '100vh', padding: 32, textAlign: 'center',
       background: 'linear-gradient(160deg, #1a0533 0%, #4A148C 100%)'
     }}>
-      <img src="/vai_de_acai_transp.png" alt="logo" style={{ width: 100, height: 100, objectFit: 'contain', marginBottom: 24, filter: 'drop-shadow(0 4px 16px rgba(0,0,0,0.5))' }} />
+      <img src="/vem_acai_transp.png" alt="logo" style={{ width: 100, height: 100, objectFit: 'contain', marginBottom: 24, filter: 'drop-shadow(0 4px 16px rgba(0,0,0,0.5))' }} />
       <div style={{ fontSize: 40, marginBottom: 12 }}>❌</div>
       <div style={{ fontWeight: 800, fontSize: 22, color: 'white', marginBottom: user.rejection_reason ? 8 : 24 }}>Cadastro não aprovado</div>
       {user.rejection_reason && (
@@ -1480,7 +1480,7 @@ export default function MotoboyDashboard() {
       {/* ── TOPBAR ──────────────────────────────────────────────── */}
       <div className="header" style={{ padding: '4px 16px', background: mb.accent, borderBottom: `1px solid ${mb.accentDark}`, overflow: 'visible' }}>
         <div className="header-left" style={{ gap: 10, overflow: 'visible' }}>
-          <img src="/vai_de_acai_transp.png" alt="Vai de Açaí?" style={{ width: 58, height: 58, objectFit: 'contain', flexShrink: 0, transform: 'rotate(15deg)', alignSelf: 'flex-end', marginBottom: -10, marginLeft: 4 }} />
+          <img src="/vem_acai_transp.png" alt="Vem Açaí" style={{ width: 58, height: 58, objectFit: 'contain', flexShrink: 0, transform: 'rotate(15deg)', alignSelf: 'flex-end', marginBottom: -10, marginLeft: 4 }} />
         </div>
         <div className="header-right" style={{ gap: 16 }}>
           {/* Toggle online/offline compacto */}

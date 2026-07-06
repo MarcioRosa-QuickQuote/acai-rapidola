@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom';
+﻿import { useNavigate } from 'react-router-dom';
 
 export default function DeleteAccount() {
   const navigate = useNavigate();
@@ -16,8 +16,8 @@ export default function DeleteAccount() {
             <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
           </svg>
         </button>
-        <img src="/vai_de_acai_transp.png" style={{ width: 40, height: 40, objectFit: 'contain' }} />
-        <span style={{ fontWeight: 800, fontSize: 16, color: '#4A148C' }}>Vai de Açaí?</span>
+        <img src="/vem_acai_transp.png" style={{ width: 40, height: 40, objectFit: 'contain' }} />
+        <span style={{ fontWeight: 800, fontSize: 16, color: '#4A148C' }}>Vem Açaí</span>
       </div>
 
       <div style={{ maxWidth: 680, margin: '0 auto', padding: '32px 20px' }}>
@@ -33,13 +33,13 @@ export default function DeleteAccount() {
             Como solicitar a exclusão
           </h2>
           <ol style={{ paddingLeft: 20, color: '#555', fontSize: 15, lineHeight: 2 }}>
-            <li>Acesse o aplicativo <strong>Vai de Açaí?</strong></li>
+            <li>Acesse o aplicativo <strong>Vem Açaí</strong></li>
             <li>Vá em <strong>Perfil → Configurações</strong></li>
             <li>Toque em <strong>"Excluir minha conta"</strong></li>
           </ol>
           <p style={{ fontSize: 14, color: '#888', marginTop: 12 }}>
             Ou envie um e-mail para{' '}
-            <a href="mailto:dream2applabs@gmail.com?subject=Solicitação de exclusão de conta - Vai de Açaí?"
+            <a href="mailto:dream2applabs@gmail.com?subject=Solicitação de exclusão de conta - Vem Açaí"
               style={{ color: '#6A1B9A', fontWeight: 600 }}>
               dream2applabs@gmail.com
             </a>

@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
+﻿import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { fmt } from '../utils/fmt';
 import { useAuth } from '../contexts/AuthContext';
 import { useSocket } from '../contexts/SocketContext';
@@ -950,7 +950,7 @@ export default function StoreDashboard() {
                       center={[(order.customer_lat + order.store_lat) / 2, ((order.customer_lng || 0) + (order.store_lng || 0)) / 2]}
                       zoom={13} style={{ height: '100%', width: '100%' }} scrollWheelZoom={false}>
                       <TileLayer attribution='&copy; OSM' url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-                      <Marker position={[order.store_lat, order.store_lng]} icon={L.divIcon({ html: '<img src="/vai_de_acai_transp.png" style="width:44px;height:44px;object-fit:contain;filter:drop-shadow(0 2px 6px rgba(0,0,0,0.5))"/>', className: '', iconSize: [44, 44], iconAnchor: [22, 22] })} />
+                      <Marker position={[order.store_lat, order.store_lng]} icon={L.divIcon({ html: '<img src="/vem_acai_transp.png" style="width:44px;height:44px;object-fit:contain;filter:drop-shadow(0 2px 6px rgba(0,0,0,0.5))"/>', className: '', iconSize: [44, 44], iconAnchor: [22, 22] })} />
                       <Marker position={[order.customer_lat, order.customer_lng]} />
                       <RoutePolyline from={{ lat: order.store_lat, lng: order.store_lng }} to={{ lat: order.customer_lat, lng: order.customer_lng }} color="#4A148C" />
                     </MapContainer>
@@ -2617,7 +2617,7 @@ export default function StoreDashboard() {
               transition: 'opacity 0.5s ease'
             }}>
               <div style={{ color: tvText, fontSize: 15, fontWeight: 800, letterSpacing: 0.5, textAlign: 'center', lineHeight: 1.2 }}>
-                Vai de Açaí?
+                Vem Açaí
               </div>
               <img src={qrUrl} alt="QR" style={{ width: 90, height: 90, borderRadius: 8, display: 'block' }} />
               <div style={{ color: tvSub, fontSize: 9, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, textAlign: 'center', lineHeight: 1.4 }}>
