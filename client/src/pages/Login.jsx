@@ -62,7 +62,7 @@ export default function Login() {
 
       {/* Logo — z-index abaixo do card para a estaca ficar "fincada" no modal */}
       <div className="login-logo" style={{ textAlign: 'center', marginBottom: -55, marginTop: -80, zIndex: 2, position: 'relative' }}>
-        <img src="/vem_acai_transp.png" alt="Vem Açaí" style={{
+        <img src="/vem_acai_transp.png" alt="Vem, Açaí!" style={{
           width: 190, height: 190, objectFit: 'contain', display: 'block', margin: '0 auto'
         }} />
       </div>
@@ -288,7 +288,7 @@ export default function Login() {
           Página de Vendas
         </a>
         <span>·</span>
-        <span>Vem Açaí © 2026 —{' '}
+        <span>Vem, Açaí! © 2026 —{' '}
           <Link to="/privacidade" style={{ color: '#fff', textDecoration: 'underline' }}>Privacidade</Link>
           {' · '}
           <Link to="/termos" style={{ color: '#fff', textDecoration: 'underline' }}>Termos</Link>

@@ -1480,7 +1480,7 @@ export default function MotoboyDashboard() {
       {/* ── TOPBAR ──────────────────────────────────────────────── */}
       <div className="header" style={{ padding: '4px 16px', background: mb.accent, borderBottom: `1px solid ${mb.accentDark}`, overflow: 'visible' }}>
         <div className="header-left" style={{ gap: 10, overflow: 'visible' }}>
-          <img src="/vem_acai_transp.png" alt="Vem Açaí" style={{ width: 58, height: 58, objectFit: 'contain', flexShrink: 0, transform: 'rotate(15deg)', alignSelf: 'flex-end', marginBottom: -10, marginLeft: 4 }} />
+          <img src="/vem_acai_transp.png" alt="Vem, Açaí!" style={{ width: 58, height: 58, objectFit: 'contain', flexShrink: 0, transform: 'rotate(15deg)', alignSelf: 'flex-end', marginBottom: -10, marginLeft: 4 }} />
         </div>
         <div className="header-right" style={{ gap: 16 }}>
           {/* Toggle online/offline compacto */}

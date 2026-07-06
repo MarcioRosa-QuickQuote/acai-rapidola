@@ -1,9 +1,9 @@
-﻿// ─── Vem Açaí · Service Worker ───────────────────────────────────────────
+﻿// ─── Vem, Açaí! · Service Worker ───────────────────────────────────────────
 // Estratégia: cache-first para assets estáticos, stale-while-revalidate para
 // shell + imagens, network-only para API / socket / Supabase.
 // Vite coloca hash no nome dos assets → pode cachear para sempre.
 
-const STATIC_V  = 'rapidola-static-v177';
+const STATIC_V  = 'rapidola-static-v178';
 const IMAGE_V   = 'rapidola-images-v1';
 const MAX_IMGS  = 120; // máx de imagens em cache
 

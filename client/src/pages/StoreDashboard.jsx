@@ -2617,7 +2617,7 @@ export default function StoreDashboard() {
               transition: 'opacity 0.5s ease'
             }}>
               <div style={{ color: tvText, fontSize: 15, fontWeight: 800, letterSpacing: 0.5, textAlign: 'center', lineHeight: 1.2 }}>
-                Vem Açaí
+                Vem, Açaí!
               </div>
               <img src={qrUrl} alt="QR" style={{ width: 90, height: 90, borderRadius: 8, display: 'block' }} />
               <div style={{ color: tvSub, fontSize: 9, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, textAlign: 'center', lineHeight: 1.4 }}>

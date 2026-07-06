@@ -564,7 +564,7 @@ export default function Register() {
 
       {/* Logo — z-index abaixo do card para a estaca ficar "fincada" no modal */}
       <div className="login-logo" style={{ textAlign: 'center', marginBottom: -52, marginTop: -80, zIndex: 0, position: 'relative' }}>
-        <img src="/vem_acai_transp.png" alt="Vem Açaí" style={{
+        <img src="/vem_acai_transp.png" alt="Vem, Açaí!" style={{
           width: 180, height: 180, objectFit: 'contain', display: 'block', margin: '0 auto'
         }} />
         {wizardStep && (
@@ -719,7 +719,7 @@ export default function Register() {
       </div>
 
       <p style={{ marginTop: 16, fontSize: 12, color: '#fff', zIndex: 1, textAlign: 'center', textShadow: '0 1px 3px rgba(0,0,0,0.6), 0 0 6px rgba(0,0,0,0.4)' }}>
-        Vem Açaí © 2026 —{' '}
+        Vem, Açaí! © 2026 —{' '}
         <Link to="/privacidade" style={{ color: '#fff', textDecoration: 'underline' }}>Privacidade</Link>
         {' · '}
         <Link to="/termos" style={{ color: '#fff', textDecoration: 'underline' }}>Termos</Link>
