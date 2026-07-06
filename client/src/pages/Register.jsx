@@ -564,7 +564,7 @@ export default function Register() {
 
       {/* Logo — z-index abaixo do card para a estaca ficar "fincada" no modal */}
       <div className="login-logo" style={{ textAlign: 'center', marginBottom: -52, marginTop: -80, zIndex: 0, position: 'relative' }}>
-        <img src="/vem_acai_transp.png" alt="Vem, Açaí!" style={{
+        <img src="/t_vem_acai.png" alt="Vem, Açaí!" style={{
           width: 180, height: 180, objectFit: 'contain', display: 'block', margin: '0 auto'
         }} />
         {wizardStep && (

@@ -3,13 +3,13 @@
 // shell + imagens, network-only para API / socket / Supabase.
 // Vite coloca hash no nome dos assets → pode cachear para sempre.
 
-const STATIC_V  = 'rapidola-static-v178';
+const STATIC_V  = 'rapidola-static-v179';
 const IMAGE_V   = 'rapidola-images-v1';
 const MAX_IMGS  = 120; // máx de imagens em cache
 
 // Arquivos precacheados no install (críticos para abrir o app)
 // Evitar arquivos grandes (>300KB) aqui — eles causam lentidão no install
-// vem_acai_transp.png fica de fora: será cacheado na primeira exibição
+// t_vem_acai.png fica de fora: será cacheado na primeira exibição
 const PRECACHE = [
   '/',
   '/manifest.json',

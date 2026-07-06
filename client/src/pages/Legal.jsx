@@ -19,7 +19,7 @@ export default function Legal() {
             <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
           </svg>
         </button>
-        <img src="/vem_acai_transp.png" style={{ width: 40, height: 40, objectFit: 'contain' }} />
+        <img src="/t_vem_acai.png" style={{ width: 40, height: 40, objectFit: 'contain' }} />
         <span style={{ fontWeight: 800, fontSize: 16, color: '#4A148C' }}>Vem, Açaí!</span>
       </div>
 
