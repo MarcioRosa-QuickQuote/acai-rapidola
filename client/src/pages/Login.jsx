@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from 'react';
+﻿import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useGoogleLogin } from '@react-oauth/google';
@@ -32,12 +32,6 @@ export default function Login() {
     },
     onError: () => setError('Login com Google cancelado')
   });
-  useEffect(() => {
-    const prev = document.body.style.background;
-    document.body.style.background = '#1a0030';
-    return () => { document.body.style.background = prev; };
-  }, []);
-
   const [showPw, setShowPw] = useState(false);
   const [recovery, setRecovery] = useState(false);
   const [recoveryStep, setRecoveryStep] = useState(1);
@@ -63,7 +57,7 @@ export default function Login() {
     <div className="login-container" style={{
       display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center',
       minHeight: 'calc(100dvh - env(safe-area-inset-top, 0px))',
-      background: 'transparent', position: 'relative',
+      background: 'linear-gradient(160deg, #6A1B9A 0%, #9C27B0 45%, #CE93D8 100%)', position: 'relative',
       padding: '16px 20px'
     }}>
 
