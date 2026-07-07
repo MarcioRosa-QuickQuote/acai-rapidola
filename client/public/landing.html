@@ -236,8 +236,8 @@
     footer a { color: #CE93D8; text-decoration: none; }
 
     @keyframes logoSlideIn {
-      from { transform: translateX(-400px) translateY(45px) rotate(25deg); opacity: 0; }
-      to   { transform: translateX(10px)   translateY(45px) rotate(25deg); opacity: 1; }
+      from { transform: translateX(-420px) translateY(0px) rotate(18deg); opacity: 0; }
+      to   { transform: translateX(-50px)  translateY(0px) rotate(18deg); opacity: 1; }
     }
 
     /* HERO TOP ROW */
@@ -249,7 +249,7 @@
     .hero-logo-left {
       width: 360px; height: 360px; object-fit: contain;
       filter: drop-shadow(0 6px 24px rgba(0,0,0,0.5));
-      transform: translateX(10px) translateY(45px) rotate(25deg);
+      transform: translateX(-50px) translateY(0px) rotate(18deg);
       animation: logoSlideIn 0.9s cubic-bezier(0.22, 0.61, 0.36, 1) both;
       pointer-events: auto;
       flex-shrink: 0;
@@ -286,12 +286,12 @@
     @media (min-width: 641px) and (max-width: 900px) {
       .hero-logo-left {
         width: 200px; height: 200px;
-        transform: translateX(0px) translateY(30px) rotate(25deg);
+        transform: translateX(-15px) translateY(15px) rotate(18deg);
         animation: logoSlideInMed 0.9s cubic-bezier(0.22, 0.61, 0.36, 1) both;
       }
       @keyframes logoSlideInMed {
-        from { transform: translateX(-220px) translateY(30px) rotate(25deg); opacity: 0; }
-        to   { transform: translateX(0px) translateY(30px) rotate(25deg); opacity: 1; }
+        from { transform: translateX(-230px) translateY(15px) rotate(18deg); opacity: 0; }
+        to   { transform: translateX(-15px)  translateY(15px) rotate(18deg); opacity: 1; }
       }
     }
 
@@ -304,10 +304,10 @@
       .audience-visual { min-height: 160px; padding: 24px; }
       .hero-btns { flex-direction: column; align-items: center; }
       .btn-hero-primary, .btn-hero-secondary { width: 100%; max-width: 320px; text-align: center; }
-      .hero-logo-left { width: 140px; height: 140px; transform: translateX(5px) translateY(30px) rotate(25deg); animation: logoSlideInMobile 0.9s cubic-bezier(0.22, 0.61, 0.36, 1) both; }
+      .hero-logo-left { width: 140px; height: 140px; transform: translateX(-5px) translateY(15px) rotate(18deg); animation: logoSlideInMobile 0.9s cubic-bezier(0.22, 0.61, 0.36, 1) both; }
       @keyframes logoSlideInMobile {
-        from { transform: translateX(-200px) translateY(30px) rotate(25deg); opacity: 0; }
-        to   { transform: translateX(5px) translateY(30px) rotate(25deg); opacity: 1; }
+        from { transform: translateX(-200px) translateY(15px) rotate(18deg); opacity: 0; }
+        to   { transform: translateX(-5px)   translateY(15px) rotate(18deg); opacity: 1; }
       }
       .secondary-grid { grid-template-columns: 1fr; }
     }
@@ -318,7 +318,7 @@
   <!-- HERO -->
   <section class="hero">
     <div class="hero-top">
-      <img src="/t_vem_acai.png" alt="Vem, Açaí!" class="hero-logo-left" />
+      <img src="/vem_acai_fundo_transparente_real.png" alt="Vem, Açaí!" class="hero-logo-left" />
       <div class="hero-top-btns">
         <a href="/login" class="btn-nav-login">Login</a>
         <a href="/register?role=store" class="btn-nav-signup">Cadastrar loja</a>
