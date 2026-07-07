@@ -56,8 +56,8 @@ export default function Login() {
   return (
     <div className="login-container" style={{
       display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center',
-      minHeight: '100dvh', background: 'transparent',
-      padding: '24px 20px 20px', position: 'relative', overflow: 'visible'
+      position: 'fixed', inset: 0, background: 'transparent',
+      padding: '24px 20px 20px', overflowY: 'auto'
     }}>
 
       {/* Forçar atualização do SW — canto superior direito */}
