@@ -552,8 +552,9 @@ img { max-width: 100%; height: auto; }
 @media (max-width: 640px) {
   .login-container {
     background: transparent !important;
-    justify-content: flex-start !important;
-    padding-top: calc(env(safe-area-inset-top, 0px) + 6px) !important;
+    justify-content: center !important;
+    padding-top: max(env(safe-area-inset-top), 16px) !important;
+    padding-bottom: max(env(safe-area-inset-bottom), 16px) !important;
   }
   .login-logo { margin-top: 0 !important; transform: translateY(-20px); }
   .login-card { transform: translateY(12px); }
