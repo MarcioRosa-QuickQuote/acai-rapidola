@@ -1,6 +1,6 @@
-{
+﻿{
   "packageId": "com.pedeacai.app",
-  "host": "pedeacai.dream2app.com.br",
+  "host": "vemacai.dream2app.com.br",
   "name": "Pé de Açaí",
   "launcherName": "Pé de Açaí",
   "display": "standalone",
@@ -13,11 +13,11 @@
   "backgroundColor": "#6A1B9A",
   "enableNotifications": false,
   "startUrl": "/",
-  "iconUrl": "https://pedeacai.dream2app.com.br/logo_placa.png",
-  "maskableIconUrl": "https://pedeacai.dream2app.com.br/logo_placa.png",
-  "monochromeIconUrl": "https://pedeacai.dream2app.com.br/logo_placa.png",
+  "iconUrl": "https://vemacai.dream2app.com.br/logo_placa.png",
+  "maskableIconUrl": "https://vemacai.dream2app.com.br/logo_placa.png",
+  "monochromeIconUrl": "https://vemacai.dream2app.com.br/logo_placa.png",
   "shortcuts": [],
-  "webManifestUrl": "https://pedeacai.dream2app.com.br/manifest.json",
+  "webManifestUrl": "https://vemacai.dream2app.com.br/manifest.json",
   "generatorApp": "bubblewrap-cli",
   "webManifest": {
     "name": "Pé de Açaí",
@@ -43,7 +43,7 @@
   "enableSiteSettingsShortcut": true,
   "isChromeOSOnly": false,
   "isMetaQuest": false,
-  "fullScopeUrl": "https://pedeacai.dream2app.com.br/",
+  "fullScopeUrl": "https://vemacai.dream2app.com.br/",
   "features": {
     "locationDelegation": { "enabled": false },
     "playBilling": { "enabled": false }

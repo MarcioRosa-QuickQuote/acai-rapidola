@@ -68,7 +68,7 @@ function PrivacyPolicy() {
       <Section title="1. Quem somos">
         O <strong>Vem, Açaí!</strong> é uma plataforma de delivery que conecta clientes, lojas de açaí e motoboys
         na região de Belém do Pará. Operado por <strong>Açaí Rapidola</strong>.
-        Contato: <a href="mailto:contato@pedeacai.dream2app.com.br" style={{ color: '#4A148C' }}>contato@pedeacai.dream2app.com.br</a>
+        Contato: <a href="mailto:contato@vemacai.dream2app.com.br" style={{ color: '#4A148C' }}>contato@vemacai.dream2app.com.br</a>
       </Section>
 
       <Section title="2. Dados que coletamos">
@@ -117,7 +117,7 @@ function PrivacyPolicy() {
         Você pode a qualquer momento:
         <ul style={{ paddingLeft: 20, margin: '8px 0 0' }}>
           <li>Acessar e corrigir seus dados pessoais pelo aplicativo</li>
-          <li>Solicitar a exclusão da sua conta e dados enviando e-mail para <a href="mailto:contato@pedeacai.dream2app.com.br" style={{ color: '#4A148C' }}>contato@pedeacai.dream2app.com.br</a></li>
+          <li>Solicitar a exclusão da sua conta e dados enviando e-mail para <a href="mailto:contato@vemacai.dream2app.com.br" style={{ color: '#4A148C' }}>contato@vemacai.dream2app.com.br</a></li>
           <li>Revogar permissões de localização nas configurações do seu dispositivo</li>
         </ul>
       </Section>
@@ -134,7 +134,7 @@ function PrivacyPolicy() {
       </Section>
 
       <Section title="9. Contato">
-        Em caso de dúvidas sobre esta política: <a href="mailto:contato@pedeacai.dream2app.com.br" style={{ color: '#4A148C' }}>contato@pedeacai.dream2app.com.br</a>
+        Em caso de dúvidas sobre esta política: <a href="mailto:contato@vemacai.dream2app.com.br" style={{ color: '#4A148C' }}>contato@vemacai.dream2app.com.br</a>
       </Section>
     </>
   );
@@ -214,7 +214,7 @@ function TermsOfService() {
       </Section>
 
       <Section title="12. Contato">
-        <a href="mailto:contato@pedeacai.dream2app.com.br" style={{ color: '#4A148C' }}>contato@pedeacai.dream2app.com.br</a>
+        <a href="mailto:contato@vemacai.dream2app.com.br" style={{ color: '#4A148C' }}>contato@vemacai.dream2app.com.br</a>
       </Section>
     </>
   );

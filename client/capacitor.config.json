@@ -1,9 +1,9 @@
-{
+﻿{
   "appId": "com.pedeacai.app",
   "appName": "Pé de Açaí",
   "webDir": "dist",
   "server": {
-    "url": "https://pedeacai.dream2app.com.br",
+    "url": "https://vemacai.dream2app.com.br",
     "cleartext": false
   },
   "android": {
