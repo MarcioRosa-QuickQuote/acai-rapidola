@@ -594,7 +594,7 @@ function NavScreen({ order, onClose, onStatusUpdate, statusLabel }) {
       <div style={{
         position: 'absolute', top: 0, left: 0, right: 0, zIndex: 25,
         background: instrBg,
-        paddingTop: 'max(10px, env(safe-area-inset-top, 10px))',
+        paddingTop: 'max(20px, env(safe-area-inset-top))',
         paddingBottom: 10, paddingLeft: 16, paddingRight: 16
       }}>
         {/* Instrução unificada para ir à loja OU ao cliente:
@@ -681,7 +681,7 @@ function NavScreen({ order, onClose, onStatusUpdate, statusLabel }) {
       {/* Barra inferior — tema escuro para combinar com mapa dark */}
       <div style={{
         position: 'absolute', bottom: 0, left: 0, right: 0, zIndex: 20,
-        background: 'rgba(15,15,25,0.96)', padding: '14px 16px 32px',
+        background: 'rgba(15,15,25,0.96)', paddingTop: 14, paddingLeft: 16, paddingRight: 16, paddingBottom: 'max(env(safe-area-inset-bottom), 20px)',
         display: 'flex', alignItems: 'center', gap: 12,
         boxShadow: '0 -2px 30px rgba(0,0,0,0.5)', backdropFilter: 'blur(16px)'
       }}>
@@ -1520,9 +1520,9 @@ export default function MotoboyDashboard() {
       '--border':       mb.cardBorder,
     }}>
       {/* ── TOPBAR ──────────────────────────────────────────────── */}
-      <div className="header" style={{ padding: '4px 16px', background: mb.accent, borderBottom: `1px solid ${mb.accentDark}`, overflow: 'visible', boxShadow: '0 6px 18px rgba(0,0,0,0.45)' }}>
-        <div className="header-left" style={{ gap: 10, overflow: 'visible' }}>
-          <img src="/t_vem_acai.png" alt="Vem, Açaí!" style={{ width: 58, height: 58, objectFit: 'contain', flexShrink: 0, transform: 'rotate(10deg)', alignSelf: 'flex-end', marginBottom: -18, marginLeft: 4 }} />
+      <div className="header" style={{ padding: '4px 16px', background: mb.accent, borderBottom: `1px solid ${mb.accentDark}` }}>
+        <div className="header-left" style={{ gap: 10 }}>
+          <img src="/t_vem_acai.png" alt="Vem, Açaí!" style={{ width: 44, height: 44, objectFit: 'contain', flexShrink: 0, transform: 'rotate(10deg)', marginLeft: 4 }} />
         </div>
         <div className="header-right" style={{ gap: 16 }}>
           {/* Toggle online/offline compacto */}
@@ -1554,7 +1554,7 @@ export default function MotoboyDashboard() {
       </div>
 
       {/* ── CONTEÚDO ────────────────────────────────────────────── */}
-      <div className="container" style={{ flex: 1, paddingBottom: 88 }}>
+      <div className="container" style={{ flex: 1, paddingBottom: 'calc(64px + max(env(safe-area-inset-bottom), 8px))' }}>
         {pageTab === 'inicio' && renderInicio()}
         {pageTab === 'pedidos' && renderPedidos()}
         {pageTab === 'saldo' && renderSaldo()}
@@ -1565,8 +1565,9 @@ export default function MotoboyDashboard() {
       {/* ── NAV BAR ─────────────────────────────────────────────── */}
       <div style={{
         position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 300,
+        display: 'flex', flexDirection: 'column',
         background: mb.nav, borderTop: `1px solid ${mb.navBorder}`,
-        flexDirection: 'column', paddingBottom: 'env(safe-area-inset-bottom, 4px)'
+        paddingBottom: 'max(env(safe-area-inset-bottom), 8px)'
       }}>
         <div style={{ display: 'flex', padding: '6px 0' }}>
           {tabs.map(tab => (
