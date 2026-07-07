@@ -33,9 +33,14 @@ export default function Login() {
     onError: () => setError('Login com Google cancelado')
   });
   useEffect(() => {
-    const prev = document.body.style.background;
+    const prevBody = document.body.style.background;
+    const prevHtml = document.documentElement.style.background;
     document.body.style.background = '#6A1B9A';
-    return () => { document.body.style.background = prev; };
+    document.documentElement.style.background = '#6A1B9A';
+    return () => {
+      document.body.style.background = prevBody;
+      document.documentElement.style.background = prevHtml;
+    };
   }, []);
 
   const [showPw, setShowPw] = useState(false);
@@ -62,7 +67,8 @@ export default function Login() {
   return (
     <div className="login-container" style={{
       display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center',
-      position: 'fixed', inset: 0,
+      position: 'fixed', top: 0, left: 0, right: 0,
+      bottom: 'calc(-1 * env(safe-area-inset-bottom, 0px))',
       background: 'transparent',
       padding: '16px 20px'
     }}>
