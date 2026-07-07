@@ -36,7 +36,7 @@ export default function Login() {
     const prevBody = document.body.style.background;
     const prevHtml = document.documentElement.style.background;
     document.body.style.background = '#6A1B9A';
-    document.documentElement.style.background = '#6A1B9A';
+    document.documentElement.style.background = 'linear-gradient(160deg, #6A1B9A 0%, #9C27B0 45%, #CE93D8 100%)';
     return () => {
       document.body.style.background = prevBody;
       document.documentElement.style.background = prevHtml;
