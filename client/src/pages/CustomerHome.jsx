@@ -308,7 +308,7 @@ export default function CustomerHome() {
   if (loading) return <div className="loading"><img className="spin" src="/saco_acai.png" /></div>;
 
   return (
-    <div style={{ minHeight: '100vh', paddingBottom: storeId ? 0 : 72 }}>
+    <div style={{ minHeight: '100vh', paddingBottom: storeId ? 0 : 'calc(64px + max(env(safe-area-inset-bottom), 8px))' }}>
       {!storeId ? (
         <CustomerHeader onBack={() => navigate('/customer')} />
       ) : (

@@ -1893,7 +1893,7 @@ export default function StoreDashboard() {
   }
 
   return (
-    <div style={{ paddingBottom: isDesktop ? 0 : 72 }}>
+    <div style={{ paddingBottom: isDesktop ? 0 : 'calc(64px + max(env(safe-area-inset-bottom), 8px))' }}>
 
       {/* ─── SIDEBAR DESKTOP ─────────────────────── */}
       {isDesktop && (
@@ -2170,7 +2170,7 @@ export default function StoreDashboard() {
             position: 'fixed', bottom: 0, left: 0, right: 0,
             background: 'white', borderTop: '1px solid #eee',
             display: 'flex', zIndex: 1000,
-            paddingBottom: 'env(safe-area-inset-bottom, 0px)'
+            paddingBottom: 'max(env(safe-area-inset-bottom), 8px)'
           }}>
             {[
               { key: 'painel', label: 'Painel', svg: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg> },
