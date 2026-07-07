@@ -10,6 +10,7 @@ export function SocketProvider({ children }) {
   const [notifications, setNotifications] = useState([]);
   const [toast, setToast] = useState(null);
   const disconnectedRef = useRef(false);
+  const disconnectTimerRef = useRef(null);
 
   useEffect(() => {
     if (!token) return;
@@ -19,6 +20,7 @@ export function SocketProvider({ children }) {
 
     s.on('connect', () => {
       s.emit('auth', { token });
+      clearTimeout(disconnectTimerRef.current);
       if (disconnectedRef.current) {
         disconnectedRef.current = false;
         setToast('Conexão restaurada ✓');
@@ -28,8 +30,12 @@ export function SocketProvider({ children }) {
 
     s.on('disconnect', () => {
       disconnectedRef.current = true;
-      setToast('Sem conexão — reconectando…');
-      setTimeout(() => setToast(null), 5000);
+      disconnectTimerRef.current = setTimeout(() => {
+        if (disconnectedRef.current) {
+          setToast('Sem conexão — reconectando…');
+          setTimeout(() => setToast(null), 5000);
+        }
+      }, 4000);
     });
 
     s.on('notification', (notif) => {
