@@ -80,6 +80,15 @@ const DEMO_MB_DELIVERIES = [
 ];
 const DEMO_MB_EARNINGS = DEMO_MB_DELIVERIES.map(o => ({ amount: o.delivery_fee, status: 'paid', created_at: o.updated_at }));
 
+const DEMO_MB_ACTIVE = [
+  { id: 'act01-demo-0000-0000-000000000001', store_name: 'Açaí do Bairro', store_address: 'Av. Nazaré, 1200 - Nazaré, Belém', customer_name: 'Rafael Souza', customer_address: 'Rua dos Mundurucus, 720 - Batista Campos', delivery_fee: 7.00, total: 42.00, status: 'assigned',  created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+  { id: 'act02-demo-0000-0000-000000000002', store_name: 'Rei do Açaí',    store_address: 'Tv. Mauriti, 340 - Umarizal, Belém',     customer_name: 'Camila Rocha',  customer_address: 'Av. Almirante Barroso, 55 - Marco',       delivery_fee: 5.00, total: 38.00, status: 'picked_up', created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+];
+const DEMO_MB_AVAIL = [
+  { id: 'avl01-demo-0000-0000-000000000001', store_name: 'Açaí Premium', store_address: 'Rua Boaventura da Silva, 14 - Umarizal', customer_name: 'Lucas Ferreira', customer_address: 'Rua Jerônimo Pimentel, 88 - Umarizal', delivery_fee: 6.00, total: 54.00, status: 'ready', created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+  { id: 'avl02-demo-0000-0000-000000000002', store_name: 'Casa do Açaí',  store_address: 'Rua Aristides Lobo, 55 - São Brás',        customer_name: 'Débora Freitas', customer_address: 'Rua Municipalidade, 120 - Comércio',       delivery_fee: 8.00, total: 61.00, status: 'ready', created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+];
+
 function FollowMotoboy({ pos, follow }) {
   const map = useMap();
   useEffect(() => {
@@ -1034,10 +1043,10 @@ export default function MotoboyDashboard() {
   // myOrders só contém pedidos com motoboy_id preenchido (os do motoboy logado).
   // Mostra tudo que ainda não foi entregue — inclui confirmed/preparing/ready
   // para quando a loja ainda não finalizou o preparo.
-  const activeDeliveries = myOrders.filter(o => o.status !== 'delivered');
+  const activeDeliveries = demoActive ? DEMO_MB_ACTIVE : myOrders.filter(o => o.status !== 'delivered');
   // Remove da lista "disponível" pedidos que já estão nos ativos (evita duplicata)
   const activeIds = new Set(activeDeliveries.map(o => o.id));
-  const filteredAvailable = availableOrders.filter(o => !activeIds.has(o.id));
+  const filteredAvailable = demoActive ? DEMO_MB_AVAIL : availableOrders.filter(o => !activeIds.has(o.id));
 
   function renderInicio() {
     return (
@@ -1212,7 +1221,7 @@ export default function MotoboyDashboard() {
                   onClick={() => openNav(order)}>
                   <div className="flex-between" style={{ marginBottom: 4 }}>
                     <span style={{ fontSize: 11, color: '#bbb', fontFamily: 'monospace', letterSpacing: 0.3, userSelect: 'all' }}>#{order.id.slice(0, 8)}</span>
-                    <span className="badge badge-success">R$ {fmt(order.total)}</span>
+                    <span className="badge badge-success">R$ {fmt(order.delivery_fee ?? 0)}</span>
                   </div>
                   <div className="text-sm text-muted"><strong>{order.customer_name}</strong></div>
                   <div className="text-sm text-muted" style={{ marginBottom: 4 }}>{fmtAddr(order.customer_address)}</div>
@@ -1478,7 +1487,7 @@ export default function MotoboyDashboard() {
     return !d;
   });
   const mb = {
-    bg:          darkMode ? '#0c0f1a' : '#f0f4f8',
+    bg:          darkMode ? '#0c0f1a' : '#f5f0ff',
     card:        darkMode ? '#161b2e' : '#ffffff',
     cardBorder:  darkMode ? 'rgba(255,255,255,0.07)' : '#e4e8f0',
     text:        darkMode ? '#eef0f4' : '#1a1f2e',
@@ -1511,9 +1520,9 @@ export default function MotoboyDashboard() {
       '--border':       mb.cardBorder,
     }}>
       {/* ── TOPBAR ──────────────────────────────────────────────── */}
-      <div className="header" style={{ padding: '4px 16px', background: mb.accent, borderBottom: `1px solid ${mb.accentDark}`, overflow: 'visible' }}>
+      <div className="header" style={{ padding: '4px 16px', background: mb.accent, borderBottom: `1px solid ${mb.accentDark}`, overflow: 'visible', boxShadow: '0 6px 18px rgba(0,0,0,0.45)' }}>
         <div className="header-left" style={{ gap: 10, overflow: 'visible' }}>
-          <img src="/t_vem_acai.png" alt="Vem, Açaí!" style={{ width: 58, height: 58, objectFit: 'contain', flexShrink: 0, transform: 'rotate(10deg)', alignSelf: 'flex-end', marginBottom: -10, marginLeft: 4 }} />
+          <img src="/t_vem_acai.png" alt="Vem, Açaí!" style={{ width: 58, height: 58, objectFit: 'contain', flexShrink: 0, transform: 'rotate(10deg)', alignSelf: 'flex-end', marginBottom: -18, marginLeft: 4 }} />
         </div>
         <div className="header-right" style={{ gap: 16 }}>
           {/* Toggle online/offline compacto */}
