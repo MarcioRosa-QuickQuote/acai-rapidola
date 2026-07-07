@@ -60,6 +60,26 @@ const nextStatus = {
 };
 
 
+function dm(day, hour = 12) { return new Date(2026, 5, day, hour, 0, 0).toISOString(); }
+const DEMO_MB_DELIVERIES = [
+  { id: 'mb01a2b3-c4d5-6789-aaaa-111122223301', customer_name: 'Ana Lima',       customer_address: 'Av. Nazaré, 1200 - Nazaré, Belém',           total: 37.00, delivery_fee: 6.00, status: 'delivered', created_at: dm(1,10),  updated_at: dm(1,10) },
+  { id: 'mb02b3c4-d5e6-7890-bbbb-222233334402', customer_name: 'Carlos Mendes',  customer_address: 'Tv. Mauriti, 340 - Umarizal, Belém',         total: 53.00, delivery_fee: 6.00, status: 'delivered', created_at: dm(2,13),  updated_at: dm(2,13) },
+  { id: 'mb03c4d5-e6f7-8901-cccc-333344445503', customer_name: 'Fernanda Costa', customer_address: 'Rua dos Mundurucus, 720 - Batista Campos',   total: 45.00, delivery_fee: 5.00, status: 'delivered', created_at: dm(3,11),  updated_at: dm(3,11) },
+  { id: 'mb04d5e6-f7a8-9012-dddd-444455556604', customer_name: 'Rafael Souza',   customer_address: 'Passagem Marques, 18 - Marco, Belém',        total: 29.00, delivery_fee: 5.00, status: 'delivered', created_at: dm(4,14),  updated_at: dm(4,14) },
+  { id: 'mb05e6f7-a8b9-0123-eeee-555566667705', customer_name: 'Tatiane Alves',  customer_address: 'Rua Padre Eutíquio, 88 - Batista Campos',    total: 48.00, delivery_fee: 6.00, status: 'delivered', created_at: dm(5,9),   updated_at: dm(5,9) },
+  { id: 'mb06f7a8-b9c0-1234-ffff-666677778806', customer_name: 'Lucas Ferreira', customer_address: 'Rua Boaventura da Silva, 14 - Umarizal',    total: 33.00, delivery_fee: 5.00, status: 'delivered', created_at: dm(7,12),  updated_at: dm(7,12) },
+  { id: 'mb07a8b9-c0d1-2345-1122-777788889907', customer_name: 'Camila Rocha',   customer_address: 'Av. Almirante Barroso, 55 - Marco',          total: 62.00, delivery_fee: 7.00, status: 'delivered', created_at: dm(8,11),  updated_at: dm(8,11) },
+  { id: 'mb08b9c0-d1e2-3456-2233-888899990008', customer_name: 'João Neto',      customer_address: 'Av. Gentil Bittencourt, 290 - Nazaré',       total: 41.00, delivery_fee: 6.00, status: 'delivered', created_at: dm(9,10),  updated_at: dm(9,10) },
+  { id: 'mb09c0d1-e2f3-4567-3344-99990000aa09', customer_name: 'Larissa Pinto',  customer_address: 'Rua Jerônimo Pimentel, 88 - Umarizal',      total: 36.00, delivery_fee: 5.00, status: 'delivered', created_at: dm(10,13), updated_at: dm(10,13) },
+  { id: 'mb10d1e2-f3a4-5678-4455-0000aaabbb10', customer_name: 'Bruno Monteiro', customer_address: 'Rua Municipalidade, 120 - Comércio',        total: 58.00, delivery_fee: 6.00, status: 'delivered', created_at: dm(11,14), updated_at: dm(11,14) },
+  { id: 'mb11e2f3-a4b5-6789-5566-aaabbbccc111', customer_name: 'Vanessa Lima',   customer_address: 'Av. Magalhães Barata, 200 - São Brás',       total: 44.00, delivery_fee: 6.00, status: 'delivered', created_at: dm(12,11), updated_at: dm(12,11) },
+  { id: 'mb12f3a4-b5c6-7890-6677-bbbcccddd122', customer_name: 'Felipe Araújo',  customer_address: 'Rua dos Mundurucus, 512 - Batista Campos',   total: 39.00, delivery_fee: 5.00, status: 'delivered', created_at: dm(14,12), updated_at: dm(14,12) },
+  { id: 'mb13a4b5-c6d7-8901-7788-cccdddee1133', customer_name: 'Débora Freitas', customer_address: 'Rua Siqueira Mendes, 22 - Umarizal',        total: 52.00, delivery_fee: 6.00, status: 'delivered', created_at: dm(15,10), updated_at: dm(15,10) },
+  { id: 'mb14b5c6-d7e8-9012-8899-dddeeeeff144', customer_name: 'Gabriel Costa',  customer_address: 'Av. 16 de Novembro, 290 - Comércio',        total: 47.00, delivery_fee: 5.00, status: 'delivered', created_at: dm(17,13), updated_at: dm(17,13) },
+  { id: 'mb15c6d7-e8f9-0123-99aa-eeeeffff0155', customer_name: 'Isabela Torres', customer_address: 'Rua Aristides Lobo, 55 - São Brás',         total: 68.00, delivery_fee: 7.00, status: 'delivered', created_at: dm(18,11), updated_at: dm(18,11) },
+];
+const DEMO_MB_EARNINGS = DEMO_MB_DELIVERIES.map(o => ({ amount: o.delivery_fee, status: 'paid', created_at: o.updated_at }));
+
 function FollowMotoboy({ pos, follow }) {
   const map = useMap();
   useEffect(() => {
@@ -759,6 +779,7 @@ export default function MotoboyDashboard() {
   const [isEmployee, setIsEmployee] = useState(false);
   const [isLinked, setIsLinked] = useState(false); // vinculado a alguma loja → recebe pedidos automático
   const [earnings, setEarnings] = useState({ total: 0, pending: 0, list: [] });
+  const [demoActive, setDemoActive] = useState(false);
   const [myRating, setMyRating] = useState(null); // { avg, count }
   const [fullscreenOrder, setFullscreenOrder] = useState(null);
   const restoredNav = useRef(false);
@@ -1162,7 +1183,7 @@ export default function MotoboyDashboard() {
   }
 
   function renderPedidos() {
-    const completed = myOrders.filter(o => o.status === 'delivered');
+    const completed = demoActive ? DEMO_MB_DELIVERIES : myOrders.filter(o => o.status === 'delivered');
 
     if (completed.length === 0) {
       return (
@@ -1213,7 +1234,7 @@ export default function MotoboyDashboard() {
   const fsOrder = fullscreenOrder;
 
   function filterEarnings() {
-    const list = earnings?.list || [];
+    const list = demoActive ? DEMO_MB_EARNINGS : (earnings?.list || []);
     const now = new Date();
     let start;
     if (finPeriod === 'dia') {
@@ -1426,6 +1447,18 @@ export default function MotoboyDashboard() {
             setPwSaving(false);
             setTimeout(() => setPwMsg(''), 4000);
           }} disabled={pwSaving}>{pwSaving ? 'Salvando...' : 'Alterar Senha'}</button>
+        </div>
+
+        {/* Demo */}
+        <div style={{ borderTop: '1px solid var(--border)', marginTop: 20, paddingTop: 16, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div>
+            <div style={{ fontSize: 12, fontWeight: 600, color: '#aaa' }}>Entregas de exemplo</div>
+            <div style={{ fontSize: 11, color: '#ccc', marginTop: 2 }}>Exibe dados fictícios no painel</div>
+          </div>
+          <div className="toggle-switch" onClick={() => setDemoActive(d => !d)}>
+            <input type="checkbox" checked={demoActive} readOnly />
+            <span className="toggle-slider" />
+          </div>
         </div>
 
         {/* Sair */}

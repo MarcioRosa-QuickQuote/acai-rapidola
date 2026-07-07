@@ -35,7 +35,7 @@ export function SocketProvider({ children }) {
           setToast('Sem conexão — reconectando…');
           setTimeout(() => setToast(null), 5000);
         }
-      }, 4000);
+      }, 15000);
     });
 
     s.on('notification', (notif) => {
