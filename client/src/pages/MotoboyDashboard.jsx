@@ -444,7 +444,7 @@ function NavScreen({ order, onClose, onStatusUpdate, statusLabel }) {
           <div style={{ display: 'flex' }}>
             <button style={{
               flex: 1, padding: '15px 0', borderRadius: 32, border: 'none',
-              background: (routeLoading || !routeOrigin) ? '#90A4AE' : '#1565C0',
+              background: (routeLoading || !routeOrigin) ? '#90A4AE' : '#7B1FA2',
               fontSize: 17, fontWeight: 800, color: 'white',
               cursor: (routeLoading || !routeOrigin) ? 'default' : 'pointer',
               opacity: (routeLoading || !routeOrigin) ? 0.8 : 1,
@@ -459,7 +459,7 @@ function NavScreen({ order, onClose, onStatusUpdate, statusLabel }) {
   }
 
   // ── NAVEGAÇÃO ATIVA — MapLibre GL (visão em primeira pessoa, mapa inclinado) ──
-  const instrBg = isToStore ? '#1565C0' : '#4A148C';
+  const instrBg = '#7B1FA2';
   const initLng = pos?.lng ?? ((order.store_lng + order.customer_lng) / 2) ?? -48.5;
   const initLat = pos?.lat ?? ((order.store_lat + order.customer_lat) / 2) ?? -1.45;
   const navHour = new Date().getHours();
