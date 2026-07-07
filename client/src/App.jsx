@@ -47,7 +47,7 @@ function AuthLayout() {
   }, []);
 
   return (
-    <div style={{ minHeight: '100%', position: 'relative' }}>
+    <div style={{ height: '100%', position: 'relative' }}>
       {createPortal(
         <>
           <div style={{

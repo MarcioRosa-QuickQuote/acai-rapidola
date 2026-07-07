@@ -56,7 +56,7 @@ export default function Login() {
   return (
     <div className="login-container" style={{
       display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center',
-      minHeight: 'calc(100dvh - env(safe-area-inset-top, 0px))',
+      minHeight: '100%',
       background: 'linear-gradient(160deg, #6A1B9A 0%, #9C27B0 45%, #CE93D8 100%)', position: 'relative',
       padding: '16px 20px'
     }}>
