@@ -60,6 +60,35 @@ export default function Login() {
       padding: '24px 20px 20px', position: 'relative', overflow: 'visible'
     }}>
 
+      {/* Forçar atualização do SW — canto superior direito */}
+      <button
+        onClick={() => {
+          if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.getRegistration().then(reg => {
+              if (reg?.waiting) reg.waiting.postMessage({ type: 'SKIP_WAITING' });
+            });
+          }
+          window.location.reload(true);
+        }}
+        title="Forçar atualização"
+        style={{
+          position: 'absolute', top: 12, right: 12, zIndex: 10,
+          background: 'rgba(255,255,255,0.15)', border: '1px solid rgba(255,255,255,0.3)',
+          borderRadius: 8, padding: '5px 10px', cursor: 'pointer',
+          color: 'rgba(255,255,255,0.85)', fontSize: 11, fontWeight: 600,
+          display: 'flex', alignItems: 'center', gap: 5,
+          backdropFilter: 'blur(6px)'
+        }}
+      >
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/>
+          <path d="M21 3v5h-5"/>
+          <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/>
+          <path d="M8 16H3v5"/>
+        </svg>
+        Atualizar
+      </button>
+
       {/* Logo — z-index abaixo do card para a estaca ficar "fincada" no modal */}
       <div className="login-logo" style={{ textAlign: 'center', marginBottom: -55, marginTop: -80, zIndex: 2, position: 'relative' }}>
         <img src="/t_vem_acai.png" alt="Vem, Açaí!" style={{
