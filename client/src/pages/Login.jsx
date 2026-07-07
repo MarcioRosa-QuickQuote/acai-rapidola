@@ -1,4 +1,4 @@
-﻿import { useState } from 'react';
+﻿import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useGoogleLogin } from '@react-oauth/google';
@@ -32,6 +32,12 @@ export default function Login() {
     },
     onError: () => setError('Login com Google cancelado')
   });
+  useEffect(() => {
+    const prev = document.body.style.background;
+    document.body.style.background = '#1a0030';
+    return () => { document.body.style.background = prev; };
+  }, []);
+
   const [showPw, setShowPw] = useState(false);
   const [recovery, setRecovery] = useState(false);
   const [recoveryStep, setRecoveryStep] = useState(1);
@@ -56,8 +62,9 @@ export default function Login() {
   return (
     <div className="login-container" style={{
       display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center',
-      position: 'fixed', inset: 0, background: 'transparent',
-      padding: '24px 20px 20px', overflowY: 'auto'
+      minHeight: 'calc(100dvh - env(safe-area-inset-top, 0px))',
+      background: 'transparent', position: 'relative',
+      padding: '16px 20px'
     }}>
 
       {/* Forçar atualização do SW — canto superior direito */}
@@ -72,7 +79,7 @@ export default function Login() {
         }}
         title="Forçar atualização"
         style={{
-          position: 'absolute', top: 12, right: 12, zIndex: 10,
+          position: 'fixed', top: 'calc(env(safe-area-inset-top, 0px) + 8px)', right: 12, zIndex: 200,
           background: 'rgba(255,255,255,0.15)', border: '1px solid rgba(255,255,255,0.3)',
           borderRadius: 8, padding: '5px 10px', cursor: 'pointer',
           color: 'rgba(255,255,255,0.85)', fontSize: 11, fontWeight: 600,
