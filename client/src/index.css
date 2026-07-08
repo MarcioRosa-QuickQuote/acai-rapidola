@@ -62,7 +62,7 @@ body {
     radial-gradient(circle at 95% 15%, rgba(106,27,154,0.04) 4px, transparent 4px);
 }
 
-#root { height: 100%; overflow-y: auto; overflow-x: hidden; -webkit-overflow-scrolling: touch; position: relative; z-index: 2; }
+#root { height: 100%; overflow-y: auto; overflow-x: hidden; -webkit-overflow-scrolling: touch; overscroll-behavior: none; position: relative; z-index: 2; }
 
 .container {
   max-width: 100%;
@@ -557,7 +557,7 @@ img { max-width: 100%; height: auto; }
 @media (max-width: 640px) {
   .login-container {
     justify-content: flex-start !important;
-    padding-top: max(env(safe-area-inset-top), 16px) !important;
+    padding-top: 8px !important;
     padding-bottom: max(env(safe-area-inset-bottom), 20px) !important;
   }
   .login-logo { margin-top: 0 !important; transform: none; }
