@@ -1507,7 +1507,7 @@ export default function MotoboyDashboard() {
 
   return (
     <div style={{
-      display: 'flex', flexDirection: 'column', height: '100%',
+      display: 'flex', flexDirection: 'column', height: '100vh',
       background: mb.bg, color: mb.text,
       // Sobrescreve as CSS vars do tema para o escopo do motoboy
       '--primary':      mb.accent,
