@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useRef, useState } from 'react';
+import { createContext, useContext, useEffect, useState } from 'react';
 import { io } from 'socket.io-client';
 import { useAuth } from './AuthContext';
 
@@ -9,9 +9,6 @@ export function SocketProvider({ children }) {
   const [socket, setSocket] = useState(null);
   const [notifications, setNotifications] = useState([]);
   const [toast, setToast] = useState(null);
-  const disconnectedRef = useRef(false);
-  const disconnectTimerRef = useRef(null);
-
   useEffect(() => {
     if (!token) return;
 
@@ -20,22 +17,6 @@ export function SocketProvider({ children }) {
 
     s.on('connect', () => {
       s.emit('auth', { token });
-      clearTimeout(disconnectTimerRef.current);
-      if (disconnectedRef.current) {
-        disconnectedRef.current = false;
-        setToast('Conexão restaurada ✓');
-        setTimeout(() => setToast(null), 3000);
-      }
-    });
-
-    s.on('disconnect', () => {
-      disconnectedRef.current = true;
-      disconnectTimerRef.current = setTimeout(() => {
-        if (disconnectedRef.current) {
-          setToast('Sem conexão — reconectando…');
-          setTimeout(() => setToast(null), 5000);
-        }
-      }, 15000);
     });
 
     s.on('notification', (notif) => {
