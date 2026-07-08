@@ -55,7 +55,8 @@ function AuthLayout() {
             background: 'linear-gradient(160deg, #4A148C 0%, #6A1B9A 50%, #9C27B0 100%)'
           }} />
           <div className="login-video-wrapper">
-            <video ref={videoRef} autoPlay loop muted playsInline preload="auto" className="login-video-inner">
+            <video ref={videoRef} autoPlay loop muted playsInline preload="auto" className="login-video-inner"
+              onCanPlay={() => videoRef.current?.play().catch(() => {})}>
               <source src="/video4.mp4" type="video/mp4" />
             </video>
           </div>
