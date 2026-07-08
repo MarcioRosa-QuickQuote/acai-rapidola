@@ -556,12 +556,12 @@ img { max-width: 100%; height: auto; }
 }
 @media (max-width: 640px) {
   .login-container {
-    justify-content: center !important;
-    padding-top: max(env(safe-area-inset-top), 20px) !important;
+    justify-content: flex-start !important;
+    padding-top: max(env(safe-area-inset-top), 16px) !important;
     padding-bottom: max(env(safe-area-inset-bottom), 20px) !important;
   }
-  .login-logo { margin-top: 0 !important; transform: translateY(-20px); }
-  .login-card { transform: translateY(12px); }
+  .login-logo { margin-top: 0 !important; transform: none; }
+  .login-card { transform: none; }
   .login-video-wrapper {
     position: fixed;
     top: 0; right: 0; bottom: 0; left: 0;
