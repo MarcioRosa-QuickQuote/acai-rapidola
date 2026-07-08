@@ -35,8 +35,8 @@ export default function Login() {
   useEffect(() => {
     const prevBody = document.body.style.background;
     const prevHtml = document.documentElement.style.background;
-    document.body.style.background = '#4A148C';
-    document.documentElement.style.background = '#4A148C';
+    document.body.style.background = '#5C4261';
+    document.documentElement.style.background = '#5C4261';
     return () => {
       document.body.style.background = prevBody;
       document.documentElement.style.background = prevHtml;
