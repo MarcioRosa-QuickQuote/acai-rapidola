@@ -25,6 +25,7 @@
 
 html {
   height: 100%;
+  height: -webkit-fill-available;
   overflow: hidden;
   overscroll-behavior: none;
 }
@@ -34,7 +35,7 @@ body {
   background: var(--bg);
   color: var(--text);
   height: 100%;
-  overflow: hidden;
+  min-height: -webkit-fill-available;
   overscroll-behavior: none;
   padding-top: env(safe-area-inset-top);
   -webkit-font-smoothing: antialiased;
