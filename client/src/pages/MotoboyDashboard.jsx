@@ -1471,7 +1471,7 @@ export default function MotoboyDashboard() {
         </div>
 
         {/* Sair */}
-        <div style={{ borderTop: '1px solid var(--border)', marginTop: 24, paddingTop: 16 }}>
+        <div style={{ borderTop: '1px solid var(--border)', marginTop: 24, paddingTop: 16, paddingBottom: 32 }}>
           <button className="btn btn-outline" onClick={logout}
             style={{ width: '100%', color: '#C62828', borderColor: '#FFCDD2', fontWeight: 600 }}>
             🚪 Sair da Conta
@@ -1507,7 +1507,7 @@ export default function MotoboyDashboard() {
 
   return (
     <div style={{
-      display: 'flex', flexDirection: 'column', height: '100vh',
+      display: 'flex', flexDirection: 'column', height: '100%',
       background: mb.bg, color: mb.text,
       // Sobrescreve as CSS vars do tema para o escopo do motoboy
       '--primary':      mb.accent,
