@@ -557,15 +557,13 @@ export default function Register() {
 
   return (
     <div className="login-container" style={{
-      display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'center',
+      display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center',
       minHeight: '100vh', background: 'transparent',
-      paddingTop: 'max(env(safe-area-inset-top, 44px), 44px)',
-      paddingLeft: '20px', paddingRight: '20px', paddingBottom: '20px',
-      position: 'relative', overflow: 'visible'
+      padding: '100px 20px 20px', position: 'relative', overflow: 'visible'
     }}>
 
       {/* Logo — z-index abaixo do card para a estaca ficar "fincada" no modal */}
-      <div className="login-logo" style={{ textAlign: 'center', marginBottom: -52, marginTop: 0, zIndex: 0, position: 'relative' }}>
+      <div className="login-logo" style={{ textAlign: 'center', marginBottom: -52, marginTop: -80, zIndex: 0, position: 'relative' }}>
         <img src="/t_vem_acai.png" alt="Vem, Açaí!" style={{
           width: 180, height: 180, objectFit: 'contain', display: 'block', margin: '0 auto'
         }} />

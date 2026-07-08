@@ -66,12 +66,11 @@ export default function Login() {
 
   return (
     <div className="login-container" style={{
-      display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'center',
+      display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center',
       minHeight: 'calc(100vh + env(safe-area-inset-bottom, 34px))',
       position: 'relative', overflow: 'visible',
       background: 'transparent',
-      paddingTop: 'max(env(safe-area-inset-top, 44px), 44px)',
-      paddingLeft: '20px', paddingRight: '20px', paddingBottom: '20px'
+      padding: '16px 20px'
     }}>
 
       {/* Forçar atualização do SW — canto superior direito */}
@@ -104,7 +103,7 @@ export default function Login() {
       </button>
 
       {/* Logo — z-index abaixo do card para a estaca ficar "fincada" no modal */}
-      <div className="login-logo" style={{ textAlign: 'center', marginBottom: -55, marginTop: 0, zIndex: 2, position: 'relative' }}>
+      <div className="login-logo" style={{ textAlign: 'center', marginBottom: -55, marginTop: -80, zIndex: 2, position: 'relative' }}>
         <img src="/t_vem_acai.png" alt="Vem, Açaí!" style={{
           width: 190, height: 190, objectFit: 'contain', display: 'block', margin: '0 auto'
         }} />
