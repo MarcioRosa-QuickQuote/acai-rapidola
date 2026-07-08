@@ -2139,7 +2139,7 @@ export default function StoreDashboard() {
             <div>
               {!isDesktop && (
                 <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
-                  <div onClick={() => setPerfilTab(null)} style={{ width: 36, height: 36, borderRadius: '50%', background: '#F3E5F5', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontSize: 18, fontWeight: 700, color: '#6A1B9A', flexShrink: 0 }}>‹</div>
+                  <div onClick={() => setPerfilTab(null)} style={{ width: 44, height: 44, borderRadius: '50%', background: '#F3E5F5', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontSize: 26, fontWeight: 700, color: '#6A1B9A', flexShrink: 0 }}>‹</div>
                   <span style={{ fontWeight: 700, fontSize: 16 }}>{perfilTab === 'dados' ? 'Dados' : perfilTab === 'endereco' ? 'Endereço' : perfilTab === 'trocar-senha' ? 'Trocar Senha' : perfilTab === 'mensagens' ? 'Mensagens' : perfilTab === 'vendas' ? 'Vendas' : perfilTab === 'motoboy' ? 'Entregadores' : perfilTab === 'assinatura' ? 'Assinatura' : ''}</span>
                 </div>
               )}

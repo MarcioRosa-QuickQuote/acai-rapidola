@@ -560,7 +560,7 @@ img { max-width: 100%; height: auto; }
     padding-top: 8px !important;
     padding-bottom: max(env(safe-area-inset-bottom), 20px) !important;
   }
-  .login-logo { margin-top: 0 !important; transform: none; }
+  .login-logo { margin-top: 0 !important; transform: translateY(-30px); }
   .login-card { transform: none; }
   .login-video-wrapper {
     position: fixed;
@@ -571,7 +571,7 @@ img { max-width: 100%; height: auto; }
     overflow: hidden;
   }
   .login-video-inner {
-    object-position: 60% 40%;
+    object-position: 57% 40%;
     filter: brightness(1.35) saturate(1.1);
   }
   .login-video-overlay {
