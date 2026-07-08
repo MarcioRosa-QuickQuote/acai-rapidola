@@ -24,6 +24,7 @@ import AdminPanel from './pages/AdminPanel';
 
 function AuthLayout() {
   const videoRef = useRef(null);
+  const interactedRef = useRef(false);
   const location = useLocation();
 
   useEffect(() => { videoRef.current?.play().catch(() => {}); }, [location.pathname]);
@@ -31,13 +32,16 @@ function AuthLayout() {
   useEffect(() => {
     const v = videoRef.current;
     if (!v) return;
-    const resume = () => v.play().catch(() => {});
+    const resume = () => {
+      interactedRef.current = true;
+      v.play().catch(() => {});
+    };
     document.addEventListener('visibilitychange', resume);
     v.addEventListener('pause', resume);
-    // autoplay pode ser bloqueado sem gesto do usuário no carregamento inicial;
-    // qualquer primeiro toque/clique na tela tenta de novo
-    document.addEventListener('touchstart', resume, { once: true });
-    document.addEventListener('click', resume, { once: true });
+    // Sem { once } — em vídeo já tocando play() é no-op; mantém o handler
+    // ativo para retomar após backgrounding ou foco perdido
+    document.addEventListener('touchstart', resume);
+    document.addEventListener('click', resume);
     return () => {
       document.removeEventListener('visibilitychange', resume);
       v.removeEventListener('pause', resume);
@@ -56,7 +60,11 @@ function AuthLayout() {
           }} />
           <div className="login-video-wrapper">
             <video ref={videoRef} autoPlay loop muted playsInline preload="auto" className="login-video-inner"
-              onCanPlay={() => videoRef.current?.play().catch(() => {})}>
+              onCanPlay={() => {
+                // Tenta autoplay direto; se iOS bloqueou (sem gesto ainda),
+                // o touchstart/click handler vai retomar quando o usuário tocar
+                videoRef.current?.play().catch(() => {});
+              }}>
               <source src="/video4.mp4" type="video/mp4" />
             </video>
           </div>
