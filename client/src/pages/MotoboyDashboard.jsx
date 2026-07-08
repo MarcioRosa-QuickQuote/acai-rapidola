@@ -1507,7 +1507,7 @@ export default function MotoboyDashboard() {
 
   return (
     <div style={{
-      display: 'flex', flexDirection: 'column', height: '100%',
+      display: 'flex', flexDirection: 'column', height: '100vh',
       background: mb.bg, color: mb.text,
       // Sobrescreve as CSS vars do tema para o escopo do motoboy
       '--primary':      mb.accent,
@@ -1554,7 +1554,7 @@ export default function MotoboyDashboard() {
       </div>
 
       {/* ── CONTEÚDO ────────────────────────────────────────────── */}
-      <div className="container" style={{ flex: 1, minHeight: 0, overflowY: 'auto', overscrollBehaviorY: 'contain', paddingBottom: 'calc(64px + max(env(safe-area-inset-bottom), 8px))' }}>
+      <div className="container" style={{ flex: 1, minHeight: 0, overflowY: 'auto', overscrollBehavior: 'none', paddingBottom: 'calc(64px + max(env(safe-area-inset-bottom), 8px))' }}>
         {pageTab === 'inicio' && renderInicio()}
         {pageTab === 'pedidos' && renderPedidos()}
         {pageTab === 'saldo' && renderSaldo()}
