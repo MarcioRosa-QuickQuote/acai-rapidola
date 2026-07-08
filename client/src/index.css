@@ -532,14 +532,18 @@ img { max-width: 100%; height: auto; }
   from { opacity: 0; }
   to   { opacity: 1; }
 }
-.login-video {
+.login-video-wrapper {
   position: absolute; top: 0; left: -5%;
   width: 55%; height: 100%;
-  object-fit: cover;
   pointer-events: none;
+  overflow: hidden;
   -webkit-mask-image: linear-gradient(to right, black 55%, transparent 100%);
   mask-image: linear-gradient(to right, black 55%, transparent 100%);
   animation: videoFadeIn 1.4s ease-in both;
+}
+.login-video-inner {
+  width: 100%; height: 100%;
+  object-fit: cover;
 }
 .login-video-overlay {
   position: absolute; top: 0; left: 0;
@@ -558,20 +562,22 @@ img { max-width: 100%; height: auto; }
   }
   .login-logo { margin-top: 0 !important; transform: translateY(-20px); }
   .login-card { transform: translateY(12px); }
-  .login-video {
-    position: fixed; top: 0; left: 0;
-    width: 100vw;
-    height: calc(100vh + env(safe-area-inset-bottom, 0px));
+  .login-video-wrapper {
+    position: fixed;
+    top: 0; right: 0; bottom: 0; left: 0;
+    width: auto; height: auto;
     -webkit-mask-image: none; mask-image: none;
-    object-fit: cover;
-    object-position: center 40%;
     z-index: 0;
+    overflow: hidden;
+  }
+  .login-video-inner {
+    object-position: center 40%;
     filter: brightness(1.35) saturate(1.1);
   }
   .login-video-overlay {
-    position: fixed; top: 0; left: 0;
-    width: 100vw;
-    height: calc(100vh + env(safe-area-inset-bottom, 0px));
+    position: fixed;
+    top: 0; right: 0; bottom: 0; left: 0;
+    width: auto; height: auto;
     background: linear-gradient(to bottom, rgba(206,147,216,0.45) 0%, rgba(206,147,216,0.25) 22%, rgba(206,147,216,0.25) 78%, rgba(206,147,216,0.45) 100%);
     z-index: 1;
   }

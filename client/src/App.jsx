@@ -52,11 +52,13 @@ function AuthLayout() {
         <>
           <div style={{
             position: 'fixed', inset: 0, zIndex: -1,
-            background: 'linear-gradient(160deg, #6A1B9A 0%, #9C27B0 45%, #CE93D8 100%)'
+            background: 'linear-gradient(160deg, #4A148C 0%, #6A1B9A 50%, #9C27B0 100%)'
           }} />
-          <video ref={videoRef} autoPlay loop muted playsInline preload="auto" className="login-video">
-            <source src="/video4.mp4" type="video/mp4" />
-          </video>
+          <div className="login-video-wrapper">
+            <video ref={videoRef} autoPlay loop muted playsInline preload="auto" className="login-video-inner">
+              <source src="/video4.mp4" type="video/mp4" />
+            </video>
+          </div>
           <div className="login-video-overlay" />
         </>,
         document.body
