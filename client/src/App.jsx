@@ -55,8 +55,7 @@ function AuthLayout() {
       {createPortal(
         <>
           <div style={{
-            position: 'fixed', top: 0, right: 0, left: 0, zIndex: -1,
-            bottom: 'calc(0px - env(safe-area-inset-bottom, 0px))',
+            position: 'fixed', inset: 0, zIndex: -1,
             background: 'linear-gradient(160deg, #4A148C 0%, #6A1B9A 50%, #9C27B0 100%)'
           }} />
           <div className="login-video-wrapper">
