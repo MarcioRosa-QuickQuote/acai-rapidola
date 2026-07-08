@@ -559,7 +559,9 @@ img { max-width: 100%; height: auto; }
   .login-logo { margin-top: 0 !important; transform: translateY(-20px); }
   .login-card { transform: translateY(12px); }
   .login-video {
-    position: fixed; inset: 0;
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    width: auto; height: auto;
+    -webkit-mask-image: none; mask-image: none;
     object-fit: cover;
     object-position: center 40%;
     z-index: 0;
@@ -567,6 +569,7 @@ img { max-width: 100%; height: auto; }
   }
   .login-video-overlay {
     position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    width: auto; height: auto;
     background: linear-gradient(to bottom, rgba(206,147,216,0.45) 0%, rgba(206,147,216,0.25) 22%, rgba(206,147,216,0.25) 78%, rgba(206,147,216,0.45) 100%);
     z-index: 1;
   }
