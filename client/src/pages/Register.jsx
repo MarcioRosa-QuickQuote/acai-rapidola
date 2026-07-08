@@ -81,6 +81,17 @@ export default function Register() {
   }, [inviteToken]);
 
 
+  useEffect(() => {
+    const prevBody = document.body.style.background;
+    const prevHtml = document.documentElement.style.background;
+    document.body.style.background = '#5C4261';
+    document.documentElement.style.background = '#5C4261';
+    return () => {
+      document.body.style.background = prevBody;
+      document.documentElement.style.background = prevHtml;
+    };
+  }, []);
+
   // Limpa câmera ao desmontar
   useEffect(() => {
     return () => { cameraStream?.getTracks().forEach(t => t.stop()); };
