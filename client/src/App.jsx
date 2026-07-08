@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from 'react';
-import { createPortal } from 'react-dom';
 import { Routes, Route, Navigate, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from './contexts/AuthContext';
 import { App as CapApp } from '@capacitor/app';
@@ -48,19 +47,14 @@ function AuthLayout() {
 
   return (
     <div style={{ height: '100%', position: 'relative' }}>
-      {createPortal(
-        <>
-          <div style={{
-            position: 'fixed', inset: 0,
-            background: 'linear-gradient(160deg, #6A1B9A 0%, #9C27B0 45%, #CE93D8 100%)'
-          }} />
-          <video ref={videoRef} autoPlay loop muted playsInline preload="auto" className="login-video">
-            <source src="/video4.mp4" type="video/mp4" />
-          </video>
-          <div className="login-video-overlay" />
-        </>,
-        document.body
-      )}
+      <div style={{
+        position: 'fixed', inset: 0, zIndex: -1,
+        background: 'linear-gradient(160deg, #6A1B9A 0%, #9C27B0 45%, #CE93D8 100%)'
+      }} />
+      <video ref={videoRef} autoPlay loop muted playsInline preload="auto" className="login-video">
+        <source src="/video4.mp4" type="video/mp4" />
+      </video>
+      <div className="login-video-overlay" />
       <Outlet />
     </div>
   );

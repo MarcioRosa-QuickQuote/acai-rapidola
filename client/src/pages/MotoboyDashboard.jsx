@@ -1554,7 +1554,7 @@ export default function MotoboyDashboard() {
       </div>
 
       {/* ── CONTEÚDO ────────────────────────────────────────────── */}
-      <div className="container" style={{ flex: 1, paddingBottom: 'calc(64px + max(env(safe-area-inset-bottom), 8px))' }}>
+      <div className="container" style={{ flex: 1, minHeight: 0, overflowY: 'auto', paddingBottom: 'calc(64px + max(env(safe-area-inset-bottom), 8px))' }}>
         {pageTab === 'inicio' && renderInicio()}
         {pageTab === 'pedidos' && renderPedidos()}
         {pageTab === 'saldo' && renderSaldo()}
