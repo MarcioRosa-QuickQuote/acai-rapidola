@@ -565,8 +565,8 @@ img { max-width: 100%; height: auto; }
   .login-video-wrapper {
     position: fixed;
     top: 0; right: 0; left: 0;
-    width: auto;
-    height: calc(100vh + env(safe-area-inset-bottom, 34px));
+    bottom: calc(0px - env(safe-area-inset-bottom, 0px));
+    width: auto; height: auto;
     -webkit-mask-image: none; mask-image: none;
     z-index: 0;
     overflow: hidden;
@@ -578,8 +578,8 @@ img { max-width: 100%; height: auto; }
   .login-video-overlay {
     position: fixed;
     top: 0; right: 0; left: 0;
-    width: auto;
-    height: calc(100vh + env(safe-area-inset-bottom, 34px));
+    bottom: calc(0px - env(safe-area-inset-bottom, 0px));
+    width: auto; height: auto;
     background: linear-gradient(to bottom, rgba(206,147,216,0.45) 0%, rgba(206,147,216,0.25) 22%, rgba(206,147,216,0.25) 78%, rgba(206,147,216,0.45) 100%);
     z-index: 1;
   }
