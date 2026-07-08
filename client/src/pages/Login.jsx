@@ -35,8 +35,8 @@ export default function Login() {
   useEffect(() => {
     const prevBody = document.body.style.background;
     const prevHtml = document.documentElement.style.background;
-    document.body.style.background = 'transparent';
-    document.documentElement.style.background = 'linear-gradient(160deg, #6A1B9A 0%, #9C27B0 45%, #CE93D8 100%)';
+    document.body.style.background = '#4A148C';
+    document.documentElement.style.background = '#4A148C';
     return () => {
       document.body.style.background = prevBody;
       document.documentElement.style.background = prevHtml;
