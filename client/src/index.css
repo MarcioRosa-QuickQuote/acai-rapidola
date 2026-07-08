@@ -34,8 +34,9 @@ body {
   font-family: 'Nunito', system-ui, -apple-system, sans-serif;
   background: var(--bg);
   color: var(--text);
-  height: 100%;
-  min-height: -webkit-fill-available;
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  overflow: hidden;
   overscroll-behavior: none;
   padding-top: env(safe-area-inset-top);
   -webkit-font-smoothing: antialiased;
@@ -43,7 +44,6 @@ body {
   line-height: 1.5;
   letter-spacing: -0.01em;
   touch-action: manipulation;
-  position: relative;
   background-image:
     radial-gradient(circle at 15% 25%, rgba(106,27,154,0.06) 3px, transparent 3px),
     radial-gradient(circle at 75% 10%, rgba(106,27,154,0.05) 4px, transparent 4px),
@@ -560,8 +560,7 @@ img { max-width: 100%; height: auto; }
   .login-card { transform: translateY(12px); }
   .login-video {
     position: fixed; top: -2%; left: -2%;
-    width: 104%;
-    height: calc(104% + env(safe-area-inset-bottom, 34px));
+    width: 104%; height: 104%;
     object-fit: cover;
     object-position: center 40%;
     z-index: 0;
@@ -569,8 +568,7 @@ img { max-width: 100%; height: auto; }
   }
   .login-video-overlay {
     position: fixed; top: 0; left: 0;
-    width: 100%;
-    height: calc(100% + env(safe-area-inset-bottom, 34px));
+    width: 100%; height: 100%;
     background: linear-gradient(to bottom, rgba(206,147,216,0.45) 0%, rgba(206,147,216,0.25) 22%, rgba(206,147,216,0.25) 78%, rgba(206,147,216,0.45) 100%);
     z-index: 1;
   }
