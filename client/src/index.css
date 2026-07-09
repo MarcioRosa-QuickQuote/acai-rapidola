@@ -26,7 +26,7 @@
 html {
   height: 100%;
   height: -webkit-fill-available;
-  overflow-x: hidden;
+  overflow: hidden;
   overscroll-behavior: none;
 }
 
@@ -571,7 +571,7 @@ img { max-width: 100%; height: auto; }
     overflow: hidden;
   }
   .login-video-inner {
-    object-position: 57% 40%;
+    object-position: center 40%;
     filter: brightness(1.35) saturate(1.1);
   }
   .login-video-overlay {
