@@ -602,7 +602,8 @@ export default function Register() {
         borderRadius: 24,
         boxShadow: '0 20px 60px rgba(0,0,0,0.35)',
         position: 'relative', zIndex: 2,
-        transition: 'transform 0.5s ease-out'
+        transition: 'transform 0.5s ease-out',
+        marginTop: 20,
       }}>
         <div style={{ padding: '24px 30px 20px' }}>
           {/* ── Wizard entregador ── */}
